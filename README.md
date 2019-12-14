@@ -1,15 +1,10 @@
 # randomprime
 
-**A GUI frontend for this program is available [here](https://randomizer.metroidprime.run).** I highly recommend using it.
+This is a fork of syncathetic's [randomprime](https://github.com/YonicDev/randomprime/releases/latest) program, and acts as a backend for [Metroid Prime Door Randomizer](https://github.com/YonicDev/mpdr) (also known as MPDR).
 
-[Download latest version](https://github.com/aprilwade/randomprime/releases/latest)
+> **_NOTE:_ It is heavily recommended you use MPDR which is the GUI frontend and also generates profiles. You can download it at the link above.**
 
-This is a program to randomize/customize the layout of pickups in Metroid Prime.
-It does _not_ generate layouts, it merely patches the ISO.
-You need a to use a separate utility to generate a "layout descriptor" that you feed to the patcher.
-There is a layout generator built into the aforementioned GUI.
-I've also written a [generator webpage](https://aprilwade.github.io/randomprime/generator.html), though it is less featureful.
-There's an [editor webpage](https://aprilwade.github.io/randomprime/editor.html) that can be used to customize or create a layout.
+It does _not_ randomize the pickup layout, and needs a separate profile to work, instead of a layout descriptor.
 
 ## How to use the ISO patcher
 
@@ -22,9 +17,9 @@ The patcher also has a CLI, the details of which you can find by running it with
 
 ## Reporting a bug
 
-If you file an issue, please include the layout descriptor you used, a hash of the input ISO, and a hash of the generated ISO.
+If you file an issue, please include the profile you used, a hash of the input ISO, and a hash of the generated ISO.
 
-## Faq
+## Q & A
 
 ##### Q: Which versions of Metroid Prime are supported?
 A:
@@ -40,15 +35,17 @@ SHA1: ac20c744db18fdf0339f37945e880708fd317231
 A:
 No, you must use a clean/unpatched input ISO.
 
-##### Q: Why do I need a separate webpage to generate layouts?
+##### Q: Will you merge the item randomizer and door randomizer?
 A:
-Because ~~I'm lazy~~ I wanted to allow other people to write their own generators or create layouts from scratch.
+I might consider it in the future.
 
-## To do
+##### Q: Are all seeds clearable?
+A:
+They _should_ as long as the weights for non-blue doors are small enough.
 
-* Support Prime 2???
+##### Q: Will you support Metroid Prime 2: Echoes?
+A: No, because it would be trivial, as the Dark Beam and Light Beam are obtained very early in the game, and the Annihilator Beam is acquired near the end of it.
 
 ## Thanks
 
-The creation of this tool would not have been possible without the [Retro Modding Wiki](http://www.metroid2002.com/retromodding/wiki/Retro_Modding_Wiki) and amazing people who edit it.
-Additionally, in many places where I wasn't sure how to do something (for example, skip item collection cutscenes) this tool's behavior emulates the randomizer created by [Claris Robyn](https://www.twitch.tv/clarisrobyn).
+The creation of this tool would not have been possible without the Metroid Prime Modding community in Discord, especially [syncathetic](https://github.com/aprilwade), the original creator of randomprime.
