@@ -1,6 +1,6 @@
 # randomprime
 
-This is a fork of syncathetic's [randomprime](https://github.com/YonicDev/randomprime/releases/latest) program, and acts as a backend for [Metroid Prime Door Randomizer](https://github.com/YonicDev/mpdr) (also known as MPDR).
+This is a fork of syncathetic's [randomprime](https://github.com/aprilwade/randomprime) program, and acts as a backend for [Metroid Prime Door Randomizer](https://github.com/YonicDev/mpdr) (also known as MPDR).
 
 > **_NOTE:_ It is heavily recommended you use MPDR which is the GUI frontend and also generates profiles. You can download it at the link above.**
 
