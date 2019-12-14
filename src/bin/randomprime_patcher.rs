@@ -7,7 +7,7 @@ use clap::{
 };
 
 use randomprime::{
-    extract_flaahgra_music_files, parse_layout, patches, reader_writer, structs
+    extract_flaahgra_music_files, parse_layout, patches, profile::Profile, reader_writer, structs
 };
 
 use std::{
@@ -74,7 +74,7 @@ impl structs::ProgressNotifier for ProgressNotifier
 
 fn get_config() -> Result<patches::ParsedConfig, String>
 {
-    let matches = App::new("randomprime ISO patcher")
+    /*let matches = App::new("randomprime ISO patcher")
         .version(crate_version!())
         .arg(Arg::with_name("input iso path")
             .long("input-iso")
@@ -88,7 +88,23 @@ fn get_config() -> Result<patches::ParsedConfig, String>
             .long("layout")
             .required(true)
             .takes_value(true)
-            .allow_hyphen_values(true))
+            .allow_hyphen_values(true))*/
+
+
+    let matches = App::new("randomprime ISO patcher")
+        .version(crate_version!())
+        .arg(Arg::with_name("input iso path")
+            .long("input-iso")
+            .required(true)
+            .takes_value(true))
+        .arg(Arg::with_name("output iso path")
+            .long("output-iso")
+            .required(true)
+            .takes_value(true))
+        .arg(Arg::with_name("profile json path")
+            .long("profile")
+            .required(true)
+            .takes_value(true))
         .arg(Arg::with_name("skip frigate")
             .long("skip-frigate")
             .help("New save files will skip the \"Space Pirate Frigate\" tutorial level"))
@@ -156,6 +172,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
                 .map_err(|e| format!("Failed to open input iso: {}", e))?;
     let input_iso_mmap = memmap::Mmap::open(&input_iso_file, memmap::Protection::Read)
                 .map_err(|e| format!("Failed to open input iso: {}", e))?;
+    let json_path = matches.value_of("profile json path").unwrap();
 
     let output_iso_path = matches.value_of("output iso path").unwrap();
     let out_iso = OpenOptions::new()
@@ -173,7 +190,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         patches::IsoFormat::Iso
     };
 
-    let layout_string = matches.value_of("pickup layout").unwrap().to_string();
+    let layout_string = String::from("NCiq7nTAtTnqPcap9VMQk_o8Qj6ZjbPiOdYDB5tgtwL_f01-UpYklNGnL-gTu5IeVW3IoUiflH5LqNXB3wVEER4");
     let (pickup_layout, elevator_layout, seed) = parse_layout(&layout_string)?;
     let skip_impact_crater = matches.is_present("skip impact crater");
 
@@ -196,9 +213,11 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         output_iso: out_iso,
         pickup_layout, elevator_layout, seed, layout_string,
 
+        profile: Profile::from_json(json_path),
+
         iso_format,
         skip_hudmenus: matches.is_present("skip hudmenus"),
-        skip_frigate: matches.is_present("skip frigate"),
+        skip_frigate: true,
         nonvaria_heat_damage: matches.is_present("nonvaria heat damage"),
         staggered_suit_damage: matches.is_present("staggered suit damage"),
         keep_fmvs: matches.is_present("keep attract mode"),
@@ -268,8 +287,9 @@ fn maybe_pause_at_exit()
 fn main_inner() -> Result<(), String>
 {
     let config = get_config()?;
-    let pn = ProgressNotifier::new(config.quiet);
-    patches::patch_iso(config, pn)?;
+    //let pn = ProgressNotifier::new(config.quiet);
+    //patches::patch_iso(config, pn)?;
+    println!("{:?}",config.profile);
     println!("Done");
     Ok(())
 }

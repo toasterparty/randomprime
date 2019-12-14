@@ -19,6 +19,7 @@ use crate::{
     reader_writer,
     patcher::{PatcherState, PrimePatcher},
     structs,
+    profile::Profile,
     GcDiscLookupExtensions,
     ResourceData,
 };
@@ -1628,7 +1629,7 @@ fn patch_dol<'r>(
     let powerbomb_hud_formating_patch = ppcasm!(symbol_addr!("SetBombParams__17CHudBallInterfaceFiiibbb", version) + 0x2c, {
             b skip;
         fmt:
-            .asciiz b"%d/%d";// %d";
+            .asciiz b"%d/%d"; // %d";
             nop;
         skip:
             mr         r6, r27;
@@ -1842,6 +1843,7 @@ pub struct ParsedConfig
     pub input_iso: memmap::Mmap,
     pub output_iso: File,
     pub layout_string: String,
+    pub profile: Profile,
 
     pub pickup_layout: Vec<u8>,
     pub elevator_layout: Vec<u8>,
@@ -2266,4 +2268,3 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
     patcher.run(gc_disc)?;
     Ok(())
 }
-

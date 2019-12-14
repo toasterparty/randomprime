@@ -1,7 +1,10 @@
 
 use serde_derive::{Serialize, Deserialize};
 
-use crate::patches;
+use crate::{
+    patches,
+    profile::Profile
+};
 
 use std::{
     cell::Cell,
@@ -194,12 +197,16 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         None
     };
 
+    let profile = Profile::new();
+
     let mut config = config;
     let parsed_config = patches::ParsedConfig {
         input_iso, output_iso,
         pickup_layout, elevator_layout, seed,
 
         layout_string: config.layout_string,
+
+        profile,
 
         iso_format: config.iso_format,
         skip_frigate: config.skip_frigate,
