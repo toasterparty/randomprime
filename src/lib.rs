@@ -22,6 +22,7 @@ use std::{
 pub mod elevators;
 pub mod mlvl_wrapper;
 pub mod pickup_meta;
+pub mod door_meta;
 pub mod patcher;
 pub mod patches;
 pub mod c_interface;

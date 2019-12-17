@@ -3,7 +3,7 @@ use std::mem;
 use reader_writer::{FourCC, Reader};
 use structs::{Connection, ConnectionMsg, ConnectionState, Pickup, Resource, ResourceKind};
 
-use crate::custom_asset_ids;
+use crate::{custom_asset_ids,door_meta::DoorLocation};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum PickupType
@@ -360,6 +360,7 @@ pub struct RoomInfo
     pub room_id: u32,
     pub name: &'static str,
     pub pickup_locations: &'static [PickupLocation],
+    pub door_locations: &'static [DoorLocation],
     pub objects_to_remove: &'static [ObjectsToRemove],
 }
 
