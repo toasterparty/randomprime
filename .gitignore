@@ -9,3 +9,16 @@ extra_assets/rel_loader_1.00.bin
 extra_assets/rel_loader_1.00.bin.map
 extra_assets/rel_loader_1.02.bin
 extra_assets/rel_loader_1.02.bin.map
+
+# Cmake
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
