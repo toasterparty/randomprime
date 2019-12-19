@@ -27,6 +27,27 @@ struct ConfigBanner
 }
 
 #[derive(Deserialize)]
+struct Weights {
+    tallon_overworld: [u8;4],
+    chozo_ruins: [u8;4],
+    magmoor_caverns: [u8;4],
+    phendrana_drifts: [u8;4],
+    phazon_mines: [u8;4]
+}
+
+#[derive(Deserialize)]
+struct Config {
+    input_iso: String,
+    output_iso: String,
+    seed: u64,
+    weights: Weights,
+    skip_frigate: bool,
+    fix_flaaghra_music: bool,
+    trilogy_disc_path: Option<String>,
+}
+
+/*
+#[derive(Deserialize)]
 struct Config
 {
     input_iso: String,
@@ -67,7 +88,7 @@ struct Config
     main_menu_message: String,
 
     banner: Option<ConfigBanner>,
-}
+}*/
 
 #[derive(Serialize)]
 #[serde(tag = "type")]
@@ -189,10 +210,16 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         .open(&config.output_iso)
         .map_err(|e| format!("Failed to open {}: {}", config.output_iso, e))?;
 
-    let (pickup_layout, elevator_layout, seed) = crate::parse_layout(&config.layout_string)?;
+    let layout_string = String::from("NCiq7nTAtTnqPcap9VMQk_o8Qj6ZjbPiOdYDB5tgtwL_f01-UpYklNGnL-gTu5IeVW3IoUiflH5LqNXB3wVEER4");
 
-    let flaahgra_music_files = if let Some(path) = &config.trilogy_disc_path {
-        Some(crate::extract_flaahgra_music_files(&path)?)
+    let (pickup_layout, elevator_layout, seed) = crate::parse_layout(&layout_string)?;
+
+    let flaahgra_music_files = if config.fix_flaaghra_music {
+        if let Some(path) = &config.trilogy_disc_path {
+            Some(crate::extract_flaahgra_music_files(&path)?)
+        } else {
+            None
+        }
     } else {
         None
     };
@@ -200,41 +227,51 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
     let profile = Profile::new();
 
     let mut config = config;
+
+    let mut banner = Some(ConfigBanner {
+        game_name: Some(String::from("Metroid Prime")),
+        developer: Some(String::from("YonicStudios")),
+
+        game_name_full: Some(String::from("Metroid Prime Door Randomized")),
+        developer_full: Some(String::from("YonicStudios")),
+        description: Some(String::from("Metroid Prime, but door colors have been randomized")),
+    });
+
     let parsed_config = patches::ParsedConfig {
         input_iso, output_iso,
         pickup_layout, elevator_layout, seed,
 
-        layout_string: config.layout_string,
+        layout_string,
 
         profile,
 
-        iso_format: config.iso_format,
+        iso_format: patches::IsoFormat::Iso,
         skip_frigate: config.skip_frigate,
-        skip_hudmenus: config.skip_hudmenus,
-        nonvaria_heat_damage: config.nonvaria_heat_damage,
-        staggered_suit_damage: config.staggered_suit_damage,
-        keep_fmvs: config.keep_fmvs,
-        obfuscate_items: config.obfuscate_items,
-        auto_enabled_elevators: config.auto_enabled_elevators,
+        skip_hudmenus: true,
+        nonvaria_heat_damage: true,
+        staggered_suit_damage: true,
+        keep_fmvs: false,
+        obfuscate_items: false,
+        auto_enabled_elevators: false,
         quiet: false,
 
-        skip_impact_crater: config.skip_impact_crater,
-        artifact_hint_behavior: config.artifact_hint_behavior,
+        skip_impact_crater: false,
+        artifact_hint_behavior: patches::ArtifactHintBehavior::Default,
 
         flaahgra_music_files,
 
-        starting_items: config.starting_items,
-        comment: config.comment,
-        main_menu_message: config.main_menu_message,
+        starting_items: Some(1),
+        comment: String::from("What to comment"),
+        main_menu_message: String::from("Main menu message"),
 
         quickplay: false,
 
-        bnr_game_name: config.banner.as_mut().and_then(|b| b.game_name.take()),
-        bnr_developer: config.banner.as_mut().and_then(|b| b.developer.take()),
+        bnr_game_name: banner.as_mut().and_then(|b| b.game_name.take()),
+        bnr_developer: banner.as_mut().and_then(|b| b.developer.take()),
 
-        bnr_game_name_full: config.banner.as_mut().and_then(|b| b.game_name_full.take()),
-        bnr_developer_full: config.banner.as_mut().and_then(|b| b.developer_full.take()),
-        bnr_description: config.banner.as_mut().and_then(|b| b.description.take()),
+        bnr_game_name_full: banner.as_mut().and_then(|b| b.game_name_full.take()),
+        bnr_developer_full: banner.as_mut().and_then(|b| b.developer_full.take()),
+        bnr_description: banner.as_mut().and_then(|b| b.description.take()),
     };
 
     let pn = ProgressNotifier::new(cb_data, cb);

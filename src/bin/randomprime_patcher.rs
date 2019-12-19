@@ -287,9 +287,9 @@ fn maybe_pause_at_exit()
 fn main_inner() -> Result<(), String>
 {
     let config = get_config()?;
-    //let pn = ProgressNotifier::new(config.quiet);
-    //patches::patch_iso(config, pn)?;
-    println!("{:?}",config.profile);
+    let pn = ProgressNotifier::new(config.quiet);
+    println!("{:?}",&config.profile);
+    patches::patch_iso(config, pn)?;
     println!("Done");
     Ok(())
 }
