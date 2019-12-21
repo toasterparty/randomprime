@@ -16,6 +16,7 @@ use crate::{
     memmap,
     mlvl_wrapper,
     pickup_meta::{self, PickupType},
+    door_meta::{DoorType, DoorLocation},
     reader_writer,
     patcher::{PatcherState, PrimePatcher},
     structs,
@@ -863,6 +864,29 @@ fn patch_frigate_teleporter<'r>(area: &mut mlvl_wrapper::MlvlArea, spawn_room: S
         .unwrap();
     wt.mlvl = spawn_room.mlvl;
     wt.mrea = spawn_room.mrea;
+    Ok(())
+}
+
+fn patch_door<'r>(area: &mut mlvl_wrapper::MlvlArea, door_loc: DoorLocation) -> Result<(), String> {
+
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    // Let's make them all plasma doors for testing
+    let plasma_type = DoorType::Purple;
+
+    let door_force = layer.objects.iter_mut()
+        .find(|obj| obj.instance_id == door_loc.door_force_location.instance_id)
+        .and_then(|obj| obj.property_data.as_damageable_trigger_mut())
+        .unwrap();
+    door_force.color_txtr = plasma_type.forcefield_txtr();
+    door_force.damage_vulnerability = plasma_type.vulnerability();
+
+    let door_shield = layer.objects.iter_mut()
+        .find(|obj| obj.instance_id == door_loc.door_shield_location.instance_id)
+        .and_then(|obj| obj.property_data.as_actor_mut())
+        .unwrap();
+
+    door_shield.cmdl = plasma_type.shield_cmdl();
     Ok(())
 }
 
@@ -2078,7 +2102,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         });
     }
 
-    // Patch pickups
+    // Patch pickups and doors
     let mut layout_iterator = pickup_layout.iter();
     for (name, rooms) in pickup_meta::PICKUP_LOCATIONS.iter() {
         for room_info in rooms.iter() {
@@ -2103,6 +2127,13 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                             pickup_resources,
                             config
                         )
+                );
+            }
+            let iter = room_info.door_locations.iter();
+            for &door_location in iter {
+                patcher.add_scly_patch(
+                    (name.as_bytes(), room_info.room_id),
+                    move |_ps, area| patch_door(area,door_location)
                 );
             }
         }
