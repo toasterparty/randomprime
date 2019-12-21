@@ -83,8 +83,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 131875 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 131870 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 131876 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 131878 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 131875 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 131870 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 131871 },
                 },
             ],
             objects_to_remove: &[
@@ -257,8 +262,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 589914 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 589844 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 589915 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 589918 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 589914 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 589844 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 589877 },
                 },
             ],
             objects_to_remove: &[
@@ -335,8 +345,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 786491 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 786487 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 786492 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 786527 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 786491 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 786487 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 786488 },
                 },
             ],
             objects_to_remove: &[
@@ -359,8 +374,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 852079 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 852074 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 852080 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 852082 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 852079 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 852074 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 852075 },
                 },
             ],
             objects_to_remove: &[],
@@ -392,8 +412,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 983067 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 983063 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 983068 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 983070 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 983067 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 983063 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 983064 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 983043 },
@@ -471,13 +496,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1179669 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1179665 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1179670 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1179672 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1179669 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1179665 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1179666 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1179679 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1179680 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1179682 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1179679 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1179675 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1179682 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1179676 },
                 },
             ],
             objects_to_remove: &[
@@ -500,13 +535,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1245732 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1245727 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1245733 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1245735 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1245732 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1245727 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1245728 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1245746 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1245747 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1245749 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1245746 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1245741 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1245749 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1245742 },
                 },
             ],
             objects_to_remove: &[],
@@ -530,8 +575,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1310784 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1310780 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1310785 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1310787 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1310784 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1310780 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1310781 },
                 },
             ],
             objects_to_remove: &[
@@ -571,8 +621,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1376546 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1376542 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1376547 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1376619 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1376546 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1376542 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1376543 },
                 },
             ],
             objects_to_remove: &[
@@ -743,8 +798,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1835447 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1835442 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1835448 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1835450 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1835447 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1835442 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1835443 },
                 },
             ],
             objects_to_remove: &[
@@ -851,8 +911,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2107788 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2107783 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2107789 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2107791 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2107788 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2107783 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2107784 },
                 },
             ],
             objects_to_remove: &[
@@ -969,8 +1034,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2359859 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359854 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359860 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2359862 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2359859 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359854 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2359855 },
                 },
             ],
             objects_to_remove: &[
@@ -1100,8 +1170,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2500497 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2500492 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2500498 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2500500 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2500497 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2500492 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2500493 },
                 },
             ],
             objects_to_remove: &[
@@ -1190,8 +1265,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2697784 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2697779 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2697785 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2697787 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2697784 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2697779 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2697780 },
                 },
             ],
             objects_to_remove: &[
@@ -1399,7 +1479,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3211702 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3211698 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3211703 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3211705 },
                 },
             ],
@@ -1418,12 +1498,17 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3276848 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3276844 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3276849 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3276851 },
                 },
                 DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3276848 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3276844 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3276845 },
+                },
+                DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3276858 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3276854 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3276859 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3276861 },
                 },
             ],
@@ -1437,8 +1522,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3342413 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3342409 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3342414 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3342416 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3342413 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3342409 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3342410 },
                 },
             ],
             objects_to_remove: &[],
@@ -1467,13 +1557,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3408418 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3408414 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3408419 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3408421 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3408418 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3408414 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3408415 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3408732 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3408733 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3408735 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3408732 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3408727 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3408735 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3408728 },
                 },
             ],
             objects_to_remove: &[
@@ -1502,13 +1602,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3474311 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3474306 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3474312 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3474314 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3474311 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3474306 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3474307 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3474325 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3474326 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3474328 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3474325 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3474320 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3474328 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3474321 },
                 },
             ],
             objects_to_remove: &[
@@ -1564,13 +1674,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3670088 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3670083 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3670089 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3670091 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3670088 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3670083 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3670084 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3670102 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3670103 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3670105 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3670102 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3670097 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3670105 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3670098 },
                 },
             ],
             objects_to_remove: &[],
@@ -1624,18 +1744,33 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3801210 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3801203 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3801212 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3801231 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3801210 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3801203 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3801204 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3801468 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3801469 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3801471 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3801468 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3801463 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3801471 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3801464 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3801482 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3801483 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3801485 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3801482 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3801477 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3801485 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3801478 },
                 },
             ],
             objects_to_remove: &[],
@@ -1667,8 +1802,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3932168 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3932163 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3932169 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3932171 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3932168 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3932163 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3932164 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3932174 },
@@ -1708,8 +1848,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3997769 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3997765 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3997770 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3997772 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3997769 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3997765 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3997766 },
                 },
             ],
             objects_to_remove: &[
@@ -1993,13 +2138,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 589878 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 589874 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 589879 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 589905 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 589878 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 589874 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 589875 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 600255 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 600256 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 600258 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 600255 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 600250 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 600258 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 600251 },
                 },
             ],
             objects_to_remove: &[
@@ -2096,8 +2251,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 852148 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 852143 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 852149 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 852151 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 852148 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 852143 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 852144 },
                 },
             ],
             objects_to_remove: &[],
@@ -2137,8 +2297,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 917947 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 917943 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 917948 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 917950 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 917947 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 917943 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 917944 },
                 },
             ],
             objects_to_remove: &[
@@ -2167,8 +2332,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 983088 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 983076 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 983098 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 983128 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 983088 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 983076 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 983085 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 983503 },
@@ -2177,8 +2347,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 983729 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 983724 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 983730 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 983732 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 983729 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 983724 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 983725 },
                 },
             ],
             objects_to_remove: &[
@@ -2251,13 +2426,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1179685 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1179681 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1179686 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1179688 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1179685 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1179681 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1179682 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1179695 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1179696 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1179698 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1179695 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1179691 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1179698 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1179692 },
                 },
             ],
             objects_to_remove: &[],
@@ -2289,8 +2474,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1310830 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1310826 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1310831 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1310856 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1310830 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1310826 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1310827 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1311012 },
@@ -2299,8 +2489,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1311022 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1311018 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1311023 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1311025 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1311022 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1311018 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1311019 },
                 },
             ],
             objects_to_remove: &[],
@@ -2313,13 +2508,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1376272 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1376268 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1376273 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1376275 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1376272 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1376268 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1376269 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1376282 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1376283 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1376285 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1376282 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1376278 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1376285 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1376279 },
                 },
             ],
             objects_to_remove: &[],
@@ -2346,13 +2551,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1507336 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1507332 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1507337 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1507339 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1507336 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1507332 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1507333 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1507346 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1507347 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1507349 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1507346 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1507342 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1507349 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1507343 },
                 },
             ],
             objects_to_remove: &[],
@@ -2387,13 +2602,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1573004 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1573000 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1573005 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1573007 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1573004 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1573000 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1573001 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1573024 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1573025 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1573027 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1573024 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1573020 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1573027 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1573021 },
                 },
             ],
             objects_to_remove: &[
@@ -2421,8 +2646,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1638470 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1638464 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1638471 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1638473 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1638470 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1638464 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1638467 },
                 },
             ],
             objects_to_remove: &[
@@ -2440,13 +2670,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1704008 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1704004 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1704009 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1704011 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1704008 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1704004 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1704005 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1704018 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1704019 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1704021 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1704018 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1704014 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1704021 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1704015 },
                 },
             ],
             objects_to_remove: &[],
@@ -2479,8 +2719,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1835014 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1835010 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1835015 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1835017 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1835014 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1835010 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1835011 },
                 },
             ],
             objects_to_remove: &[],
@@ -2493,13 +2738,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1900608 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1900604 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1900609 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1900611 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1900608 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1900604 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1900605 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1900691 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1900692 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1900694 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1900691 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1900687 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1900694 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1900688 },
                 },
             ],
             objects_to_remove: &[],
@@ -2534,18 +2789,33 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1966225 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1966221 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1966226 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1966228 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1966225 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1966221 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1966222 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1966268 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1966269 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1966271 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1966268 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1966264 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1966271 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1966265 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1967097 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1967098 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1967100 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1967097 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1967092 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1967100 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1967093 },
                 },
             ],
             objects_to_remove: &[
@@ -2569,13 +2839,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2031656 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2031652 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2031657 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2031659 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2031656 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2031652 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2031653 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2031666 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2031667 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2031669 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2031666 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2031662 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2031669 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2031663 },
                 },
             ],
             objects_to_remove: &[
@@ -2593,8 +2873,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2097170 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2097166 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2097171 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2097173 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2097170 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2097166 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2097167 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2097333 },
@@ -2626,23 +2911,43 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2228246 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2228242 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2228247 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2228249 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2228246 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2228242 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2228243 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2228303 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2228304 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2228306 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2228303 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2228299 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2228306 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2228300 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2228313 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2228314 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2228317 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2228313 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2228309 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2228317 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2228310 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2228513 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2228514 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2228516 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2228513 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2228509 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2228516 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2228510 },
                 },
             ],
             objects_to_remove: &[],
@@ -2655,8 +2960,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2293813 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2293809 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2293814 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2293816 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2293813 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2293809 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2293810 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2293994 },
@@ -2674,13 +2984,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2359320 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359316 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359321 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2359323 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2359320 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359316 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2359317 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2359331 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359332 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2359334 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2359331 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359327 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2359334 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2359328 },
                 },
             ],
             objects_to_remove: &[],
@@ -2693,13 +3013,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2425013 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2425009 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2425014 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2425016 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2425013 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2425009 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2425010 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2425023 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2425024 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2425026 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2425023 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2425019 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2425026 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2425020 },
                 },
             ],
             objects_to_remove: &[],
@@ -2712,13 +3042,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2490386 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2490382 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2490387 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2490389 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2490386 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2490382 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2490383 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2490400 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2490401 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2490403 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2490400 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2490396 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2490403 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2490397 },
                 },
             ],
             objects_to_remove: &[],
@@ -2753,13 +3093,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2555923 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2555919 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2555924 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2555926 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2555923 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2555919 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2555920 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2555992 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2555994 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2555996 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2555992 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2555974 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2555996 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2555975 },
                 },
             ],
             objects_to_remove: &[
@@ -2809,12 +3159,17 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2621474 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2621470 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2621493 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2621533 },
                 },
                 DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2621474 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2621470 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2621471 },
+                },
+                DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2622138 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2622134 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2622139 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2622141 },
                 },
             ],
@@ -2839,18 +3194,33 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2687198 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2687194 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2687199 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2687201 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2687198 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2687194 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2687195 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2686985 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2686986 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2686988 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2686985 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2686981 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2686988 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2686982 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2686995 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2686996 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2686998 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2686995 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2686991 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2686998 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2686992 },
                 },
             ],
             objects_to_remove: &[
@@ -2868,23 +3238,43 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2752697 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2752693 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2752698 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2752700 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2752697 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2752693 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2752694 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2752717 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2752718 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2752720 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2752717 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2752713 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2752720 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2752714 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2752731 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2752732 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2752734 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2752731 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2752727 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2752734 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2752728 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2752741 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2752742 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2752744 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2752741 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2752737 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2752744 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2752738 },
                 },
             ],
             objects_to_remove: &[],
@@ -2897,13 +3287,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2818056 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2818052 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2818090 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2818092 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2818056 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2818052 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2818053 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2818099 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2818100 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2818102 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2818099 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2818095 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2818102 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2818096 },
                 },
             ],
             objects_to_remove: &[],
@@ -2916,8 +3316,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2883600 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2883596 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2883601 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2883603 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2883600 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2883596 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2883597 },
                 },
             ],
             objects_to_remove: &[],
@@ -2930,8 +3335,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2949134 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2949130 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2949135 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2949137 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2949134 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2949130 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2949131 },
                 },
             ],
             objects_to_remove: &[],
@@ -2944,13 +3354,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3014691 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3014687 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3014692 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3014694 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3014691 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3014687 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3014688 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3014705 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3014706 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3014708 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3014705 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3014701 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3014708 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3014702 },
                 },
             ],
             objects_to_remove: &[],
@@ -2963,13 +3383,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3080201 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3080197 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3080202 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3080204 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3080201 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3080197 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3080198 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3080211 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3080212 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3080214 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3080211 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3080207 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3080214 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3080208 },
                 },
             ],
             objects_to_remove: &[],
@@ -2982,13 +3412,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3145737 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3145733 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3145738 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3145740 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3145737 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3145733 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3145734 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3145747 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3145748 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3145750 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3145747 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3145743 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3145750 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3145744 },
                 },
             ],
             objects_to_remove: &[],
@@ -3001,13 +3441,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3211273 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3211269 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3211274 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3211276 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3211273 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3211269 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3211270 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3211283 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3211284 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3211286 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3211283 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3211279 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3211286 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3211280 },
                 },
             ],
             objects_to_remove: &[],
@@ -3020,13 +3470,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3276817 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3276813 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3276818 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3276820 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3276817 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3276813 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3276814 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3276827 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3276828 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3276830 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3276827 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3276823 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3276830 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3276824 },
                 },
             ],
             objects_to_remove: &[],
@@ -3051,8 +3511,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3342373 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3342361 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3342374 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3342376 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3342373 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3342361 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3342370 },
                 },
             ],
             objects_to_remove: &[
@@ -3070,17 +3535,27 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3407932 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3407914 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3407933 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3407935 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3407932 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3407914 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3407915 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3407948 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3407949 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3407951 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3407948 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3407938 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3407951 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3407939 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3408061 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3408057 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3408062 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3408064 },
                 },
             ],
@@ -3122,13 +3597,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3473430 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3473424 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3473431 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3473434 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3473430 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3473424 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3473425 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 3473476 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3473477 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3473479 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3473476 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3473472 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3473479 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3473473 },
                 },
             ],
             objects_to_remove: &[
@@ -3172,7 +3657,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 3539171 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3539166 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 3539172 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 3539174 },
                 },
             ],
@@ -3361,8 +3846,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 337903 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 337898 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 337904 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 337906 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 337903 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 337898 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 337899 },
                 },
             ],
             objects_to_remove: &[],
@@ -3409,8 +3899,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 458837 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 458832 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 458838 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 458840 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 458837 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 458832 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 458833 },
                 },
             ],
             objects_to_remove: &[],
@@ -3434,13 +3929,18 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 524682 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 524678 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 524683 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 524685 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 524929 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 524924 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 524930 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 524932 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 524929 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 524924 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 524925 },
                 },
             ],
             objects_to_remove: &[
@@ -3482,8 +3982,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 665512 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 665507 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 665513 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 665515 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 665512 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 665507 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 665508 },
                 },
             ],
             objects_to_remove: &[],
@@ -3520,8 +4025,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 786496 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 786491 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 786497 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 786499 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 786496 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 786491 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 786492 },
                 },
             ],
             objects_to_remove: &[],
@@ -3540,13 +4050,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 852126 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 852122 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 852127 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 852129 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 852126 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 852122 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 852123 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 852136 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 852137 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 852139 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 852136 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 852132 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 852139 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 852133 },
                 },
             ],
             objects_to_remove: &[
@@ -3589,7 +4109,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 983121 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 983117 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 983122 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 983124 },
                 },
                 DoorLocation {
@@ -3681,12 +4201,17 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1189704 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1189700 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1189705 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1189707 },
                 },
                 DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1189704 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1189700 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1189701 },
+                },
+                DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1189714 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1189710 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1189715 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1189717 },
                 },
             ],
@@ -3755,8 +4280,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1441829 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1441825 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1441830 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1441832 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1441829 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1441825 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1441826 },
                 },
             ],
             objects_to_remove: &[],
@@ -3996,18 +4526,33 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2359507 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359503 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359508 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2359510 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2359507 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359503 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2359504 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2359517 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359518 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2359520 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2359517 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359513 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2359520 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2359514 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2359537 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359538 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2359540 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2359537 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359533 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2359540 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2359534 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2359543 },
@@ -4050,13 +4595,18 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2490710 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2490706 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2490711 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2490713 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2490720 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2490716 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2490721 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2490723 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2490720 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2490716 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2490717 },
                 },
             ],
             objects_to_remove: &[],
@@ -4075,8 +4625,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2556057 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2556053 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2556058 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2556060 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2556057 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2556053 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2556054 },
                 },
             ],
             objects_to_remove: &[
@@ -4094,13 +4649,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2621449 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2621445 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2621450 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2621452 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2621449 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2621445 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2621446 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2621459 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2621460 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2621462 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2621459 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2621455 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2621462 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2621456 },
                 },
             ],
             objects_to_remove: &[],
@@ -4113,8 +4678,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2686992 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2686988 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2686993 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2686995 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2686992 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2686988 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2686989 },
                 },
             ],
             objects_to_remove: &[],
@@ -4185,7 +4755,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2818057 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2818053 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2818058 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2818060 },
                 },
             ],
@@ -4201,8 +4771,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 8 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 4 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 9 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 11 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 8 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 4 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 5 },
                 },
             ],
             objects_to_remove: &[],
@@ -4215,13 +4790,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 65549 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 65545 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 65550 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 65552 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 65549 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 65545 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 65546 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 65559 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 65560 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 65562 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 65559 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 65555 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 65562 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 65556 },
                 },
             ],
             objects_to_remove: &[],
@@ -4240,23 +4825,43 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 131457 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 131453 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 131458 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 131460 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 131457 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 131453 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 131454 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 131691 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 131692 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 131694 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 131691 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 131687 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 131694 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 131688 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 131701 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 131702 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 131704 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 131701 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 131697 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 131704 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 131698 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 131711 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 131712 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 131714 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 131711 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 131707 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 131714 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 131708 },
                 },
             ],
             objects_to_remove: &[
@@ -4274,13 +4879,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 196699 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 196695 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 196700 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 196702 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 196699 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 196695 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 196696 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 196709 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 196710 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 196712 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 196709 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 196705 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 196712 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 196706 },
                 },
             ],
             objects_to_remove: &[],
@@ -4293,8 +4908,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 262151 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 262147 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 262152 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 262154 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 262151 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 262147 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 262148 },
                 },
             ],
             objects_to_remove: &[],
@@ -4313,13 +4933,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 327689 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 327685 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 327690 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 327692 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 327689 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 327685 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 327686 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 327699 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 327700 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 327702 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 327699 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 327695 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 327702 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 327696 },
                 },
             ],
             objects_to_remove: &[
@@ -4337,23 +4967,43 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 393557 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 393553 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 393558 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 393560 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 393557 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 393553 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 393554 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 393567 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 393568 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 393570 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 393567 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 393563 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 393570 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 393564 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 393577 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 393578 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 393580 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 393577 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 393573 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 393580 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 393574 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 393587 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 393588 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 393590 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 393587 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 393583 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 393590 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 393584 },
                 },
             ],
             objects_to_remove: &[],
@@ -4366,12 +5016,12 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 459485 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 459481 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 459486 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 459488 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 459935 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 459931 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 459936 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 459938 },
                 },
             ],
@@ -4385,13 +5035,18 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 524302 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 524298 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 524303 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 524305 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 524312 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 524308 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 524313 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 524315 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 524312 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 524308 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 524309 },
                 },
             ],
             objects_to_remove: &[],
@@ -4426,8 +5081,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 589837 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 589833 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 589838 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 589840 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 589837 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 589833 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 589834 },
                 },
             ],
             objects_to_remove: &[
@@ -4445,13 +5105,18 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 655376 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 655372 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 655377 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 655379 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 655386 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 655382 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 655387 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 655389 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 655386 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 655382 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 655383 },
                 },
             ],
             objects_to_remove: &[],
@@ -4486,7 +5151,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 786461 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 786457 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 786462 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 786464 },
                 },
             ],
@@ -4533,7 +5198,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 852157 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 852153 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 852158 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 852160 },
                 },
             ],
@@ -4552,12 +5217,12 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 917516 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 917512 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 917517 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 917519 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 917526 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 917522 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 917527 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 917529 },
                 },
             ],
@@ -4577,13 +5242,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 983052 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 983048 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 983053 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 983055 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 983052 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 983048 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 983049 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 983373 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 983374 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 983376 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 983373 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 983368 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 983376 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 983369 },
                 },
             ],
             objects_to_remove: &[
@@ -4601,13 +5276,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1049434 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1049430 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1049435 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1049437 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1049434 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1049430 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1049431 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1051442 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1051443 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1051445 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1051442 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1051437 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1051445 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1051438 },
                 },
             ],
             objects_to_remove: &[],
@@ -4620,13 +5305,18 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1114132 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1114128 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1114133 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1114135 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1114142 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1114138 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1114143 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1114145 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1114142 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1114138 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1114139 },
                 },
             ],
             objects_to_remove: &[],
@@ -4645,8 +5335,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1179696 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1179692 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1179697 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1179699 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1179696 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1179692 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1179693 },
                 },
             ],
             objects_to_remove: &[
@@ -4670,18 +5365,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1245222 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1245218 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1245223 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1245225 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1246776 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1246772 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1246777 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1246779 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1246786 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1246782 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1246787 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1246789 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1246786 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1246782 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1246783 },
                 },
             ],
             objects_to_remove: &[
@@ -4699,13 +5399,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1311200 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1311196 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1311201 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1311203 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1311200 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1311196 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1311197 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1311210 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1311211 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1311213 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1311210 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1311206 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1311213 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1311207 },
                 },
             ],
             objects_to_remove: &[],
@@ -4718,13 +5428,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1376325 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1376321 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1376326 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1376328 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1376325 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1376321 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1376322 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1376335 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1376336 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1376338 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1376335 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1376331 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1376338 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1376332 },
                 },
             ],
             objects_to_remove: &[],
@@ -4743,12 +5463,12 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1441807 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1441803 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1441808 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1441810 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1441817 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1441813 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1441818 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1441820 },
                 },
             ],
@@ -4767,7 +5487,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1507385 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1507381 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1507386 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1507388 },
                 },
             ],
@@ -4781,7 +5501,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1572881 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1572877 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1572882 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1572884 },
                 },
             ],
@@ -4795,7 +5515,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1638473 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1638469 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1638474 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1638476 },
                 },
             ],
@@ -4815,12 +5535,12 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1703957 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1703953 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1703958 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1703960 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1703967 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1703963 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1703968 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1703970 },
                 },
             ],
@@ -4840,18 +5560,33 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1770612 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1770608 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1770613 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1770615 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1770612 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1770608 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1770609 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1770665 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1770666 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1770668 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1770665 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1770661 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1770668 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1770662 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1771029 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1771030 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1771032 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1771029 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1771024 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1771032 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1771025 },
                 },
             ],
             objects_to_remove: &[
@@ -4869,12 +5604,12 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1835050 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1835046 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1835051 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1835053 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1835060 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1835056 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1835061 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1835063 },
                 },
             ],
@@ -4888,13 +5623,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1900711 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1900707 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1900712 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1900714 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1900711 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1900707 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1900708 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1900850 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1900851 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1900853 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1900850 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1900845 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1900853 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1900846 },
                 },
             ],
             objects_to_remove: &[],
@@ -4907,8 +5652,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1966163 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1966158 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1966164 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1966166 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1966163 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1966158 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1966159 },
                 },
             ],
             objects_to_remove: &[],
@@ -4927,17 +5677,17 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2031918 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2031914 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2031919 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2031921 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2031928 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2031924 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2031929 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2031931 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2032452 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2032447 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2032453 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2032455 },
                 },
             ],
@@ -4962,13 +5712,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2098106 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2098102 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2098107 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2098109 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2098106 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2098102 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2098103 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2099029 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2099030 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2099032 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2099029 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2099024 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2099032 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2099025 },
                 },
             ],
             objects_to_remove: &[
@@ -4986,12 +5746,12 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2162696 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2162692 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2162697 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2162699 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2162706 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2162702 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2162707 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2162709 },
                 },
             ],
@@ -5005,7 +5765,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2228307 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2228302 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2228308 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2228310 },
                 },
             ],
@@ -5019,13 +5779,18 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2293814 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2293810 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2293815 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2293817 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2293844 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2293840 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2293845 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2293847 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2293844 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2293840 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2293841 },
                 },
             ],
             objects_to_remove: &[],
@@ -5044,17 +5809,17 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2359401 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359397 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359402 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2359404 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2359411 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359407 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359412 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2359414 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2359421 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359417 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2359422 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2359424 },
                 },
             ],
@@ -5073,12 +5838,12 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2424842 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2424838 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2424843 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2424845 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2424852 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2424848 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2424853 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2424855 },
                 },
             ],
@@ -5092,7 +5857,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2490376 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2490372 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2490377 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2490379 },
                 },
             ],
@@ -5128,12 +5893,12 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2556012 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2556008 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2556013 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2556015 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2556022 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2556018 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2556023 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2556025 },
                 },
             ],
@@ -5158,12 +5923,12 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2621451 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2621447 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2621452 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2621454 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2621461 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2621457 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2621462 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2621464 },
                 },
             ],
@@ -5182,13 +5947,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2687015 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2687011 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2687016 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2687018 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2687015 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2687011 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2687012 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 2687025 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2687026 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2687028 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 2687025 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 2687021 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2687028 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 2687022 },
                 },
             ],
             objects_to_remove: &[],
@@ -5227,8 +6002,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 65784 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 65779 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 65785 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 65787 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 65784 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 65779 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 65780 },
                 },
             ],
             objects_to_remove: &[],
@@ -5671,8 +6451,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1180029 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1180025 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1180030 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1180032 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1180029 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1180025 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1180026 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1180360 },
@@ -5690,13 +6475,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1245286 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1245282 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1245287 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1245289 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1245286 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1245282 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1245283 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1245296 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1245297 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1245299 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1245296 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1245292 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1245299 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1245293 },
                 },
             ],
             objects_to_remove: &[],
@@ -5719,8 +6514,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1311143 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1311139 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1311144 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1311146 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1311143 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1311139 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1311140 },
                 },
             ],
             objects_to_remove: &[],
@@ -5755,7 +6555,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1376306 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1376302 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1376307 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1376309 },
                 },
             ],
@@ -5774,13 +6574,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1441810 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1441806 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1441811 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1441813 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1441810 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1441806 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1441807 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1441820 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1441821 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1441823 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1441820 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1441816 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1441823 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1441817 },
                 },
             ],
             objects_to_remove: &[],
@@ -5804,8 +6614,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1507470 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1507466 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1507471 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1507473 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1507470 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1507466 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1507467 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1508010 },
@@ -5828,7 +6643,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1572883 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1572879 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1572884 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1572886 },
                 },
                 DoorLocation {
@@ -5847,13 +6662,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1638410 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1638406 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1638411 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1638413 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1638410 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1638406 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1638407 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1638420 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1638421 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1638423 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1638420 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1638416 },
-                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1638423 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1638417 },
                 },
             ],
             objects_to_remove: &[],
@@ -5866,8 +6691,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1703945 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1703941 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1703946 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1703948 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1703945 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1703941 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1703942 },
                 },
             ],
             objects_to_remove: &[],
@@ -5880,8 +6710,13 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
             door_locations: &[
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1769492 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1769488 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1769493 },
                     door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1769495 },
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1769492 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1769488 },
+                    door_shield_location: ScriptObjectLocation { layer: 0, instance_id: 1769489 },
                 },
                 DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1769587 },

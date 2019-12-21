@@ -433,16 +433,16 @@ fn extract_door_location<'r>(
     scly: &structs::Scly<'r>,
     obj: &structs::SclyObject<'r>,
     obj_location: ScriptObjectLocation
-) -> DoorLocation {
+) -> (Option<DoorLocation>,Option<DoorLocation>) {
 
     let scly_db = build_scly_db(scly);
 
     let shield = search_for_scly_object(&obj.connections, &scly_db,
         |obj| obj.property_data.as_actor()
-            .map(|sh| sh.name.to_str().unwrap().contains("DoorShield"))
+            .map(|sh| sh.name.to_str().unwrap() == "Actor_DoorShield-component")
             .unwrap_or(false),
         ).unwrap();
-    let shield_loc = ScriptObjectLocation {
+    let unlock_shield_loc = ScriptObjectLocation {
             layer: scly_db[&shield.instance_id].0 as u32,
             instance_id: shield.instance_id,
         };
@@ -452,30 +452,52 @@ fn extract_door_location<'r>(
             .map(|sh| sh.name.to_str().unwrap().contains("DoorUnlock"))
             .unwrap_or(false),
         ).unwrap();
+    let unlock_force_loc = ScriptObjectLocation {
+        layer: scly_db[&forceunlock.instance_id].0 as u32,
+        instance_id: forceunlock.instance_id,
+    };
+
+    let key_shield = search_for_scly_object(&obj.connections, &scly_db,
+        |obj| obj.property_data.as_actor()
+            .map(|sh| sh.name.to_str().unwrap() == "Actor_DoorShield_Key-component")
+            .unwrap_or(false),
+        );
+    let key_shield_loc = match key_shield {
+        Some(key_shield) => Some(ScriptObjectLocation {
+            layer: scly_db[&forceunlock.instance_id].0 as u32,
+            instance_id: key_shield.instance_id,
+        }),
+        None => None,
+    };
+
     let forcekey = search_for_scly_object(&obj.connections, &scly_db,
         |obj| obj.property_data.as_damageable_trigger()
             .map(|sh| sh.name.to_str().unwrap().contains("DoorKey"))
             .unwrap_or(false),
         );
-
-    // Use DamageableTrigger DoorKey if found, otherwise use DoorUnlock
-    let force_loc = if let Some(forcekey) = forcekey {
-        ScriptObjectLocation {
+    let key_force_loc = match forcekey {
+        Some(forcekey) => Some(ScriptObjectLocation {
             layer: scly_db[&forcekey.instance_id].0 as u32,
             instance_id: forcekey.instance_id,
-        }
-    } else {
-        ScriptObjectLocation {
-            layer: scly_db[&forceunlock.instance_id].0 as u32,
-            instance_id: forceunlock.instance_id,
-        }
+        }),
+        None => None,
     };
 
-    DoorLocation {
+    let key_door_location:Option<DoorLocation> = if !key_shield_loc.is_none() && !key_force_loc.is_none() {
+        Some(DoorLocation {
+            door_location: obj_location,
+            door_force_location: key_force_loc.unwrap(),
+            door_shield_location: key_shield_loc.unwrap(),
+        })
+    } else {
+        None
+    };
+
+    (Some(DoorLocation {
         door_location: obj_location,
-        door_force_location: force_loc,
-        door_shield_location: shield_loc
-    }
+        door_force_location: unlock_force_loc,
+        door_shield_location: unlock_shield_loc
+    }),key_door_location)
 }
 
 fn extract_pickup_location<'r>(
@@ -902,8 +924,12 @@ fn main()
                         instance_id: obj.instance_id,
                         layer: layer_num as u32,
                     };
-                    let door_loc = extract_door_location(&scly,&obj,obj_loc);
-                    door_locations.push(door_loc);
+                    let (unlock_door_loc,key_door_loc) = extract_door_location(&scly,&obj,obj_loc);
+                    door_locations.push(unlock_door_loc.unwrap());
+                    match key_door_loc {
+                        Some(key_door_loc) => door_locations.push(key_door_loc),
+                        None => (),
+                    }
                 }
                 for obj in scly_layer.objects.iter() {
                     let obj = obj.into_owned();
