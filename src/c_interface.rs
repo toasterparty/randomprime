@@ -3,7 +3,7 @@ use serde_derive::{Serialize, Deserialize};
 
 use crate::{
     patches,
-    profile::Profile
+    door_meta::Weights,
 };
 
 use std::{
@@ -24,15 +24,6 @@ struct ConfigBanner
     game_name_full: Option<String>,
     developer_full: Option<String>,
     description: Option<String>,
-}
-
-#[derive(Deserialize)]
-struct Weights {
-    tallon_overworld: [u8;4],
-    chozo_ruins: [u8;4],
-    magmoor_caverns: [u8;4],
-    phendrana_drifts: [u8;4],
-    phazon_mines: [u8;4]
 }
 
 #[derive(Deserialize)]
@@ -212,7 +203,8 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
 
     let layout_string = String::from("NCiq7nTAtTnqPcap9VMQk_o8Qj6ZjbPiOdYDB5tgtwL_f01-UpYklNGnL-gTu5IeVW3IoUiflH5LqNXB3wVEER4");
 
-    let (pickup_layout, elevator_layout, seed) = crate::parse_layout(&layout_string)?;
+    let (pickup_layout, elevator_layout, item_seed) = crate::parse_layout(&layout_string)?;
+    let seed = config.seed;
 
     let flaahgra_music_files = if config.fix_flaaghra_music {
         if let Some(path) = &config.trilogy_disc_path {
@@ -223,8 +215,6 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
     } else {
         None
     };
-
-    let profile = Profile::new();
 
     let mut config = config;
 
@@ -240,10 +230,9 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
     let parsed_config = patches::ParsedConfig {
         input_iso, output_iso,
         pickup_layout, elevator_layout, seed,
+        item_seed,door_weights:config.weights,
 
         layout_string,
-
-        profile,
 
         iso_format: patches::IsoFormat::Iso,
         skip_frigate: config.skip_frigate,

@@ -5,6 +5,7 @@ use structs::structs::{
     BeamCombos
 };
 use reader_writer::{FourCC};
+use serde_derive::{Serialize,Deserialize};
 
 
 #[derive(Clone, Copy, Debug)]
@@ -32,6 +33,15 @@ pub enum DoorType {
     Purple,
     White,
     Red
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Weights {
+    pub tallon_overworld: [u8;4],
+    pub chozo_ruins: [u8;4],
+    pub magmoor_caverns: [u8;4],
+    pub phendrana_drifts: [u8;4],
+    pub phazon_mines: [u8;4]
 }
 
 impl DoorType {

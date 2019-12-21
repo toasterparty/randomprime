@@ -7,14 +7,17 @@ use clap::{
 };
 
 use randomprime::{
-    extract_flaahgra_music_files, parse_layout, patches, profile::Profile, reader_writer, structs
+    door_meta::Weights, extract_flaahgra_music_files, parse_layout, patches, reader_writer, structs
 };
 
 use std::{
     fs::{File, OpenOptions},
+    fs,
     panic,
     process::Command,
 };
+
+use serde_derive::Deserialize;
 
 
 struct ProgressNotifier
@@ -71,6 +74,17 @@ impl structs::ProgressNotifier for ProgressNotifier
     }
 }
 
+#[derive(Debug, Deserialize)]
+struct Config {
+    input_iso: String,
+    output_iso: String,
+    seed: u64,
+    weights: Weights,
+    skip_frigate: bool,
+    fix_flaaghra_music: bool,
+    trilogy_disc_path: Option<String>,
+}
+
 
 fn get_config() -> Result<patches::ParsedConfig, String>
 {
@@ -95,11 +109,9 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         .version(crate_version!())
         .arg(Arg::with_name("input iso path")
             .long("input-iso")
-            .required(true)
             .takes_value(true))
         .arg(Arg::with_name("output iso path")
             .long("output-iso")
-            .required(true)
             .takes_value(true))
         .arg(Arg::with_name("profile json path")
             .long("profile")
@@ -167,19 +179,23 @@ fn get_config() -> Result<patches::ParsedConfig, String>
                 .takes_value(true))
         .get_matches();
 
-    let input_iso_path = matches.value_of("input iso path").unwrap();
+    let json_path = matches.value_of("profile json path").unwrap();
+    let input_json:&str = &fs::read_to_string(json_path)
+                .map_err(|e| format!("Could not read JSON file: {}",e)).unwrap();
+    let config:Config = serde_json::from_str(input_json)
+                .map_err(|e| format!("Could not parse JSON file: {}",e)).unwrap();
+    let input_iso_path = config.input_iso;
     let input_iso_file = File::open(input_iso_path)
                 .map_err(|e| format!("Failed to open input iso: {}", e))?;
     let input_iso_mmap = memmap::Mmap::open(&input_iso_file, memmap::Protection::Read)
                 .map_err(|e| format!("Failed to open input iso: {}", e))?;
-    let json_path = matches.value_of("profile json path").unwrap();
 
-    let output_iso_path = matches.value_of("output iso path").unwrap();
+    let output_iso_path = config.output_iso;
     let out_iso = OpenOptions::new()
         .write(true)
         .create(true)
         .truncate(true)
-        .open(output_iso_path)
+        .open(&output_iso_path)
         .map_err(|e| format!("Failed to open output file: {}", e))?;
 
     let iso_format = if output_iso_path.ends_with(".gcz") {
@@ -191,7 +207,8 @@ fn get_config() -> Result<patches::ParsedConfig, String>
     };
 
     let layout_string = String::from("NCiq7nTAtTnqPcap9VMQk_o8Qj6ZjbPiOdYDB5tgtwL_f01-UpYklNGnL-gTu5IeVW3IoUiflH5LqNXB3wVEER4");
-    let (pickup_layout, elevator_layout, seed) = parse_layout(&layout_string)?;
+    let (pickup_layout, elevator_layout, item_seed) = parse_layout(&layout_string)?;
+    let seed = config.seed;
     let skip_impact_crater = matches.is_present("skip impact crater");
 
     let artifact_hint_behavior = if matches.is_present("all artifact hints") {
@@ -202,8 +219,12 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         patches::ArtifactHintBehavior::Default
     };
 
-    let flaahgra_music_files = if let Some(path) = matches.value_of("trilogy disc path") {
-        Some(extract_flaahgra_music_files(&path)?)
+    let flaahgra_music_files = if config.fix_flaaghra_music {
+        if let Some(path) = matches.value_of("trilogy disc path") {
+            Some(extract_flaahgra_music_files(&path)?)
+        } else {
+            None
+        }
     } else {
         None
     };
@@ -211,13 +232,14 @@ fn get_config() -> Result<patches::ParsedConfig, String>
     Ok(patches::ParsedConfig {
         input_iso: input_iso_mmap,
         output_iso: out_iso,
-        pickup_layout, elevator_layout, seed, layout_string,
+        pickup_layout, elevator_layout, seed,
+        layout_string, item_seed,
 
-        profile: Profile::from_json(json_path),
+        door_weights:config.weights,
 
         iso_format,
         skip_hudmenus: matches.is_present("skip hudmenus"),
-        skip_frigate: true,
+        skip_frigate: config.skip_frigate,
         nonvaria_heat_damage: matches.is_present("nonvaria heat damage"),
         staggered_suit_damage: matches.is_present("staggered suit damage"),
         keep_fmvs: matches.is_present("keep attract mode"),
@@ -288,7 +310,6 @@ fn main_inner() -> Result<(), String>
 {
     let config = get_config()?;
     let pn = ProgressNotifier::new(config.quiet);
-    println!("{:?}",&config.profile);
     patches::patch_iso(config, pn)?;
     println!("Done");
     Ok(())

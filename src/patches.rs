@@ -1,5 +1,12 @@
 
-use rand::{ChaChaRng, SeedableRng, Rng, Rand};
+use rand::{
+    ChaChaRng,
+    Isaac64Rng,
+    SeedableRng,
+    Rng,
+    Rand,
+    distributions::{Range,IndependentSample},
+};
 use encoding::{
     all::WINDOWS_1252,
     Encoding,
@@ -16,11 +23,10 @@ use crate::{
     memmap,
     mlvl_wrapper,
     pickup_meta::{self, PickupType},
-    door_meta::{DoorType, DoorLocation},
+    door_meta::{DoorType, DoorLocation, Weights},
     reader_writer,
     patcher::{PatcherState, PrimePatcher},
     structs,
-    profile::Profile,
     GcDiscLookupExtensions,
     ResourceData,
 };
@@ -900,6 +906,33 @@ fn patch_frigate_teleporter<'r>(area: &mut mlvl_wrapper::MlvlArea, spawn_room: S
     Ok(())
 }
 
+fn calculate_door_type(pak_name: &str, mut rng: &mut Isaac64Rng, weights: &Weights) -> DoorType {
+    let range = Range::new(0,100);
+    let weights : &[u8;4] = match pak_name {
+        "Metroid2.pak" => &weights.chozo_ruins,
+        "Metroid3.pak" => &weights.phendrana_drifts,
+        "Metroid4.pak" => &weights.tallon_overworld,
+        "metroid5.pak" => &weights.phazon_mines,
+        "Metroid6.pak" => &weights.magmoor_caverns,
+        "Metroid7.pak" => &[0,0,0,100],
+        _ => &[100,0,0,0]
+    };
+    if weights[0]+weights[1]+weights[2]+weights[3] != 100 { panic!("The sum of all weights for each area must equal exactly 100.") }
+    let num:u8 = range.ind_sample(&mut rng);
+    if num <= weights[0] { DoorType::Blue }
+    else if num > weights[0] && num <= (weights[1]+weights[0]) {
+        DoorType::Purple
+    }
+    else if num > (weights[1]+weights[0]) && num <= (weights[2]+weights[1]+weights[0]) {
+        DoorType::White
+    }
+    else if num > (weights[2]+weights[1]+weights[0]) && num <= (weights[3]+weights[2]+weights[1]+weights[0]) {
+        DoorType::Red
+    } else {
+        panic!("RNG outside the range 0-100.")
+    }
+}
+
 fn patch_door<'r>(
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     door_loc: DoorLocation,
@@ -923,8 +956,7 @@ fn patch_door<'r>(
         .and_then(|obj| obj.property_data.as_damageable_trigger_mut())
         .unwrap();
     door_force.color_txtr = door_type.forcefield_txtr();
-    let power = DoorType::Blue;
-    door_force.damage_vulnerability = power.vulnerability();
+    door_force.damage_vulnerability = door_type.vulnerability();
 
     let door_shield = layer.objects.iter_mut()
         .find(|obj| obj.instance_id == door_loc.door_shield_location.instance_id)
@@ -1913,11 +1945,12 @@ pub struct ParsedConfig
     pub input_iso: memmap::Mmap,
     pub output_iso: File,
     pub layout_string: String,
-    pub profile: Profile,
 
     pub pickup_layout: Vec<u8>,
     pub elevator_layout: Vec<u8>,
-    pub seed: [u32; 16],
+    pub item_seed: [u32;16],
+    pub seed: u64,
+    pub door_weights: Weights,
 
     pub iso_format: IsoFormat,
     pub skip_frigate: bool,
@@ -2070,7 +2103,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         .collect();
     let spawn_room = SpawnRoom::from_room_idx(config.elevator_layout[20] as usize);
 
-    let mut rng = ChaChaRng::from_seed(&config.seed);
+    let mut rng = ChaChaRng::from_seed(&config.item_seed);
     let artifact_totem_strings = build_artifact_temple_totem_scan_strings(pickup_layout, &mut rng);
 
     let mut pickup_resources = collect_pickup_resources(gc_disc);
@@ -2152,6 +2185,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
 
     // Patch pickups and doors
     let mut layout_iterator = pickup_layout.iter();
+    let seed_wrapper = vec!(config.seed);
+    let mut doors_rng = Isaac64Rng::from_seed(&seed_wrapper[..]);
     for (name, rooms) in pickup_meta::PICKUP_LOCATIONS.iter() {
         for room_info in rooms.iter() {
              patcher.add_scly_patch((name.as_bytes(), room_info.room_id), move |_, area| {
@@ -2179,9 +2214,10 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             }
             let iter = room_info.door_locations.iter();
             for &door_location in iter {
+                let door_type = calculate_door_type(name,&mut doors_rng,&config.door_weights);
                 patcher.add_scly_patch(
                     (name.as_bytes(), room_info.room_id),
-                    move |_ps, area| patch_door(area,door_location,DoorType::Red,door_resources)
+                    move |_ps, area| patch_door(area,door_location,door_type,door_resources)
                 );
             }
         }
