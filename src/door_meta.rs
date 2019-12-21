@@ -4,6 +4,7 @@ use structs::structs::{
     ChargedBeams,
     BeamCombos
 };
+use reader_writer::{FourCC};
 
 
 #[derive(Clone, Copy, Debug)]
@@ -51,6 +52,52 @@ impl DoorType {
             DoorType::White =>  0xBE4CD99D,
             DoorType::Red =>    0xFC095F6C,
         }
+    }
+
+    pub fn dependencies(&self) -> &'static [(u32, FourCC)] {
+        match self {
+            DoorType::Blue => {
+                const DATA: &[(u32,FourCC)] = &[
+                    (0x0734977A,FourCC::from_bytes(b"CMDL")),
+                    (0x8A7F3683,FourCC::from_bytes(b"TXTR")),
+                    (0x88ED4593,FourCC::from_bytes(b"TXTR")), //shield texture
+                ];
+                DATA
+            },
+            DoorType::Purple => {
+                const DATA: &[(u32,FourCC)] = &[
+                    (0x33188D1B,FourCC::from_bytes(b"CMDL")),
+                    (0xF68DF7F1,FourCC::from_bytes(b"TXTR")),
+                    (0xAB031EA9,FourCC::from_bytes(b"TXTR")), //shield texture
+                ];
+                DATA
+            },
+            DoorType::White => {
+                const DATA: &[(u32,FourCC)] = &[
+                    (0x59649E9D,FourCC::from_bytes(b"CMDL")),
+                    (0xBE4CD99D,FourCC::from_bytes(b"TXTR")),
+                    (0xF6870C9F,FourCC::from_bytes(b"TXTR")), //shield texture
+                ];
+                DATA
+            },
+            DoorType::Red => {
+                const DATA: &[(u32,FourCC)] = &[
+                    (0xBBBA1EC7,FourCC::from_bytes(b"CMDL")),
+                    (0xFC095F6C,FourCC::from_bytes(b"TXTR")),
+                    (0x61A6945B,FourCC::from_bytes(b"TXTR")), //shield texture
+                ];
+                DATA
+            },
+        }
+    }
+
+    pub fn iter() -> impl Iterator<Item = DoorType> {
+        [
+            DoorType::Blue,
+            DoorType::Purple,
+            DoorType::White,
+            DoorType::Red,
+        ].iter().map(|i| *i)
     }
 
     pub fn vulnerability(&self) -> DamageVulnerability {

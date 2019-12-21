@@ -149,6 +149,39 @@ fn collect_pickup_resources<'r>(gc_disc: &structs::GcDisc<'r>)
     found
 }
 
+// Door assets are not shared across all areas either,
+// so we have to make a cache for them as well.
+fn collect_door_resources<'r>(gc_disc: &structs::GcDisc<'r>)
+    -> HashMap<(u32, FourCC), structs::Resource<'r>>
+{
+    let mut looking_for: HashSet<_> = DoorType::iter()
+        .flat_map(|pt| pt.dependencies().iter().cloned())
+        .collect();
+
+    let mut found = HashMap::with_capacity(looking_for.len());
+
+    for pak_name in pickup_meta::PICKUP_LOCATIONS.iter().map(|(name, _)| name) {
+        let file_entry = gc_disc.find_file(pak_name).unwrap();
+        let pak = match *file_entry.file().unwrap() {
+            structs::FstEntryFile::Pak(ref pak) => Cow::Borrowed(pak),
+            structs::FstEntryFile::Unknown(ref reader) => Cow::Owned(reader.clone().read(())),
+            _ => panic!(),
+        };
+
+
+        for res in pak.resources.iter() {
+            let key = (res.file_id, res.fourcc());
+            if looking_for.remove(&key) {
+                assert!(found.insert(key, res.into_owned()).is_none());
+            }
+        }
+    }
+
+    assert!(looking_for.is_empty());
+
+    found
+}
+
 fn create_suit_icon_cmdl_and_ancs<'r>(
     resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     new_cmdl: u32,
@@ -867,26 +900,39 @@ fn patch_frigate_teleporter<'r>(area: &mut mlvl_wrapper::MlvlArea, spawn_room: S
     Ok(())
 }
 
-fn patch_door<'r>(area: &mut mlvl_wrapper::MlvlArea, door_loc: DoorLocation) -> Result<(), String> {
+fn patch_door<'r>(
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    door_loc: DoorLocation,
+    door_type: DoorType,
+    door_resources:&HashMap<(u32, FourCC), structs::Resource<'r>>,
+) -> Result<(), String> {
+
+    let deps_iter = door_type.dependencies().iter()
+        .map(|&(file_id, fourcc)| structs::Dependency {
+                asset_id: file_id,
+                asset_type: fourcc,
+        });
+
+    area.add_door_dependencies(&door_resources,0,deps_iter);
 
     let scly = area.mrea().scly_section_mut();
     let layer = &mut scly.layers.as_mut_vec()[0];
-    // Let's make them all plasma doors for testing
-    let plasma_type = DoorType::Purple;
 
     let door_force = layer.objects.iter_mut()
         .find(|obj| obj.instance_id == door_loc.door_force_location.instance_id)
         .and_then(|obj| obj.property_data.as_damageable_trigger_mut())
         .unwrap();
-    door_force.color_txtr = plasma_type.forcefield_txtr();
-    door_force.damage_vulnerability = plasma_type.vulnerability();
+    door_force.color_txtr = door_type.forcefield_txtr();
+    let power = DoorType::Blue;
+    door_force.damage_vulnerability = power.vulnerability();
 
     let door_shield = layer.objects.iter_mut()
         .find(|obj| obj.instance_id == door_loc.door_shield_location.instance_id)
         .and_then(|obj| obj.property_data.as_actor_mut())
         .unwrap();
 
-    door_shield.cmdl = plasma_type.shield_cmdl();
+    door_shield.cmdl = door_type.shield_cmdl();
+
     Ok(())
 }
 
@@ -2028,6 +2074,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
     let artifact_totem_strings = build_artifact_temple_totem_scan_strings(pickup_layout, &mut rng);
 
     let mut pickup_resources = collect_pickup_resources(gc_disc);
+    let mut door_resources = collect_door_resources(gc_disc);
     if config.skip_hudmenus {
         add_skip_hudmemos_strgs(&mut pickup_resources);
     }
@@ -2041,6 +2088,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
 
 
     let pickup_resources = &pickup_resources;
+    let door_resources = &door_resources;
     let mut patcher = PrimePatcher::new();
     patcher.add_file_patch(b"opening.bnr", |file| patch_bnr(file, config));
     if !config.keep_fmvs {
@@ -2133,7 +2181,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             for &door_location in iter {
                 patcher.add_scly_patch(
                     (name.as_bytes(), room_info.room_id),
-                    move |_ps, area| patch_door(area,door_location)
+                    move |_ps, area| patch_door(area,door_location,DoorType::Red,door_resources)
                 );
             }
         }
