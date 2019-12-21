@@ -439,7 +439,8 @@ fn extract_door_location<'r>(
 
     let shield = search_for_scly_object(&obj.connections, &scly_db,
         |obj| obj.property_data.as_actor()
-            .map(|sh| sh.name.to_str().unwrap() == "Actor_DoorShield-component")
+            .map(|sh| sh.name.to_str().unwrap().starts_with("Actor_DoorShield") &&
+                !sh.name.to_str().unwrap().contains("Key"))
             .unwrap_or(false),
         ).unwrap();
     let unlock_shield_loc = ScriptObjectLocation {
@@ -459,7 +460,7 @@ fn extract_door_location<'r>(
 
     let key_shield = search_for_scly_object(&obj.connections, &scly_db,
         |obj| obj.property_data.as_actor()
-            .map(|sh| sh.name.to_str().unwrap() == "Actor_DoorShield_Key-component")
+            .map(|sh| sh.name.to_str().unwrap().starts_with("Actor_DoorShield_Key"))
             .unwrap_or(false),
         );
     let key_shield_loc = match key_shield {
