@@ -227,6 +227,10 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         description: Some(String::from("Metroid Prime, but door colors have been randomized")),
     });
 
+    let mpdr_version = "MPDR Prototype 1 (v0.1)";
+    let mut comment_message:String = "Generated with ".to_owned();
+    comment_message.push_str(mpdr_version);
+
     let parsed_config = patches::ParsedConfig {
         input_iso, output_iso,
         pickup_layout, elevator_layout, seed,
@@ -236,7 +240,7 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
 
         iso_format: patches::IsoFormat::Iso,
         skip_frigate: config.skip_frigate,
-        skip_hudmenus: true,
+        skip_hudmenus: false,
         nonvaria_heat_damage: true,
         staggered_suit_damage: true,
         keep_fmvs: false,
@@ -249,9 +253,9 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
 
         flaahgra_music_files,
 
-        starting_items: Some(1),
-        comment: String::from("What to comment"),
-        main_menu_message: String::from("Main menu message"),
+        starting_items: Some(0x20300001),
+        comment: comment_message,
+        main_menu_message: String::from(mpdr_version),
 
         quickplay: false,
 
