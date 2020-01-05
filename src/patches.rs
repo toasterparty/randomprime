@@ -1584,7 +1584,7 @@ fn patch_starting_pickups(
             spawn_point.energy_tanks = fetch_bits(4);
             print_maybe!(first, "    energy_tanks: {}", spawn_point.energy_tanks);
 
-            spawn_point.power_bombs = fetch_bits(3);
+            spawn_point.power_bombs = fetch_bits(4);
             print_maybe!(first, "    power_bombs: {}", spawn_point.power_bombs);
 
             spawn_point.wave = fetch_bits(1);
