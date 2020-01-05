@@ -27,14 +27,25 @@ struct ConfigBanner
 }
 
 #[derive(Deserialize)]
+struct PatchConfig {
+    skip_frigate: bool,
+    skip_crater: bool,
+    fix_flaaghra_music: bool,
+    trilogy_iso: Option<String>,
+    varia_heat_protection: bool,
+    stagger_suit_damage: bool,
+    skip_hudmemos: bool,
+}
+
+#[derive(Deserialize)]
 struct Config {
+    mpdrp_version: f32,
     input_iso: String,
     output_iso: String,
     seed: u64,
-    weights: Weights,
-    skip_frigate: bool,
-    fix_flaaghra_music: bool,
-    trilogy_disc_path: Option<String>,
+    door_weights: Weights,
+    patch_settings: PatchConfig,
+    starting_pickups: u64,
 }
 
 /*
@@ -206,8 +217,8 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
     let (pickup_layout, elevator_layout, item_seed) = crate::parse_layout(&layout_string)?;
     let seed = config.seed;
 
-    let flaahgra_music_files = if config.fix_flaaghra_music {
-        if let Some(path) = &config.trilogy_disc_path {
+    let flaahgra_music_files = if config.patch_settings.fix_flaaghra_music {
+        if let Some(path) = &config.patch_settings.trilogy_iso {
             Some(crate::extract_flaahgra_music_files(&path)?)
         } else {
             None
@@ -227,33 +238,33 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         description: Some(String::from("Metroid Prime, but door colors have been randomized")),
     });
 
-    let mpdr_version = "MPDR Prototype 1 (v0.1)";
+    let mpdr_version = "MPDR (QT version) v0.1";
     let mut comment_message:String = "Generated with ".to_owned();
     comment_message.push_str(mpdr_version);
 
     let parsed_config = patches::ParsedConfig {
         input_iso, output_iso,
         pickup_layout, elevator_layout, seed,
-        item_seed,door_weights:config.weights,
+        item_seed,door_weights:config.door_weights,
 
         layout_string,
 
         iso_format: patches::IsoFormat::Iso,
-        skip_frigate: config.skip_frigate,
-        skip_hudmenus: false,
-        nonvaria_heat_damage: true,
-        staggered_suit_damage: true,
+        skip_frigate: config.patch_settings.skip_frigate,
+        skip_hudmenus: config.patch_settings.skip_hudmemos,
+        nonvaria_heat_damage: config.patch_settings.varia_heat_protection,
+        staggered_suit_damage: config.patch_settings.stagger_suit_damage,
         keep_fmvs: false,
         obfuscate_items: false,
         auto_enabled_elevators: false,
         quiet: false,
 
-        skip_impact_crater: false,
+        skip_impact_crater: config.patch_settings.skip_crater,
         artifact_hint_behavior: patches::ArtifactHintBehavior::Default,
 
         flaahgra_music_files,
 
-        starting_items: Some(0x20300001),
+        starting_items: Some(config.starting_pickups),
         comment: comment_message,
         main_menu_message: String::from(mpdr_version),
 
