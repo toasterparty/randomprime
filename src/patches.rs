@@ -2107,7 +2107,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
     let artifact_totem_strings = build_artifact_temple_totem_scan_strings(pickup_layout, &mut rng);
 
     let mut pickup_resources = collect_pickup_resources(gc_disc);
-    let mut door_resources = collect_door_resources(gc_disc);
+    let door_resources = collect_door_resources(gc_disc);
     if config.skip_hudmenus {
         add_skip_hudmemos_strgs(&mut pickup_resources);
     }

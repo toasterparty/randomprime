@@ -216,7 +216,7 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         None
     };
 
-    let mut config = config;
+    let config = config;
 
     let mut banner = Some(ConfigBanner {
         game_name: Some(String::from("Metroid Prime")),

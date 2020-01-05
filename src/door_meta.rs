@@ -17,14 +17,9 @@ pub struct DoorLocation {
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 enum TypeVulnerability {
-    DoubleDamage = 0x0,
     Normal = 0x1,
     Reflect = 0x2,
     Immune = 0x3,
-    PassThrough = 0x4,
-    DirectDouble = 0x5,
-    DirectNormal = 0x6,
-    DirectImmune = 0x7,
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
