@@ -12,7 +12,8 @@ use serde_derive::{Serialize,Deserialize};
 pub struct DoorLocation {
     pub door_location: ScriptObjectLocation,
     pub door_force_location: ScriptObjectLocation,
-    pub door_shield_location: ScriptObjectLocation
+    pub door_shield_location: ScriptObjectLocation,
+    pub dock_number: u32,
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -37,6 +38,27 @@ pub struct Weights {
     pub magmoor_caverns: [u8;4],
     pub phendrana_drifts: [u8;4],
     pub phazon_mines: [u8;4]
+}
+
+pub enum World {
+    TallonOverworld,
+    ChozoRuins,
+    MagmoorCaverns,
+    PhendranaDrifts,
+    PhazonMines
+}
+
+impl World {
+    pub fn from_pak(pak_str:&str) -> Option<Self> {
+        match pak_str {
+            "Metroid2.pak" => Some(World::ChozoRuins),
+            "Metroid3.pak" => Some(World::PhendranaDrifts),
+            "Metroid4.pak" => Some(World::TallonOverworld),
+            "metroid5.pak" => Some(World::PhazonMines),
+            "Metroid6.pak" => Some(World::MagmoorCaverns),
+            _ => None
+        }
+    }
 }
 
 impl DoorType {

@@ -3,11 +3,12 @@ use serde_derive::{Serialize, Deserialize};
 
 use crate::{
     patches,
-    door_meta::Weights,
+    door_meta::{Weights}
 };
 
 use std::{
     cell::Cell,
+    collections::HashMap,
     ffi::{CStr, CString},
     fs::{File, OpenOptions},
     panic,
@@ -39,13 +40,13 @@ struct PatchConfig {
 
 #[derive(Deserialize)]
 struct Config {
-    mpdrp_version: f32,
     input_iso: String,
     output_iso: String,
     seed: u64,
     door_weights: Weights,
     patch_settings: PatchConfig,
     starting_pickups: u64,
+    excluded_doors: [HashMap<String,Vec<bool>>;5],
 }
 
 /*
@@ -238,7 +239,7 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         description: Some(String::from("Metroid Prime, but door colors have been randomized")),
     });
 
-    let mpdr_version = "MPDR (QT version) v0.1";
+    let mpdr_version = "MPDR v0.2";
     let mut comment_message:String = "Generated with ".to_owned();
     comment_message.push_str(mpdr_version);
 
@@ -246,6 +247,7 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         input_iso, output_iso,
         pickup_layout, elevator_layout, seed,
         item_seed,door_weights:config.door_weights,
+        excluded_doors:config.excluded_doors,
 
         layout_string,
 

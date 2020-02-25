@@ -23,7 +23,7 @@ use crate::{
     memmap,
     mlvl_wrapper,
     pickup_meta::{self, PickupType},
-    door_meta::{DoorType, DoorLocation, Weights},
+    door_meta::{DoorType, DoorLocation, Weights, World},
     reader_writer,
     patcher::{PatcherState, PrimePatcher},
     structs,
@@ -1951,6 +1951,7 @@ pub struct ParsedConfig
     pub item_seed: [u32;16],
     pub seed: u64,
     pub door_weights: Weights,
+    pub excluded_doors: [HashMap<String,Vec<bool>>;5],
 
     pub iso_format: IsoFormat,
     pub skip_frigate: bool,
@@ -2215,10 +2216,13 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             let iter = room_info.door_locations.iter();
             for &door_location in iter {
                 let door_type = calculate_door_type(name,&mut doors_rng,&config.door_weights);
-                patcher.add_scly_patch(
-                    (name.as_bytes(), room_info.room_id),
-                    move |_ps, area| patch_door(area,door_location,door_type,door_resources)
-                );
+                let world = World::from_pak(name).unwrap();
+                if !config.excluded_doors[world as usize][room_info.name][door_location.dock_number as usize] {
+                    patcher.add_scly_patch(
+                        (name.as_bytes(), room_info.room_id),
+                        move |_ps, area| patch_door(area,door_location,door_type,door_resources)
+                    );
+                }
             }
         }
     }
