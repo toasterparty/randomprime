@@ -5,7 +5,7 @@ use structs::structs::{
     BeamCombos
 };
 use reader_writer::{FourCC};
-use serde_derive::{Serialize,Deserialize};
+use serde::{Serialize, Deserialize};
 
 
 #[derive(Clone, Copy, Debug)]

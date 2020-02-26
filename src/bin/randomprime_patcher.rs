@@ -18,7 +18,7 @@ use std::{
     process::Command,
 };
 
-use serde_derive::Deserialize;
+use serde::{Deserialize};
 
 
 struct ProgressNotifier
