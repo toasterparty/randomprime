@@ -32,7 +32,8 @@ pub struct PickupLocation
 pub struct DoorLocation {
     door_location: ScriptObjectLocation,
     door_force_location: ScriptObjectLocation,
-    door_shield_location: ScriptObjectLocation
+    door_shield_location: ScriptObjectLocation,
+    dock_number: u32,
 }
 
 struct ResourceDb<'r>
@@ -484,11 +485,15 @@ fn extract_door_location<'r>(
         None => None,
     };
 
+    let dock = search_for_scly_object(&obj.connections, &scly_db,
+        |obj| obj.property_data.is_dock()).unwrap();
+
     let key_door_location:Option<DoorLocation> = if !key_shield_loc.is_none() && !key_force_loc.is_none() {
         Some(DoorLocation {
             door_location: obj_location,
             door_force_location: key_force_loc.unwrap(),
             door_shield_location: key_shield_loc.unwrap(),
+            dock_number: dock.property_data.as_dock().unwrap().dock_number,
         })
     } else {
         None
@@ -497,7 +502,8 @@ fn extract_door_location<'r>(
     (Some(DoorLocation {
         door_location: obj_location,
         door_force_location: unlock_force_loc,
-        door_shield_location: unlock_shield_loc
+        door_shield_location: unlock_shield_loc,
+        dock_number: dock.property_data.as_dock().unwrap().dock_number,
     }),key_door_location)
 }
 
@@ -1065,6 +1071,7 @@ fn main()
                 println!("                    door_location: {:?},", door.door_location);
                 println!("                    door_force_location: {:?},", door.door_force_location);
                 println!("                    door_shield_location: {:?},", door.door_shield_location);
+                println!("                    dock_number: {},", door.dock_number);
                 println!("                }},");
             }
             println!("            ],");

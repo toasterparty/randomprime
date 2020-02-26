@@ -11,6 +11,7 @@ use randomprime::{
 };
 
 use std::{
+    collections::HashMap,
     fs::{File, OpenOptions},
     fs,
     panic,
@@ -83,6 +84,7 @@ struct Config {
     skip_frigate: bool,
     fix_flaaghra_music: bool,
     trilogy_disc_path: Option<String>,
+    excluded_doors: [HashMap<String,Vec<bool>>;5],
 }
 
 
@@ -236,6 +238,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         layout_string, item_seed,
 
         door_weights:config.weights,
+        excluded_doors:config.excluded_doors,
 
         iso_format,
         skip_hudmenus: matches.is_present("skip hudmenus"),
