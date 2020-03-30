@@ -939,6 +939,7 @@ fn patch_door<'r>(
     door_loc: DoorLocation,
     door_type: DoorType,
     door_resources:&HashMap<(u32, FourCC), structs::Resource<'r>>,
+    lockpick: bool,
 ) -> Result<(), String> {
 
     let deps_iter = door_type.dependencies().iter()
@@ -958,6 +959,10 @@ fn patch_door<'r>(
         .unwrap();
     door_force.color_txtr = door_type.forcefield_txtr();
     door_force.damage_vulnerability = door_type.vulnerability();
+
+    if lockpick {
+        door_force.damage_vulnerability.power_bomb = 0x1 as u32;
+    }
 
     let door_shield = layer.objects.iter_mut()
         .find(|obj| obj.instance_id == door_loc.door_shield_location.instance_id)
@@ -1970,6 +1975,7 @@ pub struct ParsedConfig
     pub nonvaria_heat_damage: bool,
     pub staggered_suit_damage: bool,
     pub auto_enabled_elevators: bool,
+    pub powerbomb_lockpick: bool,
     pub quiet: bool,
 
     pub skip_impact_crater: bool,
@@ -2229,7 +2235,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                 if !config.excluded_doors[world as usize][room_info.name][door_location.dock_number as usize] {
                     patcher.add_scly_patch(
                         (name.as_bytes(), room_info.room_id),
-                        move |_ps, area| patch_door(area,door_location,door_type,door_resources)
+                        move |_ps, area| patch_door(area,door_location,door_type,door_resources,config.powerbomb_lockpick)
                     );
                 }
             }

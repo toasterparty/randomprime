@@ -36,6 +36,7 @@ struct PatchConfig {
     varia_heat_protection: bool,
     stagger_suit_damage: bool,
     skip_hudmemos: bool,
+    powerbomb_lockpick: bool,
 }
 
 #[derive(Deserialize)]
@@ -239,7 +240,7 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         description: Some(String::from("Metroid Prime, but door colors have been randomized")),
     });
 
-    let mpdr_version = "MPDR v0.2";
+    let mpdr_version = "MPDR v0.2.1";
     let mut comment_message:String = "Generated with ".to_owned();
     comment_message.push_str(mpdr_version);
 
@@ -256,6 +257,7 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         skip_hudmenus: config.patch_settings.skip_hudmemos,
         nonvaria_heat_damage: config.patch_settings.varia_heat_protection,
         staggered_suit_damage: config.patch_settings.stagger_suit_damage,
+        powerbomb_lockpick: config.patch_settings.powerbomb_lockpick,
         keep_fmvs: false,
         obfuscate_items: false,
         auto_enabled_elevators: false,

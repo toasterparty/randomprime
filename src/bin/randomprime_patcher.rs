@@ -85,6 +85,7 @@ struct Config {
     fix_flaaghra_music: bool,
     trilogy_disc_path: Option<String>,
     excluded_doors: [HashMap<String,Vec<bool>>;5],
+    powerbomb_lockpick: bool,
 }
 
 
@@ -248,6 +249,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         keep_fmvs: matches.is_present("keep attract mode"),
         obfuscate_items: matches.is_present("obfuscate items"),
         auto_enabled_elevators: matches.is_present("auto enabled elevators"),
+        powerbomb_lockpick: config.powerbomb_lockpick,
         quiet: matches.is_present("quiet"),
 
         skip_impact_crater,
