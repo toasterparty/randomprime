@@ -964,12 +964,13 @@ fn patch_door<'r>(
         door_force.damage_vulnerability.power_bomb = 0x1 as u32;
     }
 
-    let door_shield = layer.objects.iter_mut()
-        .find(|obj| obj.instance_id == door_loc.door_shield_location.instance_id)
-        .and_then(|obj| obj.property_data.as_actor_mut())
-        .unwrap();
-
-    door_shield.cmdl = door_type.shield_cmdl();
+    if door_loc.door_shield_location.is_some() {
+        let door_shield = layer.objects.iter_mut()
+            .find(|obj| obj.instance_id == door_loc.door_shield_location.unwrap().instance_id)
+            .and_then(|obj| obj.property_data.as_actor_mut())
+            .unwrap();
+        door_shield.cmdl = door_type.shield_cmdl();
+    }
 
     Ok(())
 }
@@ -2232,7 +2233,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             for &door_location in iter {
                 let door_type = calculate_door_type(name,&mut doors_rng,&config.door_weights);
                 let world = World::from_pak(name).unwrap();
-                if !config.excluded_doors[world as usize][room_info.name][door_location.dock_number as usize] {
+                if door_location.dock_number.is_none() { continue; }
+                if !config.excluded_doors[world as usize][room_info.name][door_location.dock_number.unwrap() as usize] {
                     patcher.add_scly_patch(
                         (name.as_bytes(), room_info.room_id),
                         move |_ps, area| patch_door(area,door_location,door_type,door_resources,config.powerbomb_lockpick)

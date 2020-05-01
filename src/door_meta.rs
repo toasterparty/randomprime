@@ -12,8 +12,8 @@ use serde::{Serialize, Deserialize};
 pub struct DoorLocation {
     pub door_location: ScriptObjectLocation,
     pub door_force_location: ScriptObjectLocation,
-    pub door_shield_location: ScriptObjectLocation,
-    pub dock_number: u32,
+    pub door_shield_location: Option<ScriptObjectLocation>,
+    pub dock_number: Option<u32>,
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]

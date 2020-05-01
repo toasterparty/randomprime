@@ -32,8 +32,8 @@ pub struct PickupLocation
 pub struct DoorLocation {
     door_location: ScriptObjectLocation,
     door_force_location: ScriptObjectLocation,
-    door_shield_location: ScriptObjectLocation,
-    dock_number: u32,
+    door_shield_location: Option<ScriptObjectLocation>,
+    dock_number: Option<u32>,
 }
 
 struct ResourceDb<'r>
@@ -443,11 +443,14 @@ fn extract_door_location<'r>(
             .map(|sh| sh.name.to_str().unwrap().starts_with("Actor_DoorShield") &&
                 !sh.name.to_str().unwrap().contains("Key"))
             .unwrap_or(false),
-        ).unwrap();
-    let unlock_shield_loc = ScriptObjectLocation {
+        );
+    let unlock_shield_loc = match shield {
+        Some(shield) => Some(ScriptObjectLocation {
             layer: scly_db[&shield.instance_id].0 as u32,
             instance_id: shield.instance_id,
-        };
+        }),
+        None => None,
+    };
 
     let forceunlock = search_for_scly_object(&obj.connections, &scly_db,
         |obj| obj.property_data.as_damageable_trigger()
@@ -486,14 +489,21 @@ fn extract_door_location<'r>(
     };
 
     let dock = search_for_scly_object(&obj.connections, &scly_db,
-        |obj| obj.property_data.is_dock()).unwrap();
+        |obj| obj.property_data.is_dock());
+
+    let dock_number = match dock {
+        Some(dock) => Some(dock.property_data.as_dock().unwrap().dock_number),
+        //Handle the doors in Main Ventilation Shaft B
+        None => if obj_location.instance_id == 0x150062 { Some(3) }
+                else if obj_location.instance_id == 0x150066 { Some(2) } else { None }
+    };
 
     let key_door_location:Option<DoorLocation> = if !key_shield_loc.is_none() && !key_force_loc.is_none() {
         Some(DoorLocation {
             door_location: obj_location,
             door_force_location: key_force_loc.unwrap(),
-            door_shield_location: key_shield_loc.unwrap(),
-            dock_number: dock.property_data.as_dock().unwrap().dock_number,
+            door_shield_location: key_shield_loc,
+            dock_number,
         })
     } else {
         None
@@ -503,7 +513,7 @@ fn extract_door_location<'r>(
         door_location: obj_location,
         door_force_location: unlock_force_loc,
         door_shield_location: unlock_shield_loc,
-        dock_number: dock.property_data.as_dock().unwrap().dock_number,
+        dock_number,
     }),key_door_location)
 }
 
@@ -924,9 +934,8 @@ fn main()
                     } else {
                         continue
                     };
-                    // Skip all doors that aren't hexagonal
-                    // (TODO: Add support for ventilation system doors?)
-                    if door.ancs.file_id !=0x26886945 { continue; };
+                    // Skip all doors that aren't openable.
+                    if door.ancs.file_id !=0x26886945 && door.ancs.file_id !=0xFAFB5784 { continue; };
                     let obj_loc = ScriptObjectLocation {
                         instance_id: obj.instance_id,
                         layer: layer_num as u32,
@@ -1071,7 +1080,7 @@ fn main()
                 println!("                    door_location: {:?},", door.door_location);
                 println!("                    door_force_location: {:?},", door.door_force_location);
                 println!("                    door_shield_location: {:?},", door.door_shield_location);
-                println!("                    dock_number: {},", door.dock_number);
+                println!("                    dock_number: {:?},", door.dock_number);
                 println!("                }},");
             }
             println!("            ],");
