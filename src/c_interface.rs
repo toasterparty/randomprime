@@ -37,6 +37,7 @@ struct PatchConfig {
     stagger_suit_damage: bool,
     skip_hudmemos: bool,
     powerbomb_lockpick: bool,
+    enable_one_way_doors: bool,
 }
 
 #[derive(Deserialize)]
@@ -266,7 +267,7 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         quiet: false,
 
         skip_impact_crater: config.patch_settings.skip_crater,
-        enable_vault_ledge_door: false,
+        enable_vault_ledge_door: config.patch_settings.enable_one_way_doors,
         artifact_hint_behavior: patches::ArtifactHintBehavior::default(),
 
         flaahgra_music_files,

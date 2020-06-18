@@ -1423,8 +1423,12 @@ fn patch_main_ventilation_shaft_section_b_door<'r>(
     Ok(())
 }
 
-fn make_main_plaza_locked_door_two_ways(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
-    -> Result<(), String>
+fn make_main_plaza_locked_door_two_ways(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    mut rng: &mut StdRng,
+    config: &ParsedConfig
+) -> Result<(), String>
 {
     let scly = area.mrea().scly_section_mut();
     let layer = &mut scly.layers.as_mut_vec()[0];
@@ -1721,6 +1725,29 @@ fn make_main_plaza_locked_door_two_ways(_ps: &mut PatcherState, area: &mut mlvl_
     locked_door.ancs.file_id = 0x26886945; // newmetroiddoor.ANCS
     locked_door.ancs.unknown = 2;
     locked_door.projectiles_collide = 0;
+
+    if !config.excluded_doors[World::ChozoRuins as usize]["Main Plaza"][4] {
+        let door_type = calculate_door_type("Metroid2.pak",&mut rng,&config.door_weights);
+
+        let door_force = layer.objects.as_mut_vec().iter_mut()
+            .find(|obj| obj.instance_id == trigger_doorunlock_id)
+            .and_then(|obj| obj.property_data.as_damageable_trigger_mut())
+            .unwrap();
+        door_force.color_txtr = door_type.forcefield_txtr();
+        door_force.damage_vulnerability = door_type.vulnerability();
+
+        if door_type!= DoorType::Blue && !config.powerbomb_lockpick {
+            door_force.damage_vulnerability.power_bomb = 2;
+        } else {
+            door_force.damage_vulnerability.power_bomb = 1;
+        }
+
+        let door_shield = layer.objects.as_mut_vec().iter_mut()
+            .find(|obj| obj.instance_id == actor_doorshield_id)
+            .and_then(|obj| obj.property_data.as_actor_mut())
+            .unwrap();
+        door_shield.cmdl = door_type.shield_cmdl();
+    }
 
     let trigger_remove_scan_target_locked_door_and_etank = layer.objects.as_mut_vec().iter_mut()
         .find(|obj| obj.instance_id == trigger_remove_scan_target_locked_door_id)
@@ -3011,7 +3038,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
     if config.enable_vault_ledge_door {
         patcher.add_scly_patch(
             resource_info!("01_mainplaza.MREA").into(),
-            make_main_plaza_locked_door_two_ways
+            move |ps,area| make_main_plaza_locked_door_two_ways(ps,area, &mut door_rng,&config)
         );
     }
 
