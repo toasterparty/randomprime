@@ -242,7 +242,7 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         description: Some(String::from("Metroid Prime, but door colors have been randomized")),
     });
 
-    let mpdr_version = "MPDR v0.2.1";
+    let mpdr_version = "MPDR v0.3";
     let mut comment_message:String = "Generated with ".to_owned();
     comment_message.push_str(mpdr_version);
 
@@ -265,9 +265,9 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         auto_enabled_elevators: false,
         quiet: false,
 
-        skip_impact_crater: config.skip_impact_crater,
-        enable_vault_ledge_door: config.enable_vault_ledge_door,
-        artifact_hint_behavior: config.artifact_hint_behavior,
+        skip_impact_crater: config.patch_settings.skip_crater,
+        enable_vault_ledge_door: false,
+        artifact_hint_behavior: patches::ArtifactHintBehavior::default(),
 
         flaahgra_music_files,
 
@@ -280,9 +280,9 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         bnr_game_name: banner.as_mut().and_then(|b| b.game_name.take()),
         bnr_developer: banner.as_mut().and_then(|b| b.developer.take()),
 
-        bnr_game_name_full: config.banner.as_mut().and_then(|b| b.game_name_full.take()),
-        bnr_developer_full: config.banner.as_mut().and_then(|b| b.developer_full.take()),
-        bnr_description: config.banner.as_mut().and_then(|b| b.description.take()),
+        bnr_game_name_full: banner.as_mut().and_then(|b| b.game_name_full.take()),
+        bnr_developer_full: banner.as_mut().and_then(|b| b.developer_full.take()),
+        bnr_description: banner.as_mut().and_then(|b| b.description.take()),
 
         pal_override: false,
     };

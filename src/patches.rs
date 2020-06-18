@@ -4,6 +4,7 @@ use rand::{
     seq::SliceRandom,
     SeedableRng,
     Rng,
+    distributions::{Distribution,Uniform},
 };
 use encoding::{
     all::WINDOWS_1252,
@@ -1028,8 +1029,8 @@ fn patch_frigate_teleporter<'r>(area: &mut mlvl_wrapper::MlvlArea, spawn_room: S
     Ok(())
 }
 
-fn calculate_door_type(pak_name: &str, mut rng: &mut Isaac64Rng, weights: &Weights) -> DoorType {
-    let range = Range::new(0,100);
+fn calculate_door_type(pak_name: &str, mut rng: &mut StdRng, weights: &Weights) -> DoorType {
+    let range = Uniform::from(0..=100);
     let weights : &[u8;4] = match pak_name {
         "Metroid2.pak" => &weights.chozo_ruins,
         "Metroid3.pak" => &weights.phendrana_drifts,
@@ -1040,7 +1041,7 @@ fn calculate_door_type(pak_name: &str, mut rng: &mut Isaac64Rng, weights: &Weigh
         _ => &[100,0,0,0]
     };
     if weights[0]+weights[1]+weights[2]+weights[3] != 100 { panic!("The sum of all weights for each area must equal exactly 100.") }
-    let num:u8 = range.ind_sample(&mut rng);
+    let num:u8 = range.sample(&mut rng);
     if num <= weights[0] { DoorType::Blue }
     else if num > weights[0] && num <= (weights[1]+weights[0]) {
         DoorType::Purple
@@ -1719,7 +1720,7 @@ fn make_main_plaza_locked_door_two_ways(_ps: &mut PatcherState, area: &mut mlvl_
         .unwrap();
     locked_door.ancs.file_id = 0x26886945; // newmetroiddoor.ANCS
     locked_door.ancs.unknown = 2;
-    locked_door.unknown0 = 0;
+    locked_door.projectiles_collide = 0;
 
     let trigger_remove_scan_target_locked_door_and_etank = layer.objects.as_mut_vec().iter_mut()
         .find(|obj| obj.instance_id == trigger_remove_scan_target_locked_door_id)
@@ -2522,7 +2523,7 @@ pub struct ParsedConfig
 
     pub pickup_layout: Vec<u8>,
     pub elevator_layout: Vec<u8>,
-    pub item_seed: [u32;16],
+    pub item_seed: u64,
     pub seed: u64,
     pub door_weights: Weights,
     pub excluded_doors: [HashMap<String,Vec<bool>>;5],
@@ -2762,8 +2763,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
 
     // Patch pickups and doors
     let mut layout_iterator = pickup_layout.iter();
-    let seed_wrapper = vec!(config.seed);
-    let mut doors_rng = Isaac64Rng::from_seed(&seed_wrapper[..]);
+    let mut door_rng = StdRng::seed_from_u64(config.seed);
     for (name, rooms) in pickup_meta::PICKUP_LOCATIONS.iter() {
         for room_info in rooms.iter() {
              patcher.add_scly_patch((name.as_bytes(), room_info.room_id), move |_, area| {
@@ -2799,7 +2799,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             }
             let iter = room_info.door_locations.iter();
             for &door_location in iter {
-                let door_type = calculate_door_type(name,&mut doors_rng,&config.door_weights);
+                let door_type = calculate_door_type(name,&mut door_rng,&config.door_weights);
                 let world = World::from_pak(name).unwrap();
                 if door_location.dock_number.is_none() { continue; }
                 if !config.excluded_doors[world as usize][room_info.name][door_location.dock_number.unwrap() as usize] {
