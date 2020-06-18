@@ -7,15 +7,19 @@ pub use memmap;
 use reader_writer::{
     LCow,
     Reader,
-    num::{BigUint, Integer, ToPrimitive},
 };
 
+
 use flate2::{Decompress, FlushDecompress};
-use sha2::{Digest, Sha512};
+use num_bigint::BigUint;
+use num_integer::Integer;
+use num_traits::ToPrimitive;
 
 use std::{
     borrow::Cow,
+    collections::hash_map::DefaultHasher,
     ffi::{CStr, CString},
+    hash::Hasher,
     iter,
 };
 
@@ -235,7 +239,7 @@ pub fn parse_layout_chars_to_ints<I>(bytes: &[u8], layout_data_size: usize, chec
 }
 
 
-pub fn parse_layout(text: &str) -> Result<(Vec<u8>, Vec<u8>, [u32; 16]), String>
+pub fn parse_layout(text: &str) -> Result<(Vec<u8>, Vec<u8>, u64), String>
 {
     if !text.is_ascii() {
         return Err("Layout string contains non-ascii characters.".to_string());
@@ -262,17 +266,12 @@ pub fn parse_layout(text: &str) -> Result<(Vec<u8>, Vec<u8>, [u32; 16]), String>
         return Err("Layout string should be exactly 87 characters".to_string());
     }
 
-    let mut seed_hasher = Sha512::default();
-    seed_hasher.input(elevator_bytes);
-    seed_hasher.input(pickup_bytes);
-    let seed_data = seed_hasher.result();
-    let mut seed_reader = Reader::new(&seed_data);
-    let seed = [
-        seed_reader.read(()), seed_reader.read(()), seed_reader.read(()), seed_reader.read(()),
-        seed_reader.read(()), seed_reader.read(()), seed_reader.read(()), seed_reader.read(()),
-        seed_reader.read(()), seed_reader.read(()), seed_reader.read(()), seed_reader.read(()),
-        seed_reader.read(()), seed_reader.read(()), seed_reader.read(()), seed_reader.read(()),
-    ];
+    // XXX The distribution on this hash probably isn't very good, but we don't use it for anything
+    //     particularly important anyway...
+    let mut hasher = DefaultHasher::new();
+    hasher.write(elevator_bytes);
+    hasher.write(pickup_bytes);
+    let seed = hasher.finish();
 
     let pickup_layout = parse_layout_chars_to_ints(
             pickup_bytes,
@@ -364,8 +363,18 @@ pub mod custom_asset_ids {
         SCAN_VISOR_ACQUIRED_HUDMEMO_STRG,
         SCAN_VISOR_SCAN_STRG,
         SCAN_VISOR_SCAN,
+        SHINY_MISSILE_TXTR0,
+        SHINY_MISSILE_TXTR1,
+        SHINY_MISSILE_TXTR2,
+        SHINY_MISSILE_CMDL,
+        SHINY_MISSILE_ANCS,
+        SHINY_MISSILE_EVNT,
+        SHINY_MISSILE_ANIM,
+        SHINY_MISSILE_ACQUIRED_HUDMEMO_STRG,
+        SHINY_MISSILE_SCAN_STRG,
+        SHINY_MISSILE_SCAN,
 
         SKIP_HUDMEMO_STRG_START,
-        SKIP_HUDMEMO_STRG_END = SKIP_HUDMEMO_STRG_START + 37,
+        SKIP_HUDMEMO_STRG_END = SKIP_HUDMEMO_STRG_START + 38,
     }
 }

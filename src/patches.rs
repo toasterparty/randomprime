@@ -1,11 +1,9 @@
 
 use rand::{
-    ChaChaRng,
-    Isaac64Rng,
+    rngs::StdRng,
+    seq::SliceRandom,
     SeedableRng,
     Rng,
-    Rand,
-    distributions::{Range,IndependentSample},
 };
 use encoding::{
     all::WINDOWS_1252,
@@ -31,8 +29,7 @@ use crate::{
     ResourceData,
 };
 
-use dol_symbol_table::mp1_symbol;
-use resource_info_table::{resource_info, ResourceInfo};
+use generated::{mp1_symbol, resource_info, ResourceInfo};
 use ppcasm::ppcasm;
 
 use reader_writer::{
@@ -144,6 +141,18 @@ fn collect_pickup_resources<'r>(gc_disc: &structs::GcDisc<'r>)
             "&just=center;Scan Visor acquired!\0".to_owned(),
         ])),
     ));
+    new_assets.extend_from_slice(&create_item_scan_strg_pair(
+        custom_asset_ids::SHINY_MISSILE_SCAN,
+        custom_asset_ids::SHINY_MISSILE_SCAN_STRG,
+        "Shiny Missile\0",
+    ));
+    new_assets.extend_from_slice(&create_shiny_missile_assets(&found));
+    new_assets.push(pickup_meta::build_resource(
+        custom_asset_ids::SHINY_MISSILE_ACQUIRED_HUDMEMO_STRG,
+        structs::ResourceKind::Strg(structs::Strg::from_strings(vec![
+            "&just=center;Shiny Missile acquired!\0".to_owned(),
+        ])),
+    ));
     for res in new_assets {
         let key = (res.file_id, res.fourcc());
         if looking_for.remove(&key) {
@@ -191,8 +200,8 @@ fn collect_door_resources<'r>(gc_disc: &structs::GcDisc<'r>)
 
 fn create_suit_icon_cmdl_and_ancs<'r>(
     resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
-    new_cmdl: u32,
-    new_ancs: u32,
+    new_cmdl_id: u32,
+    new_ancs_id: u32,
     new_txtr1: u32,
     new_txtr2: u32,
 ) -> [structs::Resource<'r>; 2]
@@ -201,17 +210,21 @@ fn create_suit_icon_cmdl_and_ancs<'r>(
         let grav_suit_cmdl = ResourceData::new(
             &resources[&resource_info!("Node1_11.CMDL").into()]
         );
-        let mut new_cmdl_bytes = grav_suit_cmdl.decompress().into_owned();
+        let cmdl_bytes = grav_suit_cmdl.decompress().into_owned();
+        let mut cmdl = Reader::new(&cmdl_bytes[..]).read::<structs::Cmdl>(());
+
+        cmdl.material_sets.as_mut_vec()[0].texture_ids.as_mut_vec()[0] = new_txtr1;
+        cmdl.material_sets.as_mut_vec()[0].texture_ids.as_mut_vec()[3] = new_txtr2;
+
+        let mut new_cmdl_bytes = vec![];
+        cmdl.write_to(&mut new_cmdl_bytes).unwrap();
 
         // Ensure the length is a multiple of 32
         let len = new_cmdl_bytes.len();
         new_cmdl_bytes.extend(reader_writer::pad_bytes(32, len).iter());
 
-        // Change which texture this points to
-        new_txtr1.write_to(&mut &mut new_cmdl_bytes[0x64..]).unwrap();
-        new_txtr2.write_to(&mut &mut new_cmdl_bytes[0x70..]).unwrap();
         pickup_meta::build_resource(
-            new_cmdl,
+            new_cmdl_id,
             structs::ResourceKind::External(new_cmdl_bytes, b"CMDL".into())
         )
     };
@@ -219,20 +232,119 @@ fn create_suit_icon_cmdl_and_ancs<'r>(
         let grav_suit_ancs = ResourceData::new(
             &resources[&resource_info!("Node1_11.ANCS").into()]
         );
-        let mut new_ancs_bytes = grav_suit_ancs.decompress().into_owned();
+        let ancs_bytes = grav_suit_ancs.decompress().into_owned();
+        let mut ancs = Reader::new(&ancs_bytes[..]).read::<structs::Ancs>(());
+
+        ancs.char_set.char_info.as_mut_vec()[0].cmdl = new_cmdl_id;
+
+        let mut new_ancs_bytes = vec![];
+        ancs.write_to(&mut new_ancs_bytes).unwrap();
 
         // Ensure the length is a multiple of 32
         let len = new_ancs_bytes.len();
         new_ancs_bytes.extend(reader_writer::pad_bytes(32, len).iter());
 
-        // Change this to refer to the CMDL above
-        new_cmdl.write_to(&mut &mut new_ancs_bytes[0x14..]).unwrap();
         pickup_meta::build_resource(
-            new_ancs,
+            new_ancs_id,
             structs::ResourceKind::External(new_ancs_bytes, b"ANCS".into())
         )
     };
     [new_suit_cmdl, new_suit_ancs]
+}
+
+fn create_shiny_missile_assets<'r>(
+    resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+) -> [structs::Resource<'r>; 4]
+{
+    let shiny_missile_cmdl = {
+        let shiny_missile_cmdl = ResourceData::new(
+            &resources[&resource_info!("Node1_36_0.CMDL").into()]
+        );
+        let cmdl_bytes = shiny_missile_cmdl.decompress().into_owned();
+        let mut cmdl = Reader::new(&cmdl_bytes[..]).read::<structs::Cmdl>(());
+
+        // println!("{:#?}", cmdl);
+        cmdl.material_sets.as_mut_vec()[0].texture_ids = vec![
+            custom_asset_ids::SHINY_MISSILE_TXTR0,
+            custom_asset_ids::SHINY_MISSILE_TXTR1,
+            custom_asset_ids::SHINY_MISSILE_TXTR2,
+        ].into();
+
+        let mut new_cmdl_bytes = vec![];
+        cmdl.write_to(&mut new_cmdl_bytes).unwrap();
+
+        // Ensure the length is a multiple of 32
+        let len = new_cmdl_bytes.len();
+        new_cmdl_bytes.extend(reader_writer::pad_bytes(32, len).iter());
+
+        pickup_meta::build_resource(
+            custom_asset_ids::SHINY_MISSILE_CMDL,
+            structs::ResourceKind::External(new_cmdl_bytes, b"CMDL".into())
+        )
+    };
+    let shiny_missile_ancs = {
+        let shiny_missile_ancs = ResourceData::new(
+            &resources[&resource_info!("Node1_37_0.ANCS").into()]
+        );
+        let ancs_bytes = shiny_missile_ancs.decompress().into_owned();
+        let mut ancs = Reader::new(&ancs_bytes[..]).read::<structs::Ancs>(());
+
+        ancs.char_set.char_info.as_mut_vec()[0].cmdl = custom_asset_ids::SHINY_MISSILE_CMDL;
+        ancs.char_set.char_info.as_mut_vec()[0].particles.part_assets = vec![
+            resource_info!("healthnew.PART").res_id
+        ].into();
+        if let Some(animation_resources) = &mut ancs.anim_set.animation_resources {
+            animation_resources.as_mut_vec()[0].evnt = custom_asset_ids::SHINY_MISSILE_EVNT;
+            animation_resources.as_mut_vec()[0].anim = custom_asset_ids::SHINY_MISSILE_ANIM;
+        }
+
+        match &mut ancs.anim_set.animations.as_mut_vec()[..] {
+            [structs::Animation { meta: structs::MetaAnimation::Play(play), .. }] => {
+                play.get_mut().anim = custom_asset_ids::SHINY_MISSILE_ANIM;
+            },
+            _ => panic!(),
+        }
+
+        let mut new_ancs_bytes = vec![];
+        ancs.write_to(&mut new_ancs_bytes).unwrap();
+
+        // Ensure the length is a multiple of 32
+        let len = new_ancs_bytes.len();
+        new_ancs_bytes.extend(reader_writer::pad_bytes(32, len).iter());
+
+        pickup_meta::build_resource(
+            custom_asset_ids::SHINY_MISSILE_ANCS,
+            structs::ResourceKind::External(new_ancs_bytes, b"ANCS".into())
+        )
+    };
+    let shiny_missile_evnt = {
+        let mut evnt = resources[&resource_info!("Missile_Launcher_ready.EVNT").into()]
+            .kind.as_evnt()
+            .unwrap().into_owned();
+
+
+        evnt.effect_events.as_mut_vec()[0].effect_file_id = resource_info!("healthnew.PART").res_id;
+        evnt.effect_events.as_mut_vec()[1].effect_file_id = resource_info!("healthnew.PART").res_id;
+
+        pickup_meta::build_resource(
+            custom_asset_ids::SHINY_MISSILE_EVNT,
+            structs::ResourceKind::Evnt(evnt)
+        )
+    };
+    let shiny_missile_anim = {
+        let shiny_missile_anim = ResourceData::new(
+            &resources[&resource_info!("Missile_Launcher_ready.ANIM").into()]
+        );
+        let mut anim_bytes = shiny_missile_anim.decompress().into_owned();
+        custom_asset_ids::SHINY_MISSILE_EVNT.write_to(&mut std::io::Cursor::new(&mut anim_bytes[8..])).unwrap();
+        let len = anim_bytes.len();
+        anim_bytes.extend(reader_writer::pad_bytes(32, len).iter());
+        pickup_meta::build_resource(
+            custom_asset_ids::SHINY_MISSILE_ANIM,
+            structs::ResourceKind::External(anim_bytes, b"ANIM".into())
+        )
+    };
+    [shiny_missile_cmdl, shiny_missile_ancs, shiny_missile_evnt, shiny_missile_anim]
 }
 
 fn create_item_scan_strg_pair<'r>(
@@ -332,7 +444,7 @@ fn add_skip_hudmemos_strgs(pickup_resources: &mut HashMap<(u32, FourCC), structs
 
 fn build_artifact_temple_totem_scan_strings<R>(pickup_layout: &[PickupType], rng: &mut R)
     -> [String; 12]
-    where R: Rng + Rand
+    where R: Rng
 {
     let mut generic_text_templates = [
         "I mean, maybe it'll be in the &push;&main-color=#43CD80;{room}&pop;. I forgot, to be honest.\0",
@@ -348,7 +460,7 @@ fn build_artifact_temple_totem_scan_strings<R>(pickup_layout: &[PickupType], rng
         "Hear the words of Oh Leer, last Chozo of the Artifact Temple. May they serve you well, that you may find a key lost to our cause... Alright, whatever. It's at the &push;&main-color=#43CD80;{room}&pop;.\0",
         "I kind of just played Frisbee with mine. It flew and landed too far so I didn't want to walk over and grab it because I was lazy. It's in the &push;&main-color=#43CD80;{room}&pop; if you want to find it.\0",
     ];
-    rng.shuffle(&mut generic_text_templates);
+    generic_text_templates.shuffle(rng);
     let mut generic_templates_iter = generic_text_templates.iter();
 
     // TODO: If there end up being a large number of these, we could use a binary search
@@ -361,7 +473,7 @@ fn build_artifact_temple_totem_scan_strings<R>(pickup_layout: &[PickupType], rng
         (0x2398E906, vec!["{pickup} awaits those who truly seek it.\0"]),
     ];
     for rt in &mut specific_room_templates {
-        rng.shuffle(&mut rt.1);
+        rt.1.shuffle(rng);
     }
 
 
@@ -795,20 +907,29 @@ fn make_elevators_patch<'a>(
             Ok(())
         });
 
+        let room_dest_name = dest.name.replace('\0', "\n");
+        let hologram_name = dest.name.replace('\0', " ");
+        let control_name = dest.name.replace('\0', " ");
         patcher.add_resource_patch((&[elv.pak_name.as_bytes()], elv.room_strg, b"STRG".into()), move |res| {
-            let string = format!("Transport to {}\u{0}", dest.name);
+            let string = format!("Transport to {}\u{0}", room_dest_name);
             let strg = structs::Strg::from_strings(vec![string]);
             res.kind = structs::ResourceKind::Strg(strg);
             Ok(())
         });
         patcher.add_resource_patch((&[elv.pak_name.as_bytes()], elv.hologram_strg, b"STRG".into()), move |res| {
-            let string = format!("Access to &main-color=#FF3333;{} &main-color=#89D6FF;granted. Please step into the hologram.\u{0}", dest.name);
+            let string = format!(
+                "Access to &main-color=#FF3333;{} &main-color=#89D6FF;granted. Please step into the hologram.\u{0}",
+                hologram_name,
+            );
             let strg = structs::Strg::from_strings(vec![string]);
             res.kind = structs::ResourceKind::Strg(strg);
             Ok(())
         });
         patcher.add_resource_patch((&[elv.pak_name.as_bytes()], elv.control_strg, b"STRG".into()), move |res| {
-            let string = format!("Transport to &main-color=#FF3333;{}&main-color=#89D6FF; active.\u{0}", dest.name);
+            let string = format!(
+                "Transport to &main-color=#FF3333;{}&main-color=#89D6FF; active.\u{0}",
+                control_name,
+            );
             let strg = structs::Strg::from_strings(vec![string]);
             res.kind = structs::ResourceKind::Strg(strg);
             Ok(())
@@ -1089,23 +1210,34 @@ fn patch_artifact_hint_availability(
     Ok(())
 }
 
-
-fn patch_flaahgra_after_wild(ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
-    -> Result<(), String>
+fn patch_sun_tower_prevent_wild_before_flaahgra(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea
+) -> Result<(), String>
 {
-    // Create a new layer. We want it to be active until Flaahgra is killed. It will contain
-    // objects that renable the Flaahgra fight after the artifact is collect.
-    area.add_layer(b"Post Wild Flaahgra\0".as_cstr());
     let scly = area.mrea().scly_section_mut();
-    let new_layer_id = scly.layers.len() - 1;
+    let idx = scly.layers.as_mut_vec()[0].objects.iter_mut()
+        .position(|obj| obj.instance_id == 0x001d015b)
+        .unwrap();
+    let sunchamber_layer_change_trigger = scly.layers.as_mut_vec()[0].objects.as_mut_vec().remove(idx);
+    *scly.layers.as_mut_vec()[1].objects.as_mut_vec() = vec![sunchamber_layer_change_trigger];
+    Ok(())
+}
 
-    let disable_post_wild_flaahgra_id = ps.fresh_instance_id_range.next().unwrap();
+
+fn patch_sunchamber_prevent_wild_before_flaahgra(
+    ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea
+) -> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let enable_sun_tower_layer_id = ps.fresh_instance_id_range.next().unwrap();
     scly.layers.as_mut_vec()[1].objects.as_mut_vec().push(structs::SclyObject {
-        instance_id: disable_post_wild_flaahgra_id,
+        instance_id: enable_sun_tower_layer_id,
         connections: vec![].into(),
         property_data: structs::SclyProperty::SpecialFunction(
             structs::SpecialFunction {
-                name: b"Disable Post Wild Flaahgra\0".as_cstr(),
+                name: b"Enable Sun Tower Layer Change Trigger\0".as_cstr(),
                 position: [0., 0., 0.].into(),
                 rotation: [0., 0., 0.].into(),
                 type_: 16,
@@ -1113,8 +1245,8 @@ fn patch_flaahgra_after_wild(ps: &mut PatcherState, area: &mut mlvl_wrapper::Mlv
                 unknown1: 0.,
                 unknown2: 0.,
                 unknown3: 0.,
-                layer_change_room_id: 0xf262c1ea,
-                layer_change_layer_id: new_layer_id as u32,
+                layer_change_room_id: 0xcf4c7aa5,
+                layer_change_layer_id: 1,
                 item_id: 0,
                 unknown4: 1,
                 unknown5: 0.,
@@ -1129,89 +1261,8 @@ fn patch_flaahgra_after_wild(ps: &mut PatcherState, area: &mut mlvl_wrapper::Mlv
         .unwrap();
     flaahgra_dead_relay.connections.as_mut_vec().push(structs::Connection {
         state: structs::ConnectionState::ZERO,
-        message: structs::ConnectionMsg::DECREMENT,
-        target_object_id: disable_post_wild_flaahgra_id,
-    });
-
-    const LAYER_IDS: &[(u32, bool)] = &[(1, true), (2, false), (3, false)];
-    let inst_ids: Vec<_> = (&mut ps.fresh_instance_id_range).take(LAYER_IDS.len()).collect();
-    let new_layer = scly.layers.as_mut_vec().last_mut().unwrap();
-    new_layer.objects.as_mut_vec().extend(LAYER_IDS.iter().zip(inst_ids.iter())
-        .map(|((layer_id, _), inst_id)| structs::SclyObject {
-            instance_id: *inst_id,
-            connections: vec![].into(),
-            property_data: structs::SclyProperty::SpecialFunction(
-                structs::SpecialFunction {
-                    name: b"Re-enable Post Wild Flaahgra\0".as_cstr(),
-                    position: [0., 0., 0.].into(),
-                    rotation: [0., 0., 0.].into(),
-                    type_: 16,
-                    unknown0: b"\0".as_cstr(),
-                    unknown1: 0.,
-                    unknown2: 0.,
-                    unknown3: 0.,
-                    layer_change_room_id: 0xf262c1ea,
-                    layer_change_layer_id: *layer_id,
-                    item_id: 0,
-                    unknown4: 1,
-                    unknown5: 0.,
-                    unknown6: 0xFFFFFFFF,
-                    unknown7: 0xFFFFFFFF,
-                    unknown8: 0xFFFFFFFF,
-                }
-            ),
-        }));
-
-    let artifact_of_wild = scly.layers.as_mut_vec()[6].objects.iter_mut()
-        .find(|obj| obj.instance_id == 0x18252f7d)
-        .unwrap();
-    artifact_of_wild.connections.as_mut_vec().extend(LAYER_IDS.iter().zip(inst_ids.iter())
-        .map(|((_, enable), id)| structs::Connection {
-            state: structs::ConnectionState::ARRIVED,
-            message: if *enable { structs::ConnectionMsg::INCREMENT }
-                           else { structs::ConnectionMsg::DECREMENT },
-            target_object_id: *id,
-        }));
-
-    // Insert an intermediary relay between the trigger for the vines appearing and the vines
-    // actually appearing so we can disable it after the artifact has been collected.
-    let prevent_vines_relay_id = ps.fresh_instance_id_range.next().unwrap();
-    scly.layers.as_mut_vec()[1].objects.as_mut_vec().push(structs::SclyObject {
-        instance_id: prevent_vines_relay_id,
-        property_data: structs::SclyProperty::Relay(
-            structs::Relay {
-                name: b"\0".as_cstr(),
-                active: 1,
-            }
-        ),
-        connections: vec![
-            structs::Connection {
-                state: structs::ConnectionState::ZERO,
-                message: structs::ConnectionMsg::ACTIVATE,
-                target_object_id: 0x2528f8,// Memory Relay - [IN] Turn On Vines
-            }
-        ].into()
-    });
-    let cinematic_trigger = scly.layers.as_mut_vec()[1].objects.iter_mut()
-        .find(|obj| obj.instance_id == 0x4250064)
-        .unwrap();
-    cinematic_trigger.connections.as_mut_vec()
-        .retain(|conn| conn.target_object_id != 0x2528f8);
-
-
-    // Remove the object that deactivates the artifact layer
-    scly.layers.as_mut_vec()[6].objects.as_mut_vec()
-        .retain(|obj| obj.instance_id != 0x18253011);
-
-    // After the artifact is collected a memory relay is activated. Use it to deactivate the relay
-    // that enables the vines over the door.
-    let artifact_collected_memory_relay = scly.layers.as_mut_vec()[6].objects.iter_mut()
-        .find(|obj| obj.instance_id == 0x18253094)
-        .unwrap();
-    artifact_collected_memory_relay.connections.as_mut_vec().push(structs::Connection {
-        state: structs::ConnectionState::ACTIVE,
-        message: structs::ConnectionMsg::DEACTIVATE,
-        target_object_id: prevent_vines_relay_id
+        message: structs::ConnectionMsg::INCREMENT,
+        target_object_id: enable_sun_tower_layer_id,
     });
 
     Ok(())
@@ -1228,6 +1279,14 @@ fn patch_temple_security_station_cutscene_trigger(_ps: &mut PatcherState, area: 
         .unwrap();
     trigger.active = 0;
 
+    Ok(())
+}
+
+fn patch_ridley_phendrana_shorelines_cinematic(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
+    -> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    scly.layers.as_mut_vec()[4].objects.as_mut_vec().clear();
     Ok(())
 }
 
@@ -1363,7 +1422,365 @@ fn patch_main_ventilation_shaft_section_b_door<'r>(
     Ok(())
 }
 
-fn patch_ore_processing_door_lock_0_02<'r>(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
+fn make_main_plaza_locked_door_two_ways(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
+    -> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+
+    let trigger_dooropen_id = 0x20007;
+    let timer_doorclose_id = 0x20008;
+    let actor_doorshield_id = 0x20004;
+    let relay_unlock_id = 0x20159;
+    let trigger_doorunlock_id = 0x2000F;
+    let door_id = 0x20060;
+    let trigger_remove_scan_target_locked_door_id = 0x202B8;
+    let scan_target_locked_door_id = 0x202F4;
+    let relay_notice_ineffective_weapon_id = 0x202FD;
+
+    layer.objects.as_mut_vec().extend_from_slice(&[
+        structs::SclyObject {
+            instance_id: trigger_doorunlock_id,
+            property_data: structs::SclyProperty::DamageableTrigger(structs::DamageableTrigger {
+                    name: b"Trigger_DoorUnlock\0".as_cstr(),
+                    position: [152.232117, 86.451134, 24.472418].into(),
+                    scale: [0.25, 4.5, 4.0].into(),
+                    health_info: structs::structs::HealthInfo {
+                        health: 1.0,
+                        knockback_resistance: 1.0
+                    },
+                    damage_vulnerability: structs::structs::DamageVulnerability {
+                        power: 1,           // Normal
+                        ice: 1,             // Normal
+                        wave: 1,            // Normal
+                        plasma: 1,          // Normal
+                        bomb: 1,            // Normal
+                        power_bomb: 1,      // Normal
+                        missile: 2,         // Reflect
+                        boost_ball: 2,      // Reflect
+                        phazon: 1,          // Normal
+                        enemy_weapon0: 3,   // Immune
+                        enemy_weapon1: 2,   // Reflect
+                        enemy_weapon2: 2,   // Reflect
+                        enemy_weapon3: 2,   // Reflect
+                        unknown_weapon0: 2, // Reflect
+                        unknown_weapon1: 2, // Reflect
+                        unknown_weapon2: 1, // Normal
+                        charged_beams: structs::structs::ChargedBeams {
+                            power: 1,       // Normal
+                            ice: 1,         // Normal
+                            wave: 1,        // Normal
+                            plasma: 1,      // Normal
+                            phazon: 1       // Normal
+                        },
+                        beam_combos: structs::structs::BeamCombos {
+                            power: 2,       // Reflect
+                            ice: 2,         // Reflect
+                            wave: 2,        // Reflect
+                            plasma: 2,      // Reflect
+                            phazon: 1       // Normal
+                        }
+                    },
+                    unknown0: 3, // Render Side : East
+                    pattern_txtr0: 0x544A9892, // testb.TXTR
+                    pattern_txtr1: 0x544A9892, // testb.TXTR
+                    color_txtr: 0x8A7F3683, // blue.TXTR
+                    lock_on: 0,
+                    active: 1,
+                    visor_params: structs::structs::VisorParameters {
+                        unknown0: 0,
+                        target_passthrough: 0,
+                        unknown2: 15 // Visor Flags : Combat|Scan|Thermal|XRay
+                    }
+                }),
+                connections: vec![
+                    structs::Connection {
+                        state: structs::ConnectionState::REFLECTED_DAMAGE,
+                        message: structs::ConnectionMsg::SET_TO_ZERO,
+                        target_object_id: relay_notice_ineffective_weapon_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::DEAD,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: actor_doorshield_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::MAX_REACHED,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: actor_doorshield_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::DEAD,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: trigger_dooropen_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::DEAD,
+                        message: structs::ConnectionMsg::SET_TO_ZERO,
+                        target_object_id: door_id,
+                    },
+                ].into(),
+        },
+
+        structs::SclyObject {
+            instance_id: relay_unlock_id,
+            property_data: structs::SclyProperty::Relay(structs::Relay {
+                    name: b"Relay_Unlock\0".as_cstr(),
+                    active: 1,
+                }),
+                connections: vec![
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: actor_doorshield_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: trigger_doorunlock_id,
+                    },
+                ].into(),
+        },
+
+        structs::SclyObject {
+            instance_id: trigger_dooropen_id,
+            property_data: structs::SclyProperty::Trigger(structs::Trigger {
+                    name: b"Trigger_DoorOpen\0".as_cstr(),
+                    position: [149.35614, 86.567917, 26.471249].into(),
+                    scale: [5.0, 5.0, 8.0].into(),
+                    damage_info: structs::structs::DamageInfo {
+                        weapon_type: 0,
+                        damage: 0.0,
+                        radius: 0.0,
+                        knockback_power: 0.0
+                    },
+                    unknown0: [0.0, 0.0, 0.0].into(),
+                    unknown1: 1,
+                    active: 0,
+                    unknown2: 0,
+                    unknown3: 0
+                }),
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::INSIDE,
+                    message: structs::ConnectionMsg::OPEN,
+                    target_object_id: door_id,
+                },
+                structs::Connection {
+                    state: structs::ConnectionState::INSIDE,
+                    message: structs::ConnectionMsg::RESET_AND_START,
+                    target_object_id: timer_doorclose_id,
+                },
+            ].into(),
+        },
+
+        structs::SclyObject {
+            instance_id: actor_doorshield_id,
+            property_data: structs::SclyProperty::Actor(structs::Actor {
+                    name: b"Actor_DoorShield\0".as_cstr(),
+                    position: [151.951187, 86.412575, 24.403177].into(),
+                    rotation: [0.0, 0.0, 0.0].into(),
+                    scale: [1.0, 1.0, 1.0].into(),
+                    unknown0: [0.0, 0.0, 0.0].into(),
+                    scan_offset: [0.0, 0.0, 0.0].into(),
+                    unknown1: 1.0,
+                    unknown2: 0.0,
+                    health_info: structs::structs::HealthInfo {
+                        health: 5.0,
+                        knockback_resistance: 1.0
+                    },
+                    damage_vulnerability: structs::structs::DamageVulnerability {
+                        power: 1,           // Normal
+                        ice: 1,             // Normal
+                        wave: 1,            // Normal
+                        plasma: 1,          // Normal
+                        bomb: 1,            // Normal
+                        power_bomb: 1,      // Normal
+                        missile: 1,         // Normal
+                        boost_ball: 1,      // Normal
+                        phazon: 1,          // Normal
+                        enemy_weapon0: 2,   // Reflect
+                        enemy_weapon1: 2,   // Reflect
+                        enemy_weapon2: 2,   // Reflect
+                        enemy_weapon3: 2,   // Reflect
+                        unknown_weapon0: 2, // Reflect
+                        unknown_weapon1: 2, // Reflect
+                        unknown_weapon2: 0, // Double Damage
+                        charged_beams: structs::structs::ChargedBeams {
+                            power: 1,       // Normal
+                            ice: 1,         // Normal
+                            wave: 1,        // Normal
+                            plasma: 1,      // Normal
+                            phazon: 0       // Double Damage
+                        },
+                        beam_combos: structs::structs::BeamCombos {
+                            power: 1,       // Normal
+                            ice: 1,         // Normal
+                            wave: 1,        // Normal
+                            plasma: 1,      // Normal
+                            phazon: 0       // Double Damage
+                        }
+                    },
+                    cmdl: 0x0734977A, // blueShield_v1.CMDL
+                    ancs: structs::structs::AncsProp {
+                        file_id: 0xFFFFFFFF, // None
+                        node_index: 0,
+                        unknown: 0xFFFFFFFF, // -1
+                    },
+                    actor_params: structs::structs::ActorParameters {
+                        light_params: structs::structs::LightParameters {
+                            unknown0: 1,
+                            unknown1: 1.0,
+                            shadow_tessellation: 0,
+                            unknown2: 1.0,
+                            unknown3: 20.0,
+                            color: [1.0, 1.0, 1.0, 1.0].into(),
+                            unknown4: 1,
+                            world_lighting: 1,
+                            light_recalculation: 1,
+                            unknown5: [0.0, 0.0, 0.0].into(),
+                            unknown6: 4,
+                            unknown7: 4,
+                            unknown8: 0,
+                            light_layer_id: 0
+                        },
+                        scan_params: structs::structs::ScannableParameters {
+                            scan: 0xFFFFFFFF // None
+                        },
+                        xray_cmdl: 0xFFFFFFFF, // None
+                        xray_cskr: 0xFFFFFFFF, // None
+                        thermal_cmdl: 0xFFFFFFFF, // None
+                        thermal_cskr: 0xFFFFFFFF, // None
+
+                        unknown0: 1,
+                        unknown1: 1.0,
+                        unknown2: 1.0,
+
+                        visor_params: structs::structs::VisorParameters {
+                            unknown0: 0,
+                            target_passthrough: 0,
+                            unknown2: 15 // Visor Flags : Combat|Scan|Thermal|XRay
+                        },
+                        enable_thermal_heat: 1,
+                        unknown3: 0,
+                        unknown4: 1,
+                        unknown5: 1.0
+                    },
+                    looping: 1,
+                    snow: 1,
+                    solid: 0,
+                    camera_passthrough: 0,
+                    active: 1,
+                    unknown8: 0,
+                    unknown9: 1.0,
+                    unknown10: 1,
+                    unknown11: 0,
+                    unknown12: 0,
+                    unknown13: 0
+                }),
+                connections: vec![].into()
+        },
+
+        structs::SclyObject {
+            instance_id: timer_doorclose_id,
+            property_data: structs::SclyProperty::Timer(structs::Timer {
+                    name: b"Timer_DoorClose\0".as_cstr(),
+                    start_time: 0.25,
+                    max_random_add: 0.0,
+                    reset_to_zero: 1,
+                    start_immediately: 0,
+                    active: 1
+                }),
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::CLOSE,
+                    target_object_id: door_id,
+                },
+                structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: trigger_dooropen_id,
+                },
+            ].into(),
+        },
+    ]);
+
+    let locked_door_scan = layer.objects.as_mut_vec().iter_mut()
+        .find(|obj| obj.instance_id == scan_target_locked_door_id)
+        .and_then(|obj| obj.property_data.as_point_of_interest_mut())
+        .unwrap();
+    locked_door_scan.active = 0;
+    locked_door_scan.scan_param.scan = 0xFFFFFFFF; // None
+
+    let locked_door = layer.objects.as_mut_vec().iter_mut()
+        .find(|obj| obj.instance_id == door_id)
+        .and_then(|obj| obj.property_data.as_door_mut())
+        .unwrap();
+    locked_door.ancs.file_id = 0x26886945; // newmetroiddoor.ANCS
+    locked_door.ancs.unknown = 2;
+    locked_door.unknown0 = 0;
+
+    let trigger_remove_scan_target_locked_door_and_etank = layer.objects.as_mut_vec().iter_mut()
+        .find(|obj| obj.instance_id == trigger_remove_scan_target_locked_door_id)
+        .and_then(|obj| obj.property_data.as_trigger_mut())
+        .unwrap();
+    trigger_remove_scan_target_locked_door_and_etank.active = 0;
+
+    layer.objects.as_mut_vec().iter_mut()
+        .find(|obj| obj.instance_id == door_id)
+        .unwrap()
+        .connections
+        .as_mut_vec()
+        .extend_from_slice(
+            &[
+                structs::Connection {
+                    state: structs::ConnectionState::OPEN,
+                    message: structs::ConnectionMsg::ACTIVATE,
+                    target_object_id: trigger_dooropen_id,
+                },
+                structs::Connection {
+                    state: structs::ConnectionState::OPEN,
+                    message: structs::ConnectionMsg::START,
+                    target_object_id: timer_doorclose_id,
+                },
+                structs::Connection {
+                    state: structs::ConnectionState::CLOSED,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: trigger_dooropen_id,
+                },
+                structs::Connection {
+                    state: structs::ConnectionState::OPEN,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: trigger_doorunlock_id,
+                },
+                structs::Connection {
+                    state: structs::ConnectionState::OPEN,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: actor_doorshield_id,
+                },
+                structs::Connection {
+                    state: structs::ConnectionState::CLOSED,
+                    message: structs::ConnectionMsg::SET_TO_ZERO,
+                    target_object_id: relay_unlock_id,
+                },
+                structs::Connection {
+                    state: structs::ConnectionState::MAX_REACHED,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: actor_doorshield_id,
+                },
+                structs::Connection {
+                    state: structs::ConnectionState::MAX_REACHED,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: trigger_doorunlock_id,
+                },
+            ]
+        );
+
+    Ok(())
+}
+
+fn patch_main_quarry_door_lock_0_02<'r>(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
     -> Result<(), String>
 {
     let scly = area.mrea().scly_section_mut();
@@ -1378,6 +1795,112 @@ fn patch_geothermal_core_door_lock_0_02<'r>(_ps: &mut PatcherState, area: &mut m
     let scly = area.mrea().scly_section_mut();
     let layer = &mut scly.layers.as_mut_vec()[0];
     layer.objects.as_mut_vec().retain(|obj| obj.instance_id != 1311646);
+    Ok(())
+}
+
+fn patch_hive_totem_boss_trigger_0_02(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
+    -> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[1];
+    let trigger_obj_id = 0x4240140;
+
+    let trigger_obj = layer.objects.as_mut_vec().iter_mut()
+        .find(|obj| obj.instance_id == trigger_obj_id)
+        .and_then(|obj| obj.property_data.as_trigger_mut())
+        .unwrap();
+    trigger_obj.position = [94.571053, 301.616028, 0.344905].into();
+    trigger_obj.scale = [6.052994, 24.659973, 7.878154].into();
+
+    Ok(())
+}
+
+fn patch_ruined_courtyard_thermal_conduits_0_02(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
+    -> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+
+    let thermal_conduit_actor_obj_id = 0xF01C7;
+    let thermal_conduit_damageable_trigger_obj_id = 0xF01C8;
+
+    let thermal_conduit_actor_obj = layer.objects.as_mut_vec().iter_mut()
+        .find(|obj| obj.instance_id == thermal_conduit_actor_obj_id)
+        .and_then(|obj| obj.property_data.as_actor_mut())
+        .unwrap();
+    thermal_conduit_actor_obj.active = 1;
+
+    let thermal_conduit_damageable_trigger_obj = layer.objects.as_mut_vec().iter_mut()
+        .find(|obj| obj.instance_id == thermal_conduit_damageable_trigger_obj_id)
+        .and_then(|obj| obj.property_data.as_damageable_trigger_mut())
+        .unwrap();
+    thermal_conduit_damageable_trigger_obj.active = 1;
+
+    Ok(())
+}
+
+fn patch_geothermal_core_destructible_rock_pal(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
+    -> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+
+    let platform_obj_id = 0x1403AE;
+    let scan_target_platform_obj_id = 0x1403B4;
+
+    let platform_obj = layer.objects.as_mut_vec().iter_mut()
+        .find(|obj| obj.instance_id == platform_obj_id)
+        .and_then(|obj| obj.property_data.as_platform_mut())
+        .unwrap();
+    platform_obj.active = 0;
+
+    let scan_target_platform_obj = layer.objects.as_mut_vec().iter_mut()
+        .find(|obj| obj.instance_id == scan_target_platform_obj_id)
+        .and_then(|obj| obj.property_data.as_point_of_interest_mut())
+        .unwrap();
+    scan_target_platform_obj.active = 0;
+
+    Ok(())
+}
+
+fn patch_ore_processing_destructible_rock_pal(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
+    -> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+
+    let platform_obj_id = 0x60372;
+    let scan_target_platform_obj_id = 0x60378;
+
+    let platform_obj = layer.objects.as_mut_vec().iter_mut()
+        .find(|obj| obj.instance_id == platform_obj_id)
+        .and_then(|obj| obj.property_data.as_platform_mut())
+        .unwrap();
+    platform_obj.active = 0;
+
+    let scan_target_platform_obj = layer.objects.as_mut_vec().iter_mut()
+        .find(|obj| obj.instance_id == scan_target_platform_obj_id)
+        .and_then(|obj| obj.property_data.as_point_of_interest_mut())
+        .unwrap();
+    scan_target_platform_obj.active = 0;
+
+    Ok(())
+}
+
+fn patch_main_quarry_door_lock_pal(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
+    -> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[7];
+
+    let locked_door_actor_obj_id = 0x1c0205db;
+
+    let locked_door_actor_obj = layer.objects.as_mut_vec().iter_mut()
+        .find(|obj| obj.instance_id == locked_door_actor_obj_id)
+        .and_then(|obj| obj.property_data.as_actor_mut())
+        .unwrap();
+    locked_door_actor_obj.active = 0;
+
     Ok(())
 }
 
@@ -1504,16 +2027,27 @@ fn patch_credits(res: &mut structs::Resource, pickup_layout: &[PickupType])
 {
     use std::fmt::Write;
     const PICKUPS_TO_PRINT: &[PickupType] = &[
+        PickupType::ScanVisor,
         PickupType::ThermalVisor,
         PickupType::XRayVisor,
         PickupType::VariaSuit,
         PickupType::GravitySuit,
+        PickupType::PhazonSuit,
+        PickupType::MorphBall,
         PickupType::BoostBall,
         PickupType::SpiderBall,
+        PickupType::MorphBallBomb,
+        PickupType::PowerBomb,
         PickupType::ChargeBeam,
         PickupType::SpaceJumpBoots,
         PickupType::GrappleBeam,
         PickupType::SuperMissile,
+        PickupType::Wavebuster,
+        PickupType::IceSpreader,
+        PickupType::Flamethrower,
+        PickupType::WaveBeam,
+        PickupType::IceBeam,
+        PickupType::PlasmaBeam
     ];
 
     let mut output = concat!(
@@ -1604,7 +2138,7 @@ fn patch_starting_pickups(
             print_maybe!(first, "    plasma: {}", spawn_point.plasma);
 
             spawn_point.charge = fetch_bits(1);
-            print_maybe!(first, "    charge: {}", spawn_point.plasma);
+            print_maybe!(first, "    charge: {}", spawn_point.charge);
 
             spawn_point.morph_ball = fetch_bits(1);
             print_maybe!(first, "    morph_ball: {}", spawn_point.morph_ball);
@@ -1685,9 +2219,10 @@ fn patch_dol<'r>(
             {
                 let s = mp1_symbol!($sym);
                 match &$version {
-                    Version::V0_00 => s.addr_0_00,
-                    Version::V0_01 => s.addr_0_01,
-                    Version::V0_02 => s.addr_0_02,
+                    Version::Ntsc0_00 => s.addr_0_00,
+                    Version::Ntsc0_01 => s.addr_0_01,
+                    Version::Ntsc0_02 => s.addr_0_02,
+                    Version::Pal      => s.addr_pal,
                 }.unwrap_or_else(|| panic!("Symbol {} unknown for version {}", $sym, $version))
             }
         }
@@ -1699,9 +2234,14 @@ fn patch_dol<'r>(
     };
 
     let mut dol_patcher = DolPatcher::new(reader);
-    dol_patcher
-        .patch(symbol_addr!("aMetroidprimeA", version), b"randomprime A\0"[..].into())?
-        .patch(symbol_addr!("aMetroidprimeB", version), b"randomprime B\0"[..].into())?;
+    if version == Version::Pal {
+        dol_patcher
+            .patch(symbol_addr!("aMetroidprime", version), b"randomprime\0"[..].into())?;
+    } else {
+        dol_patcher
+            .patch(symbol_addr!("aMetroidprimeA", version), b"randomprime A\0"[..].into())?
+            .patch(symbol_addr!("aMetroidprimeB", version), b"randomprime B\0"[..].into())?;
+    }
 
     let cinematic_skip_patch = ppcasm!(symbol_addr!("ShouldSkipCinematic__22CScriptSpecialFunctionFR13CStateManager", version), {
             li      r3, 0x1;
@@ -1709,6 +2249,7 @@ fn patch_dol<'r>(
     });
     dol_patcher.ppcasm_patch(&cinematic_skip_patch)?;
 
+    // TODO: This offset needs to be adjusted for PAL, probably (or the patch temporarily disabled)
     let unlockables_default_ctor_patch = ppcasm!(symbol_addr!("__ct__14CSystemOptionsFv", version) + 0x194, {
             li      r6, 100;
             stw     r6, 0xcc(r3);
@@ -1716,6 +2257,7 @@ fn patch_dol<'r>(
             stw     r6, 0xd0(r3);
     });
     dol_patcher.ppcasm_patch(&unlockables_default_ctor_patch)?;
+    // TODO: This offset needs to be adjusted for PAL, probably (or the patch temporarily disabled)
     let unlockables_read_ctor_patch = ppcasm!(symbol_addr!("__ct__14CSystemOptionsFRC12CInputStream", version) + 0x308, {
             li      r6, 100;
             stw     r6, 0xcc(r28);
@@ -1727,32 +2269,34 @@ fn patch_dol<'r>(
     dol_patcher.ppcasm_patch(&unlockables_read_ctor_patch)?;
 
 
-    let missile_hud_formating_patch = ppcasm!(symbol_addr!("SetNumMissiles__20CHudMissileInterfaceFiRC13CStateManager", version) + 0x14, {
-            b          skip;
-        fmt:
-            .asciiz b"%03d/%03d";
+    if version != Version::Pal {
+        let missile_hud_formating_patch = ppcasm!(symbol_addr!("SetNumMissiles__20CHudMissileInterfaceFiRC13CStateManager", version) + 0x14, {
+                b          skip;
+            fmt:
+                .asciiz b"%03d/%03d";
 
-        skip:
-            stw        r30, 40(r1);// var_8(r1);
-            mr         r30, r3;
-            stw        r4, 8(r1);// var_28(r1)
+            skip:
+                stw        r30, 40(r1);// var_8(r1);
+                mr         r30, r3;
+                stw        r4, 8(r1);// var_28(r1)
 
-            lwz        r6, 4(r30);
+                lwz        r6, 4(r30);
 
-            mr         r5, r4;
+                mr         r5, r4;
 
-            lis        r4, fmt@h;
-            addi       r4, r4, fmt@l;
+                lis        r4, fmt@h;
+                addi       r4, r4, fmt@l;
 
-            addi       r3, r1, 12;// arg_C
+                addi       r3, r1, 12;// arg_C
 
-            nop; // crclr      cr6;
-            bl         { symbol_addr!("sprintf", version) };
+                nop; // crclr      cr6;
+                bl         { symbol_addr!("sprintf", version) };
 
-            addi       r3, r1, 20;// arg_14;
-            addi       r4, r1, 12;// arg_C
-    });
-    dol_patcher.ppcasm_patch(&missile_hud_formating_patch)?;
+                addi       r3, r1, 20;// arg_14;
+                addi       r4, r1, 12;// arg_C
+        });
+        dol_patcher.ppcasm_patch(&missile_hud_formating_patch)?;
+    }
 
     let powerbomb_hud_formating_patch = ppcasm!(symbol_addr!("SetBombParams__17CHudBallInterfaceFiiibbb", version) + 0x2c, {
             b skip;
@@ -1771,6 +2315,7 @@ fn patch_dol<'r>(
     });
     dol_patcher.ppcasm_patch(&powerbomb_hud_formating_patch)?;
 
+    // TODO: The offset here needs to be higher for PAL. +16 and +28
     let level_select_mlvl_upper_patch = ppcasm!(symbol_addr!("__sinit_CFrontEndUI_cpp", version) + 4, {
             lis         r4, {spawn_room.mlvl}@h;
     });
@@ -1803,6 +2348,7 @@ fn patch_dol<'r>(
     }
 
     if patch_suit_damage {
+        // TODO: The jump offset is almost certainly wrong, so double check that
         let staggered_suit_damage_patch = ppcasm!(symbol_addr!("ApplyLocalDamage__13CStateManagerFRC9CVector3fRC9CVector3fR6CActorfRC11CWeaponMode", version) + 0x128, {
                 lwz     r3, 0x8b8(r25);
                 lwz     r3, 0(r3);
@@ -1825,22 +2371,27 @@ fn patch_dol<'r>(
         dol_patcher.ppcasm_patch(&staggered_suit_damage_patch)?;
     }
 
-    if version == Version::V0_02 {
+    if version == Version::Ntsc0_02 || version == Version::Pal {
         let players_choice_scan_dash_patch = ppcasm!(symbol_addr!("SidewaysDashAllowed__7CPlayerCFffRC11CFinalInputR13CStateManager", version) + 0x3c, {
                 b       { symbol_addr!("SidewaysDashAllowed__7CPlayerCFffRC11CFinalInputR13CStateManager", version) + 0x54 };
         });
         dol_patcher.ppcasm_patch(&players_choice_scan_dash_patch)?;
     }
     let (rel_loader_bytes, rel_loader_map_str) = match version {
-        Version::V0_00 => {
-            let loader_bytes = include_bytes!("../extra_assets/rel_loader_1.00.bin");
-            let map_str = include_str!("../extra_assets/rel_loader_1.00.bin.map");
+        Version::Ntsc0_00 => {
+            let loader_bytes = generated::REL_LOADER_100;
+            let map_str = generated::REL_LOADER_100_MAP;
             (loader_bytes, map_str)
         },
-        Version::V0_01 => unreachable!(),
-        Version::V0_02 => {
-            let loader_bytes = include_bytes!("../extra_assets/rel_loader_1.02.bin");
-            let map_str = include_str!("../extra_assets/rel_loader_1.02.bin.map");
+        Version::Ntsc0_01 => unreachable!(),
+        Version::Ntsc0_02 => {
+            let loader_bytes = generated::REL_LOADER_102;
+            let map_str = generated::REL_LOADER_102_MAP;
+            (loader_bytes, map_str)
+        },
+        Version::Pal => {
+            let loader_bytes = generated::REL_LOADER_PAL;
+            let map_str = generated::REL_LOADER_PAL_MAP;
             (loader_bytes, map_str)
         },
     };
@@ -1910,11 +2461,19 @@ fn patch_bnr(file: &mut structs::FstEntryFile, config: &ParsedConfig) -> Result<
         Ok(())
     }
 
-    write_encoded_str("game_name", &config.bnr_game_name, &mut bnr.game_name)?;
-    write_encoded_str("developer", &config.bnr_developer, &mut bnr.developer)?;
-    write_encoded_str("game_name_full", &config.bnr_game_name_full, &mut bnr.game_name_full)?;
-    write_encoded_str("developer_full", &config.bnr_developer_full, &mut bnr.developer_full)?;
-    write_encoded_str("description", &config.bnr_description, &mut bnr.description)?;
+    write_encoded_str("game_name", &config.bnr_game_name, &mut bnr.english_fields.game_name)?;
+    write_encoded_str("developer", &config.bnr_developer, &mut bnr.english_fields.developer)?;
+    write_encoded_str(
+        "game_name_full",
+        &config.bnr_game_name_full,
+        &mut bnr.english_fields.game_name_full
+    )?;
+    write_encoded_str(
+        "developer_full",
+        &config.bnr_developer_full,
+        &mut bnr.english_fields.developer_full)
+    ?;
+    write_encoded_str("description", &config.bnr_description, &mut bnr.english_fields.description)?;
 
     Ok(())
 }
@@ -1980,6 +2539,7 @@ pub struct ParsedConfig
     pub quiet: bool,
 
     pub skip_impact_crater: bool,
+    pub enable_vault_ledge_door: bool,
     pub artifact_hint_behavior: ArtifactHintBehavior,
 
     pub flaahgra_music_files: Option<[nod_wrapper::FileWrapper; 2]>,
@@ -1996,15 +2556,18 @@ pub struct ParsedConfig
     pub bnr_game_name_full: Option<String>,
     pub bnr_developer_full: Option<String>,
     pub bnr_description: Option<String>,
+
+    pub pal_override: bool,
 }
 
 
 #[derive(PartialEq, Copy, Clone)]
 enum Version
 {
-    V0_00,
-    V0_01,
-    V0_02,
+    Ntsc0_00,
+    Ntsc0_01,
+    Ntsc0_02,
+    Pal,
 }
 
 impl fmt::Display for Version
@@ -2012,9 +2575,10 @@ impl fmt::Display for Version
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error>
     {
         match self {
-            Version::V0_00 => write!(f, "1.00"),
-            Version::V0_01 => write!(f, "1.01"),
-            Version::V0_02 => write!(f, "1.02"),
+            Version::Ntsc0_00 => write!(f, "1.00"),
+            Version::Ntsc0_01 => write!(f, "1.01"),
+            Version::Ntsc0_02 => write!(f, "1.02"),
+            Version::Pal      => write!(f, "pal"),
         }
     }
 }
@@ -2033,47 +2597,43 @@ pub fn patch_iso<T>(config: ParsedConfig, mut pn: T) -> Result<(), String>
     writeln!(ct, "obfuscated items: {}", config.obfuscate_items).unwrap();
     writeln!(ct, "{}", config.comment).unwrap();
 
-    let mut reader = Reader::new(unsafe { config.input_iso.as_slice() });
+    let mut reader = Reader::new(&config.input_iso[..]);
 
     let mut gc_disc: structs::GcDisc = reader.read(());
 
-    if &gc_disc.header.game_identifier() != b"GM8E01" {
-        Err("The input ISO doesn't appear to be NTSC-US Metroid Prime.".to_string())?
-    }
+    let version = match (&gc_disc.header.game_identifier(), gc_disc.header.disc_id, gc_disc.header.version) {
+        (b"GM8E01", 0, 0) => Version::Ntsc0_00,
+        (b"GM8E01", 0, 1) => Version::Ntsc0_01,
+        (b"GM8E01", 0, 2) => Version::Ntsc0_02,
+        (b"GM8P01", 0, 0) => Version::Pal,
+        _ => Err("The input ISO doesn't appear to be NTSC-US or PAL Metroid Prime.".to_string())?
+    };
     if gc_disc.find_file("randomprime.txt").is_some() {
         Err(concat!("The input ISO has already been randomized once before. ",
                     "You must start from an unmodified ISO every time."
         ))?
     }
-    let version = match (gc_disc.header.disc_id, gc_disc.header.version) {
-        (0, 0) => Version::V0_00,
-        (0, 1) => Version::V0_01,
-        (0, 2) => Version::V0_02,
-        (a, b) => Err(format!("Unknown game version {}-{}", a, b))?
-    };
-    if config.skip_frigate && version == Version::V0_01 {
-        Err(concat!("The frigate level skip is not currently supported for the ",
-                    "0-01 version of Metroid Prime").to_string())?;
+    if version == Version::Ntsc0_01 || (version == Version::Pal && !config.pal_override) {
+        Err("The NTSC 0-01 and PAL versions of Metroid Prime are not current supported.")?;
     }
-
 
     build_and_run_patches(&mut gc_disc, &config, version)?;
 
     gc_disc.add_file("randomprime.txt", structs::FstEntryFile::Unknown(Reader::new(&ct)))?;
 
 
-    let patches_rel_bytes = match version {
-        Version::V0_00 => include_bytes!("../extra_assets/patches_1.00.rel"),
-        Version::V0_01 => unreachable!(),
-        Version::V0_02 => include_bytes!("../extra_assets/patches_1.02.rel"),
-    };
-    gc_disc.add_file(
-        "patches.rel",
-        structs::FstEntryFile::Unknown(Reader::new(patches_rel_bytes))
-    )?;
-
-
-
+    if version != Version::Ntsc0_01 && version != Version::Pal {
+        let patches_rel_bytes = match version {
+            Version::Ntsc0_00 => generated::PATCHES_100_REL,
+            Version::Ntsc0_01 => unreachable!(),
+            Version::Ntsc0_02 => generated::PATCHES_102_REL,
+            Version::Pal      => generated::PATCHES_PAL_REL,
+        };
+        gc_disc.add_file(
+            "patches.rel",
+            structs::FstEntryFile::Unknown(Reader::new(patches_rel_bytes))
+        )?;
+    }
 
     match config.iso_format {
         IsoFormat::Iso => {
@@ -2120,7 +2680,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         .collect();
     let spawn_room = SpawnRoom::from_room_idx(config.elevator_layout[20] as usize);
 
-    let mut rng = ChaChaRng::from_seed(&config.item_seed);
+    let mut rng = StdRng::seed_from_u64(config.seed);
     let artifact_totem_strings = build_artifact_temple_totem_scan_strings(pickup_layout, &mut rng);
 
     let mut pickup_resources = collect_pickup_resources(gc_disc);
@@ -2130,7 +2690,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
     }
 
     // XXX These values need to out live the patcher
-    let select_game_fmv_suffix = rng.choose(&["A", "B", "C"]).unwrap();
+    let select_game_fmv_suffix = ["A", "B", "C"].choose(&mut rng).unwrap();
     let n = format!("Video/02_start_fileselect_{}.thp", select_game_fmv_suffix);
     let start_file_select_fmv = gc_disc.find_file(&n).unwrap().file().unwrap().clone();
     let n = format!("Video/04_fileselect_playgame_{}.thp", select_game_fmv_suffix);
@@ -2168,8 +2728,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
 
     if let Some(flaahgra_music_files) = &config.flaahgra_music_files {
         const MUSIC_FILE_NAME: &[&[u8]] = &[
-            b"rui_flaaghraR.dsp",
-            b"rui_flaaghraL.dsp",
+            b"Audio/rui_flaaghraR.dsp",
+            b"Audio/rui_flaaghraL.dsp",
         ];
         for (file_name, music_file) in MUSIC_FILE_NAME.iter().zip(flaahgra_music_files.iter()) {
             patcher.add_file_patch(file_name, move |file| {
@@ -2217,6 +2777,14 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             });
             let iter = room_info.pickup_locations.iter().zip(&mut layout_iterator);
             for (&pickup_location, &pickup_type) in iter {
+                // 1 in 1024 chance of a missile being shiny means a player is likely to see a
+                // shiny missile every 40ish games (assuming most players collect about half of the
+                // missiles)
+                let pickup_type = if pickup_type == PickupType::Missile && rng.gen_ratio(1, 1024) {
+                    PickupType::ShinyMissile
+                } else {
+                    pickup_type
+                };
                 patcher.add_scly_patch(
                     (name.as_bytes(), room_info.room_id),
                     move |ps, area| modify_pickups_in_mrea(
@@ -2349,10 +2917,21 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
 
     make_elite_research_fight_prereq_patches(&mut patcher);
 
-    patcher.add_scly_patch(resource_info!("22_Flaahgra.MREA").into(), patch_flaahgra_after_wild);
+    patcher.add_scly_patch(
+        resource_info!("22_Flaahgra.MREA").into(),
+        patch_sunchamber_prevent_wild_before_flaahgra
+    );
+    patcher.add_scly_patch(
+        resource_info!("0v_connect_tunnel.MREA").into(),
+        patch_sun_tower_prevent_wild_before_flaahgra
+    );
     patcher.add_scly_patch(
         resource_info!("00j_over_hall.MREA").into(),
         patch_temple_security_station_cutscene_trigger
+    );
+    patcher.add_scly_patch(
+        resource_info!("01_ice_plaza.MREA").into(),
+        patch_ridley_phendrana_shorelines_cinematic
     );
     patcher.add_scly_patch(
         resource_info!("08b_under_intro_ventshaft.MREA").into(),
@@ -2379,14 +2958,37 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
     );
 
 
-    if version == Version::V0_02 {
+    if version == Version::Ntsc0_02 {
         patcher.add_scly_patch(
             resource_info!("01_mines_mainplaza.MREA").into(),
-            patch_ore_processing_door_lock_0_02
+            patch_main_quarry_door_lock_0_02
         );
         patcher.add_scly_patch(
             resource_info!("13_over_burningeffigy.MREA").into(),
             patch_geothermal_core_door_lock_0_02
+        );
+        patcher.add_scly_patch(
+            resource_info!("19_hive_totem.MREA").into(),
+            patch_hive_totem_boss_trigger_0_02
+        );
+        patcher.add_scly_patch(
+            resource_info!("05_ice_shorelines.MREA").into(),
+            patch_ruined_courtyard_thermal_conduits_0_02
+        );
+    }
+
+    if version == Version::Pal {
+        patcher.add_scly_patch(
+            resource_info!("04_mines_pillar.MREA").into(),
+            patch_ore_processing_destructible_rock_pal
+        );
+        patcher.add_scly_patch(
+            resource_info!("13_over_burningeffigy.MREA").into(),
+            patch_geothermal_core_destructible_rock_pal
+        );
+        patcher.add_scly_patch(
+            resource_info!("01_mines_mainplaza.MREA").into(),
+            patch_main_quarry_door_lock_pal
         );
     }
 
@@ -2403,6 +3005,13 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         patcher.add_scly_patch(
             resource_info!("01_endcinema.MREA").into(),
             patch_ending_scene_straight_to_credits
+        );
+    }
+
+    if config.enable_vault_ledge_door {
+        patcher.add_scly_patch(
+            resource_info!("01_mainplaza.MREA").into(),
+            make_main_plaza_locked_door_two_ways
         );
     }
 

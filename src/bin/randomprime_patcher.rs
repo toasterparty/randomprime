@@ -139,6 +139,9 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         .arg(Arg::with_name("skip impact crater")
             .long("skip-impact-crater")
             .help("Elevators to the Impact Crater immediately go to the game end sequence"))
+        .arg(Arg::with_name("enable vault ledge door")
+            .long("enable-vault-ledge-door")
+            .help("Enable Chozo Ruins Vault door from Main Plaza"))
 
         .arg(Arg::with_name("all artifact hints")
             .long("all-artifact-hints")
@@ -180,6 +183,10 @@ fn get_config() -> Result<patches::ParsedConfig, String>
                 .long("text-file-comment")
                 .hidden(true)
                 .takes_value(true))
+
+        .arg(Arg::with_name("pal override")
+            .long("pal-override")
+            .hidden(true))
         .get_matches();
 
     let json_path = matches.value_of("profile json path").unwrap();
@@ -190,7 +197,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
     let input_iso_path = config.input_iso;
     let input_iso_file = File::open(input_iso_path)
                 .map_err(|e| format!("Failed to open input iso: {}", e))?;
-    let input_iso_mmap = memmap::Mmap::open(&input_iso_file, memmap::Protection::Read)
+    let input_iso_mmap = unsafe { memmap::Mmap::map(&input_iso_file) }
                 .map_err(|e| format!("Failed to open input iso: {}", e))?;
 
     let output_iso_path = config.output_iso;
@@ -251,6 +258,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         auto_enabled_elevators: matches.is_present("auto enabled elevators"),
         powerbomb_lockpick: config.powerbomb_lockpick,
         quiet: matches.is_present("quiet"),
+        enable_vault_ledge_door: matches.is_present("enable vault ledge door"),
 
         skip_impact_crater,
         artifact_hint_behavior,
@@ -272,6 +280,8 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         bnr_game_name_full: None,
         bnr_developer_full: None,
         bnr_description: None,
+
+        pal_override: matches.is_present("pal override"),
     })
 
 }

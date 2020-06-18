@@ -77,6 +77,8 @@ struct Config
     #[serde(default)]
     skip_impact_crater: bool,
     #[serde(default)]
+    enable_vault_ledge_door: bool,
+    #[serde(default)]
     artifact_hint_behavior: patches::ArtifactHintBehavior,
 
     #[serde(default)]
@@ -204,7 +206,7 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
 
     let input_iso_file = File::open(config.input_iso.trim())
                 .map_err(|e| format!("Failed to open {}: {}", config.input_iso, e))?;
-    let input_iso = memmap::Mmap::open(&input_iso_file, memmap::Protection::Read)
+    let input_iso = unsafe { memmap::Mmap::map(&input_iso_file) }
             .map_err(|e| format!("Failed to open {}: {}", config.input_iso,  e))?;
 
     let output_iso = OpenOptions::new()
@@ -263,8 +265,9 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         auto_enabled_elevators: false,
         quiet: false,
 
-        skip_impact_crater: config.patch_settings.skip_crater,
-        artifact_hint_behavior: patches::ArtifactHintBehavior::Default,
+        skip_impact_crater: config.skip_impact_crater,
+        enable_vault_ledge_door: config.enable_vault_ledge_door,
+        artifact_hint_behavior: config.artifact_hint_behavior,
 
         flaahgra_music_files,
 
@@ -277,9 +280,11 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         bnr_game_name: banner.as_mut().and_then(|b| b.game_name.take()),
         bnr_developer: banner.as_mut().and_then(|b| b.developer.take()),
 
-        bnr_game_name_full: banner.as_mut().and_then(|b| b.game_name_full.take()),
-        bnr_developer_full: banner.as_mut().and_then(|b| b.developer_full.take()),
-        bnr_description: banner.as_mut().and_then(|b| b.description.take()),
+        bnr_game_name_full: config.banner.as_mut().and_then(|b| b.game_name_full.take()),
+        bnr_developer_full: config.banner.as_mut().and_then(|b| b.developer_full.take()),
+        bnr_description: config.banner.as_mut().and_then(|b| b.description.take()),
+
+        pal_override: false,
     };
 
     let pn = ProgressNotifier::new(cb_data, cb);
