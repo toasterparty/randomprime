@@ -38,6 +38,7 @@ struct PatchConfig {
     skip_hudmemos: bool,
     powerbomb_lockpick: bool,
     enable_one_way_doors: bool,
+    patch_map: bool,
 }
 
 #[derive(Deserialize)]
@@ -252,6 +253,7 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         pickup_layout, elevator_layout, seed,
         item_seed,door_weights:config.door_weights,
         excluded_doors:config.excluded_doors,
+        patch_map:config.patch_settings.patch_map,
 
         layout_string,
 

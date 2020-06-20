@@ -81,6 +81,7 @@ struct Config {
     output_iso: String,
     seed: u64,
     weights: Weights,
+    patch_map: bool,
     skip_frigate: bool,
     fix_flaaghra_music: bool,
     trilogy_disc_path: Option<String>,
@@ -249,6 +250,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         excluded_doors:config.excluded_doors,
 
         iso_format,
+        patch_map: config.patch_map,
         skip_hudmenus: matches.is_present("skip hudmenus"),
         skip_frigate: config.skip_frigate,
         nonvaria_heat_damage: matches.is_present("nonvaria heat damage"),

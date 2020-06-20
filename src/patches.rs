@@ -1097,6 +1097,29 @@ fn patch_door<'r>(
     Ok(())
 }
 
+fn patch_map_door_icon(
+    res: &mut structs::Resource,
+    door: DoorLocation,
+    door_type: DoorType,
+) -> Result<(), String>
+{
+    let mapa = res.kind.as_mapa_mut().unwrap();
+
+    let door_icon = mapa.objects.iter_mut()
+        .find(|obj| obj.editor_id == door.door_location.instance_id)
+        .unwrap();
+    if !door_icon.is_vertical() {
+        door_icon.type_ = match door_type {
+            DoorType::Blue   => structs::MapaObjectType::DoorNormal as u32,
+            DoorType::Purple => structs::MapaObjectType::DoorWave as u32,
+            DoorType::White  => structs::MapaObjectType::DoorIce as u32,
+            DoorType::Red    => structs::MapaObjectType::DoorPlasma as u32,
+        };
+    };
+
+    Ok(())
+}
+
 fn fix_artifact_of_truth_requirements(
     ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
@@ -2554,6 +2577,7 @@ pub struct ParsedConfig
     pub seed: u64,
     pub door_weights: Weights,
     pub excluded_doors: [HashMap<String,Vec<bool>>;5],
+    pub patch_map: bool,
 
     pub iso_format: IsoFormat,
     pub skip_frigate: bool,
@@ -2833,6 +2857,12 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                     patcher.add_scly_patch(
                         (name.as_bytes(), room_info.room_id),
                         move |_ps, area| patch_door(area,door_location,door_type,door_resources,config.powerbomb_lockpick)
+                    );
+                }
+                if config.patch_map {
+                    patcher.add_resource_patch(
+                        (&[name.as_bytes()], room_info.mapa_id,b"MAPA".into()),
+                        move |res| patch_map_door_icon(res,door_location,door_type)
                     );
                 }
             }

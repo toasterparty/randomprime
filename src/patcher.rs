@@ -142,8 +142,10 @@ impl<'r, 's> PrimePatcher<'r, 's>
                     id: cursor.peek().unwrap().file_id,
                 };
 
-                if let Some((_, patch)) = self.resource_patches.iter_mut().find(|p| p.0 == res_key) {
-                    patch(cursor.value().unwrap())?;
+                for (patch_key, patch_func) in self.resource_patches.iter_mut() {
+                    if *patch_key == res_key {
+                        patch_func(cursor.value().unwrap())?;
+                    }
                 }
 
                 let mrea_key = MreaKey {
