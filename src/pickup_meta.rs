@@ -372,6 +372,7 @@ pub struct RoomInfo
 {
     pub room_id: u32,
     pub name: &'static str,
+    pub mapa_id: u32,
     pub pickup_locations: &'static [PickupLocation],
     pub door_locations: &'static [DoorLocation],
     pub objects_to_remove: &'static [ObjectsToRemove],

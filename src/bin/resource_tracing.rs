@@ -336,6 +336,7 @@ struct RoomInfo
 {
     room_id: u32,
     name: String,
+    mapa_id: u32,
     pickups: Vec<PickupLocation>,
     doors: Vec<DoorLocation>,
     objects_to_remove: HashMap<u32, Vec<u32>>,
@@ -951,6 +952,11 @@ fn main()
             .map(|area| (area.mrea, area.area_name_strg))
             .collect();
 
+        let mut mapw_res = resources.iter()
+            .find(|res| res.fourcc() == b"MAPW".into())
+            .unwrap().into_owned();
+        let mut mapw = mapw_res.kind.as_mapw_mut().unwrap().area_maps.iter();
+
         locations.push(vec![]);
         let pak_locations = locations.last_mut().unwrap();
 
@@ -966,6 +972,13 @@ fn main()
             let mut room_locations = vec![];
             let mut room_removals = HashMap::new();
             let mut door_locations = vec![];
+
+            let target_mapa_id = mapw.next().unwrap().into_owned();
+            let target_mapa = resources.iter()
+                .find(|res| res.fourcc() == b"MAPA".into() && res.file_id == target_mapa_id)
+                .unwrap().into_owned();
+            let mapa_id = target_mapa.file_id;
+
             for (layer_num, scly_layer) in scly.layers.iter().enumerate() {
                 for obj in scly_layer.objects.iter() {
                     let obj = obj.into_owned();
@@ -1061,6 +1074,7 @@ fn main()
                 pak_locations.push(RoomInfo {
                     room_id: res.file_id,
                     name,
+                    mapa_id,
                     pickups: room_locations,
                     doors: door_locations,
                     objects_to_remove: room_removals,
@@ -1095,6 +1109,7 @@ fn main()
             println!("        RoomInfo {{");
             println!("            room_id: 0x{:08X},", room_info.room_id);
             println!("            name: {:?},", &room_info.name[..(room_info.name.len() - 1)]);
+            println!("            mapa_id: 0x{:08X},", room_info.mapa_id);
             println!("            pickup_locations: &[");
             for location in room_info.pickups {
                 println!("                PickupLocation {{");

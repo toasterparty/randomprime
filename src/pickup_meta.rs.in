@@ -6,6 +6,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x3E6B2BB7,
             name: "Transport to Tallon Overworld North",
+            mapa_id: 0x17BED08A,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -21,6 +22,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xB7F1952A,
             name: "Ruins Entrance",
+            mapa_id: 0x9E246E17,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -42,6 +44,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xD5CDB809,
             name: "Main Plaza",
+            mapa_id: 0xFC184334,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 131372 },
@@ -110,6 +113,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x560DBE38,
             name: "Ruined Fountain Access",
+            mapa_id: 0x7FD84505,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -131,6 +135,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xDF746AE0,
             name: "Ruined Shrine Access",
+            mapa_id: 0xF6A191DD,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -152,6 +157,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x092D89FD,
             name: "Nursery Access",
+            mapa_id: 0x20F872C0,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -173,6 +179,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x53359457,
             name: "Plaza Access",
+            mapa_id: 0x7AE06F6A,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -194,6 +201,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x165A4DE9,
             name: "Ruined Fountain",
+            mapa_id: 0x3F8FB6D4,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 524406 },
@@ -232,6 +240,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x3C785450,
             name: "Ruined Shrine",
+            mapa_id: 0x15ADAF6D,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 589860 },
@@ -307,6 +316,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xCB1E8A0B,
             name: "Eyon Tunnel",
+            mapa_id: 0xE2CB7136,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -328,6 +338,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xEF069019,
             name: "Vault",
+            mapa_id: 0xC6D36B24,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 720957 },
@@ -360,6 +371,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x3F04F304,
             name: "Training Chamber",
+            mapa_id: 0x16D10839,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 786470 },
@@ -392,6 +404,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x870B0525,
             name: "Arboretum Access",
+            mapa_id: 0xAEDEFE18,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -419,6 +432,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x282B16B4,
             name: "Meditation Fountain",
+            mapa_id: 0x01FEED89,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -440,6 +454,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x59E0184E,
             name: "Tower of Light Access",
+            mapa_id: 0x7035E373,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -467,6 +482,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xC2576E4D,
             name: "Ruined Nursery",
+            mapa_id: 0xEB829570,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1048674 },
@@ -505,6 +521,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xA5089191,
             name: "Vault Access",
+            mapa_id: 0x8CDD6AAC,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -526,6 +543,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x18D186BB,
             name: "Training Chamber Access",
+            mapa_id: 0x31047D86,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1179651 },
@@ -570,6 +588,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x18AB6106,
             name: "Arboretum",
+            mapa_id: 0x317E9A3B,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -609,6 +628,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x491BFABA,
             name: "Magma Pool",
+            mapa_id: 0x60CE0187,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1310957 },
@@ -647,6 +667,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x0D72F1F7,
             name: "Tower of Light",
+            mapa_id: 0x24A70ACA,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1377077 },
@@ -695,6 +716,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x1D5E482C,
             name: "Save Station 1",
+            mapa_id: 0x348BB311,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -710,6 +732,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x46295CA0,
             name: "North Atrium",
+            mapa_id: 0x6FFCA79D,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -731,6 +754,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x8316EDF5,
             name: "Transport to Magmoor Caverns North",
+            mapa_id: 0xAAC316C8,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -758,6 +782,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x3D238FCD,
             name: "Sunchamber Lobby",
+            mapa_id: 0x14F674F0,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -779,6 +804,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x95F2019E,
             name: "Gathering Hall Access",
+            mapa_id: 0xBC27FAA3,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -800,6 +826,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x11BD63B7,
             name: "Tower Chamber",
+            mapa_id: 0x3868988A,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1769497 },
@@ -836,6 +863,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xE34FD92B,
             name: "Ruined Gallery",
+            mapa_id: 0xCA9A2216,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1835044 },
@@ -886,6 +914,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xDE161372,
             name: "Sun Tower",
+            mapa_id: 0xF7C3E84F,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -907,6 +936,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x3AD2120F,
             name: "Transport Access North",
+            mapa_id: 0x1307E932,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1966450 },
@@ -939,6 +969,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x54C40995,
             name: "Sunchamber Access",
+            mapa_id: 0x7D11F2A8,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -960,6 +991,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x47E73BC5,
             name: "Gathering Hall",
+            mapa_id: 0x6E32C0F8,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 2097239 },
@@ -1010,6 +1042,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xEA8A4073,
             name: "Totem Access",
+            mapa_id: 0xC35FBB4E,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -1031,6 +1064,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x1A5B2E16,
             name: "Map Station",
+            mapa_id: 0x338ED52B,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -1046,6 +1080,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x41CC90EC,
             name: "Sun Tower Access",
+            mapa_id: 0x68196BD1,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -1067,6 +1102,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xC8309DF6,
             name: "Hive Totem",
+            mapa_id: 0xE1E566CB,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 2359772 },
@@ -1141,6 +1177,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x9A0A03EB,
             name: "Sunchamber",
+            mapa_id: 0xB3DFF8D6,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 2435310 },
@@ -1244,6 +1281,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xEEEC837D,
             name: "Watery Hall Access",
+            mapa_id: 0xC7397840,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 2490376 },
@@ -1282,6 +1320,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xF7D8954E,
             name: "Save Station 2",
+            mapa_id: 0xDE0D6E73,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -1297,6 +1336,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x713600E3,
             name: "East Atrium",
+            mapa_id: 0x58E3FBDE,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -1318,6 +1358,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x492CBF4A,
             name: "Watery Hall",
+            mapa_id: 0x60F94477,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 2687109 },
@@ -1383,6 +1424,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x463D0D2E,
             name: "Energy Core Access",
+            mapa_id: 0x6FE8F613,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -1404,6 +1446,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x0F403B07,
             name: "Dynamo Access",
+            mapa_id: 0x2695C03A,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -1425,6 +1468,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xC9D52BBC,
             name: "Energy Core",
+            mapa_id: 0xE000D081,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -1446,6 +1490,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x04D6C285,
             name: "Dynamo",
+            mapa_id: 0x2D0339B8,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 2949154 },
@@ -1478,6 +1523,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xEF7EB590,
             name: "Burn Dome Access",
+            mapa_id: 0xC6AB4EAD,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -1493,6 +1539,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xC2715A58,
             name: "West Furnace Access",
+            mapa_id: 0xEBA4A165,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -1514,6 +1561,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x4148F7B0,
             name: "Burn Dome",
+            mapa_id: 0x689D0C8D,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 3145782 },
@@ -1567,6 +1615,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x2E318473,
             name: "Furnace",
+            mapa_id: 0x07E47F4E,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 3211358 },
@@ -1611,6 +1660,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x44E528F6,
             name: "East Furnace Access",
+            mapa_id: 0x6D30D3CB,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -1644,6 +1694,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xD9E78EB0,
             name: "Crossway Access West",
+            mapa_id: 0xF032758D,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -1665,6 +1716,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xFB54A0CB,
             name: "Hall of the Elders",
+            mapa_id: 0xD2815BF6,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 3408606 },
@@ -1721,6 +1773,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x13FFF119,
             name: "Crossway",
+            mapa_id: 0x3A2A0A24,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 3474120 },
@@ -1771,6 +1824,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x9D516D9D,
             name: "Reflecting Pool Access",
+            mapa_id: 0xB48496A0,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -1792,6 +1846,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xE1CE5BD1,
             name: "Elder Hall Access",
+            mapa_id: 0xC81BA0EC,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -1813,6 +1868,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x675A297F,
             name: "Crossway Access South",
+            mapa_id: 0x4E8FD242,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -1846,6 +1902,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xE1981EFC,
             name: "Elder Chamber",
+            mapa_id: 0xC84DE5C1,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 3735555 },
@@ -1882,6 +1939,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x361ECAAC,
             name: "Reflecting Pool",
+            mapa_id: 0x1FCB3191,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -1933,6 +1991,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x188A23AF,
             name: "Save Station 3",
+            mapa_id: 0x315FD892,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -1954,6 +2013,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xA2F90C53,
             name: "Transport Access South",
+            mapa_id: 0x8B2CF76E,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -1981,6 +2041,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xAFEFE677,
             name: "Antechamber",
+            mapa_id: 0x863A1D4A,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 3997699 },
@@ -2029,6 +2090,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xA5FA69A1,
             name: "Transport to Tallon Overworld East",
+            mapa_id: 0x8C2F929C,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2044,6 +2106,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x236E1B0F,
             name: "Transport to Tallon Overworld South",
+            mapa_id: 0x0ABBE032,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2061,6 +2124,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xC00E3781,
             name: "Transport to Magmoor Caverns West",
+            mapa_id: 0xE9DBCCBC,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2076,6 +2140,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xC4107CD7,
             name: "Shoreline Entrance",
+            mapa_id: 0xEDC587EA,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2097,6 +2162,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xF7285979,
             name: "Phendrana Shorelines",
+            mapa_id: 0xDEFDA244,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 131438 },
@@ -2159,6 +2225,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x85D9F399,
             name: "Temple Entryway",
+            mapa_id: 0xAC0C08A4,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2180,6 +2247,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x0581699D,
             name: "Save Station B",
+            mapa_id: 0x2C5492A0,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2195,6 +2263,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x3C13643A,
             name: "Ruins Entryway",
+            mapa_id: 0x15C69F07,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2216,6 +2285,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xC8115292,
             name: "Plaza Walkway",
+            mapa_id: 0xE1C4A9AF,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2237,6 +2307,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x4E85203C,
             name: "Ice Ruins Access",
+            mapa_id: 0x6750DB01,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2258,6 +2329,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x6655F51E,
             name: "Chozo Ice Temple",
+            mapa_id: 0x4F800E23,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 524887 },
@@ -2306,6 +2378,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xB33A0620,
             name: "Ice Ruins West",
+            mapa_id: 0x9AEFFD1D,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 600301 },
@@ -2356,6 +2429,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xDAFCC26F,
             name: "Ice Ruins East",
+            mapa_id: 0xF3293952,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 655531 },
@@ -2394,6 +2468,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xEF674B4C,
             name: "Chapel Tunnel",
+            mapa_id: 0xC6B2B071,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2415,6 +2490,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xCFB8ABD1,
             name: "Courtyard Entryway",
+            mapa_id: 0xE66D50EC,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2436,6 +2512,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x034D8137,
             name: "Canyon Entryway",
+            mapa_id: 0x2A987A0A,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2463,6 +2540,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x40C548E9,
             name: "Chapel of the Elders",
+            mapa_id: 0x6910B3D4,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 917592 },
@@ -2516,6 +2594,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x1921876D,
             name: "Ruined Courtyard",
+            mapa_id: 0x30F47C50,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 983596 },
@@ -2572,6 +2651,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xA20A7455,
             name: "Phendrana Canyon",
+            mapa_id: 0x8BDF8F68,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1048801 },
@@ -2614,6 +2694,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x5694A06B,
             name: "Save Station A",
+            mapa_id: 0x7F415B56,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2629,6 +2710,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xD341D2DB,
             name: "Specimen Storage",
+            mapa_id: 0xFA9429E6,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2662,6 +2744,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xEAB320CF,
             name: "Quarantine Access",
+            mapa_id: 0xC366DBF2,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2683,6 +2766,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xB51FCE29,
             name: "Research Entrance",
+            mapa_id: 0x9CCA3514,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2722,6 +2806,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x05E1962E,
             name: "North Quarantine Tunnel",
+            mapa_id: 0x2C346D13,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2755,6 +2840,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x83151B33,
             name: "Map Station",
+            mapa_id: 0xAAC0E00E,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2770,6 +2856,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x3947E047,
             name: "Hydra Lab Entryway",
+            mapa_id: 0x10921B7A,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2803,6 +2890,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x70181194,
             name: "Quarantine Cave",
+            mapa_id: 0x59CDEAA9,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1573322 },
@@ -2867,6 +2955,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x43E4CC25,
             name: "Research Lab Hydra",
+            mapa_id: 0x6A313718,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1639699 },
@@ -2899,6 +2988,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x0035FDAD,
             name: "South Quarantine Tunnel",
+            mapa_id: 0x29E00690,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2932,6 +3022,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x2191A05D,
             name: "Quarantine Monitor",
+            mapa_id: 0x08445B60,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1769489 },
@@ -2952,6 +3043,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x37BBB33C,
             name: "Observatory Access",
+            mapa_id: 0x1E6E4801,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -2973,6 +3065,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xDD0B0739,
             name: "Transport to Magmoor Caverns South",
+            mapa_id: 0xF4DEFC04,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -3006,6 +3099,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x3FB4A34E,
             name: "Observatory",
+            mapa_id: 0x16615873,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1966838 },
@@ -3078,6 +3172,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xD695B958,
             name: "Transport Access",
+            mapa_id: 0xFF404265,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 2031781 },
@@ -3122,6 +3217,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x1E48B18F,
             name: "West Tower Entrance",
+            mapa_id: 0x379D4AB2,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -3149,6 +3245,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x715C31EE,
             name: "Save Station D",
+            mapa_id: 0x5889CAD3,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -3164,6 +3261,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xD79EE805,
             name: "Frozen Pike",
+            mapa_id: 0xFE4B1338,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -3221,6 +3319,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xD79D6B9F,
             name: "West Tower ",
+            mapa_id: 0xFE4890A2,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -3248,6 +3347,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x760E731A,
             name: "Pike Access",
+            mapa_id: 0x5FDB8827,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -3281,6 +3381,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x39C70FB9,
             name: "Frost Cave Access",
+            mapa_id: 0x1012F484,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -3314,6 +3415,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x20EA1D30,
             name: "Hunter Cave Access",
+            mapa_id: 0x093FE60D,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -3347,6 +3449,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xB3C33249,
             name: "Control Tower",
+            mapa_id: 0x9A16C974,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 2557135 },
@@ -3407,6 +3510,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xA49B2544,
             name: "Research Core",
+            mapa_id: 0x8D4EDE79,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 1, instance_id: 69730588 },
@@ -3477,6 +3581,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x4C6F7773,
             name: "Frost Cave",
+            mapa_id: 0x65BA8C4E,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 2687367 },
@@ -3533,6 +3638,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x1EC7951A,
             name: "Hunter Cave",
+            mapa_id: 0x37126E27,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -3590,6 +3696,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x51091931,
             name: "East Tower",
+            mapa_id: 0x78DCE20C,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -3623,6 +3730,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xD8E905DD,
             name: "Research Core Access",
+            mapa_id: 0xF13CFEE0,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -3644,6 +3752,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xCEDDBA38,
             name: "Save Station C",
+            mapa_id: 0xE7084105,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -3665,6 +3774,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x253E76B3,
             name: "Upper Edge Tunnel",
+            mapa_id: 0x0CEB8D8E,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -3698,6 +3808,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x53801084,
             name: "Lower Edge Tunnel",
+            mapa_id: 0x7A55EBB9,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -3731,6 +3842,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xCA6CC052,
             name: "Chamber Access",
+            mapa_id: 0xE3B93B6F,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -3764,6 +3876,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x89D7A0A6,
             name: "Lake Tunnel",
+            mapa_id: 0xA0025B9B,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -3797,6 +3910,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x98DCC321,
             name: "Aether Lab Entryway",
+            mapa_id: 0xB109381C,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -3830,6 +3944,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x21B4BFF6,
             name: "Research Lab Aether",
+            mapa_id: 0x086144CB,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 3343328 },
@@ -3868,6 +3983,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x54DEF128,
             name: "Phendrana\'s Edge",
+            mapa_id: 0x7D0B0A15,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -3913,6 +4029,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x49175472,
             name: "Gravity Chamber",
+            mapa_id: 0x60C2AF4F,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 3473439 },
@@ -3983,6 +4100,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xF7C84340,
             name: "Storage Cave",
+            mapa_id: 0xDE1DB87D,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 3539113 },
@@ -4031,6 +4149,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x3C9490E5,
             name: "Security Cave",
+            mapa_id: 0x15416BD8,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 3604505 },
@@ -4053,6 +4172,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xB2701146,
             name: "Landing Site",
+            mapa_id: 0x9BA5EA7B,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 126 },
@@ -4103,6 +4223,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x7B143499,
             name: "Gully",
+            mapa_id: 0x52C1CFA4,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4124,6 +4245,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xEE209548,
             name: "Canyon Cavern",
+            mapa_id: 0xC7F56E75,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4145,6 +4267,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x5B4E38F5,
             name: "Temple Hall",
+            mapa_id: 0x729BC3C8,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4166,6 +4289,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xC44E7A07,
             name: "Alcove",
+            mapa_id: 0xED9B813A,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 262151 },
@@ -4208,6 +4332,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xE76AD711,
             name: "Waterfall Cavern",
+            mapa_id: 0xCEBF2C2C,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4235,6 +4360,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x2043C96E,
             name: "Tallon Canyon",
+            mapa_id: 0x09963253,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4268,6 +4394,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xBDB1FCAC,
             name: "Temple Security Station",
+            mapa_id: 0x94640791,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4295,6 +4422,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xB9ABCD56,
             name: "Frigate Crash Site",
+            mapa_id: 0x907E366B,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 524795 },
@@ -4345,6 +4473,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x13D96D3D,
             name: "Transport Tunnel A",
+            mapa_id: 0x3A0C9600,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4366,6 +4495,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x404804D9,
             name: "Root Tunnel",
+            mapa_id: 0x699DFFE4,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4393,6 +4523,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x234762BE,
             name: "Temple Lobby",
+            mapa_id: 0x0A929983,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4414,6 +4545,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xBB158C7E,
             name: "Frigate Access Tunnel",
+            mapa_id: 0x92C07743,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4441,6 +4573,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xCEA263E3,
             name: "Overgrown Cavern",
+            mapa_id: 0xE77798DE,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 852166 },
@@ -4485,6 +4618,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x11A02448,
             name: "Transport to Chozo Ruins West",
+            mapa_id: 0x3875DF75,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4500,6 +4634,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xBD8C8625,
             name: "Root Cave",
+            mapa_id: 0x94597D18,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 983090 },
@@ -4544,6 +4679,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x2398E906,
             name: "Artifact Temple",
+            mapa_id: 0x0A4D123B,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 1, instance_id: 68157908 },
@@ -4599,6 +4735,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x5E0EE592,
             name: "Main Ventilation Shaft Section C",
+            mapa_id: 0x77DB1EAF,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4620,6 +4757,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x85CA08AB,
             name: "Transport Tunnel C",
+            mapa_id: 0xAC1FF396,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4653,6 +4791,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xC7E821BA,
             name: "Transport Tunnel B",
+            mapa_id: 0xEE3DDA87,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1245494 },
@@ -4685,6 +4824,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x24F8AFF3,
             name: "Arbor Chamber",
+            mapa_id: 0x0D2D54CE,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1310741 },
@@ -4711,6 +4851,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xAFD4E038,
             name: "Main Ventilation Shaft Section B",
+            mapa_id: 0x86011B05,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4744,6 +4885,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x8A31665E,
             name: "Transport to Chozo Ruins East",
+            mapa_id: 0xA3E49D63,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4765,6 +4907,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x15D6FF8B,
             name: "Transport to Magmoor Caverns East",
+            mapa_id: 0x3C0304B6,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4780,6 +4923,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x66CBE887,
             name: "Main Ventilation Shaft Section A",
+            mapa_id: 0x4F1E13BA,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4801,6 +4945,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xEE09629A,
             name: "Reactor Core",
+            mapa_id: 0xC7DC99A7,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4816,6 +4961,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xFB427580,
             name: "Reactor Access",
+            mapa_id: 0xD2978EBD,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4831,6 +4977,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x37B3AFE6,
             name: "Cargo Freight Lift to Deck Gamma",
+            mapa_id: 0x1E6654DB,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1769749 },
@@ -4857,6 +5004,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xF0594C6D,
             name: "Savestation",
+            mapa_id: 0xD98CB750,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4872,6 +5020,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x4A96005E,
             name: "Deck Beta Transit Hall",
+            mapa_id: 0x6343FB63,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4893,6 +5042,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xAC2C58FE,
             name: "Biohazard Containment",
+            mapa_id: 0x85F9A3C3,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1966828 },
@@ -4925,6 +5075,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x76F6E356,
             name: "Deck Beta Security Hall",
+            mapa_id: 0x5F23186B,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4946,6 +5097,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x5F2EB7B6,
             name: "Biotech Research Area 1",
+            mapa_id: 0x76FB4C8B,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4967,6 +5119,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xC3D44A6E,
             name: "Deck Beta Conduit Hall",
+            mapa_id: 0xEA01B153,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -4988,6 +5141,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xE47228EF,
             name: "Connection Elevator to Deck Beta",
+            mapa_id: 0xCDA7D3D2,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -5009,6 +5163,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xFFB4A966,
             name: "Hydro Access Tunnel",
+            mapa_id: 0xD661525B,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 2293843 },
@@ -5041,6 +5196,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xF47DBE5B,
             name: "Great Tree Hall",
+            mapa_id: 0xDDA84566,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -5098,6 +5254,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xC5D6A597,
             name: "Great Tree Chamber",
+            mapa_id: 0xEC035EAA,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 2424845 },
@@ -5124,6 +5281,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x1A932F64,
             name: "Transport Tunnel D",
+            mapa_id: 0x3346D459,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -5157,6 +5315,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xB4FBBEF5,
             name: "Life Grove Tunnel",
+            mapa_id: 0x9D2E45C8,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 2555958 },
@@ -5189,6 +5348,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x9D330A07,
             name: "Transport Tunnel E",
+            mapa_id: 0xB4E6F13A,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -5222,6 +5382,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x0CA514F0,
             name: "Transport to Chozo Ruins South",
+            mapa_id: 0x2570EFCD,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -5243,6 +5404,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x86EB2E02,
             name: "Life Grove",
+            mapa_id: 0xAF3ED53F,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 2752545 },
@@ -5301,6 +5463,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x7D106670,
             name: "Transport to Phazon Mines East",
+            mapa_id: 0x54C59D4D,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -5324,6 +5487,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x430E999C,
             name: "Transport to Tallon Overworld South",
+            mapa_id: 0x6ADB62A1,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -5345,6 +5509,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x68CC7758,
             name: "Quarry Access",
+            mapa_id: 0x41198C65,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -5378,6 +5543,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x643D038F,
             name: "Main Quarry",
+            mapa_id: 0x4DE8F8B2,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 131635 },
@@ -5446,6 +5612,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x27A391B7,
             name: "Waste Disposal",
+            mapa_id: 0x0E766A8A,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -5479,6 +5646,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x361D41B0,
             name: "Save Station Mines A",
+            mapa_id: 0x1FC8BA8D,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -5500,6 +5668,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xC7653A92,
             name: "Security Access A",
+            mapa_id: 0xEEB0C1AF,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 328071 },
@@ -5544,6 +5713,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x97D2B2F6,
             name: "Ore Processing",
+            mapa_id: 0xBE0749CB,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -5601,6 +5771,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x956F1552,
             name: "Mine Security Station",
+            mapa_id: 0xBCBAEE6F,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -5634,6 +5805,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x4346A747,
             name: "Research Access",
+            mapa_id: 0x6A935C7A,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -5667,6 +5839,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xE39C342B,
             name: "Storage Depot B",
+            mapa_id: 0xCA49CF16,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 589827 },
@@ -5715,6 +5888,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x26219C01,
             name: "Elevator Access A",
+            mapa_id: 0x0FF4673C,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -5748,6 +5922,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x35C5D736,
             name: "Storage Depot A",
+            mapa_id: 0x1C102C0B,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 786470 },
@@ -5796,6 +5971,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x8A97BB54,
             name: "Elite Research",
+            mapa_id: 0xA3424069,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 852800 },
@@ -5850,6 +6026,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x0146ED43,
             name: "Elevator A",
+            mapa_id: 0x2893167E,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -5883,6 +6060,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x8988D1CB,
             name: "Elite Control Access",
+            mapa_id: 0xA05D2AF6,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 983181 },
@@ -5927,6 +6105,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xC50AF17A,
             name: "Elite Control",
+            mapa_id: 0xECDF0A47,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -5960,6 +6139,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xECEFEA8D,
             name: "Maintenance Tunnel",
+            mapa_id: 0xC53A11B0,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -5993,6 +6173,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x90709AAC,
             name: "Ventilation Shaft",
+            mapa_id: 0xB9A56191,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1179916 },
@@ -6025,6 +6206,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xAD2E7EB9,
             name: "Phazon Processing Center",
+            mapa_id: 0x84FB8584,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1247078 },
@@ -6081,6 +6263,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x3F375ECC,
             name: "Omega Research",
+            mapa_id: 0x16E2A5F1,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -6114,6 +6297,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x42C4AAF1,
             name: "Transport Access",
+            mapa_id: 0x6B1151CC,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -6147,6 +6331,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xED6DE73B,
             name: "Processing Center Access",
+            mapa_id: 0xC4B81C06,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1441959 },
@@ -6191,6 +6376,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x198FF5DC,
             name: "Map Station Mines",
+            mapa_id: 0x305A0EE1,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -6212,6 +6398,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xF517A1EA,
             name: "Dynamo Access",
+            mapa_id: 0xDCC25AD7,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -6233,6 +6420,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xE2C2CF38,
             name: "Transport to Magmoor Caverns South",
+            mapa_id: 0xCB173405,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -6254,6 +6442,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x3953C353,
             name: "Elite Quarters",
+            mapa_id: 0x1086386E,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1705144 },
@@ -6293,6 +6482,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xFEA372E2,
             name: "Central Dynamo",
+            mapa_id: 0xD77689DF,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1770673 },
@@ -6349,6 +6539,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x71343C3F,
             name: "Elite Quarters Access",
+            mapa_id: 0x58E1C702,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -6382,6 +6573,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x5ABEEC20,
             name: "Quarantine Access A",
+            mapa_id: 0x736B171D,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -6415,6 +6607,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x7BD5E0BB,
             name: "Save Station Mines B",
+            mapa_id: 0x52001B86,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -6436,6 +6629,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xBB3AFC4E,
             name: "Metroid Quarantine B",
+            mapa_id: 0x92EF0773,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 2032133 },
@@ -6492,6 +6686,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xFB051F5A,
             name: "Metroid Quarantine A",
+            mapa_id: 0xD2D0E467,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 2098666 },
@@ -6536,6 +6731,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x14530779,
             name: "Quarantine Access B",
+            mapa_id: 0x3D86FC44,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -6569,6 +6765,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x66D0D003,
             name: "Save Station Mines C",
+            mapa_id: 0x4F052B3E,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -6590,6 +6787,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x3FD9D766,
             name: "Elevator Access B",
+            mapa_id: 0x160C2C5B,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -6623,6 +6821,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xEC47C242,
             name: "Fungal Hall B",
+            mapa_id: 0xC592397F,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 2359591 },
@@ -6679,6 +6878,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xE87957E0,
             name: "Elevator B",
+            mapa_id: 0xC1ACACDD,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -6712,6 +6912,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xB089331E,
             name: "Missile Station Mines",
+            mapa_id: 0x995CC823,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -6733,6 +6934,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xBBFA4AB3,
             name: "Phazon Mining Tunnel",
+            mapa_id: 0x922FB18E,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 2556031 },
@@ -6793,6 +6995,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xDE9D71F5,
             name: "Fungal Hall Access",
+            mapa_id: 0xF7488AC8,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 2621698 },
@@ -6837,6 +7040,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x0F5277D1,
             name: "Fungal Hall A",
+            mapa_id: 0x26878CEC,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -6872,6 +7076,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x3BEAADC9,
             name: "Transport to Chozo Ruins North",
+            mapa_id: 0x123F56F4,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -6887,6 +7092,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x6D434F4E,
             name: "Burning Trail",
+            mapa_id: 0x4496B473,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -6920,6 +7126,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x79784D3D,
             name: "Lake Tunnel",
+            mapa_id: 0x50ADB600,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -6941,6 +7148,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x09B3E01C,
             name: "Save Station Magmoor A",
+            mapa_id: 0x20661B21,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -6956,6 +7164,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xA4719C6A,
             name: "Lava Lake",
+            mapa_id: 0x8DA46757,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 272508 },
@@ -7004,6 +7213,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xDA2ECB94,
             name: "Pit Tunnel",
+            mapa_id: 0xF3FB30A9,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -7025,6 +7235,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xBAD9EDBF,
             name: "Triclops Pit",
+            mapa_id: 0x930C1682,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 393484 },
@@ -7063,6 +7274,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x0DCC4BCC,
             name: "Monitor Tunnel",
+            mapa_id: 0x2419B0F1,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -7084,6 +7296,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xADEF843E,
             name: "Storage Cavern",
+            mapa_id: 0x843A7F03,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 524303 },
@@ -7110,6 +7323,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x0C57A641,
             name: "Monitor Station",
+            mapa_id: 0x25825D7C,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -7143,6 +7357,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x47F2C087,
             name: "Transport Tunnel A",
+            mapa_id: 0x6E273BBA,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 655366 },
@@ -7175,6 +7390,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x89A6CB8D,
             name: "Warrior Shrine",
+            mapa_id: 0xA07330B0,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 720951 },
@@ -7217,6 +7433,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x901040DF,
             name: "Shore Tunnel",
+            mapa_id: 0xB9C5BBE2,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 786472 },
@@ -7265,6 +7482,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xDCA9A28B,
             name: "Transport to Phendrana Drifts North",
+            mapa_id: 0xF57C59B6,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -7280,6 +7498,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xF5EF1862,
             name: "Fiery Shores",
+            mapa_id: 0xDC3AE35F,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 917978 },
@@ -7318,6 +7537,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x3346C676,
             name: "Transport Tunnel B",
+            mapa_id: 0x1A933D4B,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -7339,6 +7559,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x4C3D244C,
             name: "Transport to Tallon Overworld West",
+            mapa_id: 0x65E8DF71,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -7360,6 +7581,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xE4A4462E,
             name: "Twin Fires Tunnel",
+            mapa_id: 0xCD71BD13,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -7381,6 +7603,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x4C784BEA,
             name: "Twin Fires",
+            mapa_id: 0x65ADB0D7,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -7408,6 +7631,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xA73BD0E0,
             name: "North Core Tunnel",
+            mapa_id: 0x8EEE2BDD,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -7441,6 +7665,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xC0498676,
             name: "Geothermal Core",
+            mapa_id: 0xE99C7D4B,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -7474,6 +7699,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x4CC18E5A,
             name: "Plasma Processing",
+            mapa_id: 0x65147567,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1376287 },
@@ -7522,6 +7748,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x70D950B8,
             name: "South Core Tunnel",
+            mapa_id: 0x590CAB85,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -7555,6 +7782,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x8ABEB3C3,
             name: "Magmoor Workstation",
+            mapa_id: 0xA36B48FE,
             pickup_locations: &[
                 PickupLocation {
                     location: ScriptObjectLocation { layer: 0, instance_id: 1507982 },
@@ -7599,6 +7827,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x046D5649,
             name: "Workstation Tunnel",
+            mapa_id: 0x2DB8AD74,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -7626,6 +7855,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xD38FD611,
             name: "Transport Tunnel C",
+            mapa_id: 0xFA5A2D2C,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -7659,6 +7889,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xEF2F1440,
             name: "Transport to Phazon Mines West",
+            mapa_id: 0xC6FAEF7D,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -7680,6 +7911,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0xC1AC9233,
             name: "Transport to Phendrana Drifts South",
+            mapa_id: 0xE879690E,
             pickup_locations: &[
             ],
             door_locations: &[
@@ -7707,6 +7939,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 5] = &[
         RoomInfo {
             room_id: 0x7F56D921,
             name: "Save Station Magmoor B",
+            mapa_id: 0x5683221C,
             pickup_locations: &[
             ],
             door_locations: &[
