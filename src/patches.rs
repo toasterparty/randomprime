@@ -1030,7 +1030,7 @@ fn patch_frigate_teleporter<'r>(area: &mut mlvl_wrapper::MlvlArea, spawn_room: S
 }
 
 fn calculate_door_type(pak_name: &str, mut rng: &mut StdRng, weights: &Weights) -> DoorType {
-    let range = Uniform::from(0..=100);
+    let range = Uniform::from(0..100);
     let weights : &[u8;4] = match pak_name {
         "Metroid2.pak" => &weights.chozo_ruins,
         "Metroid3.pak" => &weights.phendrana_drifts,
@@ -1042,17 +1042,12 @@ fn calculate_door_type(pak_name: &str, mut rng: &mut StdRng, weights: &Weights) 
     };
     if weights[0]+weights[1]+weights[2]+weights[3] != 100 { panic!("The sum of all weights for each area must equal exactly 100.") }
     let num:u8 = range.sample(&mut rng);
-    if num <= weights[0] { DoorType::Blue }
-    else if num > weights[0] && num <= (weights[1]+weights[0]) {
-        DoorType::Purple
-    }
-    else if num > (weights[1]+weights[0]) && num <= (weights[2]+weights[1]+weights[0]) {
-        DoorType::White
-    }
-    else if num > (weights[2]+weights[1]+weights[0]) && num <= (weights[3]+weights[2]+weights[1]+weights[0]) {
-        DoorType::Red
-    } else {
-        panic!("RNG outside the range 0-100.")
+    if num < weights[0] { DoorType::Blue }
+    else if num < (weights[1]+weights[0]) { DoorType::Purple }
+    else if num < (weights[2]+weights[1]+weights[0]) { DoorType::White }
+    else if num < (weights[3]+weights[2]+weights[1]+weights[0]) { DoorType::Red }
+    else {
+        panic!("RNG outside the range 0-99.")
     }
 }
 
