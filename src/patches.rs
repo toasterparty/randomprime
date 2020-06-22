@@ -1449,7 +1449,7 @@ fn patch_main_ventilation_shaft_section_b_door<'r>(
 fn make_main_plaza_locked_door_two_ways(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
-    mut rng: &mut StdRng,
+    door_type: DoorType,
     config: &ParsedConfig
 ) -> Result<(), String>
 {
@@ -1750,8 +1750,6 @@ fn make_main_plaza_locked_door_two_ways(
     locked_door.projectiles_collide = 0;
 
     if !config.excluded_doors[World::ChozoRuins as usize]["Main Plaza"][4] {
-        let door_type = calculate_door_type("Metroid2.pak",&mut rng,&config.door_weights);
-
         let door_force = layer.objects.as_mut_vec().iter_mut()
             .find(|obj| obj.instance_id == trigger_doorunlock_id)
             .and_then(|obj| obj.property_data.as_damageable_trigger_mut())
@@ -1827,6 +1825,24 @@ fn make_main_plaza_locked_door_two_ways(
                 },
             ]
         );
+
+    Ok(())
+}
+
+fn patch_main_plaza_locked_door_map_icon(res: &mut structs::Resource,door_type:DoorType)
+    -> Result<(),String> {
+    let mapa = res.kind.as_mapa_mut().unwrap();
+
+    let door_icon = mapa.objects.iter_mut()
+    .find(|obj| obj.editor_id == 0x20060)
+    .unwrap();
+
+    door_icon.type_ = match door_type {
+        DoorType::Blue   => structs::MapaObjectType::DoorNormal as u32,
+        DoorType::Purple => structs::MapaObjectType::DoorWave as u32,
+        DoorType::White  => structs::MapaObjectType::DoorIce as u32,
+        DoorType::Red    => structs::MapaObjectType::DoorPlasma as u32,
+    };
 
     Ok(())
 }
@@ -3066,10 +3082,17 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
     }
 
     if config.enable_vault_ledge_door {
+        let door_type = calculate_door_type("Metroid2.pak",&mut rng,&config.door_weights);
         patcher.add_scly_patch(
             resource_info!("01_mainplaza.MREA").into(),
-            move |ps,area| make_main_plaza_locked_door_two_ways(ps,area, &mut door_rng,&config)
+            move |ps,area| make_main_plaza_locked_door_two_ways(ps,area, door_type,&config)
         );
+        if config.patch_map {
+            patcher.add_resource_patch(
+                resource_info!("01_mainplaza.MAPA").into(),
+                move |res| patch_main_plaza_locked_door_map_icon(res,door_type)
+            )
+        }
     }
 
     patcher.run(gc_disc)?;
