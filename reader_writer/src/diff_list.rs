@@ -202,8 +202,9 @@ impl<'list, A> DiffListCursor<'list, A>
             self.vec[self.idx] = DiffListElem::Array(right);
         };
         self.vec.splice(self.idx..self.idx, iter.map(DiffListElem::Inst));
-        // We shouldn't need to set self.inner_cursor here. We've inserted at
-        // least one element, so self.cursor should be pointing to an Inst.
+        if let Some(DiffListElem::Array(a)) = self.vec.get(self.idx) {
+            self.inner_cursor = Some(a.as_cursor());
+        }
     }
 
     /// Inserts the items yielded by `iter` into the list. The cursor will be positioned after the
@@ -228,9 +229,10 @@ impl<'list, A> DiffListCursor<'list, A>
             self.vec[self.idx] = DiffListElem::Array(right);
         };
         self.vec.splice(self.idx..self.idx, iter.map(DiffListElem::Inst));
-        self.idx += self.vec.len() - pre_len
-        // We shouldn't need to set self.inner_cursor here. We've inserted at
-        // least one element, so self.cursor should be pointing to an Inst.
+        self.idx += self.vec.len() - pre_len;
+        if let Some(DiffListElem::Array(a)) = self.vec.get(self.idx) {
+            self.inner_cursor = Some(a.as_cursor());
+        }
     }
 
     pub fn peek(&mut self) -> Option<LCow<<A::Cursor as DiffListSourceCursor>::Item>>
@@ -401,5 +403,138 @@ impl<'cursor, 'list: 'cursor, A> DerefMut for DiffListCursorAdvancer<'cursor, 'l
     fn deref_mut(&mut self) -> &mut Self::Target
     {
         &mut *self.cursor
+    }
+}
+
+#[cfg(test)]
+mod test
+{
+    struct Source<'a>(&'a [u8]);
+
+    impl<'a> super::AsDiffListSourceCursor for Source<'a>
+    {
+        type Cursor = Cursor<'a>;
+        fn as_cursor(&self) -> Self::Cursor
+        {
+            Cursor {
+                array: self.0,
+                idx: 0,
+            }
+        }
+
+        fn len(&self) -> usize
+        {
+            self.0.len()
+        }
+    }
+
+    struct Cursor<'a>
+    {
+        array: &'a [u8],
+        idx: usize,
+    }
+
+    impl<'a> super::DiffListSourceCursor for Cursor<'a>
+    {
+        type Item = u8;
+        type Source = Source<'a>;
+
+        fn next(&mut self) -> bool
+        {
+            if self.idx == self.array.len() - 1 {
+                false
+            } else {
+                self.idx += 1;
+                true
+            }
+        }
+
+        fn get(&self) -> Self::Item
+        {
+            self.array[self.idx]
+        }
+
+        fn split(self) -> (Option<Self::Source>, Self::Source)
+        {
+            if self.idx == 0 {
+                (None, Source(self.array))
+            } else {
+                let (left, right) = self.array.split_at(self.idx);
+                (Some(Source(left)), Source(right))
+            }
+        }
+
+        fn split_around(self) -> (Option<Self::Source>, Self::Item, Option<Self::Source>)
+        {
+            let item = self.get();
+            if self.array.len() == 1 {
+                (None, item, None)
+            } else if self.idx == 0 {
+                (None, item, Some(Source(&self.array[1..])))
+            } else if self.idx == self.array.len() - 1 {
+                (Some(Source(&self.array[..self.idx])), item, None)
+            } else {
+                (Some(Source(&self.array[..self.idx])), item, Some(Source(&self.array[self.idx + 1..])))
+            }
+
+        }
+    }
+
+    #[test]
+    fn test_diff_list_unmodified_iter()
+    {
+        let junk = &[0u8; 1024][..];
+        let source = Source(&[1, 2, 3, 4, 5, 6]);
+        let diff_list: super::DiffList<Source> = crate::Reader::new(junk).read(source);
+
+        let v = diff_list.iter()
+            .map(|i| i.into_owned())
+            .collect::<Vec<_>>();
+        assert_eq!(v, vec![1, 2, 3, 4, 5, 6]);
+    }
+
+    #[test]
+    fn test_diff_list_insertion_iter()
+    {
+        let junk = &[0u8; 1024][..];
+        let source = Source(&[1, 2, 3, 4, 5, 6]);
+        let mut diff_list: super::DiffList<Source> = crate::Reader::new(junk).read(source);
+
+        {
+            let mut cursor = diff_list.cursor();
+            cursor.insert_before(std::iter::once(0));
+            cursor.next();
+            cursor.next();
+            cursor.insert_after(std::iter::once(7));
+        }
+
+        let v = diff_list.iter()
+            .map(|i| i.into_owned())
+            .collect::<Vec<_>>();
+        assert_eq!(v, vec![0, 1, 7, 2, 3, 4, 5, 6]);
+    }
+
+    #[test]
+    fn test_diff_list_multiple_values()
+    {
+        let junk = &[0u8; 1024][..];
+        let source = Source(&[1, 2, 3, 4, 5, 6]);
+        let mut diff_list: super::DiffList<Source> = crate::Reader::new(junk).read(source);
+
+        {
+            let mut cursor = diff_list.cursor();
+            while cursor.peek().is_some() {
+                let mut cursor = cursor.cursor_advancer();
+                cursor.insert_after(vec![9].into_iter());
+                assert!(cursor.peek().is_some());
+                assert!(cursor.value().is_some());
+                assert!(cursor.peek().is_some());
+            }
+        }
+
+        let v = diff_list.iter()
+            .map(|i| i.into_owned())
+            .collect::<Vec<_>>();
+        assert_eq!(v, vec![9, 1, 9, 2, 9, 3, 9, 4, 9, 5, 9, 6]);
     }
 }
