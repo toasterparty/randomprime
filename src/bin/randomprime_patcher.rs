@@ -73,6 +73,14 @@ impl structs::ProgressNotifier for ProgressNotifier
         }
         println!("Flushing written data to the disk...");
     }
+
+    fn notify_stacking_warning(&mut self)
+    {
+        if self.quiet {
+            return;
+        }
+        println!("Item randomized game. Skipping item randomizer configuration.");
+    }
 }
 
 #[derive(Debug, Deserialize)]

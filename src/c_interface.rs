@@ -107,6 +107,9 @@ enum CbMessage<'a>
     Error {
         msg: &'a str,
     },
+    Warning {
+        msg: &'a str,
+    },
     Progress {
         percent: f64,
         msg: &'a str,
@@ -131,6 +134,13 @@ impl<'a> CbMessage<'a>
     {
         let msg = CbMessage::fix_msg(msg);
         let cbmsg = CbMessage::Progress { percent, msg };
+        CString::new(serde_json::to_string(&cbmsg).unwrap()).unwrap()
+    }
+
+    fn warning_json(msg: &str) -> CString
+    {
+        let msg = CbMessage::fix_msg(msg);
+        let cbmsg = CbMessage::Warning { msg };
         CString::new(serde_json::to_string(&cbmsg).unwrap()).unwrap()
     }
 
@@ -195,6 +205,13 @@ impl structs::ProgressNotifier for ProgressNotifier
             CbMessage::progress_json(100., "Flushing written data to the disk").as_ptr(),
         );
     }
+    fn notify_stacking_warning(&mut self)
+    {
+        (self.cb)(
+            self.cb_data,
+            CbMessage::warning_json("Item randomized game. Skipping item randomizer configuration").as_ptr(),
+        );
+    }
 }
 
 fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const (), *const c_char))
@@ -250,6 +267,7 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
 
     let parsed_config = patches::ParsedConfig {
         input_iso, output_iso,
+        is_item_randomized: None,
         pickup_layout, elevator_layout, seed,
         item_seed,door_weights:config.door_weights,
         excluded_doors:config.excluded_doors,

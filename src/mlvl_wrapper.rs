@@ -94,20 +94,4 @@ impl<'r, 'mlvl, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'cursor, 'list>
             });
         self.mrea_cursor.insert_after(iter);
     }
-    pub fn add_door_dependencies<I>(&mut self, door_resources: &HashMap<(u32, FourCC), Resource<'r>>,
-                               layer_num: usize, deps: I)
-        where I: Iterator<Item=Dependency>,
-    {
-        let layers = self.mlvl_area.dependencies.deps.as_mut_vec();
-        let iter = deps.filter_map(|dep| {
-                if layers.iter().all(|layer| layer.iter().all(|i| *i != dep)) {
-                    let res = door_resources[&(dep.asset_id, dep.asset_type)].clone();
-                    layers[layer_num].as_mut_vec().push(dep);
-                    Some(res)
-                }  else {
-                    None
-                }
-            });
-        self.mrea_cursor.insert_after(iter);
-    }
 }

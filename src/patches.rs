@@ -1065,7 +1065,7 @@ fn patch_door<'r>(
                 asset_type: fourcc,
         });
 
-    area.add_door_dependencies(&door_resources,0,deps_iter);
+    area.add_dependencies(&door_resources,0,deps_iter);
 
     let scly = area.mrea().scly_section_mut();
     let layer = &mut scly.layers.as_mut_vec()[0];
@@ -2581,6 +2581,7 @@ pub struct ParsedConfig
     pub input_iso: memmap::Mmap,
     pub output_iso: File,
     pub layout_string: String,
+    pub is_item_randomized: Option<bool>,
 
     pub pickup_layout: Vec<u8>,
     pub elevator_layout: Vec<u8>,
@@ -2646,7 +2647,7 @@ impl fmt::Display for Version
     }
 }
 
-pub fn patch_iso<T>(config: ParsedConfig, mut pn: T) -> Result<(), String>
+pub fn patch_iso<T>(mut config: ParsedConfig, mut pn: T) -> Result<(), String>
     where T: structs::ProgressNotifier
 {
     let mut ct = Vec::new();
@@ -2658,7 +2659,14 @@ pub fn patch_iso<T>(config: ParsedConfig, mut pn: T) -> Result<(), String>
     writeln!(ct, "keep fmvs: {}", config.keep_fmvs).unwrap();
     writeln!(ct, "nonmodal hudmemos: {}", config.skip_hudmenus).unwrap();
     writeln!(ct, "obfuscated items: {}", config.obfuscate_items).unwrap();
-    writeln!(ct, "{}", config.comment).unwrap();
+
+    let mut dt = Vec::new();
+    writeln!(dt, "{}",config.comment).unwrap();
+    writeln!(dt).unwrap();
+    writeln!(dt, "Configuration:").unwrap();
+    writeln!(dt, "seed: {}",config.seed).unwrap();
+    writeln!(dt, "door weights: {:?}",config.door_weights).unwrap();
+    writeln!(dt, "excluded_doors: {:?}",config.excluded_doors).unwrap();
 
     let mut reader = Reader::new(&config.input_iso[..]);
 
@@ -2671,9 +2679,13 @@ pub fn patch_iso<T>(config: ParsedConfig, mut pn: T) -> Result<(), String>
         (b"GM8P01", 0, 0) => Version::Pal,
         _ => Err("The input ISO doesn't appear to be NTSC-US or PAL Metroid Prime.".to_string())?
     };
-    if gc_disc.find_file("randomprime.txt").is_some() {
-        Err(concat!("The input ISO has already been randomized once before. ",
-                    "You must start from an unmodified ISO every time."
+    config.is_item_randomized = Some(gc_disc.find_file("randomprime.txt").is_some());
+    if config.is_item_randomized.unwrap_or(false) {
+        pn.notify_stacking_warning();
+    }
+    if gc_disc.find_file("mpdr.txt").is_some() {
+        Err(concat!("The input ISO has already been randomized using MPDR. ",
+                    "You must start from an unmodified ISO or an item randomized one every time."
         ))?
     }
     if version == Version::Ntsc0_01 || (version == Version::Pal && !config.pal_override) {
@@ -2683,9 +2695,10 @@ pub fn patch_iso<T>(config: ParsedConfig, mut pn: T) -> Result<(), String>
     build_and_run_patches(&mut gc_disc, &config, version)?;
 
     gc_disc.add_file("randomprime.txt", structs::FstEntryFile::Unknown(Reader::new(&ct)))?;
+    gc_disc.add_file("mpdr.txt",structs::FstEntryFile::Unknown(Reader::new(&dt)))?;
 
 
-    if version != Version::Ntsc0_01 && version != Version::Pal {
+    if !config.is_item_randomized.unwrap_or(false) && version != Version::Ntsc0_01 && version != Version::Pal {
         let patches_rel_bytes = match version {
             Version::Ntsc0_00 => generated::PATCHES_100_REL,
             Version::Ntsc0_01 => unreachable!(),
@@ -2745,7 +2758,6 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
 
     let mut rng = StdRng::seed_from_u64(config.seed);
     let artifact_totem_strings = build_artifact_temple_totem_scan_strings(pickup_layout, &mut rng);
-
     let mut pickup_resources = collect_pickup_resources(gc_disc);
     let door_resources = collect_door_resources(gc_disc);
     if config.skip_hudmenus {
@@ -2763,8 +2775,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
     let pickup_resources = &pickup_resources;
     let door_resources = &door_resources;
     let mut patcher = PrimePatcher::new();
-    patcher.add_file_patch(b"opening.bnr", |file| patch_bnr(file, config));
-    if !config.keep_fmvs {
+    if !config.is_item_randomized.unwrap_or(false) && !config.keep_fmvs {
+        patcher.add_file_patch(b"opening.bnr", |file| patch_bnr(file, config));
         // Replace the attract mode FMVs with empty files to reduce the amount of data we need to
         // copy and to make compressed ISOs smaller.
         const FMV_NAMES: &[&[u8]] = &[
@@ -2788,39 +2800,40 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             });
         }
     }
+    if !config.is_item_randomized.unwrap_or(false) {
+        if let Some(flaahgra_music_files) = &config.flaahgra_music_files {
+            const MUSIC_FILE_NAME: &[&[u8]] = &[
+                b"Audio/rui_flaaghraR.dsp",
+                b"Audio/rui_flaaghraL.dsp",
+            ];
+            for (file_name, music_file) in MUSIC_FILE_NAME.iter().zip(flaahgra_music_files.iter()) {
+                patcher.add_file_patch(file_name, move |file| {
+                    *file = structs::FstEntryFile::ExternalFile(Box::new(music_file.clone()));
+                    Ok(())
+                });
+            }
+        }
 
-    if let Some(flaahgra_music_files) = &config.flaahgra_music_files {
-        const MUSIC_FILE_NAME: &[&[u8]] = &[
-            b"Audio/rui_flaaghraR.dsp",
-            b"Audio/rui_flaaghraL.dsp",
+        // Replace the FMVs that play when you select a file so each ISO always plays the only one.
+        const SELECT_GAMES_FMVS: &[&[u8]] = &[
+            b"Video/02_start_fileselect_A.thp",
+            b"Video/02_start_fileselect_B.thp",
+            b"Video/02_start_fileselect_C.thp",
+            b"Video/04_fileselect_playgame_A.thp",
+            b"Video/04_fileselect_playgame_B.thp",
+            b"Video/04_fileselect_playgame_C.thp",
         ];
-        for (file_name, music_file) in MUSIC_FILE_NAME.iter().zip(flaahgra_music_files.iter()) {
-            patcher.add_file_patch(file_name, move |file| {
-                *file = structs::FstEntryFile::ExternalFile(Box::new(music_file.clone()));
+        for fmv_name in SELECT_GAMES_FMVS {
+            let fmv_ref = if fmv_name[7] == b'2' {
+                &start_file_select_fmv
+            } else {
+                &file_select_play_game_fmv
+            };
+            patcher.add_file_patch(fmv_name, move |file| {
+                *file = fmv_ref.clone();
                 Ok(())
             });
         }
-    }
-
-    // Replace the FMVs that play when you select a file so each ISO always plays the only one.
-    const SELECT_GAMES_FMVS: &[&[u8]] = &[
-        b"Video/02_start_fileselect_A.thp",
-        b"Video/02_start_fileselect_B.thp",
-        b"Video/02_start_fileselect_C.thp",
-        b"Video/04_fileselect_playgame_A.thp",
-        b"Video/04_fileselect_playgame_B.thp",
-        b"Video/04_fileselect_playgame_C.thp",
-    ];
-    for fmv_name in SELECT_GAMES_FMVS {
-        let fmv_ref = if fmv_name[7] == b'2' {
-            &start_file_select_fmv
-        } else {
-            &file_select_play_game_fmv
-        };
-        patcher.add_file_patch(fmv_name, move |file| {
-            *file = fmv_ref.clone();
-            Ok(())
-        });
     }
 
     // Patch pickups and doors
@@ -2828,36 +2841,38 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
     let mut door_rng = StdRng::seed_from_u64(config.seed);
     for (name, rooms) in pickup_meta::PICKUP_LOCATIONS.iter() {
         for room_info in rooms.iter() {
-             patcher.add_scly_patch((name.as_bytes(), room_info.room_id), move |_, area| {
-                // Remove objects
-                let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
-                for otr in room_info.objects_to_remove {
-                    layers[otr.layer as usize].objects.as_mut_vec()
-                        .retain(|i| !otr.instance_ids.contains(&i.instance_id));
+            if !config.is_item_randomized.unwrap_or(false) {
+                 patcher.add_scly_patch((name.as_bytes(), room_info.room_id), move |_, area| {
+                    // Remove objects
+                    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
+                    for otr in room_info.objects_to_remove {
+                        layers[otr.layer as usize].objects.as_mut_vec()
+                            .retain(|i| !otr.instance_ids.contains(&i.instance_id));
+                    }
+                    Ok(())
+                });
+                let iter = room_info.pickup_locations.iter().zip(&mut layout_iterator);
+                for (&pickup_location, &pickup_type) in iter {
+                    // 1 in 1024 chance of a missile being shiny means a player is likely to see a
+                    // shiny missile every 40ish games (assuming most players collect about half of the
+                    // missiles)
+                    let pickup_type = if pickup_type == PickupType::Missile && rng.gen_ratio(1, 1024) {
+                        PickupType::ShinyMissile
+                    } else {
+                        pickup_type
+                    };
+                    patcher.add_scly_patch(
+                        (name.as_bytes(), room_info.room_id),
+                        move |ps, area| modify_pickups_in_mrea(
+                                ps,
+                                area,
+                                pickup_type,
+                                pickup_location,
+                                pickup_resources,
+                                config
+                            )
+                    );
                 }
-                Ok(())
-            });
-            let iter = room_info.pickup_locations.iter().zip(&mut layout_iterator);
-            for (&pickup_location, &pickup_type) in iter {
-                // 1 in 1024 chance of a missile being shiny means a player is likely to see a
-                // shiny missile every 40ish games (assuming most players collect about half of the
-                // missiles)
-                let pickup_type = if pickup_type == PickupType::Missile && rng.gen_ratio(1, 1024) {
-                    PickupType::ShinyMissile
-                } else {
-                    pickup_type
-                };
-                patcher.add_scly_patch(
-                    (name.as_bytes(), room_info.room_id),
-                    move |ps, area| modify_pickups_in_mrea(
-                            ps,
-                            area,
-                            pickup_type,
-                            pickup_location,
-                            pickup_resources,
-                            config
-                        )
-                );
             }
             let iter = room_info.door_locations.iter();
             for &door_location in iter {
@@ -2867,7 +2882,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                 if !config.excluded_doors[world as usize][room_info.name][door_location.dock_number.unwrap() as usize] {
                     patcher.add_scly_patch(
                         (name.as_bytes(), room_info.room_id),
-                        move |_ps, area| patch_door(area,door_location,door_type,door_resources,config.powerbomb_lockpick)
+                        move |_ps, area| patch_door(area,&room_info,door_location,door_type,door_resources,config.powerbomb_lockpick)
                     );
                 }
                 if config.patch_map {
@@ -2880,208 +2895,213 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         }
     }
 
-    let rel_config;
-    if config.skip_frigate {
-        patcher.add_file_patch(
-            b"default.dol",
-            move |file| patch_dol(
-                file,
-                spawn_room,
-                version,
-                config.nonvaria_heat_damage,
-                config.staggered_suit_damage,
-            )
-        );
-        patcher.add_file_patch(b"Metroid1.pak", empty_frigate_pak);
-        rel_config = create_rel_config_file(spawn_room, config.quickplay);
-    } else {
-        patcher.add_file_patch(
-            b"default.dol",
-            |file| patch_dol(
-                file,
-                SpawnRoom::frigate_spawn_room(),
-                version,
-                config.nonvaria_heat_damage,
-                config.staggered_suit_damage,
-            )
-        );
+    if !config.is_item_randomized.unwrap_or(false) {
+        let rel_config;
+        if config.skip_frigate {
+            patcher.add_file_patch(
+                b"default.dol",
+                move |file| patch_dol(
+                    file,
+                    spawn_room,
+                    version,
+                    config.nonvaria_heat_damage,
+                    config.staggered_suit_damage,
+                )
+            );
+            patcher.add_file_patch(b"Metroid1.pak", empty_frigate_pak);
+            rel_config = create_rel_config_file(spawn_room, config.quickplay);
+        } else {
+            patcher.add_file_patch(
+                b"default.dol",
+                |file| patch_dol(
+                    file,
+                    SpawnRoom::frigate_spawn_room(),
+                    version,
+                    config.nonvaria_heat_damage,
+                    config.staggered_suit_damage,
+                )
+            );
+            patcher.add_scly_patch(
+                resource_info!("01_intro_hanger.MREA").into(),
+                move |_ps, area| patch_frigate_teleporter(area, spawn_room)
+            );
+            rel_config = create_rel_config_file(SpawnRoom::frigate_spawn_room(), config.quickplay);
+        }
+
+        gc_disc.add_file(
+            "rel_config.bin",
+            structs::FstEntryFile::ExternalFile(Box::new(rel_config)),
+        )?;
+
+        let (starting_items, print_sis) = if let Some(starting_items) = config.starting_items {
+            (starting_items, true)
+        } else {
+            (1, false)
+        };
         patcher.add_scly_patch(
-            resource_info!("01_intro_hanger.MREA").into(),
-            move |_ps, area| patch_frigate_teleporter(area, spawn_room)
+            (spawn_room.pak_name.as_bytes(), spawn_room.mrea),
+            move |_ps, area| patch_starting_pickups(area, starting_items, print_sis)
         );
-        rel_config = create_rel_config_file(SpawnRoom::frigate_spawn_room(), config.quickplay);
-    }
-    gc_disc.add_file(
-        "rel_config.bin",
-        structs::FstEntryFile::ExternalFile(Box::new(rel_config)),
-    )?;
 
-    let (starting_items, print_sis) = if let Some(starting_items) = config.starting_items {
-        (starting_items, true)
-    } else {
-        (1, false)
-    };
-    patcher.add_scly_patch(
-        (spawn_room.pak_name.as_bytes(), spawn_room.mrea),
-        move |_ps, area| patch_starting_pickups(area, starting_items, print_sis)
-    );
+        const ARTIFACT_TOTEM_SCAN_STRGS: &[ResourceInfo] = &[
+            resource_info!("07_Over_Stonehenge Totem 5.STRG"), // Lifegiver
+            resource_info!("07_Over_Stonehenge Totem 4.STRG"), // Wild
+            resource_info!("07_Over_Stonehenge Totem 10.STRG"), // World
+            resource_info!("07_Over_Stonehenge Totem 9.STRG"), // Sun
+            resource_info!("07_Over_Stonehenge Totem 3.STRG"), // Elder
+            resource_info!("07_Over_Stonehenge Totem 11.STRG"), // Spirit
+            resource_info!("07_Over_Stonehenge Totem 1.STRG"), // Truth
+            resource_info!("07_Over_Stonehenge Totem 7.STRG"), // Chozo
+            resource_info!("07_Over_Stonehenge Totem 6.STRG"), // Warrior
+            resource_info!("07_Over_Stonehenge Totem 12.STRG"), // Newborn
+            resource_info!("07_Over_Stonehenge Totem 8.STRG"), // Nature
+            resource_info!("07_Over_Stonehenge Totem 2.STRG"), // Strength
+        ];
+        for (res_info, strg_text) in ARTIFACT_TOTEM_SCAN_STRGS.iter().zip(artifact_totem_strings.iter()) {
+            patcher.add_resource_patch(
+                (*res_info).into(),
+                move |res| patch_artifact_totem_scan_strg(res, &strg_text),
+            );
+        }
 
-    const ARTIFACT_TOTEM_SCAN_STRGS: &[ResourceInfo] = &[
-        resource_info!("07_Over_Stonehenge Totem 5.STRG"), // Lifegiver
-        resource_info!("07_Over_Stonehenge Totem 4.STRG"), // Wild
-        resource_info!("07_Over_Stonehenge Totem 10.STRG"), // World
-        resource_info!("07_Over_Stonehenge Totem 9.STRG"), // Sun
-        resource_info!("07_Over_Stonehenge Totem 3.STRG"), // Elder
-        resource_info!("07_Over_Stonehenge Totem 11.STRG"), // Spirit
-        resource_info!("07_Over_Stonehenge Totem 1.STRG"), // Truth
-        resource_info!("07_Over_Stonehenge Totem 7.STRG"), // Chozo
-        resource_info!("07_Over_Stonehenge Totem 6.STRG"), // Warrior
-        resource_info!("07_Over_Stonehenge Totem 12.STRG"), // Newborn
-        resource_info!("07_Over_Stonehenge Totem 8.STRG"), // Nature
-        resource_info!("07_Over_Stonehenge Totem 2.STRG"), // Strength
-    ];
-    for (res_info, strg_text) in ARTIFACT_TOTEM_SCAN_STRGS.iter().zip(artifact_totem_strings.iter()) {
         patcher.add_resource_patch(
-            (*res_info).into(),
-            move |res| patch_artifact_totem_scan_strg(res, &strg_text),
+            resource_info!("STRG_Main.STRG").into(),// 0x0552a456
+            |res| patch_main_strg(res, &config.main_menu_message)
         );
-    }
+        patcher.add_resource_patch(
+            resource_info!("FRME_NewFileSelect.FRME").into(),
+            patch_main_menu
+        );
 
-    patcher.add_resource_patch(
-        resource_info!("STRG_Main.STRG").into(),// 0x0552a456
-        |res| patch_main_strg(res, &config.main_menu_message)
-    );
-    patcher.add_resource_patch(
-        resource_info!("FRME_NewFileSelect.FRME").into(),
-        patch_main_menu
-    );
+        patcher.add_resource_patch(
+            resource_info!("STRG_Credits.STRG").into(),
+            |res| patch_credits(res, &pickup_layout)
+        );
 
-    patcher.add_resource_patch(
-        resource_info!("STRG_Credits.STRG").into(),
-        |res| patch_credits(res, &pickup_layout)
-    );
-
-    patcher.add_resource_patch(
-        resource_info!("!MinesWorld_Master.SAVW").into(),
-        patch_mines_savw_for_phazon_suit_scan
-    );
-    patcher.add_scly_patch(
-        resource_info!("07_stonehenge.MREA").into(),
-        |ps, area| fix_artifact_of_truth_requirements(ps, area, &pickup_layout)
-    );
-    patcher.add_scly_patch(
-        resource_info!("07_stonehenge.MREA").into(),
-        |ps, area| patch_artifact_hint_availability(ps, area, config.artifact_hint_behavior)
-    );
-
-    patcher.add_resource_patch(
-        resource_info!("TXTR_SaveBanner.TXTR").into(),
-        patch_save_banner_txtr
-    );
-
-    patcher.add_resource_patch(resource_info!("FRME_BallHud.FRME").into(), patch_morphball_hud);
-
-    make_elevators_patch(&mut patcher, &elevator_layout, config.auto_enabled_elevators);
-
-    make_elite_research_fight_prereq_patches(&mut patcher);
-
-    patcher.add_scly_patch(
-        resource_info!("22_Flaahgra.MREA").into(),
-        patch_sunchamber_prevent_wild_before_flaahgra
-    );
-    patcher.add_scly_patch(
-        resource_info!("0v_connect_tunnel.MREA").into(),
-        patch_sun_tower_prevent_wild_before_flaahgra
-    );
-    patcher.add_scly_patch(
-        resource_info!("00j_over_hall.MREA").into(),
-        patch_temple_security_station_cutscene_trigger
-    );
-    patcher.add_scly_patch(
-        resource_info!("01_ice_plaza.MREA").into(),
-        patch_ridley_phendrana_shorelines_cinematic
-    );
-    patcher.add_scly_patch(
-        resource_info!("08b_under_intro_ventshaft.MREA").into(),
-        patch_main_ventilation_shaft_section_b_door
-    );
-    patcher.add_scly_patch(
-        resource_info!("10_ice_research_a.MREA").into(),
-        patch_research_lab_hydra_barrier);
-    patcher.add_scly_patch(
-        resource_info!("13_ice_vault.MREA").into(),
-        patch_research_lab_aether_exploding_wall
-    );
-    patcher.add_scly_patch(
-        resource_info!("11_ice_observatory.MREA").into(),
-        patch_observatory_2nd_pass_solvablility
-    );
-    patcher.add_scly_patch(
-        resource_info!("02_mines_shotemup.MREA").into(),
-        patch_mines_security_station_soft_lock
-    );
-    patcher.add_scly_patch(
-        resource_info!("18_ice_gravity_chamber.MREA").into(),
-        patch_gravity_chamber_stalactite_grapple_point
-    );
-
-
-    if version == Version::Ntsc0_02 {
-        patcher.add_scly_patch(
-            resource_info!("01_mines_mainplaza.MREA").into(),
-            patch_main_quarry_door_lock_0_02
+        patcher.add_resource_patch(
+            resource_info!("!MinesWorld_Master.SAVW").into(),
+            patch_mines_savw_for_phazon_suit_scan
         );
         patcher.add_scly_patch(
-            resource_info!("13_over_burningeffigy.MREA").into(),
-            patch_geothermal_core_door_lock_0_02
+            resource_info!("07_stonehenge.MREA").into(),
+            |ps, area| fix_artifact_of_truth_requirements(ps, area, &pickup_layout)
         );
         patcher.add_scly_patch(
-            resource_info!("19_hive_totem.MREA").into(),
-            patch_hive_totem_boss_trigger_0_02
+            resource_info!("07_stonehenge.MREA").into(),
+            |ps, area| patch_artifact_hint_availability(ps, area, config.artifact_hint_behavior)
         );
-        patcher.add_scly_patch(
-            resource_info!("05_ice_shorelines.MREA").into(),
-            patch_ruined_courtyard_thermal_conduits_0_02
-        );
-    }
 
-    if version == Version::Pal {
-        patcher.add_scly_patch(
-            resource_info!("04_mines_pillar.MREA").into(),
-            patch_ore_processing_destructible_rock_pal
+        patcher.add_resource_patch(
+            resource_info!("TXTR_SaveBanner.TXTR").into(),
+            patch_save_banner_txtr
         );
-        patcher.add_scly_patch(
-            resource_info!("13_over_burningeffigy.MREA").into(),
-            patch_geothermal_core_destructible_rock_pal
-        );
-        patcher.add_scly_patch(
-            resource_info!("01_mines_mainplaza.MREA").into(),
-            patch_main_quarry_door_lock_pal
-        );
-    }
 
-    if spawn_room != SpawnRoom::landing_site_spawn_room() {
-        // If we have a non-default start point, patch the landing site to avoid
-        // weirdness with cutscene triggers and the ship spawning.
-        patcher.add_scly_patch(
-            resource_info!("01_over_mainplaza.MREA").into(),
-            patch_landing_site_cutscene_triggers
-        );
-    }
+        patcher.add_resource_patch(resource_info!("FRME_BallHud.FRME").into(), patch_morphball_hud);
 
-    if config.skip_impact_crater {
+        make_elevators_patch(&mut patcher, &elevator_layout, config.auto_enabled_elevators);
+
+        make_elite_research_fight_prereq_patches(&mut patcher);
+
         patcher.add_scly_patch(
-            resource_info!("01_endcinema.MREA").into(),
-            patch_ending_scene_straight_to_credits
+            resource_info!("22_Flaahgra.MREA").into(),
+            patch_sunchamber_prevent_wild_before_flaahgra
         );
+        patcher.add_scly_patch(
+            resource_info!("0v_connect_tunnel.MREA").into(),
+            patch_sun_tower_prevent_wild_before_flaahgra
+        );
+        patcher.add_scly_patch(
+            resource_info!("00j_over_hall.MREA").into(),
+            patch_temple_security_station_cutscene_trigger
+        );
+        patcher.add_scly_patch(
+            resource_info!("01_ice_plaza.MREA").into(),
+            patch_ridley_phendrana_shorelines_cinematic
+        );
+        patcher.add_scly_patch(
+            resource_info!("08b_under_intro_ventshaft.MREA").into(),
+            patch_main_ventilation_shaft_section_b_door
+        );
+        patcher.add_scly_patch(
+            resource_info!("10_ice_research_a.MREA").into(),
+            patch_research_lab_hydra_barrier);
+        patcher.add_scly_patch(
+            resource_info!("13_ice_vault.MREA").into(),
+            patch_research_lab_aether_exploding_wall
+        );
+        patcher.add_scly_patch(
+            resource_info!("11_ice_observatory.MREA").into(),
+            patch_observatory_2nd_pass_solvablility
+        );
+        patcher.add_scly_patch(
+            resource_info!("02_mines_shotemup.MREA").into(),
+            patch_mines_security_station_soft_lock
+        );
+        patcher.add_scly_patch(
+            resource_info!("18_ice_gravity_chamber.MREA").into(),
+            patch_gravity_chamber_stalactite_grapple_point
+        );
+
+
+        if version == Version::Ntsc0_02 {
+            patcher.add_scly_patch(
+                resource_info!("01_mines_mainplaza.MREA").into(),
+                patch_main_quarry_door_lock_0_02
+            );
+            patcher.add_scly_patch(
+                resource_info!("13_over_burningeffigy.MREA").into(),
+                patch_geothermal_core_door_lock_0_02
+            );
+            patcher.add_scly_patch(
+                resource_info!("19_hive_totem.MREA").into(),
+                patch_hive_totem_boss_trigger_0_02
+            );
+            patcher.add_scly_patch(
+                resource_info!("05_ice_shorelines.MREA").into(),
+                patch_ruined_courtyard_thermal_conduits_0_02
+            );
+        }
+
+        if version == Version::Pal {
+            patcher.add_scly_patch(
+                resource_info!("04_mines_pillar.MREA").into(),
+                patch_ore_processing_destructible_rock_pal
+            );
+            patcher.add_scly_patch(
+                resource_info!("13_over_burningeffigy.MREA").into(),
+                patch_geothermal_core_destructible_rock_pal
+            );
+            patcher.add_scly_patch(
+                resource_info!("01_mines_mainplaza.MREA").into(),
+                patch_main_quarry_door_lock_pal
+            );
+        }
+
+        if spawn_room != SpawnRoom::landing_site_spawn_room() {
+            // If we have a non-default start point, patch the landing site to avoid
+            // weirdness with cutscene triggers and the ship spawning.
+            patcher.add_scly_patch(
+                resource_info!("01_over_mainplaza.MREA").into(),
+                patch_landing_site_cutscene_triggers
+            );
+        }
+
+        if config.skip_impact_crater {
+            patcher.add_scly_patch(
+                resource_info!("01_endcinema.MREA").into(),
+                patch_ending_scene_straight_to_credits
+            );
+        }
     }
 
     if config.enable_vault_ledge_door {
         let door_type = calculate_door_type("Metroid2.pak",&mut rng,&config.door_weights);
-        patcher.add_scly_patch(
-            resource_info!("01_mainplaza.MREA").into(),
-            move |ps,area| make_main_plaza_locked_door_two_ways(ps,area, door_type,&config)
-        );
+        if !config.is_item_randomized.unwrap_or(false) {
+            patcher.add_scly_patch(
+                resource_info!("01_mainplaza.MREA").into(),
+                move |ps,area| make_main_plaza_locked_door_two_ways(ps,area, door_type,&config)
+            );
+        }
         if config.patch_map {
             patcher.add_resource_patch(
                 resource_info!("01_mainplaza.MAPA").into(),
