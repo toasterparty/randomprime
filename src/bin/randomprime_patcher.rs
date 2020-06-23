@@ -251,6 +251,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
     Ok(patches::ParsedConfig {
         input_iso: input_iso_mmap,
         output_iso: out_iso,
+        is_item_randomized: None,
         pickup_layout, elevator_layout, seed,
         layout_string, item_seed,
 
