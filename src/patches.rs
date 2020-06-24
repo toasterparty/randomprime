@@ -2882,7 +2882,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                 if !config.excluded_doors[world as usize][room_info.name][door_location.dock_number.unwrap() as usize] {
                     patcher.add_scly_patch(
                         (name.as_bytes(), room_info.room_id),
-                        move |_ps, area| patch_door(area,&room_info,door_location,door_type,door_resources,config.powerbomb_lockpick)
+                        move |_ps, area| patch_door(area,door_location,door_type,door_resources,config.powerbomb_lockpick)
                     );
                 }
                 if config.patch_map {

@@ -143,8 +143,8 @@ impl<'r> DiffListSourceCursor for ResourceSourceCursor<'r>
         if self.index == 0 {
             (None, f(self.info_array))
         } else {
-            let left = self.info_array.split_off(self.index);
-            (Some(f(left)), f(self.info_array))
+            let right = self.info_array.split_off(self.index);
+            (Some(f(self.info_array)), f(right))
         }
    }
 

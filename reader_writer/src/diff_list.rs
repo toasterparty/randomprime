@@ -219,7 +219,6 @@ impl<'list, A> DiffListCursor<'list, A>
 
         // XXX This could probably be made more efficent by combining the insert with the splice,
         //     but it'd probably be even harder to understand...
-        let pre_len = self.vec.len();
         if let Some(ic) = self.inner_cursor.take() {
             let (left, right) = ic.split();
             if let Some(left) = left {
@@ -228,6 +227,7 @@ impl<'list, A> DiffListCursor<'list, A>
             };
             self.vec[self.idx] = DiffListElem::Array(right);
         };
+        let pre_len = self.vec.len();
         self.vec.splice(self.idx..self.idx, iter.map(DiffListElem::Inst));
         self.idx += self.vec.len() - pre_len;
         if let Some(DiffListElem::Array(a)) = self.vec.get(self.idx) {
@@ -525,9 +525,10 @@ mod test
             let mut cursor = diff_list.cursor();
             while cursor.peek().is_some() {
                 let mut cursor = cursor.cursor_advancer();
+                let before = cursor.peek().unwrap().into_owned();
                 cursor.insert_after(vec![9].into_iter());
                 assert!(cursor.peek().is_some());
-                assert!(cursor.value().is_some());
+                assert_eq!(*cursor.value().unwrap(), before);
                 assert!(cursor.peek().is_some());
             }
         }
@@ -536,5 +537,31 @@ mod test
             .map(|i| i.into_owned())
             .collect::<Vec<_>>();
         assert_eq!(v, vec![9, 1, 9, 2, 9, 3, 9, 4, 9, 5, 9, 6]);
+    }
+
+    #[test]
+    fn test_diff_list_delayed_insert()
+    {
+        let junk = &[0u8; 1024][..];
+        let source = Source(&[1, 2, 3, 4, 5, 6]);
+        let mut diff_list: super::DiffList<Source> = crate::Reader::new(junk).read(source);
+
+        {
+            let mut cursor = diff_list.cursor();
+            cursor.next();
+            while cursor.peek().is_some() {
+                let mut cursor = cursor.cursor_advancer();
+                let before = cursor.peek().unwrap().into_owned();
+                cursor.insert_after(vec![9].into_iter());
+                assert!(cursor.peek().is_some());
+                assert_eq!(*cursor.value().unwrap(), before);
+                assert!(cursor.peek().is_some());
+            }
+        }
+
+        let v = diff_list.iter()
+            .map(|i| i.into_owned())
+            .collect::<Vec<_>>();
+        assert_eq!(v, vec![1, 9, 2, 9, 3, 9, 4, 9, 5, 9, 6]);
     }
 }
