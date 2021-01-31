@@ -8,4 +8,4 @@ workspace = ".."
 
 [dependencies]
 byteorder = "1.2"
-generic-array = "0.13"
+generic-array = "0.14"
