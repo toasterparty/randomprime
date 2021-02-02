@@ -1744,7 +1744,7 @@ fn make_main_plaza_locked_door_two_ways(
     locked_door.ancs.unknown = 2;
     locked_door.projectiles_collide = 0;
 
-    if !config.excluded_doors[World::ChozoRuins as usize]["Main Plaza"][4] {
+    if config.excluded_doors[World::ChozoRuins as usize]["Main Plaza"][4] == "default" {
         let door_force = layer.objects.as_mut_vec().iter_mut()
             .find(|obj| obj.instance_id == trigger_doorunlock_id)
             .and_then(|obj| obj.property_data.as_damageable_trigger_mut())
@@ -2588,7 +2588,7 @@ pub struct ParsedConfig
     pub item_seed: u64,
     pub seed: u64,
     pub door_weights: Weights,
-    pub excluded_doors: [HashMap<String,Vec<bool>>;5],
+    pub excluded_doors: [HashMap<String,Vec<String>>;5],
     pub patch_map: bool,
 
     pub iso_format: IsoFormat,
@@ -2874,17 +2874,47 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                     );
                 }
             }
+
             let iter = room_info.door_locations.iter();
-            for &door_location in iter {
-                let door_type = calculate_door_type(name,&mut door_rng,&config.door_weights);
+            for &door_location in iter
+            {
                 let world = World::from_pak(name).unwrap();
                 if door_location.dock_number.is_none() { continue; }
-                if !config.excluded_doors[world as usize][room_info.name][door_location.dock_number.unwrap() as usize] {
+                
+                let door_specification = &config.excluded_doors[world as usize][room_info.name][door_location.dock_number.unwrap() as usize];
+                // println!("door_specification = {:?}", door_specification);
+                
+                let mut door_type;
+                door_type = calculate_door_type(name,&mut door_rng,&config.door_weights); // randomly pick a door color using weights
+
+                if door_specification == "blue"
+                {
+                    door_type = DoorType::Blue;
+                }
+                
+                if door_specification == "purple"
+                {
+                    door_type = DoorType::Purple;
+                }
+                
+                if door_specification == "white"
+                {
+                    door_type = DoorType::White;
+                }
+                
+                if door_specification == "red"
+                {
+                    door_type = DoorType::Red;
+                }
+                
+                if door_specification != "default"
+                {
                     patcher.add_scly_patch(
                         (name.as_bytes(), room_info.room_id),
                         move |_ps, area| patch_door(area,door_location,door_type,door_resources,config.powerbomb_lockpick)
                     );
                 }
+
                 if config.patch_map {
                     patcher.add_resource_patch(
                         (&[name.as_bytes()], room_info.mapa_id,b"MAPA".into()),

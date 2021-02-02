@@ -93,7 +93,7 @@ struct Config {
     skip_frigate: bool,
     fix_flaaghra_music: bool,
     trilogy_disc_path: Option<String>,
-    excluded_doors: [HashMap<String,Vec<bool>>;5],
+    excluded_doors: [HashMap<String,Vec<String>>;5],
     powerbomb_lockpick: bool,
 }
 
