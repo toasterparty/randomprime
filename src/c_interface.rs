@@ -45,6 +45,7 @@ struct PatchConfig {
 struct Config {
     input_iso: String,
     output_iso: String,
+    layout_string: String,
     seed: u64,
     door_weights: Weights,
     patch_settings: PatchConfig,
@@ -235,7 +236,7 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         .open(&config.output_iso)
         .map_err(|e| format!("Failed to open {}: {}", config.output_iso, e))?;
 
-    let layout_string = String::from("NCiq7nTAtTnqPcap9VMQk_o8Qj6ZjbPiOdYDB5tgtwL_f01-UpYklNGnL-gTu5IeVW3IoUiflH5LqNXB3wVEER4");
+    let layout_string = String::from(&config.layout_string);
 
     let (pickup_layout, elevator_layout, item_seed) = crate::parse_layout(&layout_string)?;
     let seed = config.seed;
