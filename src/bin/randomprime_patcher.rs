@@ -94,6 +94,7 @@ struct Config {
     fix_flaaghra_music: bool,
     trilogy_disc_path: Option<String>,
     excluded_doors: [HashMap<String,Vec<String>>;5],
+    layout_string: String,
     powerbomb_lockpick: bool,
 }
 
@@ -225,7 +226,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         patches::IsoFormat::Iso
     };
 
-    let layout_string = String::from("NCiq7nTAtTnqPcap9VMQk_o8Qj6ZjbPiOdYDB5tgtwL_f01-UpYklNGnL-gTu5IeVW3IoUiflH5LqNXB3wVEER4");
+    let layout_string = String::from(&config.layout_string);
     let (pickup_layout, elevator_layout, item_seed) = parse_layout(&layout_string)?;
     let seed = config.seed;
     let skip_impact_crater = matches.is_present("skip impact crater");
