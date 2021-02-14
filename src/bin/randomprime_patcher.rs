@@ -96,6 +96,8 @@ struct PatchConfig {
     enable_one_way_doors: bool,
     patch_map: bool,
     obfuscate_items:bool,
+    artifact_hints:String,
+    auto_enabled_elevators:bool
 }
 
 #[derive(Deserialize)]
@@ -253,12 +255,14 @@ fn get_config() -> Result<patches::ParsedConfig, String>
     let (pickup_layout, elevator_layout, item_seed) = parse_layout(&layout_string)?;
     let seed = config.seed;
 
-    let artifact_hint_behavior = if matches.is_present("all artifact hints") {
-        patches::ArtifactHintBehavior::All
-    } else if matches.is_present("no artifact hints") {
-        patches::ArtifactHintBehavior::None
-    } else {
+    let artifact_hints = String::from(&config.patch_settings.artifact_hints);
+    let artifact_hint_behavior = if artifact_hints == "default" {
         patches::ArtifactHintBehavior::Default
+    } else if artifact_hints == "none" {
+        patches::ArtifactHintBehavior::None
+    } else { // e.g. "all"
+        patches::ArtifactHintBehavior::All
+        
     };
 
     let flaahgra_music_files = if config.patch_settings.fix_flaaghra_music {
@@ -271,7 +275,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         None
     };
 
-    let mpdr_version = "MPDR v0.3-plando";
+    let mpdr_version = "Plando v1.3";
     let mut comment_message:String = "Generated with ".to_owned();
     comment_message.push_str(mpdr_version);
 
@@ -281,7 +285,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
 
         game_name_full: Some(String::from("Metroid Prime Plandomizer")),
         developer_full: Some(String::from("^_^")),
-        description: Some(String::from("Metroid Prime, but probably a cursed rando seed")),
+        description: Some(String::from("Metroid Prime, but probably a cursed seed")),
     });
 
     Ok(patches::ParsedConfig {
@@ -303,7 +307,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         powerbomb_lockpick: config.patch_settings.powerbomb_lockpick,
         keep_fmvs: false,
         obfuscate_items: config.patch_settings.obfuscate_items,
-        auto_enabled_elevators: false,
+        auto_enabled_elevators: config.patch_settings.auto_enabled_elevators,
         quiet: false,
 
         skip_impact_crater: config.patch_settings.skip_crater,
