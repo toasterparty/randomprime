@@ -83,21 +83,43 @@ impl structs::ProgressNotifier for ProgressNotifier
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
+struct PatchConfig {
+    skip_frigate: bool,
+    skip_crater: bool,
+    fix_flaaghra_music: bool,
+    trilogy_iso: Option<String>,
+    varia_heat_protection: bool,
+    stagger_suit_damage: bool,
+    skip_hudmemos: bool,
+    powerbomb_lockpick: bool,
+    enable_one_way_doors: bool,
+    patch_map: bool,
+    obfuscate_items:bool,
+}
+
+#[derive(Deserialize)]
 struct Config {
     input_iso: String,
     output_iso: String,
-    seed: u64,
-    weights: Weights,
-    patch_map: bool,
-    skip_frigate: bool,
-    fix_flaaghra_music: bool,
-    trilogy_disc_path: Option<String>,
-    excluded_doors: [HashMap<String,Vec<String>>;5],
     layout_string: String,
-    powerbomb_lockpick: bool,
+    seed: u64,
+    door_weights: Weights,
+    patch_settings: PatchConfig,
+    starting_pickups: u64,
+    excluded_doors: [HashMap<String,Vec<String>>;5],
 }
 
+#[derive(Deserialize)]
+struct ConfigBanner
+{
+    game_name: Option<String>,
+    developer: Option<String>,
+
+    game_name_full: Option<String>,
+    developer_full: Option<String>,
+    description: Option<String>,
+}
 
 fn get_config() -> Result<patches::ParsedConfig, String>
 {
@@ -202,6 +224,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
     let json_path = matches.value_of("profile json path").unwrap();
     let input_json:&str = &fs::read_to_string(json_path)
                 .map_err(|e| format!("Could not read JSON file: {}",e)).unwrap();
+
     let config:Config = serde_json::from_str(input_json)
                 .map_err(|e| format!("Could not parse JSON file: {}",e)).unwrap();
     let input_iso_path = config.input_iso;
@@ -229,7 +252,6 @@ fn get_config() -> Result<patches::ParsedConfig, String>
     let layout_string = String::from(&config.layout_string);
     let (pickup_layout, elevator_layout, item_seed) = parse_layout(&layout_string)?;
     let seed = config.seed;
-    let skip_impact_crater = matches.is_present("skip impact crater");
 
     let artifact_hint_behavior = if matches.is_present("all artifact hints") {
         patches::ArtifactHintBehavior::All
@@ -239,8 +261,8 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         patches::ArtifactHintBehavior::Default
     };
 
-    let flaahgra_music_files = if config.fix_flaaghra_music {
-        if let Some(path) = matches.value_of("trilogy disc path") {
+    let flaahgra_music_files = if config.patch_settings.fix_flaaghra_music {
+        if let Some(path) = config.patch_settings.trilogy_iso {
             Some(extract_flaahgra_music_files(&path)?)
         } else {
             None
@@ -249,51 +271,61 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         None
     };
 
+    let mpdr_version = "MPDR v0.3-plando";
+    let mut comment_message:String = "Generated with ".to_owned();
+    comment_message.push_str(mpdr_version);
+
+    let mut banner = Some(ConfigBanner {
+        game_name: Some(String::from("Metroid Prime")),
+        developer: Some(String::from("^_^")),
+
+        game_name_full: Some(String::from("Metroid Prime Plandomizer")),
+        developer_full: Some(String::from("^_^")),
+        description: Some(String::from("Metroid Prime, but probably a cursed rando seed")),
+    });
+
     Ok(patches::ParsedConfig {
-        input_iso: input_iso_mmap,
-        output_iso: out_iso,
+        input_iso:input_iso_mmap,
+        output_iso:out_iso,
         is_item_randomized: None,
         pickup_layout, elevator_layout, seed,
-        layout_string, item_seed,
-
-        door_weights:config.weights,
+        item_seed,door_weights:config.door_weights,
         excluded_doors:config.excluded_doors,
+        patch_map:config.patch_settings.patch_map,
+
+        layout_string,
 
         iso_format,
-        patch_map: config.patch_map,
-        skip_hudmenus: matches.is_present("skip hudmenus"),
-        skip_frigate: config.skip_frigate,
-        nonvaria_heat_damage: matches.is_present("nonvaria heat damage"),
-        staggered_suit_damage: matches.is_present("staggered suit damage"),
-        keep_fmvs: matches.is_present("keep attract mode"),
-        obfuscate_items: matches.is_present("obfuscate items"),
-        auto_enabled_elevators: matches.is_present("auto enabled elevators"),
-        powerbomb_lockpick: config.powerbomb_lockpick,
-        quiet: matches.is_present("quiet"),
-        enable_vault_ledge_door: matches.is_present("enable vault ledge door"),
+        skip_frigate: config.patch_settings.skip_frigate,
+        skip_hudmenus: config.patch_settings.skip_hudmemos,
+        nonvaria_heat_damage: config.patch_settings.varia_heat_protection,
+        staggered_suit_damage: config.patch_settings.stagger_suit_damage,
+        powerbomb_lockpick: config.patch_settings.powerbomb_lockpick,
+        keep_fmvs: false,
+        obfuscate_items: config.patch_settings.obfuscate_items,
+        auto_enabled_elevators: false,
+        quiet: false,
 
-        skip_impact_crater,
+        skip_impact_crater: config.patch_settings.skip_crater,
+        enable_vault_ledge_door: config.patch_settings.enable_one_way_doors,
         artifact_hint_behavior,
 
         flaahgra_music_files,
 
-        // XXX We can unwrap safely because we verified the parse earlier
-        starting_items: matches.value_of("change starting items")
-                                .map(|s| s.parse::<u64>().unwrap()),
+        starting_items: Some(config.starting_pickups),
+        comment: comment_message,
+        main_menu_message: String::from(mpdr_version),
 
-        comment: matches.value_of("text file comment").unwrap_or("").to_string(),
-        main_menu_message: matches.value_of("main menu message").unwrap_or("").to_string(),
+        quickplay: false,
 
-        quickplay: matches.is_present("quickplay"),
+        bnr_game_name: banner.as_mut().and_then(|b| b.game_name.take()),
+        bnr_developer: banner.as_mut().and_then(|b| b.developer.take()),
 
-        bnr_game_name: None,
-        bnr_developer: None,
+        bnr_game_name_full: banner.as_mut().and_then(|b| b.game_name_full.take()),
+        bnr_developer_full: banner.as_mut().and_then(|b| b.developer_full.take()),
+        bnr_description: banner.as_mut().and_then(|b| b.description.take()),
 
-        bnr_game_name_full: None,
-        bnr_developer_full: None,
-        bnr_description: None,
-
-        pal_override: matches.is_present("pal override"),
+        pal_override: false,
     })
 
 }
