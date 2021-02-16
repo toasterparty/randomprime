@@ -28,7 +28,17 @@ pub enum DoorType {
     Blue,
     Purple,
     White,
-    Red
+    Red,
+    PowerBomb,
+    Bomb,
+    Boost,
+    Missile,
+    Charge,
+    Super,
+    Wavebuster,
+    Icespreader,
+    Flamethrower,
+    Disabled
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -65,25 +75,101 @@ impl DoorType {
 
     pub fn shield_cmdl(&self) -> u32 {
         match self {
-            DoorType::Blue =>   0x0734977A,
-            DoorType::Purple => 0x33188D1B,
-            DoorType::White =>  0x59649E9D,
-            DoorType::Red =>    0xBBBA1EC7,
+            DoorType::Blue         =>   0x0734977A,
+            DoorType::Super        =>   0x0734977A,
+            DoorType::PowerBomb    =>   0x0734977A,
+            DoorType::Bomb         =>   0x0734977A,
+            DoorType::Boost        =>   0x0734977A,
+            DoorType::Missile      =>   0x0734977A,
+            DoorType::Charge       =>   0x0734977A,
+            DoorType::Disabled     =>   0x0734977A,
+            DoorType::Purple       =>   0x33188D1B,
+            DoorType::Wavebuster   =>   0x33188D1B,
+            DoorType::White        =>   0x59649E9D,
+            DoorType::Icespreader  =>   0x59649E9D,
+            DoorType::Red          =>   0xBBBA1EC7,
+            DoorType::Flamethrower =>   0xBBBA1EC7,
         }
     }
 
     pub fn forcefield_txtr(&self) -> u32 {
         match self {
-            DoorType::Blue =>   0x8A7F3683,
-            DoorType::Purple => 0xF68DF7F1,
-            DoorType::White =>  0xBE4CD99D,
-            DoorType::Red =>    0xFC095F6C,
+            DoorType::Blue         =>   0x8A7F3683,
+            DoorType::PowerBomb    =>   0x8A7F3683,
+            DoorType::Bomb         =>   0x8A7F3683,
+            DoorType::Boost        =>   0x8A7F3683,
+            DoorType::Missile      =>   0x8A7F3683,
+            DoorType::Charge       =>   0x8A7F3683,
+            DoorType::Super        =>   0x8A7F3683,
+            DoorType::Disabled     =>   0x8A7F3683,
+            DoorType::Purple       =>   0xF68DF7F1,
+            DoorType::Wavebuster   =>   0xF68DF7F1,
+            DoorType::White        =>   0xBE4CD99D,
+            DoorType::Icespreader  =>   0xBE4CD99D,
+            DoorType::Red          =>   0xFC095F6C,
+            DoorType::Flamethrower =>   0xFC095F6C,
         }
     }
 
     pub fn dependencies(&self) -> &'static [(u32, FourCC)] {
         match self {
             DoorType::Blue => {
+                const DATA: &[(u32,FourCC)] = &[
+                    (0x0734977A,FourCC::from_bytes(b"CMDL")),
+                    (0x8A7F3683,FourCC::from_bytes(b"TXTR")),
+                    (0x88ED4593,FourCC::from_bytes(b"TXTR")), //shield texture
+                ];
+                DATA
+            },
+            DoorType::PowerBomb => {
+                const DATA: &[(u32,FourCC)] = &[
+                    (0x0734977A,FourCC::from_bytes(b"CMDL")),
+                    (0x8A7F3683,FourCC::from_bytes(b"TXTR")),
+                    (0x88ED4593,FourCC::from_bytes(b"TXTR")), //shield texture
+                ];
+                DATA
+            },
+            DoorType::Bomb => {
+                const DATA: &[(u32,FourCC)] = &[
+                    (0x0734977A,FourCC::from_bytes(b"CMDL")),
+                    (0x8A7F3683,FourCC::from_bytes(b"TXTR")),
+                    (0x88ED4593,FourCC::from_bytes(b"TXTR")), //shield texture
+                ];
+                DATA
+            },
+            DoorType::Boost => {
+                const DATA: &[(u32,FourCC)] = &[
+                    (0x0734977A,FourCC::from_bytes(b"CMDL")),
+                    (0x8A7F3683,FourCC::from_bytes(b"TXTR")),
+                    (0x88ED4593,FourCC::from_bytes(b"TXTR")), //shield texture
+                ];
+                DATA
+            },
+            DoorType::Missile => {
+                const DATA: &[(u32,FourCC)] = &[
+                    (0x0734977A,FourCC::from_bytes(b"CMDL")),
+                    (0x8A7F3683,FourCC::from_bytes(b"TXTR")),
+                    (0x88ED4593,FourCC::from_bytes(b"TXTR")), //shield texture
+                ];
+                DATA
+            },
+            DoorType::Charge => {
+                const DATA: &[(u32,FourCC)] = &[
+                    (0x0734977A,FourCC::from_bytes(b"CMDL")),
+                    (0x8A7F3683,FourCC::from_bytes(b"TXTR")),
+                    (0x88ED4593,FourCC::from_bytes(b"TXTR")), //shield texture
+                ];
+                DATA
+            },
+            DoorType::Super => {
+                const DATA: &[(u32,FourCC)] = &[
+                    (0x0734977A,FourCC::from_bytes(b"CMDL")),
+                    (0x8A7F3683,FourCC::from_bytes(b"TXTR")),
+                    (0x88ED4593,FourCC::from_bytes(b"TXTR")), //shield texture
+                ];
+                DATA
+            },
+            DoorType::Disabled => {
                 const DATA: &[(u32,FourCC)] = &[
                     (0x0734977A,FourCC::from_bytes(b"CMDL")),
                     (0x8A7F3683,FourCC::from_bytes(b"TXTR")),
@@ -99,6 +185,14 @@ impl DoorType {
                 ];
                 DATA
             },
+            DoorType::Wavebuster => {
+                const DATA: &[(u32,FourCC)] = &[
+                    (0x33188D1B,FourCC::from_bytes(b"CMDL")),
+                    (0xF68DF7F1,FourCC::from_bytes(b"TXTR")),
+                    (0xAB031EA9,FourCC::from_bytes(b"TXTR")), //shield texture
+                ];
+                DATA
+            },
             DoorType::White => {
                 const DATA: &[(u32,FourCC)] = &[
                     (0x59649E9D,FourCC::from_bytes(b"CMDL")),
@@ -107,7 +201,23 @@ impl DoorType {
                 ];
                 DATA
             },
+            DoorType::Icespreader => {
+                const DATA: &[(u32,FourCC)] = &[
+                    (0x59649E9D,FourCC::from_bytes(b"CMDL")),
+                    (0xBE4CD99D,FourCC::from_bytes(b"TXTR")),
+                    (0xF6870C9F,FourCC::from_bytes(b"TXTR")), //shield texture
+                ];
+                DATA
+            },
             DoorType::Red => {
+                const DATA: &[(u32,FourCC)] = &[
+                    (0xBBBA1EC7,FourCC::from_bytes(b"CMDL")),
+                    (0xFC095F6C,FourCC::from_bytes(b"TXTR")),
+                    (0x61A6945B,FourCC::from_bytes(b"TXTR")), //shield texture
+                ];
+                DATA
+            },
+            DoorType::Flamethrower => {
                 const DATA: &[(u32,FourCC)] = &[
                     (0xBBBA1EC7,FourCC::from_bytes(b"CMDL")),
                     (0xFC095F6C,FourCC::from_bytes(b"TXTR")),
@@ -270,6 +380,356 @@ impl DoorType {
                     wave:TypeVulnerability::Reflect as u32,
                     plasma:TypeVulnerability::Normal as u32,
                     phazon:TypeVulnerability::Reflect as u32,
+                },
+            },
+            DoorType::PowerBomb => DamageVulnerability {
+                power: TypeVulnerability::Reflect as u32,
+                ice: TypeVulnerability::Reflect as u32,
+                wave: TypeVulnerability::Reflect as u32,
+                plasma: TypeVulnerability::Reflect as u32,
+                bomb: TypeVulnerability::Immune as u32,
+                power_bomb: TypeVulnerability::Normal as u32,
+                missile: TypeVulnerability::Reflect as u32,
+                boost_ball: TypeVulnerability::Reflect as u32,
+                phazon: TypeVulnerability::Immune as u32,
+
+                enemy_weapon0:TypeVulnerability::Immune as u32,
+                enemy_weapon1:TypeVulnerability::Immune as u32,
+                enemy_weapon2:TypeVulnerability::Immune as u32,
+                enemy_weapon3:TypeVulnerability::Immune as u32,
+
+                unknown_weapon0:TypeVulnerability::Immune as u32,
+                unknown_weapon1:TypeVulnerability::Immune as u32,
+                unknown_weapon2:TypeVulnerability::Immune as u32,
+
+                charged_beams:ChargedBeams {
+                    power:TypeVulnerability::Reflect as u32,
+                    ice:TypeVulnerability::Reflect as u32,
+                    wave:TypeVulnerability::Reflect as u32,
+                    plasma:TypeVulnerability::Reflect as u32,
+                    phazon:TypeVulnerability::Reflect as u32,
+                },
+                beam_combos:BeamCombos {
+                    power:TypeVulnerability::Reflect as u32,
+                    ice:TypeVulnerability::Reflect as u32,
+                    wave:TypeVulnerability::Reflect as u32,
+                    plasma:TypeVulnerability::Reflect as u32,
+                    phazon:TypeVulnerability::Reflect as u32,
+                },
+            },
+            DoorType::Bomb => DamageVulnerability {
+                power: TypeVulnerability::Reflect as u32,
+                ice: TypeVulnerability::Reflect as u32,
+                wave: TypeVulnerability::Reflect as u32,
+                plasma: TypeVulnerability::Reflect as u32,
+                bomb: TypeVulnerability::Normal as u32,
+                power_bomb: TypeVulnerability::Immune as u32,
+                missile: TypeVulnerability::Reflect as u32,
+                boost_ball: TypeVulnerability::Reflect as u32,
+                phazon: TypeVulnerability::Immune as u32,
+
+                enemy_weapon0:TypeVulnerability::Immune as u32,
+                enemy_weapon1:TypeVulnerability::Immune as u32,
+                enemy_weapon2:TypeVulnerability::Immune as u32,
+                enemy_weapon3:TypeVulnerability::Immune as u32,
+
+                unknown_weapon0:TypeVulnerability::Immune as u32,
+                unknown_weapon1:TypeVulnerability::Immune as u32,
+                unknown_weapon2:TypeVulnerability::Immune as u32,
+
+                charged_beams:ChargedBeams {
+                    power:TypeVulnerability::Reflect as u32,
+                    ice:TypeVulnerability::Reflect as u32,
+                    wave:TypeVulnerability::Reflect as u32,
+                    plasma:TypeVulnerability::Reflect as u32,
+                    phazon:TypeVulnerability::Reflect as u32,
+                },
+                beam_combos:BeamCombos {
+                    power:TypeVulnerability::Reflect as u32,
+                    ice:TypeVulnerability::Reflect as u32,
+                    wave:TypeVulnerability::Reflect as u32,
+                    plasma:TypeVulnerability::Reflect as u32,
+                    phazon:TypeVulnerability::Reflect as u32,
+                },
+            },
+            DoorType::Boost => DamageVulnerability {
+                power: TypeVulnerability::Reflect as u32,
+                ice: TypeVulnerability::Reflect as u32,
+                wave: TypeVulnerability::Reflect as u32,
+                plasma: TypeVulnerability::Reflect as u32,
+                bomb: TypeVulnerability::Immune as u32,
+                power_bomb: TypeVulnerability::Immune as u32,
+                missile: TypeVulnerability::Reflect as u32,
+                boost_ball: TypeVulnerability::Normal as u32,
+                phazon: TypeVulnerability::Immune as u32,
+
+                enemy_weapon0:TypeVulnerability::Immune as u32,
+                enemy_weapon1:TypeVulnerability::Immune as u32,
+                enemy_weapon2:TypeVulnerability::Immune as u32,
+                enemy_weapon3:TypeVulnerability::Immune as u32,
+
+                unknown_weapon0:TypeVulnerability::Immune as u32,
+                unknown_weapon1:TypeVulnerability::Immune as u32,
+                unknown_weapon2:TypeVulnerability::Immune as u32,
+
+                charged_beams:ChargedBeams {
+                    power:TypeVulnerability::Reflect as u32,
+                    ice:TypeVulnerability::Reflect as u32,
+                    wave:TypeVulnerability::Reflect as u32,
+                    plasma:TypeVulnerability::Reflect as u32,
+                    phazon:TypeVulnerability::Reflect as u32,
+                },
+                beam_combos:BeamCombos {
+                    power:TypeVulnerability::Reflect as u32,
+                    ice:TypeVulnerability::Reflect as u32,
+                    wave:TypeVulnerability::Reflect as u32,
+                    plasma:TypeVulnerability::Reflect as u32,
+                    phazon:TypeVulnerability::Reflect as u32,
+                },
+            },
+            DoorType::Missile => DamageVulnerability {
+                power: TypeVulnerability::Reflect as u32,
+                ice: TypeVulnerability::Reflect as u32,
+                wave: TypeVulnerability::Reflect as u32,
+                plasma: TypeVulnerability::Reflect as u32,
+                bomb: TypeVulnerability::Immune as u32,
+                power_bomb: TypeVulnerability::Immune as u32,
+                missile: TypeVulnerability::Normal as u32,
+                boost_ball: TypeVulnerability::Reflect as u32,
+                phazon: TypeVulnerability::Immune as u32,
+
+                enemy_weapon0:TypeVulnerability::Immune as u32,
+                enemy_weapon1:TypeVulnerability::Immune as u32,
+                enemy_weapon2:TypeVulnerability::Immune as u32,
+                enemy_weapon3:TypeVulnerability::Immune as u32,
+
+                unknown_weapon0:TypeVulnerability::Immune as u32,
+                unknown_weapon1:TypeVulnerability::Immune as u32,
+                unknown_weapon2:TypeVulnerability::Immune as u32,
+
+                charged_beams:ChargedBeams {
+                    power:TypeVulnerability::Reflect as u32,
+                    ice:TypeVulnerability::Reflect as u32,
+                    wave:TypeVulnerability::Reflect as u32,
+                    plasma:TypeVulnerability::Reflect as u32,
+                    phazon:TypeVulnerability::Reflect as u32,
+                },
+                beam_combos:BeamCombos {
+                    power:TypeVulnerability::Reflect as u32,
+                    ice:TypeVulnerability::Reflect as u32,
+                    wave:TypeVulnerability::Reflect as u32,
+                    plasma:TypeVulnerability::Reflect as u32,
+                    phazon:TypeVulnerability::Reflect as u32,
+                },
+            },
+            DoorType::Charge => DamageVulnerability {
+                power: TypeVulnerability::Reflect as u32,
+                ice: TypeVulnerability::Reflect as u32,
+                wave: TypeVulnerability::Reflect as u32,
+                plasma: TypeVulnerability::Reflect as u32,
+                bomb: TypeVulnerability::Immune as u32,
+                power_bomb: TypeVulnerability::Immune as u32,
+                missile: TypeVulnerability::Reflect as u32,
+                boost_ball: TypeVulnerability::Reflect as u32,
+                phazon: TypeVulnerability::Immune as u32,
+
+                enemy_weapon0:TypeVulnerability::Immune as u32,
+                enemy_weapon1:TypeVulnerability::Immune as u32,
+                enemy_weapon2:TypeVulnerability::Immune as u32,
+                enemy_weapon3:TypeVulnerability::Immune as u32,
+
+                unknown_weapon0:TypeVulnerability::Immune as u32,
+                unknown_weapon1:TypeVulnerability::Immune as u32,
+                unknown_weapon2:TypeVulnerability::Immune as u32,
+
+                charged_beams:ChargedBeams {
+                    power:TypeVulnerability::Normal as u32,
+                    ice:TypeVulnerability::Normal as u32,
+                    wave:TypeVulnerability::Normal as u32,
+                    plasma:TypeVulnerability::Normal as u32,
+                    phazon:TypeVulnerability::Reflect as u32,
+                },
+                beam_combos:BeamCombos {
+                    power:TypeVulnerability::Reflect as u32,
+                    ice:TypeVulnerability::Reflect as u32,
+                    wave:TypeVulnerability::Reflect as u32,
+                    plasma:TypeVulnerability::Reflect as u32,
+                    phazon:TypeVulnerability::Reflect as u32,
+                },
+            },
+            DoorType::Super => DamageVulnerability {
+                power: TypeVulnerability::Reflect as u32,
+                ice: TypeVulnerability::Reflect as u32,
+                wave: TypeVulnerability::Reflect as u32,
+                plasma: TypeVulnerability::Reflect as u32,
+                bomb: TypeVulnerability::Immune as u32,
+                power_bomb: TypeVulnerability::Immune as u32,
+                missile: TypeVulnerability::Reflect as u32,
+                boost_ball: TypeVulnerability::Reflect as u32,
+                phazon: TypeVulnerability::Immune as u32,
+
+                enemy_weapon0:TypeVulnerability::Immune as u32,
+                enemy_weapon1:TypeVulnerability::Immune as u32,
+                enemy_weapon2:TypeVulnerability::Immune as u32,
+                enemy_weapon3:TypeVulnerability::Immune as u32,
+
+                unknown_weapon0:TypeVulnerability::Immune as u32,
+                unknown_weapon1:TypeVulnerability::Immune as u32,
+                unknown_weapon2:TypeVulnerability::Immune as u32,
+
+                charged_beams:ChargedBeams {
+                    power:TypeVulnerability::Reflect as u32,
+                    ice:TypeVulnerability::Reflect as u32,
+                    wave:TypeVulnerability::Reflect as u32,
+                    plasma:TypeVulnerability::Reflect as u32,
+                    phazon:TypeVulnerability::Reflect as u32,
+                },
+                beam_combos:BeamCombos {
+                    power:TypeVulnerability::Normal as u32,
+                    ice:TypeVulnerability::Reflect as u32,
+                    wave:TypeVulnerability::Reflect as u32,
+                    plasma:TypeVulnerability::Reflect as u32,
+                    phazon:TypeVulnerability::Reflect as u32,
+                },
+            },
+            DoorType::Wavebuster => DamageVulnerability {
+                power: TypeVulnerability::Reflect as u32,
+                ice: TypeVulnerability::Reflect as u32,
+                wave: TypeVulnerability::Reflect as u32,
+                plasma: TypeVulnerability::Reflect as u32,
+                bomb: TypeVulnerability::Immune as u32,
+                power_bomb: TypeVulnerability::Immune as u32,
+                missile: TypeVulnerability::Reflect as u32,
+                boost_ball: TypeVulnerability::Reflect as u32,
+                phazon: TypeVulnerability::Immune as u32,
+
+                enemy_weapon0:TypeVulnerability::Immune as u32,
+                enemy_weapon1:TypeVulnerability::Immune as u32,
+                enemy_weapon2:TypeVulnerability::Immune as u32,
+                enemy_weapon3:TypeVulnerability::Immune as u32,
+
+                unknown_weapon0:TypeVulnerability::Immune as u32,
+                unknown_weapon1:TypeVulnerability::Immune as u32,
+                unknown_weapon2:TypeVulnerability::Immune as u32,
+
+                charged_beams:ChargedBeams {
+                    power:TypeVulnerability::Reflect as u32,
+                    ice:TypeVulnerability::Reflect as u32,
+                    wave:TypeVulnerability::Reflect as u32,
+                    plasma:TypeVulnerability::Reflect as u32,
+                    phazon:TypeVulnerability::Reflect as u32,
+                },
+                beam_combos:BeamCombos {
+                    power:TypeVulnerability::Reflect as u32,
+                    ice:TypeVulnerability::Reflect as u32,
+                    wave:TypeVulnerability::Normal as u32,
+                    plasma:TypeVulnerability::Reflect as u32,
+                    phazon:TypeVulnerability::Reflect as u32,
+                },
+            },
+            DoorType::Icespreader => DamageVulnerability {
+                power: TypeVulnerability::Reflect as u32,
+                ice: TypeVulnerability::Reflect as u32,
+                wave: TypeVulnerability::Reflect as u32,
+                plasma: TypeVulnerability::Reflect as u32,
+                bomb: TypeVulnerability::Immune as u32,
+                power_bomb: TypeVulnerability::Immune as u32,
+                missile: TypeVulnerability::Reflect as u32,
+                boost_ball: TypeVulnerability::Reflect as u32,
+                phazon: TypeVulnerability::Immune as u32,
+
+                enemy_weapon0:TypeVulnerability::Immune as u32,
+                enemy_weapon1:TypeVulnerability::Immune as u32,
+                enemy_weapon2:TypeVulnerability::Immune as u32,
+                enemy_weapon3:TypeVulnerability::Immune as u32,
+
+                unknown_weapon0:TypeVulnerability::Immune as u32,
+                unknown_weapon1:TypeVulnerability::Immune as u32,
+                unknown_weapon2:TypeVulnerability::Immune as u32,
+
+                charged_beams:ChargedBeams {
+                    power:TypeVulnerability::Reflect as u32,
+                    ice:TypeVulnerability::Reflect as u32,
+                    wave:TypeVulnerability::Reflect as u32,
+                    plasma:TypeVulnerability::Reflect as u32,
+                    phazon:TypeVulnerability::Reflect as u32,
+                },
+                beam_combos:BeamCombos {
+                    power:TypeVulnerability::Reflect as u32,
+                    ice:TypeVulnerability::Normal as u32,
+                    wave:TypeVulnerability::Reflect as u32,
+                    plasma:TypeVulnerability::Reflect as u32,
+                    phazon:TypeVulnerability::Reflect as u32,
+                },
+            },
+            DoorType::Flamethrower => DamageVulnerability {
+                power: TypeVulnerability::Reflect as u32,
+                ice: TypeVulnerability::Reflect as u32,
+                wave: TypeVulnerability::Reflect as u32,
+                plasma: TypeVulnerability::Reflect as u32,
+                bomb: TypeVulnerability::Immune as u32,
+                power_bomb: TypeVulnerability::Immune as u32,
+                missile: TypeVulnerability::Reflect as u32,
+                boost_ball: TypeVulnerability::Reflect as u32,
+                phazon: TypeVulnerability::Immune as u32,
+
+                enemy_weapon0:TypeVulnerability::Immune as u32,
+                enemy_weapon1:TypeVulnerability::Immune as u32,
+                enemy_weapon2:TypeVulnerability::Immune as u32,
+                enemy_weapon3:TypeVulnerability::Immune as u32,
+
+                unknown_weapon0:TypeVulnerability::Immune as u32,
+                unknown_weapon1:TypeVulnerability::Immune as u32,
+                unknown_weapon2:TypeVulnerability::Immune as u32,
+
+                charged_beams:ChargedBeams {
+                    power:TypeVulnerability::Reflect as u32,
+                    ice:TypeVulnerability::Reflect as u32,
+                    wave:TypeVulnerability::Reflect as u32,
+                    plasma:TypeVulnerability::Reflect as u32,
+                    phazon:TypeVulnerability::Reflect as u32,
+                },
+                beam_combos:BeamCombos {
+                    power:TypeVulnerability::Reflect as u32,
+                    ice:TypeVulnerability::Reflect as u32,
+                    wave:TypeVulnerability::Reflect as u32,
+                    plasma:TypeVulnerability::Normal as u32,
+                    phazon:TypeVulnerability::Reflect as u32,
+                },
+            },
+            DoorType::Disabled => DamageVulnerability {
+                power: TypeVulnerability::Immune as u32,
+                ice: TypeVulnerability::Immune as u32,
+                wave: TypeVulnerability::Immune as u32,
+                plasma: TypeVulnerability::Immune as u32,
+                bomb: TypeVulnerability::Immune as u32,
+                power_bomb: TypeVulnerability::Immune as u32,
+                missile: TypeVulnerability::Immune as u32,
+                boost_ball: TypeVulnerability::Immune as u32,
+                phazon: TypeVulnerability::Immune as u32,
+                
+                enemy_weapon0:TypeVulnerability::Immune as u32,
+                enemy_weapon1:TypeVulnerability::Immune as u32,
+                enemy_weapon2:TypeVulnerability::Immune as u32,
+                enemy_weapon3:TypeVulnerability::Immune as u32,
+
+                unknown_weapon0:TypeVulnerability::Immune as u32,
+                unknown_weapon1:TypeVulnerability::Immune as u32,
+                unknown_weapon2:TypeVulnerability::Immune as u32,
+
+                charged_beams:ChargedBeams {
+                    power:TypeVulnerability::Immune as u32,
+                    ice:TypeVulnerability::Immune as u32,
+                    wave:TypeVulnerability::Immune as u32,
+                    plasma:TypeVulnerability::Immune as u32,
+                    phazon:TypeVulnerability::Normal as u32,
+                },
+                beam_combos:BeamCombos {
+                    power:TypeVulnerability::Immune as u32,
+                    ice:TypeVulnerability::Immune as u32,
+                    wave:TypeVulnerability::Immune as u32,
+                    plasma:TypeVulnerability::Immune as u32,
+                    phazon:TypeVulnerability::Immune as u32,
                 },
             },
         }

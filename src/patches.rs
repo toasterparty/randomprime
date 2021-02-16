@@ -1105,7 +1105,17 @@ fn patch_map_door_icon(
         .unwrap();
     if !door_icon.is_vertical() {
         door_icon.type_ = match door_type {
-            DoorType::Blue   => structs::MapaObjectType::DoorNormal as u32,
+            DoorType::Blue          => structs::MapaObjectType::DoorNormal as u32,
+            DoorType::PowerBomb     => structs::MapaObjectType::DoorShield as u32,
+            DoorType::Bomb          => structs::MapaObjectType::DoorShield as u32,
+            DoorType::Boost         => structs::MapaObjectType::DoorShield as u32,
+            DoorType::Missile       => structs::MapaObjectType::DoorShield as u32,
+            DoorType::Charge        => structs::MapaObjectType::DoorShield as u32,
+            DoorType::Super         => structs::MapaObjectType::DoorNormal as u32,
+            DoorType::Wavebuster    => structs::MapaObjectType::DoorWave as u32,
+            DoorType::Icespreader   => structs::MapaObjectType::DoorIce as u32,
+            DoorType::Flamethrower  => structs::MapaObjectType::DoorPlasma as u32,
+            DoorType::Disabled      => structs::MapaObjectType::DoorShield as u32,
             DoorType::Purple => structs::MapaObjectType::DoorWave as u32,
             DoorType::White  => structs::MapaObjectType::DoorIce as u32,
             DoorType::Red    => structs::MapaObjectType::DoorPlasma as u32,
@@ -1831,9 +1841,19 @@ fn patch_main_plaza_locked_door_map_icon(res: &mut structs::Resource,door_type:D
     let door_icon = mapa.objects.iter_mut()
     .find(|obj| obj.editor_id == 0x20060)
     .unwrap();
-
+    
     door_icon.type_ = match door_type {
-        DoorType::Blue   => structs::MapaObjectType::DoorNormal as u32,
+        DoorType::Blue          => structs::MapaObjectType::DoorNormal as u32,
+        DoorType::PowerBomb     => structs::MapaObjectType::DoorShield as u32,
+        DoorType::Bomb          => structs::MapaObjectType::DoorShield as u32,
+        DoorType::Boost         => structs::MapaObjectType::DoorShield as u32,
+        DoorType::Missile       => structs::MapaObjectType::DoorShield as u32,
+        DoorType::Charge        => structs::MapaObjectType::DoorShield as u32,
+        DoorType::Super         => structs::MapaObjectType::DoorNormal as u32,
+        DoorType::Wavebuster    => structs::MapaObjectType::DoorWave as u32,
+        DoorType::Icespreader   => structs::MapaObjectType::DoorIce as u32,
+        DoorType::Flamethrower  => structs::MapaObjectType::DoorPlasma as u32,
+        DoorType::Disabled      => structs::MapaObjectType::DoorShield as u32,
         DoorType::Purple => structs::MapaObjectType::DoorWave as u32,
         DoorType::White  => structs::MapaObjectType::DoorIce as u32,
         DoorType::Red    => structs::MapaObjectType::DoorPlasma as u32,
@@ -2905,6 +2925,51 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                 if door_specification == "red"
                 {
                     door_type = DoorType::Red;
+                }
+
+                if door_specification == "power_bomb"
+                {
+                    door_type = DoorType::PowerBomb;
+                }
+                
+                if door_specification == "bomb"
+                {
+                    door_type = DoorType::Bomb;
+                }
+                
+                if door_specification == "missile"
+                {
+                    door_type = DoorType::Missile;
+                }
+
+                if door_specification == "charge"
+                {
+                    door_type = DoorType::Charge;
+                }
+                
+                if door_specification == "super"
+                {
+                    door_type = DoorType::Super;
+                }
+
+                if door_specification == "wavebuster"
+                {
+                    door_type = DoorType::Wavebuster;
+                }
+
+                if door_specification == "icespreader"
+                {
+                    door_type = DoorType::Icespreader;
+                }
+
+                if door_specification == "flamethrower"
+                {
+                    door_type = DoorType::Flamethrower;
+                }
+                
+                if door_specification == "disabled"
+                {
+                    door_type = DoorType::Disabled;
                 }
                 
                 if door_specification != "default"
