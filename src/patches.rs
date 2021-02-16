@@ -2913,13 +2913,13 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                         (name.as_bytes(), room_info.room_id),
                         move |_ps, area| patch_door(area,door_location,door_type,door_resources,config.powerbomb_lockpick)
                     );
-                }
 
-                if config.patch_map {
-                    patcher.add_resource_patch(
-                        (&[name.as_bytes()], room_info.mapa_id,b"MAPA".into()),
-                        move |res| patch_map_door_icon(res,door_location,door_type)
-                    );
+                    if config.patch_map {
+                        patcher.add_resource_patch(
+                            (&[name.as_bytes()], room_info.mapa_id,b"MAPA".into()),
+                            move |res| patch_map_door_icon(res,door_location,door_type)
+                        );
+                    }
                 }
             }
         }
