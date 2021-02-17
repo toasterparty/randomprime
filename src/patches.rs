@@ -64,20 +64,28 @@ const ALWAYS_MODAL_HUDMENUS: &[usize] = &[23, 50, 63];
 fn collect_pickup_resources<'r>(gc_disc: &structs::GcDisc<'r>)
     -> HashMap<(u32, FourCC), structs::Resource<'r>>
 {
+    // Get list of all dependencies patcher needs //
     let mut looking_for: HashSet<_> = PickupType::iter()
         .flat_map(|pt| pt.dependencies().iter().cloned())
         .chain(PickupType::iter().map(|pt| (pt.hudmemo_strg(), b"STRG".into())))
         .collect();
 
+    // Dependencies will be read from paks into here //
     let mut found = HashMap::with_capacity(looking_for.len());
 
+    // Remove extra assets from dependency search since they won't appear     //
+    // in any pak. Instead add them to the output resource pool. These assets //
+    // are provided as external files checked into the repository.            //
     let extra_assets = pickup_meta::extra_assets();
     for res in extra_assets {
         looking_for.remove(&(res.file_id, res.fourcc()));
         assert!(found.insert((res.file_id, res.fourcc()), res.clone()).is_none());
     }
 
+    // Iterate through all paks //
     for pak_name in pickup_meta::PICKUP_LOCATIONS.iter().map(|(name, _)| name) {
+
+        // Get pak //
         let file_entry = gc_disc.find_file(pak_name).unwrap();
         let pak = match *file_entry.file().unwrap() {
             structs::FstEntryFile::Pak(ref pak) => Cow::Borrowed(pak),
@@ -85,8 +93,9 @@ fn collect_pickup_resources<'r>(gc_disc: &structs::GcDisc<'r>)
             _ => panic!(),
         };
 
-
+        // Iterate through all resources in pak //
         for res in pak.resources.iter() {
+            // If this resource is a dependency needed by the patcher, add the resource to the output list //
             let key = (res.file_id, res.fourcc());
             if looking_for.remove(&key) {
                 assert!(found.insert(key, res.into_owned()).is_none());
@@ -94,7 +103,9 @@ fn collect_pickup_resources<'r>(gc_disc: &structs::GcDisc<'r>)
         }
     }
 
-    // Generate and add the assets for Nothing and Phazon Suit
+    // Finally, we need to add the assets which are generated rather than read from a file locally //
+    
+    // Generate assets for Nothing and Phazon Suit //
     let mut new_assets = vec![];
     new_assets.extend_from_slice(&create_suit_icon_cmdl_and_ancs(
         &found,
@@ -154,6 +165,8 @@ fn collect_pickup_resources<'r>(gc_disc: &structs::GcDisc<'r>)
             "&just=center;Shiny Missile acquired!\0".to_owned(),
         ])),
     ));
+
+    // Add the newly generated resources //
     for res in new_assets {
         let key = (res.file_id, res.fourcc());
         if looking_for.remove(&key) {
@@ -170,14 +183,17 @@ fn collect_pickup_resources<'r>(gc_disc: &structs::GcDisc<'r>)
 // so we have to make a cache for them as well.
 fn collect_door_resources<'r>(gc_disc: &structs::GcDisc<'r>)
     -> HashMap<(u32, FourCC), structs::Resource<'r>>
-{
+{   
+    // Get list of all dependencies needed by custom doors //
     let mut looking_for: HashSet<_> = DoorType::iter()
-        .flat_map(|pt| pt.dependencies().iter().cloned())
+        .flat_map(|pt| pt.dependencies().into_iter())
         .collect();
 
+    // Iterate through all paks and add add any dependencies to the resource pool //
     let mut found = HashMap::with_capacity(looking_for.len());
+    for pak_name in pickup_meta::PICKUP_LOCATIONS.iter().map(|(name, _)| name) { // for all paks
 
-    for pak_name in pickup_meta::PICKUP_LOCATIONS.iter().map(|(name, _)| name) {
+        // get the pak //
         let file_entry = gc_disc.find_file(pak_name).unwrap();
         let pak = match *file_entry.file().unwrap() {
             structs::FstEntryFile::Pak(ref pak) => Cow::Borrowed(pak),
@@ -185,12 +201,28 @@ fn collect_door_resources<'r>(gc_disc: &structs::GcDisc<'r>)
             _ => panic!(),
         };
 
-
+        // Iterate through all resources in the pak //
         for res in pak.resources.iter() {
             let key = (res.file_id, res.fourcc());
-            if looking_for.remove(&key) {
-                assert!(found.insert(key, res.into_owned()).is_none());
+            if looking_for.remove(&key) { // If it's one of our dependencies
+                assert!(found.insert(key, res.into_owned()).is_none()); // collect it
             }
+        }
+    }
+
+    // Generate custom assets (new door variants) //
+    let mut new_assets = vec![];
+    new_assets.push(create_custom_door_cmdl(
+        &found,
+        DoorType::PowerBomb.shield_cmdl(),
+        DoorType::PowerBomb.holorim_texture(),
+    ));
+
+    // Add the newly generated resources //
+    for res in new_assets {
+        let key = (res.file_id, res.fourcc());
+        if looking_for.remove(&key) {
+            assert!(found.insert(key, res).is_none());
         }
     }
 
@@ -198,6 +230,7 @@ fn collect_door_resources<'r>(gc_disc: &structs::GcDisc<'r>)
 
     found
 }
+
 
 fn create_suit_icon_cmdl_and_ancs<'r>(
     resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
@@ -1059,7 +1092,8 @@ fn patch_door<'r>(
     lockpick: bool,
 ) -> Result<(), String> {
 
-    let deps_iter = door_type.dependencies().iter()
+    let deps = door_type.dependencies();
+    let deps_iter = deps.iter()
         .map(|&(file_id, fourcc)| structs::Dependency {
                 asset_id: file_id,
                 asset_type: fourcc,
@@ -1760,6 +1794,7 @@ fn make_main_plaza_locked_door_two_ways(
             .and_then(|obj| obj.property_data.as_damageable_trigger_mut())
             .unwrap();
         door_force.color_txtr = door_type.forcefield_txtr();
+
         door_force.damage_vulnerability = door_type.vulnerability();
 
         if door_type!= DoorType::Blue && !config.powerbomb_lockpick {
@@ -2820,6 +2855,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             });
         }
     }
+
+    // patch videos
     if !config.is_item_randomized.unwrap_or(false) {
         if let Some(flaahgra_music_files) = &config.flaahgra_music_files {
             const MUSIC_FILE_NAME: &[&[u8]] = &[
@@ -2859,8 +2896,11 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
     // Patch pickups and doors
     let mut layout_iterator = pickup_layout.iter();
     let mut door_rng = StdRng::seed_from_u64(config.seed);
-    for (name, rooms) in pickup_meta::PICKUP_LOCATIONS.iter() {
-        for room_info in rooms.iter() {
+    for (name, rooms) in pickup_meta::PICKUP_LOCATIONS.iter() { // for each .pak
+
+        for room_info in rooms.iter() { // for each room in the pak
+
+            // patch the item locations
             if !config.is_item_randomized.unwrap_or(false) {
                  patcher.add_scly_patch((name.as_bytes(), room_info.room_id), move |_, area| {
                     // Remove objects
@@ -2895,8 +2935,9 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                 }
             }
 
+            // patch the door locations
             let iter = room_info.door_locations.iter();
-            for &door_location in iter
+            for &door_location in iter // for each door location in the room
             {
                 let world = World::from_pak(name).unwrap();
                 if door_location.dock_number.is_none() { continue; }
@@ -2907,6 +2948,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                 let mut door_type;
                 door_type = calculate_door_type(name,&mut door_rng,&config.door_weights); // randomly pick a door color using weights
 
+                // TODO: map this elsewhere
                 if door_specification == "blue"
                 {
                     door_type = DoorType::Blue;

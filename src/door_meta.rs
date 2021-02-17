@@ -1,4 +1,4 @@
-use crate::pickup_meta::ScriptObjectLocation;
+use crate::{pickup_meta::ScriptObjectLocation, custom_asset_ids};
 use structs::structs::{
     DamageVulnerability,
     ChargedBeams,
@@ -6,7 +6,6 @@ use structs::structs::{
 };
 use reader_writer::{FourCC};
 use serde::{Serialize, Deserialize};
-
 
 #[derive(Clone, Copy, Debug)]
 pub struct DoorLocation {
@@ -73,159 +72,70 @@ impl World {
 
 impl DoorType {
 
-    pub fn shield_cmdl(&self) -> u32 {
+    pub const fn shield_cmdl(&self) -> u32 { // model of door, includes specification for which 128x128 texture to line door frame with
         match self {
-            DoorType::Blue         =>   0x0734977A,
-            DoorType::Super        =>   0x0734977A,
-            DoorType::PowerBomb    =>   0x0734977A,
+            DoorType::Blue         =>   0x0734977A, // vanilla CMDL - "blueShield_v1" - door frame model
+            DoorType::PowerBomb    =>   custom_asset_ids::POWER_BOMB_DOOR_CMDL,
             DoorType::Bomb         =>   0x0734977A,
             DoorType::Boost        =>   0x0734977A,
             DoorType::Missile      =>   0x0734977A,
             DoorType::Charge       =>   0x0734977A,
+            DoorType::Super        =>   0x0734977A,
             DoorType::Disabled     =>   0x0734977A,
-            DoorType::Purple       =>   0x33188D1B,
+            DoorType::Purple       =>   0x33188D1B, // vanilla CMDL
             DoorType::Wavebuster   =>   0x33188D1B,
-            DoorType::White        =>   0x59649E9D,
+            DoorType::White        =>   0x59649E9D, // vanilla CMDL
             DoorType::Icespreader  =>   0x59649E9D,
-            DoorType::Red          =>   0xBBBA1EC7,
+            DoorType::Red          =>   0xBBBA1EC7, // vanilla CMDL
             DoorType::Flamethrower =>   0xBBBA1EC7,
         }
     }
 
-    pub fn forcefield_txtr(&self) -> u32 {
+    pub const fn forcefield_txtr(&self) -> u32 { // texture to scroll across center of door for "forcefield" effect 16x16
         match self {
-            DoorType::Blue         =>   0x8A7F3683,
-            DoorType::PowerBomb    =>   0x8A7F3683,
+            DoorType::Blue         =>   0x8A7F3683, // vanilla TXTR - blue 16x16
+            DoorType::PowerBomb    =>   0x1D588B22, // yellow 8x8
             DoorType::Bomb         =>   0x8A7F3683,
             DoorType::Boost        =>   0x8A7F3683,
             DoorType::Missile      =>   0x8A7F3683,
             DoorType::Charge       =>   0x8A7F3683,
             DoorType::Super        =>   0x8A7F3683,
             DoorType::Disabled     =>   0x8A7F3683,
-            DoorType::Purple       =>   0xF68DF7F1,
+            DoorType::Purple       =>   0xF68DF7F1, // vanilla TXTR
             DoorType::Wavebuster   =>   0xF68DF7F1,
-            DoorType::White        =>   0xBE4CD99D,
+            DoorType::White        =>   0xBE4CD99D, // vanilla TXTR
             DoorType::Icespreader  =>   0xBE4CD99D,
-            DoorType::Red          =>   0xFC095F6C,
+            DoorType::Red          =>   0xFC095F6C, // vanilla TXTR
             DoorType::Flamethrower =>   0xFC095F6C,
         }
     }
 
-    pub fn dependencies(&self) -> &'static [(u32, FourCC)] {
+    pub fn holorim_texture(&self) -> u32 { // The the color applied from the rim of the door frame, specified in CMDL
         match self {
-            DoorType::Blue => {
-                const DATA: &[(u32,FourCC)] = &[
-                    (0x0734977A,FourCC::from_bytes(b"CMDL")),
-                    (0x8A7F3683,FourCC::from_bytes(b"TXTR")),
-                    (0x88ED4593,FourCC::from_bytes(b"TXTR")), //shield texture
-                ];
-                DATA
-            },
-            DoorType::PowerBomb => {
-                const DATA: &[(u32,FourCC)] = &[
-                    (0x0734977A,FourCC::from_bytes(b"CMDL")),
-                    (0x8A7F3683,FourCC::from_bytes(b"TXTR")),
-                    (0x88ED4593,FourCC::from_bytes(b"TXTR")), //shield texture
-                ];
-                DATA
-            },
-            DoorType::Bomb => {
-                const DATA: &[(u32,FourCC)] = &[
-                    (0x0734977A,FourCC::from_bytes(b"CMDL")),
-                    (0x8A7F3683,FourCC::from_bytes(b"TXTR")),
-                    (0x88ED4593,FourCC::from_bytes(b"TXTR")), //shield texture
-                ];
-                DATA
-            },
-            DoorType::Boost => {
-                const DATA: &[(u32,FourCC)] = &[
-                    (0x0734977A,FourCC::from_bytes(b"CMDL")),
-                    (0x8A7F3683,FourCC::from_bytes(b"TXTR")),
-                    (0x88ED4593,FourCC::from_bytes(b"TXTR")), //shield texture
-                ];
-                DATA
-            },
-            DoorType::Missile => {
-                const DATA: &[(u32,FourCC)] = &[
-                    (0x0734977A,FourCC::from_bytes(b"CMDL")),
-                    (0x8A7F3683,FourCC::from_bytes(b"TXTR")),
-                    (0x88ED4593,FourCC::from_bytes(b"TXTR")), //shield texture
-                ];
-                DATA
-            },
-            DoorType::Charge => {
-                const DATA: &[(u32,FourCC)] = &[
-                    (0x0734977A,FourCC::from_bytes(b"CMDL")),
-                    (0x8A7F3683,FourCC::from_bytes(b"TXTR")),
-                    (0x88ED4593,FourCC::from_bytes(b"TXTR")), //shield texture
-                ];
-                DATA
-            },
-            DoorType::Super => {
-                const DATA: &[(u32,FourCC)] = &[
-                    (0x0734977A,FourCC::from_bytes(b"CMDL")),
-                    (0x8A7F3683,FourCC::from_bytes(b"TXTR")),
-                    (0x88ED4593,FourCC::from_bytes(b"TXTR")), //shield texture
-                ];
-                DATA
-            },
-            DoorType::Disabled => {
-                const DATA: &[(u32,FourCC)] = &[
-                    (0x0734977A,FourCC::from_bytes(b"CMDL")),
-                    (0x8A7F3683,FourCC::from_bytes(b"TXTR")),
-                    (0x88ED4593,FourCC::from_bytes(b"TXTR")), //shield texture
-                ];
-                DATA
-            },
-            DoorType::Purple => {
-                const DATA: &[(u32,FourCC)] = &[
-                    (0x33188D1B,FourCC::from_bytes(b"CMDL")),
-                    (0xF68DF7F1,FourCC::from_bytes(b"TXTR")),
-                    (0xAB031EA9,FourCC::from_bytes(b"TXTR")), //shield texture
-                ];
-                DATA
-            },
-            DoorType::Wavebuster => {
-                const DATA: &[(u32,FourCC)] = &[
-                    (0x33188D1B,FourCC::from_bytes(b"CMDL")),
-                    (0xF68DF7F1,FourCC::from_bytes(b"TXTR")),
-                    (0xAB031EA9,FourCC::from_bytes(b"TXTR")), //shield texture
-                ];
-                DATA
-            },
-            DoorType::White => {
-                const DATA: &[(u32,FourCC)] = &[
-                    (0x59649E9D,FourCC::from_bytes(b"CMDL")),
-                    (0xBE4CD99D,FourCC::from_bytes(b"TXTR")),
-                    (0xF6870C9F,FourCC::from_bytes(b"TXTR")), //shield texture
-                ];
-                DATA
-            },
-            DoorType::Icespreader => {
-                const DATA: &[(u32,FourCC)] = &[
-                    (0x59649E9D,FourCC::from_bytes(b"CMDL")),
-                    (0xBE4CD99D,FourCC::from_bytes(b"TXTR")),
-                    (0xF6870C9F,FourCC::from_bytes(b"TXTR")), //shield texture
-                ];
-                DATA
-            },
-            DoorType::Red => {
-                const DATA: &[(u32,FourCC)] = &[
-                    (0xBBBA1EC7,FourCC::from_bytes(b"CMDL")),
-                    (0xFC095F6C,FourCC::from_bytes(b"TXTR")),
-                    (0x61A6945B,FourCC::from_bytes(b"TXTR")), //shield texture
-                ];
-                DATA
-            },
-            DoorType::Flamethrower => {
-                const DATA: &[(u32,FourCC)] = &[
-                    (0xBBBA1EC7,FourCC::from_bytes(b"CMDL")),
-                    (0xFC095F6C,FourCC::from_bytes(b"TXTR")),
-                    (0x61A6945B,FourCC::from_bytes(b"TXTR")), //shield texture
-                ];
-                DATA
-            },
+            DoorType::Blue         =>   0x88ED4593, // vanilla TXTR - "blueholorim" texture [128x128]
+            DoorType::PowerBomb    =>   0x1D588B22, // yellow 8x8
+            DoorType::Bomb         =>   0x88ED4593,
+            DoorType::Boost        =>   0x88ED4593,
+            DoorType::Missile      =>   0x88ED4593,
+            DoorType::Charge       =>   0x88ED4593,
+            DoorType::Super        =>   0x88ED4593,
+            DoorType::Disabled     =>   0x88ED4593,
+            DoorType::Purple       =>   0xF68DF7F1, // vanilla TXTR
+            DoorType::Wavebuster   =>   0xF68DF7F1,
+            DoorType::White        =>   0xBE4CD99D, // vanilla TXTR
+            DoorType::Icespreader  =>   0xBE4CD99D, 
+            DoorType::Red          =>   0xFC095F6C, // vanilla TXTR
+            DoorType::Flamethrower =>   0xFC095F6C, 
         }
+    }
+
+    pub fn dependencies(&self) -> Vec<(u32, FourCC)> { // dependencies to add to the area
+        
+        let mut data: Vec<(u32, FourCC)> = Vec::new();
+        data.push((self.shield_cmdl(),FourCC::from_bytes(b"CMDL")));
+        data.push((self.forcefield_txtr(),FourCC::from_bytes(b"TXTR")));
+        data.push((self.holorim_texture(),FourCC::from_bytes(b"TXTR")));
+        data
     }
 
     pub fn iter() -> impl Iterator<Item = DoorType> {
@@ -234,6 +144,16 @@ impl DoorType {
             DoorType::Purple,
             DoorType::White,
             DoorType::Red,
+            DoorType::PowerBomb,
+            DoorType::Bomb,
+            DoorType::Boost,
+            DoorType::Missile,
+            DoorType::Charge,
+            DoorType::Super,
+            DoorType::Disabled,
+            DoorType::Wavebuster,
+            DoorType::Icespreader,
+            DoorType::Flamethrower,
         ].iter().map(|i| *i)
     }
 
