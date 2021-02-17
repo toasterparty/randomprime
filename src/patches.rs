@@ -212,11 +212,87 @@ fn collect_door_resources<'r>(gc_disc: &structs::GcDisc<'r>)
 
     // Generate custom assets (new door variants) //
     let mut new_assets = vec![];
-    new_assets.push(create_custom_door_cmdl(
-        &found,
-        DoorType::PowerBomb.shield_cmdl(),
-        DoorType::PowerBomb.holorim_texture(),
-    ));
+
+    if DoorType::PowerBomb.shield_cmdl() >= 0xDEAF0000
+    {
+        new_assets.push(create_custom_door_cmdl(
+            &found,
+            DoorType::PowerBomb.shield_cmdl(),
+            DoorType::PowerBomb.holorim_texture(),
+        ));
+    }
+
+    if DoorType::Bomb.shield_cmdl() >= 0xDEAF0000 
+    {
+        new_assets.push(create_custom_door_cmdl(
+            &found,
+            DoorType::Bomb.shield_cmdl(),
+            DoorType::Bomb.holorim_texture(),
+        ));
+    }
+
+    if DoorType::Missile.shield_cmdl() >= 0xDEAF0000 
+    {
+        new_assets.push(create_custom_door_cmdl(
+            &found,
+            DoorType::Missile.shield_cmdl(),
+            DoorType::Missile.holorim_texture(),
+        ));
+    }
+
+    if DoorType::Charge.shield_cmdl() >= 0xDEAF0000
+    {
+        new_assets.push(create_custom_door_cmdl(
+            &found,
+            DoorType::Charge.shield_cmdl(),
+            DoorType::Charge.holorim_texture(),
+        ));
+    }
+
+    if DoorType::Super.shield_cmdl() >= 0xDEAF0000
+    {
+        new_assets.push(create_custom_door_cmdl(
+            &found,
+            DoorType::Super.shield_cmdl(),
+            DoorType::Super.holorim_texture(),
+        ));
+    }
+
+    if DoorType::Disabled.shield_cmdl() >= 0xDEAF0000
+    {
+        new_assets.push(create_custom_door_cmdl(
+            &found,
+            DoorType::Disabled.shield_cmdl(),
+            DoorType::Disabled.holorim_texture(),
+        ));
+    }
+
+    if DoorType::Wavebuster.shield_cmdl() >= 0xDEAF0000
+    {
+        new_assets.push(create_custom_door_cmdl(
+            &found,
+            DoorType::Wavebuster.shield_cmdl(),
+            DoorType::Wavebuster.holorim_texture(),
+        ));
+    }
+
+    if DoorType::Icespreader.shield_cmdl() >= 0xDEAF0000
+    {
+        new_assets.push(create_custom_door_cmdl(
+            &found,
+            DoorType::Icespreader.shield_cmdl(),
+            DoorType::Icespreader.holorim_texture(),
+        ));
+    }
+
+    if DoorType::Icespreader.shield_cmdl() >= 0xDEAF0000
+    {
+        new_assets.push(create_custom_door_cmdl(
+            &found,
+            DoorType::Flamethrower.shield_cmdl(),
+            DoorType::Flamethrower.holorim_texture(),
+        ));
+    }
 
     // Add the newly generated resources //
     for res in new_assets {
@@ -231,6 +307,45 @@ fn collect_door_resources<'r>(gc_disc: &structs::GcDisc<'r>)
     found
 }
 
+fn create_custom_door_cmdl<'r>(
+    resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+    new_cmdl_id: u32,
+    new_txtr_id: u32,
+) -> structs::Resource<'r>
+{
+    let new_door_cmdl = {
+
+        // Find and read the blue door CMDL
+        let blue_door_cmdl = ResourceData::new(
+            &resources[&resource_info!("blueShield_v1.CMDL").into()] // 
+        );
+
+        // Deserialize the blue door CMDL into a new mutable CMDL
+        let blue_door_cmdl_bytes = blue_door_cmdl.decompress().into_owned();
+        let mut new_cmdl = Reader::new(&blue_door_cmdl_bytes[..]).read::<structs::Cmdl>(());
+
+        println!("new_cmdl.material_set_count = {}", new_cmdl.material_set_count);
+
+        // Modify the new CMDL to make it unique
+        new_cmdl.material_sets.as_mut_vec()[0].texture_ids.as_mut_vec()[0] = new_txtr_id;
+        
+        // Re-serialize the CMDL //
+        let mut new_cmdl_bytes = vec![];
+        new_cmdl.write_to(&mut new_cmdl_bytes).unwrap();
+
+        // Pad length to multiple of 32 bytes //
+        let len = new_cmdl_bytes.len();
+        new_cmdl_bytes.extend(reader_writer::pad_bytes(32, len).iter());
+
+        // Assemble into a proper resource object
+        pickup_meta::build_resource(
+            new_cmdl_id, // Custom ids start with 0xDEAFxxxx
+            structs::ResourceKind::External(new_cmdl_bytes, b"CMDL".into())
+        )
+    };
+    
+    new_door_cmdl
+}
 
 fn create_suit_icon_cmdl_and_ancs<'r>(
     resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
