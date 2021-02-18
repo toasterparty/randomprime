@@ -1263,7 +1263,7 @@ fn patch_map_door_icon(
             DoorType::Boost         => structs::MapaObjectType::DoorShield as u32,
             DoorType::Missile       => structs::MapaObjectType::DoorShield as u32,
             DoorType::Charge        => structs::MapaObjectType::DoorShield as u32,
-            DoorType::Super         => structs::MapaObjectType::DoorNormal as u32,
+            DoorType::Super         => structs::MapaObjectType::DoorShield as u32,
             DoorType::Wavebuster    => structs::MapaObjectType::DoorWave as u32,
             DoorType::Icespreader   => structs::MapaObjectType::DoorIce as u32,
             DoorType::Flamethrower  => structs::MapaObjectType::DoorPlasma as u32,
