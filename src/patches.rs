@@ -302,6 +302,11 @@ fn collect_door_resources<'r>(gc_disc: &structs::GcDisc<'r>)
         }
     }
 
+    if !looking_for.is_empty()
+    {
+        println!("error - still looking for {:?}",looking_for);
+    }
+
     assert!(looking_for.is_empty());
 
     found
@@ -323,9 +328,7 @@ fn create_custom_door_cmdl<'r>(
         // Deserialize the blue door CMDL into a new mutable CMDL
         let blue_door_cmdl_bytes = blue_door_cmdl.decompress().into_owned();
         let mut new_cmdl = Reader::new(&blue_door_cmdl_bytes[..]).read::<structs::Cmdl>(());
-
-        println!("new_cmdl.material_set_count = {}", new_cmdl.material_set_count);
-
+        
         // Modify the new CMDL to make it unique
         new_cmdl.material_sets.as_mut_vec()[0].texture_ids.as_mut_vec()[0] = new_txtr_id;
         
