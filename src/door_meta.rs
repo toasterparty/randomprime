@@ -25,6 +25,7 @@ enum TypeVulnerability {
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum DoorType {
     Blue,
+    VerticalBlue,
     Purple,
     White,
     Red,
@@ -75,6 +76,7 @@ impl DoorType {
     pub const fn shield_cmdl(&self) -> u32 { // model of door, includes specification for which 128x128 texture to line door frame with
         match self {
             DoorType::Blue         =>   0x0734977A, // vanilla CMDL - "blueShield_v1" - door frame model
+            DoorType::VerticalBlue =>   0x18D0AEE6, // vanilla horizontal CMDL (blue)
             DoorType::Purple       =>   0x33188D1B, // vanilla CMDL
             DoorType::White        =>   0x59649E9D, // vanilla CMDL
             DoorType::Red          =>   0xBBBA1EC7, // vanilla CMDL
@@ -94,6 +96,7 @@ impl DoorType {
     pub const fn forcefield_txtr(&self) -> u32 { // texture to scroll across center of door for "forcefield" effect 16x16
         match self {
             DoorType::Blue         =>   0x8A7F3683, // vanilla TXTR - blue 16x16
+            DoorType::VerticalBlue =>   0x8A7F3683, // horizontal instead of vertical
             DoorType::Purple       =>   0xF68DF7F1, // vanilla TXTR
             DoorType::White        =>   0xBE4CD99D, // vanilla TXTR
             DoorType::Red          =>   0xFC095F6C, // vanilla TXTR
@@ -113,6 +116,7 @@ impl DoorType {
     pub fn holorim_texture(&self) -> u32 { // The the color applied from the rim of the door frame, specified in CMDL
         match self {
             DoorType::Blue         =>   0x88ED4593, // vanilla TXTR - "blueholorim" texture [128x128]
+            DoorType::VerticalBlue =>   0x88ED4593, // horizontal instead of vertical
             DoorType::Purple       =>   0xAB031EA9, // vanilla TXTR
             DoorType::White        =>   0xF6870C9F, // vanilla TXTR
             DoorType::Red          =>   0x61A6945B, // vanilla TXTR
@@ -154,11 +158,47 @@ impl DoorType {
             DoorType::Wavebuster,
             DoorType::Icespreader,
             DoorType::Flamethrower,
+            DoorType::VerticalBlue,
         ].iter().map(|i| *i)
     }
 
     pub fn vulnerability(&self) -> DamageVulnerability {
         match self {
+            DoorType::VerticalBlue => DamageVulnerability {
+                power: TypeVulnerability::Normal as u32,
+                ice: TypeVulnerability::Normal as u32,
+                wave: TypeVulnerability::Normal as u32,
+                plasma: TypeVulnerability::Normal as u32,
+                bomb: TypeVulnerability::Normal as u32,
+                power_bomb: TypeVulnerability::Normal as u32,
+                missile: TypeVulnerability::Normal as u32,
+                boost_ball: TypeVulnerability::Reflect as u32,
+                phazon: TypeVulnerability::Normal as u32,
+
+                enemy_weapon0:TypeVulnerability::Immune as u32,
+                enemy_weapon1:TypeVulnerability::Immune as u32,
+                enemy_weapon2:TypeVulnerability::Immune as u32,
+                enemy_weapon3:TypeVulnerability::Immune as u32,
+
+                unknown_weapon0:TypeVulnerability::Immune as u32,
+                unknown_weapon1:TypeVulnerability::Immune as u32,
+                unknown_weapon2:TypeVulnerability::Immune as u32,
+
+                charged_beams:ChargedBeams {
+                    power:TypeVulnerability::Normal as u32,
+                    ice:TypeVulnerability::Normal as u32,
+                    wave:TypeVulnerability::Normal as u32,
+                    plasma:TypeVulnerability::Normal as u32,
+                    phazon:TypeVulnerability::Normal as u32,
+                },
+                beam_combos:BeamCombos {
+                    power:TypeVulnerability::Normal as u32,
+                    ice:TypeVulnerability::Normal as u32,
+                    wave:TypeVulnerability::Normal as u32,
+                    plasma:TypeVulnerability::Normal as u32,
+                    phazon:TypeVulnerability::Normal as u32,
+                }
+            },
             DoorType::Blue => DamageVulnerability {
                 power: TypeVulnerability::Normal as u32,
                 ice: TypeVulnerability::Normal as u32,
@@ -166,7 +206,7 @@ impl DoorType {
                 plasma: TypeVulnerability::Normal as u32,
                 bomb: TypeVulnerability::Normal as u32,
                 power_bomb: TypeVulnerability::Normal as u32,
-                missile: TypeVulnerability::Reflect as u32,
+                missile: TypeVulnerability::Normal as u32,
                 boost_ball: TypeVulnerability::Reflect as u32,
                 phazon: TypeVulnerability::Normal as u32,
 

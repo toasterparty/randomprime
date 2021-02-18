@@ -1258,6 +1258,7 @@ fn patch_map_door_icon(
     if !door_icon.is_vertical() {
         door_icon.type_ = match door_type {
             DoorType::Blue          => structs::MapaObjectType::DoorNormal as u32,
+            DoorType::VerticalBlue  => structs::MapaObjectType::DoorNormal as u32,
             DoorType::PowerBomb     => structs::MapaObjectType::DoorShield as u32,
             DoorType::Bomb          => structs::MapaObjectType::DoorShield as u32,
             DoorType::Boost         => structs::MapaObjectType::DoorShield as u32,
@@ -1997,6 +1998,7 @@ fn patch_main_plaza_locked_door_map_icon(res: &mut structs::Resource,door_type:D
     
     door_icon.type_ = match door_type {
         DoorType::Blue          => structs::MapaObjectType::DoorNormal as u32,
+        DoorType::VerticalBlue  => structs::MapaObjectType::DoorNormal as u32,
         DoorType::PowerBomb     => structs::MapaObjectType::DoorShield as u32,
         DoorType::Bomb          => structs::MapaObjectType::DoorShield as u32,
         DoorType::Boost         => structs::MapaObjectType::DoorShield as u32,
@@ -3017,8 +3019,6 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
     for (name, rooms) in pickup_meta::PICKUP_LOCATIONS.iter() { // for each .pak
 
         for room_info in rooms.iter() { // for each room in the pak
-
-            // TODO: If room has a vertical door, make it blue //
             
             // TODO: patch other interactive actors here (e.g. power conduits, iced over things, missile locks etc...)
 
@@ -3063,8 +3063,9 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             {
                 let world = World::from_pak(name).unwrap();
                 if door_location.dock_number.is_none() { continue; }
+                let door_index = door_location.dock_number.unwrap() as usize;
                 
-                let door_specification = &config.excluded_doors[world as usize][room_info.name][door_location.dock_number.unwrap() as usize];
+                let door_specification = &config.excluded_doors[world as usize][room_info.name][door_index];
                 // println!("door_specification = {:?}", door_specification);
                 
                 let mut door_type;
@@ -3135,8 +3136,23 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                 {
                     door_type = DoorType::Disabled;
                 }
-                
-                if door_specification != "default"
+
+                let is_vertical_door =  (room_info.room_id == 0x11BD63B7 && door_index == 0) || // Tower Chamber
+                                        (room_info.room_id == 0x0D72F1F7 && door_index == 1) || // Tower of Light
+                                        (room_info.room_id == 0xFB54A0CB && door_index == 4) || // Hall of the Elders 
+                                        (room_info.room_id == 0xE1981EFC && door_index == 0) || // Elder Chamber
+                                        (room_info.room_id == 0x43E4CC25 && door_index == 1) || // Research Lab Hydra
+                                        (room_info.room_id == 0x37BBB33C && door_index == 1) || // Observatory Access
+                                        (room_info.room_id == 0xD8E905DD && door_index == 1) || // Research Core Access
+                                        (room_info.room_id == 0x21B4BFF6 && door_index == 1) || // Research Lab Aether
+                                        (room_info.room_id == 0x3F375ECC && door_index == 2) || // Omega Research
+                                        (room_info.room_id == 0xF517A1EA && door_index == 1); // Dynamo Access
+
+                if is_vertical_door {
+                    door_type = DoorType::VerticalBlue;
+                }
+
+                if (door_specification != "default") || is_vertical_door
                 {
                     patcher.add_scly_patch(
                         (name.as_bytes(), room_info.room_id),
