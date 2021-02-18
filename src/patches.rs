@@ -3018,6 +3018,10 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
 
         for room_info in rooms.iter() { // for each room in the pak
 
+            // TODO: If room has a vertical door, make it blue //
+            
+            // TODO: patch other interactive actors here (e.g. power conduits, iced over things, missile locks etc...)
+
             // patch the item locations
             if !config.is_item_randomized.unwrap_or(false) {
                  patcher.add_scly_patch((name.as_bytes(), room_info.room_id), move |_, area| {

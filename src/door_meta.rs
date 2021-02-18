@@ -75,18 +75,18 @@ impl DoorType {
     pub const fn shield_cmdl(&self) -> u32 { // model of door, includes specification for which 128x128 texture to line door frame with
         match self {
             DoorType::Blue         =>   0x0734977A, // vanilla CMDL - "blueShield_v1" - door frame model
+            DoorType::Purple       =>   0x33188D1B, // vanilla CMDL
+            DoorType::White        =>   0x59649E9D, // vanilla CMDL
+            DoorType::Red          =>   0xBBBA1EC7, // vanilla CMDL
             DoorType::PowerBomb    =>   custom_asset_ids::POWER_BOMB_DOOR_CMDL,
             DoorType::Bomb         =>   custom_asset_ids::MORPH_BALL_BOMB_DOOR_CMDL,
-            DoorType::Boost        =>   0x0734977A,
+            DoorType::Boost        =>   0x0734977A, // unused
             DoorType::Missile      =>   custom_asset_ids::MISSILE_DOOR_CMDL,
             DoorType::Charge       =>   custom_asset_ids::CHARGE_DOOR_CMDL,
             DoorType::Super        =>   custom_asset_ids::SUPER_MISSILE_DOOR_CMDL,
             DoorType::Disabled     =>   custom_asset_ids::DISABLED_DOOR_CMDL,
-            DoorType::Purple       =>   0x33188D1B, // vanilla CMDL
             DoorType::Wavebuster   =>   custom_asset_ids::WAVEBUSTER_DOOR_CMDL,
-            DoorType::White        =>   0x59649E9D, // vanilla CMDL
             DoorType::Icespreader  =>   custom_asset_ids::ICESPREADER_DOOR_CMDL,
-            DoorType::Red          =>   0xBBBA1EC7, // vanilla CMDL
             DoorType::Flamethrower =>   custom_asset_ids::FLAMETHROWER_DOOR_CMDL,
         }
     }
@@ -94,18 +94,18 @@ impl DoorType {
     pub const fn forcefield_txtr(&self) -> u32 { // texture to scroll across center of door for "forcefield" effect 16x16
         match self {
             DoorType::Blue         =>   0x8A7F3683, // vanilla TXTR - blue 16x16
+            DoorType::Purple       =>   0xF68DF7F1, // vanilla TXTR
+            DoorType::White        =>   0xBE4CD99D, // vanilla TXTR
+            DoorType::Red          =>   0xFC095F6C, // vanilla TXTR
             DoorType::PowerBomb    =>   0x1D588B22, // solid yellow
-            DoorType::Bomb         =>   0xD5C17775, // solid green
-            DoorType::Boost        =>   0x8A7F3683,
+            DoorType::Bomb         =>   0xFC095F6C, // solid orange
+            DoorType::Boost        =>   0x8A7F3683, // unused
             DoorType::Missile      =>   0x8344BEC8, // solid grey
             DoorType::Charge       =>   0x8A7F3683, // vanilla blue
-            DoorType::Super        =>   0xFC095F6C, // solid orange
+            DoorType::Super        =>   0xD5C17775, // solid green
             DoorType::Disabled     =>   0x717AABCE, // void with specks
-            DoorType::Purple       =>   0xF68DF7F1, // vanilla TXTR
             DoorType::Wavebuster   =>   0xF68DF7F1, // vanilla TXTR
-            DoorType::White        =>   0xBE4CD99D, // vanilla TXTR
             DoorType::Icespreader  =>   0xBE4CD99D, // vanilla TXTR
-            DoorType::Red          =>   0xFC095F6C, // vanilla TXTR
             DoorType::Flamethrower =>   0xFC095F6C, // vanilla TXTR
         }
     }
@@ -113,19 +113,19 @@ impl DoorType {
     pub fn holorim_texture(&self) -> u32 { // The the color applied from the rim of the door frame, specified in CMDL
         match self {
             DoorType::Blue         =>   0x88ED4593, // vanilla TXTR - "blueholorim" texture [128x128]
-            DoorType::PowerBomb    =>   0x1D588B22, // yellow 8x8
-            DoorType::Bomb         =>   0xD5C17775, // solid green
-            DoorType::Boost        =>   0x88ED4593,
+            DoorType::Purple       =>   0xAB031EA9, // vanilla TXTR
+            DoorType::White        =>   0xF6870C9F, // vanilla TXTR
+            DoorType::Red          =>   0x61A6945B, // vanilla TXTR
+            DoorType::PowerBomb    =>   0x1D588B22, // solid yellow
+            DoorType::Bomb         =>   0xFC095F6C, // solid orange
+            DoorType::Boost        =>   0x88ED4593, // unused
             DoorType::Missile      =>   0x459582C1, // "bedroomeyesC"
             DoorType::Charge       =>   0xC7C8AF66, // banded blue ribbon
-            DoorType::Super        =>   0xFC095F6C, // solid orange
-            DoorType::Disabled     =>   0x717AABCE, // void with specks
-            DoorType::Purple       =>   0xF68DF7F1, // vanilla TXTR
+            DoorType::Super        =>   0xD5C17775, // solid green
             DoorType::Wavebuster   =>   0xF68DF7F1, // solid purple
-            DoorType::White        =>   0xBE4CD99D, // vanilla TXTR
             DoorType::Icespreader  =>   0xA4B75FDE, // icey effect
-            DoorType::Red          =>   0xFC095F6C, // vanilla TXTR
             DoorType::Flamethrower =>   0xC55EDFDB, // solid red 
+            DoorType::Disabled     =>   0x717AABCE, // void with specks
         }
     }
 
@@ -626,7 +626,7 @@ impl DoorType {
                 power_bomb: TypeVulnerability::Immune as u32,
                 missile: TypeVulnerability::Immune as u32,
                 boost_ball: TypeVulnerability::Immune as u32,
-                phazon: TypeVulnerability::Immune as u32,
+                phazon: TypeVulnerability::Normal as u32,
                 
                 enemy_weapon0:TypeVulnerability::Immune as u32,
                 enemy_weapon1:TypeVulnerability::Immune as u32,
@@ -649,7 +649,7 @@ impl DoorType {
                     ice:TypeVulnerability::Immune as u32,
                     wave:TypeVulnerability::Immune as u32,
                     plasma:TypeVulnerability::Immune as u32,
-                    phazon:TypeVulnerability::Immune as u32,
+                    phazon:TypeVulnerability::Normal as u32,
                 },
             },
         }
