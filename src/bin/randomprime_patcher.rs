@@ -97,7 +97,8 @@ struct PatchConfig {
     patch_map: bool,
     obfuscate_items:bool,
     artifact_hints:String,
-    auto_enabled_elevators:bool
+    auto_enabled_elevators:bool,
+    patch_vertical_to_blue:bool,
 }
 
 #[derive(Deserialize)]
@@ -313,6 +314,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         skip_impact_crater: config.patch_settings.skip_crater,
         enable_vault_ledge_door: config.patch_settings.enable_one_way_doors,
         artifact_hint_behavior,
+        patch_vertical_to_blue: config.patch_settings.patch_vertical_to_blue,
 
         flaahgra_music_files,
 

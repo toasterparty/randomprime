@@ -2780,6 +2780,7 @@ pub struct ParsedConfig
     pub skip_impact_crater: bool,
     pub enable_vault_ledge_door: bool,
     pub artifact_hint_behavior: ArtifactHintBehavior,
+    pub patch_vertical_to_blue: bool,
 
     pub flaahgra_music_files: Option<[nod_wrapper::FileWrapper; 2]>,
 
@@ -3157,7 +3158,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                     door_type = DoorType::VerticalBlue;
                 }
 
-                if (door_specification != "default") || is_vertical_door
+                if (door_specification != "default") || (is_vertical_door && config.patch_vertical_to_blue)
                 {
                     patcher.add_scly_patch(
                         (name.as_bytes(), room_info.room_id),
