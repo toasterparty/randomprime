@@ -3146,8 +3146,13 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                                         (room_info.room_id == 0xD8E905DD && door_index == 1) || // Research Core Access
                                         (room_info.room_id == 0x21B4BFF6 && door_index == 1) || // Research Lab Aether
                                         (room_info.room_id == 0x3F375ECC && door_index == 2) || // Omega Research
-                                        (room_info.room_id == 0xF517A1EA && door_index == 1); // Dynamo Access
-
+                                        (room_info.room_id == 0xF517A1EA && door_index == 1) || // Dynamo Access
+                                        (room_info.room_id == 0x8A97BB54 && door_index == 1) || // Elite Research
+                                        (room_info.room_id == 0xA20201D4                   ) || // Security Access B (both doors)
+                                        (room_info.room_id == 0x956F1552 && door_index == 1) || // Mine Security Station
+                                        (room_info.room_id == 0xC50AF17A && door_index == 2) || // Elite Control
+                                        (room_info.room_id == 0x90709AAC && door_index == 1);   // Ventilation Shaft
+                
                 if is_vertical_door {
                     door_type = DoorType::VerticalBlue;
                 }
@@ -3159,7 +3164,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                         move |_ps, area| patch_door(area,door_location,door_type,door_resources,config.powerbomb_lockpick)
                     );
 
-                    if config.patch_map {
+                    if config.patch_map && room_info.mapa_id != 0 {
                         patcher.add_resource_patch(
                             (&[name.as_bytes()], room_info.mapa_id,b"MAPA".into()),
                             move |res| patch_map_door_icon(res,door_location,door_type)
