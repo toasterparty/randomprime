@@ -3146,7 +3146,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                                         (room_info.room_id == 0xD8E905DD && door_index == 1) || // Research Core Access
                                         (room_info.room_id == 0x21B4BFF6 && door_index == 1) || // Research Lab Aether
                                         (room_info.room_id == 0x3F375ECC && door_index == 2) || // Omega Research
-                                        (room_info.room_id == 0xF517A1EA && door_index == 1) || // Dynamo Access
+                                        (room_info.room_id == 0xF517A1EA && door_index == 1) || // Dynamo Access (Careful of Chozo room w/ same name)
                                         (room_info.room_id == 0x8A97BB54 && door_index == 1) || // Elite Research
                                         (room_info.room_id == 0xA20201D4                   ) || // Security Access B (both doors)
                                         (room_info.room_id == 0x956F1552 && door_index == 1) || // Mine Security Station
