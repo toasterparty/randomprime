@@ -285,12 +285,21 @@ fn collect_door_resources<'r>(gc_disc: &structs::GcDisc<'r>)
         ));
     }
 
-    if DoorType::Icespreader.shield_cmdl() >= 0xDEAF0000
+    if DoorType::Flamethrower.shield_cmdl() >= 0xDEAF0000
     {
         new_assets.push(create_custom_door_cmdl(
             &found,
             DoorType::Flamethrower.shield_cmdl(),
             DoorType::Flamethrower.holorim_texture(),
+        ));
+    }
+
+    if DoorType::Ai.shield_cmdl() >= 0xDEAF0000
+    {
+        new_assets.push(create_custom_door_cmdl(
+            &found,
+            DoorType::Ai.shield_cmdl(),
+            DoorType::Ai.holorim_texture(),
         ));
     }
 
@@ -304,7 +313,7 @@ fn collect_door_resources<'r>(gc_disc: &structs::GcDisc<'r>)
 
     if !looking_for.is_empty()
     {
-        println!("error - still looking for {:?}",looking_for);
+        println!("error - still looking for {:?}", looking_for);
     }
 
     assert!(looking_for.is_empty());
@@ -1259,6 +1268,9 @@ fn patch_map_door_icon(
         door_icon.type_ = match door_type {
             DoorType::Blue          => structs::MapaObjectType::DoorNormal as u32,
             DoorType::VerticalBlue  => structs::MapaObjectType::DoorNormal as u32,
+            DoorType::Purple        => structs::MapaObjectType::DoorWave as u32,
+            DoorType::White         => structs::MapaObjectType::DoorIce as u32,
+            DoorType::Red           => structs::MapaObjectType::DoorPlasma as u32,
             DoorType::PowerBomb     => structs::MapaObjectType::DoorShield as u32,
             DoorType::Bomb          => structs::MapaObjectType::DoorShield as u32,
             DoorType::Boost         => structs::MapaObjectType::DoorShield as u32,
@@ -1269,9 +1281,7 @@ fn patch_map_door_icon(
             DoorType::Icespreader   => structs::MapaObjectType::DoorIce as u32,
             DoorType::Flamethrower  => structs::MapaObjectType::DoorPlasma as u32,
             DoorType::Disabled      => structs::MapaObjectType::DoorShield as u32,
-            DoorType::Purple => structs::MapaObjectType::DoorWave as u32,
-            DoorType::White  => structs::MapaObjectType::DoorIce as u32,
-            DoorType::Red    => structs::MapaObjectType::DoorPlasma as u32,
+            DoorType::Ai            => structs::MapaObjectType::DoorShield as u32,
         };
     };
 
@@ -1999,6 +2009,9 @@ fn patch_main_plaza_locked_door_map_icon(res: &mut structs::Resource,door_type:D
     door_icon.type_ = match door_type {
         DoorType::Blue          => structs::MapaObjectType::DoorNormal as u32,
         DoorType::VerticalBlue  => structs::MapaObjectType::DoorNormal as u32,
+        DoorType::Purple        => structs::MapaObjectType::DoorWave as u32,
+        DoorType::White         => structs::MapaObjectType::DoorIce as u32,
+        DoorType::Red           => structs::MapaObjectType::DoorPlasma as u32,
         DoorType::PowerBomb     => structs::MapaObjectType::DoorShield as u32,
         DoorType::Bomb          => structs::MapaObjectType::DoorShield as u32,
         DoorType::Boost         => structs::MapaObjectType::DoorShield as u32,
@@ -2009,9 +2022,7 @@ fn patch_main_plaza_locked_door_map_icon(res: &mut structs::Resource,door_type:D
         DoorType::Icespreader   => structs::MapaObjectType::DoorIce as u32,
         DoorType::Flamethrower  => structs::MapaObjectType::DoorPlasma as u32,
         DoorType::Disabled      => structs::MapaObjectType::DoorShield as u32,
-        DoorType::Purple => structs::MapaObjectType::DoorWave as u32,
-        DoorType::White  => structs::MapaObjectType::DoorIce as u32,
-        DoorType::Red    => structs::MapaObjectType::DoorPlasma as u32,
+        DoorType::Ai            => structs::MapaObjectType::DoorShield as u32,
     };
 
     Ok(())
@@ -3136,6 +3147,11 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                 if door_specification == "disabled"
                 {
                     door_type = DoorType::Disabled;
+                }
+
+                if door_specification == "ai"
+                {
+                    door_type = DoorType::Ai;
                 }
 
                 let is_vertical_door =  (room_info.room_id == 0x11BD63B7 && door_index == 0) || // Tower Chamber

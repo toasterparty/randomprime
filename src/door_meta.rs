@@ -38,6 +38,7 @@ pub enum DoorType {
     Wavebuster,
     Icespreader,
     Flamethrower,
+    Ai,
     Disabled
 }
 
@@ -90,6 +91,7 @@ impl DoorType {
             DoorType::Wavebuster   =>   custom_asset_ids::WAVEBUSTER_DOOR_CMDL,
             DoorType::Icespreader  =>   custom_asset_ids::ICESPREADER_DOOR_CMDL,
             DoorType::Flamethrower =>   custom_asset_ids::FLAMETHROWER_DOOR_CMDL,
+            DoorType::Ai           =>   0xDAAC77CB, // T-posing chozo ghost
         }
     }
 
@@ -110,6 +112,7 @@ impl DoorType {
             DoorType::Wavebuster   =>   0xF68DF7F1, // vanilla TXTR
             DoorType::Icespreader  =>   0xBE4CD99D, // vanilla TXTR
             DoorType::Flamethrower =>   0xFC095F6C, // vanilla TXTR
+            DoorType::Ai           =>   0x717AABCE, // void with specks
         }
     }
 
@@ -130,6 +133,7 @@ impl DoorType {
             DoorType::Icespreader  =>   0xA4B75FDE, // icey effect
             DoorType::Flamethrower =>   0xC55EDFDB, // solid red 
             DoorType::Disabled     =>   0x717AABCE, // void with specks
+            DoorType::Ai           =>   0x00000000, // Unused (CMDL is from game)
         }
     }
 
@@ -138,7 +142,17 @@ impl DoorType {
         let mut data: Vec<(u32, FourCC)> = Vec::new();
         data.push((self.shield_cmdl(),FourCC::from_bytes(b"CMDL")));
         data.push((self.forcefield_txtr(),FourCC::from_bytes(b"TXTR")));
-        data.push((self.holorim_texture(),FourCC::from_bytes(b"TXTR")));
+        if self.holorim_texture() != 0x00000000 {
+            data.push((self.holorim_texture(),FourCC::from_bytes(b"TXTR")));
+        }
+
+        // If the door is a t-posing chozo ghost, add that models dependencies as well
+        if self.shield_cmdl() == 0xDAAC77CB {
+            data.push((0xB516D300,FourCC::from_bytes(b"TXTR")));
+            data.push((0x8D4EF1D8,FourCC::from_bytes(b"TXTR")));
+            data.push((0x7D81B904,FourCC::from_bytes(b"TXTR")));
+        }
+
         data
     }
 
@@ -158,6 +172,7 @@ impl DoorType {
             DoorType::Wavebuster,
             DoorType::Icespreader,
             DoorType::Flamethrower,
+            DoorType::Ai,
             DoorType::VerticalBlue,
         ].iter().map(|i| *i)
     }
@@ -689,6 +704,41 @@ impl DoorType {
                     ice:TypeVulnerability::Immune as u32,
                     wave:TypeVulnerability::Immune as u32,
                     plasma:TypeVulnerability::Immune as u32,
+                    phazon:TypeVulnerability::Normal as u32,
+                },
+            },
+            DoorType::Ai => DamageVulnerability {
+                power: TypeVulnerability::Reflect as u32,
+                ice: TypeVulnerability::Reflect as u32,
+                wave: TypeVulnerability::Reflect as u32,
+                plasma: TypeVulnerability::Reflect as u32,
+                bomb: TypeVulnerability::Immune as u32,
+                power_bomb: TypeVulnerability::Immune as u32,
+                missile: TypeVulnerability::Reflect as u32,
+                boost_ball: TypeVulnerability::Immune as u32,
+                phazon: TypeVulnerability::Normal as u32,
+                
+                enemy_weapon0:TypeVulnerability::Normal as u32,
+                enemy_weapon1:TypeVulnerability::Normal as u32,
+                enemy_weapon2:TypeVulnerability::Normal as u32,
+                enemy_weapon3:TypeVulnerability::Normal as u32,
+
+                unknown_weapon0:TypeVulnerability::Normal as u32,
+                unknown_weapon1:TypeVulnerability::Normal as u32,
+                unknown_weapon2:TypeVulnerability::Normal as u32,
+
+                charged_beams:ChargedBeams {
+                    power:TypeVulnerability::Reflect as u32,
+                    ice:TypeVulnerability::Reflect as u32,
+                    wave:TypeVulnerability::Reflect as u32,
+                    plasma:TypeVulnerability::Reflect as u32,
+                    phazon:TypeVulnerability::Normal as u32,
+                },
+                beam_combos:BeamCombos {
+                    power:TypeVulnerability::Reflect as u32,
+                    ice:TypeVulnerability::Reflect as u32,
+                    wave:TypeVulnerability::Reflect as u32,
+                    plasma:TypeVulnerability::Reflect as u32,
                     phazon:TypeVulnerability::Normal as u32,
                 },
             },

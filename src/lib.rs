@@ -393,6 +393,8 @@ pub mod custom_asset_ids {
         FLAMETHROWER_DOOR_TXTR,
         DISABLED_DOOR_CMDL,
         DISABLED_DOOR_TXTR,
+        AI_DOOR_CMDL,
+        AI_DOOR_TXTR,
         
         SKIP_HUDMEMO_STRG_START,
         SKIP_HUDMEMO_STRG_END = SKIP_HUDMEMO_STRG_START + 38,
