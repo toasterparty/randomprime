@@ -918,11 +918,13 @@ fn main()
     let gc_disc: structs::GcDisc = reader.read(());
 
     let filenames = [
+        "Metroid1.pak",
         "Metroid2.pak",
         "Metroid3.pak",
         "Metroid4.pak",
         "metroid5.pak",
         "Metroid6.pak",
+        "Metroid7.pak",
     ];
 
     let mut pickup_table = HashMap::new();
@@ -930,6 +932,7 @@ fn main()
     let mut locations: Vec<Vec<RoomInfo>> = Vec::new();
 
     for f in &filenames {
+        // println!("----->{}",f.to_string());
         let file_entry = gc_disc.find_file(f).unwrap();
         let pak = match *file_entry.file().unwrap() {
             structs::FstEntryFile::Pak(ref pak) => pak.clone(),
@@ -988,11 +991,26 @@ fn main()
                         continue
                     };
                     // Skip all doors that aren't openable.
-                    if door.ancs.file_id !=0x26886945 && door.ancs.file_id !=0xFAFB5784 { continue; };
+                    if door.ancs.file_id != 0x26886945 && door.ancs.file_id != 0xFAFB5784 { continue; };
+
+                    // Skip all problematic doors (all in frigate intro level) //
+                    if  obj.instance_id == 0x70009 ||
+                        obj.instance_id == 0x90004 ||
+                        obj.instance_id == 0xB0004 ||
+                        obj.instance_id == 0xD0004 ||
+                        obj.instance_id == 0xE0110 ||
+                        obj.instance_id == 0xF0004 ||
+                        obj.instance_id == 0x110058 ||
+                        obj.instance_id == 0x130011 ||
+                        obj.instance_id == 0x1500F6 ||
+                        obj.instance_id == 0x160007
+                        {continue;} 
+                    
                     let obj_loc = ScriptObjectLocation {
                         instance_id: obj.instance_id,
                         layer: layer_num as u32,
                     };
+                    
                     let (unlock_door_loc,key_door_loc) = extract_door_location(&scly,&obj,obj_loc);
                     door_locations.push(unlock_door_loc.unwrap());
                     match key_door_loc {

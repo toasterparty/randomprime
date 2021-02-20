@@ -282,7 +282,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         None
     };
 
-    let mpdr_version = "Plando v1.5";
+    let mpdr_version = "Plando v1.6";
     let mut comment_message:String = "Generated with ".to_owned();
     comment_message.push_str(mpdr_version);
 
