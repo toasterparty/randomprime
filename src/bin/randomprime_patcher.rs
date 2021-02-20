@@ -83,6 +83,10 @@ impl structs::ProgressNotifier for ProgressNotifier
     }
 }
 
+fn default_as_false() -> bool {
+    false
+}
+
 #[derive(Deserialize)]
 struct PatchConfig {
     skip_frigate: bool,
@@ -98,6 +102,8 @@ struct PatchConfig {
     obfuscate_items:bool,
     artifact_hints:String,
     auto_enabled_elevators:bool,
+
+    #[serde(default = "default_as_false")]
     patch_vertical_to_blue:bool,
 }
 
