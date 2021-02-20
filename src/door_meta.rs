@@ -91,7 +91,7 @@ impl DoorType {
             DoorType::Wavebuster   =>   custom_asset_ids::WAVEBUSTER_DOOR_CMDL,
             DoorType::Icespreader  =>   custom_asset_ids::ICESPREADER_DOOR_CMDL,
             DoorType::Flamethrower =>   custom_asset_ids::FLAMETHROWER_DOOR_CMDL,
-            DoorType::Ai           =>   0xDAAC77CB, // T-posing chozo ghost
+            DoorType::Ai           =>   custom_asset_ids::AI_DOOR_CMDL,
         }
     }
 
@@ -123,17 +123,17 @@ impl DoorType {
             DoorType::Purple       =>   0xAB031EA9, // vanilla TXTR
             DoorType::White        =>   0xF6870C9F, // vanilla TXTR
             DoorType::Red          =>   0x61A6945B, // vanilla TXTR
-            DoorType::PowerBomb    =>   0x1D588B22, // solid yellow
-            DoorType::Bomb         =>   0xFC095F6C, // solid orange
+            DoorType::PowerBomb    =>   custom_asset_ids::POWER_BOMB_DOOR_TXTR,
+            DoorType::Bomb         =>   custom_asset_ids::MORPH_BALL_BOMB_DOOR_TXTR,
             DoorType::Boost        =>   0x88ED4593, // unused
             DoorType::Missile      =>   0x459582C1, // "bedroomeyesC"
             DoorType::Charge       =>   0xC7C8AF66, // banded blue ribbon
-            DoorType::Super        =>   0xD5C17775, // solid green
-            DoorType::Wavebuster   =>   0xF68DF7F1, // solid purple
-            DoorType::Icespreader  =>   0xA4B75FDE, // icey effect
-            DoorType::Flamethrower =>   0xC55EDFDB, // solid red 
+            DoorType::Super        =>   custom_asset_ids::SUPER_MISSILE_DOOR_TXTR,
+            DoorType::Wavebuster   =>   custom_asset_ids::WAVEBUSTER_DOOR_TXTR,
+            DoorType::Icespreader  =>   custom_asset_ids::ICESPREADER_DOOR_TXTR,
+            DoorType::Flamethrower =>   custom_asset_ids::FLAMETHROWER_DOOR_TXTR,
             DoorType::Disabled     =>   0x717AABCE, // void with specks
-            DoorType::Ai           =>   0x00000000, // Unused (CMDL is from game)
+            DoorType::Ai           =>   custom_asset_ids::AI_DOOR_TXTR,
         }
     }
 

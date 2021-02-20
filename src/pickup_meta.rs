@@ -340,6 +340,23 @@ const EXTRA_ASSETS: &[(u32, [u8; 4], &[u8])] = &[
      include_bytes!("../extra_assets/shiny-missile2.txtr")),
 ];
 
+const EXTRA_ASSETS_DOORS: &[(u32, [u8; 4], &[u8])] = &[
+    (custom_asset_ids::AI_DOOR_TXTR,              *b"TXTR", include_bytes!("../extra_assets/holorim_ai.txtr")),
+    (custom_asset_ids::MORPH_BALL_BOMB_DOOR_TXTR, *b"TXTR", include_bytes!("../extra_assets/holorim_bombs.txtr")),
+    (custom_asset_ids::POWER_BOMB_DOOR_TXTR,      *b"TXTR", include_bytes!("../extra_assets/holorim_powerbomb.txtr")),
+    (custom_asset_ids::SUPER_MISSILE_DOOR_TXTR,   *b"TXTR", include_bytes!("../extra_assets/holorim_super.txtr")),
+    (custom_asset_ids::WAVEBUSTER_DOOR_TXTR,      *b"TXTR", include_bytes!("../extra_assets/holorim_wavebuster.txtr")),
+    (custom_asset_ids::ICESPREADER_DOOR_TXTR,     *b"TXTR", include_bytes!("../extra_assets/holorim_icespreader.txtr")),
+    (custom_asset_ids::FLAMETHROWER_DOOR_TXTR,    *b"TXTR", include_bytes!("../extra_assets/holorim_flamethrower.txtr")),
+];
+
+pub fn extra_assets_doors<'r>() -> Vec<Resource<'r>>
+{
+    EXTRA_ASSETS_DOORS.iter().map(|&(file_id, ref fourcc, bytes)| {
+        build_resource(file_id, ResourceKind::Unknown(Reader::new(bytes), fourcc.into()))
+    }).collect()
+}
+
 #[cfg(not(debug_assertions))]
 pub fn build_resource<'r>(file_id: u32, kind: ResourceKind<'r>) -> Resource<'r>
 {

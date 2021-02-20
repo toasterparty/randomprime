@@ -6,6 +6,7 @@ use rand::{
     Rng,
     distributions::{Distribution,Uniform},
 };
+
 use encoding::{
     all::WINDOWS_1252,
     Encoding,
@@ -70,7 +71,7 @@ fn collect_pickup_resources<'r>(gc_disc: &structs::GcDisc<'r>)
         .chain(PickupType::iter().map(|pt| (pt.hudmemo_strg(), b"STRG".into())))
         .collect();
 
-    // Dependencies will be read from paks into here //
+    // Dependencies read from paks and custom assets will go here //
     let mut found = HashMap::with_capacity(looking_for.len());
 
     // Remove extra assets from dependency search since they won't appear     //
@@ -176,6 +177,11 @@ fn collect_pickup_resources<'r>(gc_disc: &structs::GcDisc<'r>)
 
     assert!(looking_for.is_empty());
 
+    if !looking_for.is_empty()
+    {
+        println!("error - still looking for {:?}", looking_for);
+    }
+
     found
 }
 
@@ -188,9 +194,20 @@ fn collect_door_resources<'r>(gc_disc: &structs::GcDisc<'r>)
     let mut looking_for: HashSet<_> = DoorType::iter()
         .flat_map(|pt| pt.dependencies().into_iter())
         .collect();
+    
+    // Dependencies read from paks and custom assets will go here //
+    let mut found = HashMap::with_capacity(looking_for.len());
+
+    // Remove extra assets from dependency search since they won't appear     //
+    // in any pak. Instead add them to the output resource pool. These assets //
+    // are provided as external files checked into the repository.            //
+    let extra_assets = pickup_meta::extra_assets_doors();
+    for res in extra_assets {
+        looking_for.remove(&(res.file_id, res.fourcc()));
+        assert!(found.insert((res.file_id, res.fourcc()), res.clone()).is_none());
+    }
 
     // Iterate through all paks and add add any dependencies to the resource pool //
-    let mut found = HashMap::with_capacity(looking_for.len());
     for pak_name in pickup_meta::PICKUP_LOCATIONS.iter().map(|(name, _)| name) { // for all paks
 
         // get the pak //
