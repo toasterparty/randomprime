@@ -230,94 +230,10 @@ fn collect_door_resources<'r>(gc_disc: &structs::GcDisc<'r>)
     // Generate custom assets (new door variants) //
     let mut new_assets = vec![];
 
-    if DoorType::PowerBomb.shield_cmdl() >= 0xDEAF0000
-    {
-        new_assets.push(create_custom_door_cmdl(
-            &found,
-            DoorType::PowerBomb.shield_cmdl(),
-            DoorType::PowerBomb.holorim_texture(),
-        ));
-    }
-
-    if DoorType::Bomb.shield_cmdl() >= 0xDEAF0000 
-    {
-        new_assets.push(create_custom_door_cmdl(
-            &found,
-            DoorType::Bomb.shield_cmdl(),
-            DoorType::Bomb.holorim_texture(),
-        ));
-    }
-
-    if DoorType::Missile.shield_cmdl() >= 0xDEAF0000 
-    {
-        new_assets.push(create_custom_door_cmdl(
-            &found,
-            DoorType::Missile.shield_cmdl(),
-            DoorType::Missile.holorim_texture(),
-        ));
-    }
-
-    if DoorType::Charge.shield_cmdl() >= 0xDEAF0000
-    {
-        new_assets.push(create_custom_door_cmdl(
-            &found,
-            DoorType::Charge.shield_cmdl(),
-            DoorType::Charge.holorim_texture(),
-        ));
-    }
-
-    if DoorType::Super.shield_cmdl() >= 0xDEAF0000
-    {
-        new_assets.push(create_custom_door_cmdl(
-            &found,
-            DoorType::Super.shield_cmdl(),
-            DoorType::Super.holorim_texture(),
-        ));
-    }
-
-    if DoorType::Disabled.shield_cmdl() >= 0xDEAF0000
-    {
-        new_assets.push(create_custom_door_cmdl(
-            &found,
-            DoorType::Disabled.shield_cmdl(),
-            DoorType::Disabled.holorim_texture(),
-        ));
-    }
-
-    if DoorType::Wavebuster.shield_cmdl() >= 0xDEAF0000
-    {
-        new_assets.push(create_custom_door_cmdl(
-            &found,
-            DoorType::Wavebuster.shield_cmdl(),
-            DoorType::Wavebuster.holorim_texture(),
-        ));
-    }
-
-    if DoorType::Icespreader.shield_cmdl() >= 0xDEAF0000
-    {
-        new_assets.push(create_custom_door_cmdl(
-            &found,
-            DoorType::Icespreader.shield_cmdl(),
-            DoorType::Icespreader.holorim_texture(),
-        ));
-    }
-
-    if DoorType::Flamethrower.shield_cmdl() >= 0xDEAF0000
-    {
-        new_assets.push(create_custom_door_cmdl(
-            &found,
-            DoorType::Flamethrower.shield_cmdl(),
-            DoorType::Flamethrower.holorim_texture(),
-        ));
-    }
-
-    if DoorType::Ai.shield_cmdl() >= 0xDEAF0000
-    {
-        new_assets.push(create_custom_door_cmdl(
-            &found,
-            DoorType::Ai.shield_cmdl(),
-            DoorType::Ai.holorim_texture(),
-        ));
+    for door_type in DoorType::iter() {
+        if door_type.shield_cmdl() >= 0xDEAF0000 {
+            new_assets.push(create_custom_door_cmdl(&found, door_type));
+        }
     }
 
     // Add the newly generated resources //
@@ -340,16 +256,21 @@ fn collect_door_resources<'r>(gc_disc: &structs::GcDisc<'r>)
 
 fn create_custom_door_cmdl<'r>(
     resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
-    new_cmdl_id: u32,
-    new_txtr_id: u32,
+    door_type: DoorType,
 ) -> structs::Resource<'r>
 {
-    let new_door_cmdl = {
+    let new_cmdl_id: u32 = door_type.shield_cmdl();
+    let new_txtr_id: u32 = door_type.holorim_texture();
 
+    let new_door_cmdl = {
         // Find and read the blue door CMDL
-        let blue_door_cmdl = ResourceData::new(
-            &resources[&resource_info!("blueShield_v1.CMDL").into()] // 
-        );
+        let blue_door_cmdl = {
+            if door_type.is_vertical() {
+                ResourceData::new(&resources[&resource_info!("18D0AEE6.CMDL").into()]) // actually white door but who cares
+            } else {
+                ResourceData::new(&resources[&resource_info!("blueShield_v1.CMDL").into()])
+            }
+        };
 
         // Deserialize the blue door CMDL into a new mutable CMDL
         let blue_door_cmdl_bytes = blue_door_cmdl.decompress().into_owned();
@@ -1281,25 +1202,9 @@ fn patch_map_door_icon(
     let door_icon = mapa.objects.iter_mut()
         .find(|obj| obj.editor_id == door.door_location.instance_id)
         .unwrap();
+    
     if !door_icon.is_vertical() {
-        door_icon.type_ = match door_type {
-            DoorType::Blue          => structs::MapaObjectType::DoorNormal as u32,
-            DoorType::VerticalBlue  => structs::MapaObjectType::DoorNormal as u32,
-            DoorType::Purple        => structs::MapaObjectType::DoorWave as u32,
-            DoorType::White         => structs::MapaObjectType::DoorIce as u32,
-            DoorType::Red           => structs::MapaObjectType::DoorPlasma as u32,
-            DoorType::PowerBomb     => structs::MapaObjectType::DoorShield as u32,
-            DoorType::Bomb          => structs::MapaObjectType::DoorShield as u32,
-            DoorType::Boost         => structs::MapaObjectType::DoorShield as u32,
-            DoorType::Missile       => structs::MapaObjectType::DoorShield as u32,
-            DoorType::Charge        => structs::MapaObjectType::DoorShield as u32,
-            DoorType::Super         => structs::MapaObjectType::DoorShield as u32,
-            DoorType::Wavebuster    => structs::MapaObjectType::DoorWave as u32,
-            DoorType::Icespreader   => structs::MapaObjectType::DoorIce as u32,
-            DoorType::Flamethrower  => structs::MapaObjectType::DoorPlasma as u32,
-            DoorType::Disabled      => structs::MapaObjectType::DoorShield as u32,
-            DoorType::Ai            => structs::MapaObjectType::DoorShield as u32,
-        };
+        door_icon.type_ = door_type.map_object_type();
     };
 
     Ok(())
@@ -2023,24 +1928,7 @@ fn patch_main_plaza_locked_door_map_icon(res: &mut structs::Resource,door_type:D
     .find(|obj| obj.editor_id == 0x20060)
     .unwrap();
     
-    door_icon.type_ = match door_type {
-        DoorType::Blue          => structs::MapaObjectType::DoorNormal as u32,
-        DoorType::VerticalBlue  => structs::MapaObjectType::DoorNormal as u32,
-        DoorType::Purple        => structs::MapaObjectType::DoorWave as u32,
-        DoorType::White         => structs::MapaObjectType::DoorIce as u32,
-        DoorType::Red           => structs::MapaObjectType::DoorPlasma as u32,
-        DoorType::PowerBomb     => structs::MapaObjectType::DoorShield as u32,
-        DoorType::Bomb          => structs::MapaObjectType::DoorShield as u32,
-        DoorType::Boost         => structs::MapaObjectType::DoorShield as u32,
-        DoorType::Missile       => structs::MapaObjectType::DoorShield as u32,
-        DoorType::Charge        => structs::MapaObjectType::DoorShield as u32,
-        DoorType::Super         => structs::MapaObjectType::DoorNormal as u32,
-        DoorType::Wavebuster    => structs::MapaObjectType::DoorWave as u32,
-        DoorType::Icespreader   => structs::MapaObjectType::DoorIce as u32,
-        DoorType::Flamethrower  => structs::MapaObjectType::DoorPlasma as u32,
-        DoorType::Disabled      => structs::MapaObjectType::DoorShield as u32,
-        DoorType::Ai            => structs::MapaObjectType::DoorShield as u32,
-    };
+    door_icon.type_ = door_type.map_object_type();
 
     Ok(())
 }
@@ -3100,77 +2988,6 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                 let mut door_type;
                 door_type = calculate_door_type(name,&mut door_rng,&config.door_weights); // randomly pick a door color using weights
 
-                // TODO: map this elsewhere
-                if door_specification == "blue"
-                {
-                    door_type = DoorType::Blue;
-                }
-                
-                if door_specification == "purple"
-                {
-                    door_type = DoorType::Purple;
-                }
-                
-                if door_specification == "white"
-                {
-                    door_type = DoorType::White;
-                }
-                
-                if door_specification == "red"
-                {
-                    door_type = DoorType::Red;
-                }
-
-                if door_specification == "power_bomb"
-                {
-                    door_type = DoorType::PowerBomb;
-                }
-                
-                if door_specification == "bomb"
-                {
-                    door_type = DoorType::Bomb;
-                }
-                
-                if door_specification == "missile"
-                {
-                    door_type = DoorType::Missile;
-                }
-
-                if door_specification == "charge"
-                {
-                    door_type = DoorType::Charge;
-                }
-                
-                if door_specification == "super"
-                {
-                    door_type = DoorType::Super;
-                }
-
-                if door_specification == "wavebuster"
-                {
-                    door_type = DoorType::Wavebuster;
-                }
-
-                if door_specification == "icespreader"
-                {
-                    door_type = DoorType::Icespreader;
-                }
-
-                if door_specification == "flamethrower"
-                {
-                    door_type = DoorType::Flamethrower;
-                }
-                
-                if door_specification == "disabled"
-                {
-                    door_type = DoorType::Disabled;
-                }
-
-                if door_specification == "ai"
-                {
-                    door_type = DoorType::Ai;
-                }
-
                 let is_vertical_door =  (room_info.room_id == 0x11BD63B7 && door_index == 0) || // Tower Chamber
                                         (room_info.room_id == 0x0D72F1F7 && door_index == 1) || // Tower of Light
                                         (room_info.room_id == 0xFB54A0CB && door_index == 4) || // Hall of the Elders 
@@ -3187,7 +3004,134 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                                         (room_info.room_id == 0xC50AF17A && door_index == 2) || // Elite Control
                                         (room_info.room_id == 0x90709AAC && door_index == 1);   // Ventilation Shaft
                 
-                if is_vertical_door {
+
+                if door_specification == "blue"
+                {
+                    if !is_vertical_door {
+                        door_type = DoorType::Blue;
+                    } else {
+                        door_type = DoorType::VerticalBlue;
+                    }
+                }
+                
+                if door_specification == "purple"
+                {
+                    if !is_vertical_door {
+                        door_type = DoorType::Purple;
+                    } else {
+                        door_type = DoorType::VerticalPurple;
+                    }
+                }
+                
+                if door_specification == "white"
+                {
+                    if !is_vertical_door {
+                        door_type = DoorType::White;
+                    } else {
+                        door_type = DoorType::VerticalWhite;
+                    }
+                }
+                
+                if door_specification == "red"
+                {
+                    if !is_vertical_door {
+                        door_type = DoorType::Red;
+                    } else {
+                        door_type = DoorType::VerticalRed;
+                    }
+                }
+
+                if door_specification == "power_bomb"
+                {
+                    if !is_vertical_door {
+                        door_type = DoorType::PowerBomb;
+                    } else {
+                        door_type = DoorType::VerticalPowerBomb;
+                    }
+                }
+                
+                if door_specification == "bomb"
+                {
+                    if !is_vertical_door {
+                        door_type = DoorType::Bomb;
+                    } else {
+                        door_type = DoorType::VerticalBomb;
+                    }
+                }
+                
+                if door_specification == "missile"
+                {
+                    if !is_vertical_door {
+                        door_type = DoorType::Missile;
+                    } else {
+                        door_type = DoorType::VerticalMissile;
+                    }
+                }
+
+                if door_specification == "charge"
+                {
+                    if !is_vertical_door {
+                        door_type = DoorType::Charge;
+                    } else {
+                        door_type = DoorType::VerticalCharge;
+                    }
+                }
+                
+                if door_specification == "super"
+                {
+                    if !is_vertical_door {
+                        door_type = DoorType::Super;
+                    } else {
+                        door_type = DoorType::VerticalSuper;
+                    }
+                }
+
+                if door_specification == "wavebuster"
+                {
+                    if !is_vertical_door {
+                        door_type = DoorType::Wavebuster;
+                    } else {
+                        door_type = DoorType::VerticalWavebuster;
+                    }
+                }
+
+                if door_specification == "icespreader"
+                {
+                    if !is_vertical_door {
+                        door_type = DoorType::Icespreader;
+                    } else {
+                        door_type = DoorType::VerticalIcespreader;
+                    }
+                }
+
+                if door_specification == "flamethrower"
+                {
+                    if !is_vertical_door {
+                        door_type = DoorType::Flamethrower;
+                    } else {
+                        door_type = DoorType::VerticalFlamethrower;
+                    }
+                }
+                
+                if door_specification == "disabled"
+                {
+                    if !is_vertical_door {
+                        door_type = DoorType::Disabled;
+                    } else {
+                        door_type = DoorType::VerticalDisabled;
+                    }
+                }
+
+                if door_specification == "ai"
+                {
+                    if !is_vertical_door {
+                        door_type = DoorType::Ai;
+                    } else {
+                        door_type = DoorType::VerticalAi;
+                    }
+                }
+                
+                if is_vertical_door && config.patch_vertical_to_blue {
                     door_type = DoorType::VerticalBlue;
                 }
 
