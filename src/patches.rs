@@ -2679,7 +2679,7 @@ pub struct ParsedConfig
     pub item_seed: u64,
     pub seed: u64,
     pub door_weights: Weights,
-    pub excluded_doors: [HashMap<String,Vec<String>>;5],
+    pub excluded_doors: [HashMap<String,Vec<String>>;7],
     pub patch_map: bool,
 
     pub iso_format: IsoFormat,
@@ -2929,16 +2929,14 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             });
         }
     }
-
+            
+    // TODO: patch other interactive actors here (e.g. power conduits, iced over things, missile locks etc...)            
+    
     // Patch pickups and doors
     let mut layout_iterator = pickup_layout.iter();
     let mut door_rng = StdRng::seed_from_u64(config.seed);
     for (name, rooms) in pickup_meta::PICKUP_LOCATIONS.iter() { // for each .pak
-
         for room_info in rooms.iter() { // for each room in the pak
-            
-            // TODO: patch other interactive actors here (e.g. power conduits, iced over things, missile locks etc...)
-
             // patch the item locations
             if !config.is_item_randomized.unwrap_or(false) {
                  patcher.add_scly_patch((name.as_bytes(), room_info.room_id), move |_, area| {
@@ -2973,7 +2971,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                     );
                 }
             }
-
+            
             // patch the door locations
             let iter = room_info.door_locations.iter();
             for &door_location in iter // for each door location in the room
@@ -2981,9 +2979,10 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                 let world = World::from_pak(name).unwrap();
                 if door_location.dock_number.is_none() { continue; }
                 let door_index = door_location.dock_number.unwrap() as usize;
+
+                let level = world as usize;
                 
-                let door_specification = &config.excluded_doors[world as usize][room_info.name][door_index];
-                // println!("door_specification = {:?}", door_specification);
+                let door_specification = &config.excluded_doors[level][room_info.name][door_index];
                 
                 let mut door_type;
                 door_type = calculate_door_type(name,&mut door_rng,&config.door_weights); // randomly pick a door color using weights

@@ -70,14 +70,12 @@ pub enum World {
     MagmoorCaverns,
     PhendranaDrifts,
     PhazonMines,
-    FrigateOrpheon,
     ImpactCrater,
 }
 
 impl World {
     pub fn from_pak(pak_str:&str) -> Option<Self> {
         match pak_str {
-            "Metroid1.pak" => Some(World::FrigateOrpheon),
             "Metroid2.pak" => Some(World::ChozoRuins),
             "Metroid3.pak" => Some(World::PhendranaDrifts),
             "Metroid4.pak" => Some(World::TallonOverworld),

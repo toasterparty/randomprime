@@ -50,7 +50,7 @@ struct Config {
     door_weights: Weights,
     patch_settings: PatchConfig,
     starting_pickups: u64,
-    excluded_doors: [HashMap<String,Vec<String>>;5],
+    excluded_doors: [HashMap<String,Vec<String>>;7],
 }
 
 /*
