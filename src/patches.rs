@@ -2940,7 +2940,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         let level = world as usize;
 
         if level == 0 && config.skip_frigate {continue;} // If we're skipping the frigate, there's nothing to patch
-        if level == 0 && config.skip_crater {continue;} // If we're skipping the frigate, there's nothing to patch
+        if level == 6 && config.skip_impact_crater {continue;} // If we're skipping the frigate, there's nothing to patch
 
         for room_info in rooms.iter() { // for each room in the pak
             // patch the item locations
@@ -2985,7 +2985,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                 if door_location.dock_number.is_none() { continue; }
                 let door_index = door_location.dock_number.unwrap() as usize;
                 
-                println!("excluded_doors[{}][{}][{}]", level, room_info.name.to_string(), door_index);
+                // println!("excluded_doors[{}][{}][{}]", level, room_info.name.to_string(), door_index);
                 let door_specification = &config.excluded_doors[level][room_info.name][door_index];
 
                 let is_vertical_door =  (room_info.room_id == 0x11BD63B7 && door_index == 0) || // Tower Chamber

@@ -124,6 +124,28 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 7] = &[
             objects_to_remove: &[],
         },
         RoomInfo {
+            room_id: 0xCDE604F0,
+            name: "Map Facility",
+            mapa_id: 0xE433FFCD,
+            pickup_locations: &[
+            ],
+            door_locations: &[
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 524292 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 524293 },
+                    door_shield_location: Some(ScriptObjectLocation { layer: 0, instance_id: 524295 }),
+                    dock_number: Some(0),
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 524309 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 524310 },
+                    door_shield_location: Some(ScriptObjectLocation { layer: 0, instance_id: 524313 }),
+                    dock_number: Some(1),
+                },
+            ],
+            objects_to_remove: &[],
+        },
+        RoomInfo {
             room_id: 0x1055715C,
             name: "Main Ventilation Shaft Section F",
             mapa_id: 0x39808A61,
