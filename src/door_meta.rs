@@ -65,6 +65,7 @@ pub struct Weights {
 }
 
 pub enum World {
+    FrigateOrpheon,
     TallonOverworld,
     ChozoRuins,
     MagmoorCaverns,
@@ -76,6 +77,7 @@ pub enum World {
 impl World {
     pub fn from_pak(pak_str:&str) -> Option<Self> {
         match pak_str {
+            "Metroid1.pak" => Some(World::FrigateOrpheon),
             "Metroid2.pak" => Some(World::ChozoRuins),
             "Metroid3.pak" => Some(World::PhendranaDrifts),
             "Metroid4.pak" => Some(World::TallonOverworld),

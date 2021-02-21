@@ -2930,12 +2930,18 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         }
     }
             
-    // TODO: patch other interactive actors here (e.g. power conduits, iced over things, missile locks etc...)            
+    // TODO: patch other interactive actors here (e.g. power conduits, iced over things, missile locks etc...)
     
     // Patch pickups and doors
     let mut layout_iterator = pickup_layout.iter();
     let mut door_rng = StdRng::seed_from_u64(config.seed);
     for (name, rooms) in pickup_meta::PICKUP_LOCATIONS.iter() { // for each .pak
+        let world = World::from_pak(name).unwrap();
+        let level = world as usize;
+
+        if level == 0 && config.skip_frigate {continue;} // If we're skipping the frigate, there's nothing to patch
+        if level == 0 && config.skip_crater {continue;} // If we're skipping the frigate, there's nothing to patch
+
         for room_info in rooms.iter() { // for each room in the pak
             // patch the item locations
             if !config.is_item_randomized.unwrap_or(false) {
@@ -2971,21 +2977,16 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                     );
                 }
             }
-            
+
             // patch the door locations
             let iter = room_info.door_locations.iter();
             for &door_location in iter // for each door location in the room
             {
-                let world = World::from_pak(name).unwrap();
                 if door_location.dock_number.is_none() { continue; }
                 let door_index = door_location.dock_number.unwrap() as usize;
-
-                let level = world as usize;
                 
+                println!("excluded_doors[{}][{}][{}]", level, room_info.name.to_string(), door_index);
                 let door_specification = &config.excluded_doors[level][room_info.name][door_index];
-                
-                let mut door_type;
-                door_type = calculate_door_type(name,&mut door_rng,&config.door_weights); // randomly pick a door color using weights
 
                 let is_vertical_door =  (room_info.room_id == 0x11BD63B7 && door_index == 0) || // Tower Chamber
                                         (room_info.room_id == 0x0D72F1F7 && door_index == 1) || // Tower of Light
@@ -3002,8 +3003,9 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                                         (room_info.room_id == 0x956F1552 && door_index == 1) || // Mine Security Station
                                         (room_info.room_id == 0xC50AF17A && door_index == 2) || // Elite Control
                                         (room_info.room_id == 0x90709AAC && door_index == 1);   // Ventilation Shaft
-                
 
+                let mut door_type = calculate_door_type(name,&mut door_rng,&config.door_weights); // randomly pick a door color using weights
+                
                 if door_specification == "blue"
                 {
                     if !is_vertical_door {
