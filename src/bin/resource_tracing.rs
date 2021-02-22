@@ -336,6 +336,7 @@ struct RoomInfo
 {
     room_id: u32,
     name: String,
+    name_id: u32,
     mapa_id: u32,
     pickups: Vec<PickupLocation>,
     doors: Vec<DoorLocation>,
@@ -983,6 +984,8 @@ fn main()
             let mapa_id = target_mapa.file_id;
 
             for (layer_num, scly_layer) in scly.layers.iter().enumerate() {
+
+                // trace door resources //
                 for obj in scly_layer.objects.iter() {
                     let obj = obj.into_owned();
                     let door = if let Some(door) = obj.property_data.as_door() {
@@ -1018,6 +1021,8 @@ fn main()
                         None => (),
                     }
                 }
+
+                // trace pickup resources //
                 for obj in scly_layer.objects.iter() {
                     let obj = obj.into_owned();
                     let pickup = if let Some(pickup) = obj.property_data.as_pickup() {
@@ -1092,6 +1097,7 @@ fn main()
                 pak_locations.push(RoomInfo {
                     room_id: res.file_id,
                     name,
+                    name_id: strg_id,
                     mapa_id,
                     pickups: room_locations,
                     doors: door_locations,
@@ -1127,6 +1133,7 @@ fn main()
             println!("        RoomInfo {{");
             println!("            room_id: 0x{:08X},", room_info.room_id);
             println!("            name: {:?},", &room_info.name[..(room_info.name.len() - 1)]);
+            println!("            name_id: 0x{:08X},", room_info.name_id);
             println!("            mapa_id: 0x{:08X},", room_info.mapa_id);
             println!("            pickup_locations: &[");
             for location in room_info.pickups {
