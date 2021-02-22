@@ -87,6 +87,10 @@ fn default_as_false() -> bool {
     false
 }
 
+fn default_as_empty_vec() -> Vec<String> {
+    Vec::new()
+}
+
 #[derive(Deserialize)]
 struct PatchConfig {
     skip_frigate: bool,
@@ -112,6 +116,9 @@ struct Config {
     input_iso: String,
     output_iso: String,
     layout_string: String,
+
+    #[serde(default = "default_as_empty_vec")]
+    elevator_layout_override: Vec<String>,
     starting_room: String,
     seed: u64,
     door_weights: Weights,
@@ -262,6 +269,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
 
     let layout_string = String::from(&config.layout_string);
     let (pickup_layout, elevator_layout, item_seed) = parse_layout(&layout_string)?;
+
     let seed = config.seed;
 
     let artifact_hints = String::from(&config.patch_settings.artifact_hints);
@@ -307,6 +315,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         patch_map:config.patch_settings.patch_map,
 
         layout_string,
+        elevator_layout_override: config.elevator_layout_override,
         starting_room:config.starting_room,
 
         iso_format,

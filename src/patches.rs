@@ -2676,6 +2676,7 @@ pub struct ParsedConfig
 
     pub pickup_layout: Vec<u8>,
     pub elevator_layout: Vec<u8>,
+    pub elevator_layout_override: Vec<String>,
     pub starting_room: String,
     pub item_seed: u64,
     pub seed: u64,
@@ -2838,7 +2839,7 @@ fn spawn_room_from_string(name: String) -> SpawnRoom {
 
         let mut idx: u32 = 0;
         for room_info in rooms.iter() { // for each room in the pak
-            if room_info.name == name {
+            if room_info.name.to_lowercase() == name.to_lowercase() {
                 return SpawnRoom {
                     pak_name,
                     mlvl: world.mlvl(),
@@ -2862,7 +2863,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         .collect();
     let pickup_layout = &pickup_layout[..];
 
-    let elevator_layout: Vec<_> = config.elevator_layout[..ELEVATORS.len()].iter()
+    let mut elevator_layout: Vec<_> = config.elevator_layout[..ELEVATORS.len()].iter()
         .map(|i| ELEVATORS[*i as usize])
         .map(|elv| if config.skip_impact_crater && elv.name == "Crater Entry Point" {
                 Elevator::end_game_elevator()
@@ -2870,6 +2871,14 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                 elv
             })
         .collect();
+    
+    let mut idx = 0;
+    for elv in &config.elevator_layout_override {
+        let spawn_room = spawn_room_from_string(elv.to_string());
+        elevator_layout[idx].mlvl = spawn_room.mlvl;
+        elevator_layout[idx].mrea = spawn_room.mrea;
+        idx = idx + 1;
+    }
     
     let spawn_room = spawn_room_from_string(config.starting_room.to_string());
     assert!(spawn_room.mlvl != World::FrigateOrpheon.mlvl()); // The game will freeze if frigate is skipped, you can never get to the planet if it isn't
@@ -3299,6 +3308,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         );
 
         patcher.add_resource_patch(resource_info!("FRME_BallHud.FRME").into(), patch_morphball_hud);
+
 
         make_elevators_patch(&mut patcher, &elevator_layout, config.auto_enabled_elevators);
 
