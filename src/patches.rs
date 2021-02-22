@@ -2875,8 +2875,11 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
     let mut idx = 0;
     for elv in &config.elevator_layout_override {
         let spawn_room = spawn_room_from_string(elv.to_string());
+        
+        assert!(!(spawn_room.mlvl == World::FrigateOrpheon.mlvl() && config.skip_frigate)); // panic if a elevator destination takes you to the removed frigate level
         elevator_layout[idx].mlvl = spawn_room.mlvl;
         elevator_layout[idx].mrea = spawn_room.mrea;
+        
         idx = idx + 1;
     }
     
