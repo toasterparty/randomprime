@@ -116,6 +116,7 @@ struct Config {
     door_weights: Weights,
     patch_settings: PatchConfig,
     starting_pickups: u64,
+    starting_pickups_frigate: u64,
     excluded_doors: [HashMap<String,Vec<String>>;7],
 }
 
@@ -325,6 +326,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         flaahgra_music_files,
 
         starting_items: Some(config.starting_pickups),
+        starting_items_frigate: Some(config.starting_pickups_frigate),
         comment: comment_message,
         main_menu_message: String::from(mpdr_version),
 

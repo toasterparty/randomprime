@@ -2701,6 +2701,7 @@ pub struct ParsedConfig
     pub flaahgra_music_files: Option<[nod_wrapper::FileWrapper; 2]>,
 
     pub starting_items: Option<u64>,
+    pub starting_items_frigate: Option<u64>,
     pub comment: String,
     pub main_menu_message: String,
 
@@ -3192,15 +3193,31 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             structs::FstEntryFile::ExternalFile(Box::new(rel_config)),
         )?;
 
-        let (starting_items, print_sis) = if let Some(starting_items) = config.starting_items {
-            (starting_items, true)
-        } else {
-            (1, false)
-        };
-        patcher.add_scly_patch(
-            (spawn_room.pak_name.as_bytes(), spawn_room.mrea),
-            move |_ps, area| patch_starting_pickups(area, starting_items, print_sis)
-        );
+        // Patch Frigate Starting Items //
+        {
+            let (starting_items, print_sis) = if let Some(starting_items) = config.starting_items_frigate {
+                (starting_items, true)
+            } else {
+                (1, false)
+            };
+            patcher.add_scly_patch(
+                (SpawnRoom::frigate_spawn_room().pak_name.as_bytes(), SpawnRoom::frigate_spawn_room().mrea),
+                move |_ps, area| patch_starting_pickups(area, starting_items, print_sis)
+            );
+        }
+
+        // Patch TallonIV Starting Items //
+        {
+            let (starting_items, print_sis) = if let Some(starting_items) = config.starting_items {
+                (starting_items, true)
+            } else {
+                (1, false)
+            };
+            patcher.add_scly_patch(
+                (spawn_room.pak_name.as_bytes(), spawn_room.mrea),
+                move |_ps, area| patch_starting_pickups(area, starting_items, print_sis)
+            );
+        }
 
         const ARTIFACT_TOTEM_SCAN_STRGS: &[ResourceInfo] = &[
             resource_info!("07_Over_Stonehenge Totem 5.STRG"), // Lifegiver
