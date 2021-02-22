@@ -87,6 +87,18 @@ impl World {
             _ => None
         }
     }
+
+    pub fn mlvl(&self) -> u32 {
+        match self {
+            World::FrigateOrpheon  => 0x158efe17,
+            World::ChozoRuins      => 0x83f6ff6f,
+            World::PhendranaDrifts => 0xa8be6291,
+            World::TallonOverworld => 0x39f2de28,
+            World::PhazonMines     => 0xb1ac4d65,
+            World::MagmoorCaverns  => 0x3ef8237c,
+            World::ImpactCrater    => 0xc13b09d1,
+        }
+    }
 }
 
 impl DoorType {

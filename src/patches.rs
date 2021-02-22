@@ -2676,6 +2676,7 @@ pub struct ParsedConfig
 
     pub pickup_layout: Vec<u8>,
     pub elevator_layout: Vec<u8>,
+    pub starting_room: String,
     pub item_seed: u64,
     pub seed: u64,
     pub door_weights: Weights,
@@ -2831,6 +2832,28 @@ pub fn patch_iso<T>(mut config: ParsedConfig, mut pn: T) -> Result<(), String>
     Ok(())
 }
 
+fn spawn_room_from_string(name: String) -> SpawnRoom {
+    for (pak_name, rooms) in pickup_meta::PICKUP_LOCATIONS.iter() { // for each pak
+        let world = World::from_pak(pak_name).unwrap();
+
+        let mut idx: u32 = 0;
+        for room_info in rooms.iter() { // for each room in the pak
+            if room_info.name == name {
+                return SpawnRoom {
+                    pak_name,
+                    mlvl: world.mlvl(),
+                    mrea: room_info.room_id,
+                    mrea_idx: idx,
+                };
+            }
+            idx = idx + 1;
+        }
+    }
+
+    assert!(false);
+    return SpawnRoom::landing_site_spawn_room();
+}
+
 fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, version: Version)
     -> Result<(), String>
 {
@@ -2847,8 +2870,11 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                 elv
             })
         .collect();
-    let spawn_room = SpawnRoom::from_room_idx(config.elevator_layout[20] as usize);
-
+    
+    let spawn_room = spawn_room_from_string(config.starting_room.to_string());
+    assert!(spawn_room.mlvl != World::FrigateOrpheon.mlvl()); // The game will freeze if frigate is skipped, you can never get to the planet if it isn't
+    assert!(spawn_room.mlvl != World::ImpactCrater.mlvl() || !config.skip_impact_crater);
+    
     let mut rng = StdRng::seed_from_u64(config.seed);
     let artifact_totem_strings = build_artifact_temple_totem_scan_strings(pickup_layout, &mut rng);
     let mut pickup_resources = collect_pickup_resources(gc_disc);

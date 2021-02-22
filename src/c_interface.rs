@@ -46,6 +46,7 @@ struct Config {
     input_iso: String,
     output_iso: String,
     layout_string: String,
+    starting_room: String,
     seed: u64,
     door_weights: Weights,
     patch_settings: PatchConfig,
@@ -276,6 +277,7 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         patch_map:config.patch_settings.patch_map,
 
         layout_string,
+        starting_room: config.starting_room,
 
         iso_format: patches::IsoFormat::Iso,
         skip_frigate: config.patch_settings.skip_frigate,
