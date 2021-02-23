@@ -6411,6 +6411,7 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 7] = &[
         RoomInfo {
             room_id: 0xA20201D4,
             name: "Security Access B",
+            name_id: 0x744827e4,
             mapa_id: 0x8BD7FAE9,
             pickup_locations: &[
             ],

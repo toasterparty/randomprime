@@ -389,6 +389,7 @@ pub struct RoomInfo
 {
     pub room_id: u32,
     pub name: &'static str,
+    pub name_id: u32,
     pub mapa_id: u32,
     pub pickup_locations: &'static [PickupLocation],
     pub door_locations: &'static [DoorLocation],

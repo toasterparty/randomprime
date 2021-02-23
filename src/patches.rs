@@ -950,10 +950,16 @@ fn rotate(mut coordinate: [f32; 3], mut rotation: [f32; 3], center: [f32; 3])
 fn make_elevators_patch<'a>(
     patcher: &mut PrimePatcher<'_, 'a>,
     layout: &'a [Elevator],
+    dest_names: &Vec<String>,
     auto_enabled_elevators: bool,
 )
 {
+    let mut idx = 0;
     for (elv, dest) in ELEVATORS.iter().zip(layout) {
+        
+        let dest_name = &dest_names[idx];
+        idx = idx + 1;
+
         if elv.pak_name.len() == 0 {
             // Skip destination only elevators
             continue
@@ -1006,9 +1012,9 @@ fn make_elevators_patch<'a>(
             Ok(())
         });
 
-        let room_dest_name = dest.name.replace('\0', "\n");
-        let hologram_name = dest.name.replace('\0', " ");
-        let control_name = dest.name.replace('\0', " ");
+        let room_dest_name = dest_name.replace('\0', "\n");
+        let hologram_name = dest_name.replace('\0', " ");
+        let control_name = dest_name.replace('\0', " ");
         patcher.add_resource_patch((&[elv.pak_name.as_bytes()], elv.room_strg, b"STRG".into()), move |res| {
             let string = format!("Transport to {}\u{0}", room_dest_name);
             let strg = structs::Strg::from_strings(vec![string]);
@@ -2855,6 +2861,24 @@ fn spawn_room_from_string(name: String) -> SpawnRoom {
     return SpawnRoom::landing_site_spawn_room();
 }
 
+fn room_strg_id_from_mrea_id(mrea_id: u32) -> (u32, u32)
+{
+    for _ in pickup_meta::PICKUP_LOCATIONS.iter().map(|(name, _)| name) {
+        let mut idx = 0;
+        for (_, rooms) in pickup_meta::PICKUP_LOCATIONS.iter() {
+            for room_info in rooms.iter() {
+                if room_info.room_id == mrea_id {
+                    return (idx ,room_info.name_id);
+                }
+            }
+            idx = idx + 1;
+        }
+    }
+
+    assert!(false);
+    (0, 0)
+}
+
 fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, version: Version)
     -> Result<(), String>
 {
@@ -2879,7 +2903,9 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         assert!(!(spawn_room.mlvl == World::FrigateOrpheon.mlvl() && config.skip_frigate)); // panic if a elevator destination takes you to the removed frigate level
         elevator_layout[idx].mlvl = spawn_room.mlvl;
         elevator_layout[idx].mrea = spawn_room.mrea;
-        
+
+        let (mrea_idx, _) = room_strg_id_from_mrea_id(spawn_room.mrea);
+        elevator_layout[idx].mrea_idx = mrea_idx;
         idx = idx + 1;
     }
     
@@ -3313,7 +3339,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         patcher.add_resource_patch(resource_info!("FRME_BallHud.FRME").into(), patch_morphball_hud);
 
 
-        make_elevators_patch(&mut patcher, &elevator_layout, config.auto_enabled_elevators);
+        make_elevators_patch(&mut patcher, &elevator_layout, &config.elevator_layout_override, config.auto_enabled_elevators);
 
         make_elite_research_fight_prereq_patches(&mut patcher);
 
