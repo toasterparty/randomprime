@@ -2839,13 +2839,22 @@ pub fn patch_iso<T>(mut config: ParsedConfig, mut pn: T) -> Result<(), String>
     Ok(())
 }
 
-fn spawn_room_from_string(name: String) -> SpawnRoom {
+fn spawn_room_from_string(room_string: String) -> SpawnRoom {
+    let vec: Vec<&str> = room_string.split(":").collect();
+    assert!(vec.len() == 2);
+    let world_name = vec[0];
+    let room_name = vec[1];
+
     for (pak_name, rooms) in pickup_meta::PICKUP_LOCATIONS.iter() { // for each pak
         let world = World::from_pak(pak_name).unwrap();
 
+        if !world.as_string().to_lowercase().starts_with(&world_name.to_lowercase()) {
+            continue;
+        }
+
         let mut idx: u32 = 0;
         for room_info in rooms.iter() { // for each room in the pak
-            if room_info.name.to_lowercase() == name.to_lowercase() {
+            if room_info.name.to_lowercase() == room_name.to_lowercase() {
                 return SpawnRoom {
                     pak_name,
                     mlvl: world.mlvl(),
@@ -2902,7 +2911,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         
         assert!(!(spawn_room.mlvl == World::FrigateOrpheon.mlvl() && config.skip_frigate)); // panic if a elevator destination takes you to the removed frigate level
         elevator_layout[idx].mlvl = spawn_room.mlvl;
-        elevator_layout[idx].mrea = spawn_room.mrea;
+        elevator_layout[idx].mrea = spawn_room.mrea; 
 
         let (mrea_idx, _) = room_strg_id_from_mrea_id(spawn_room.mrea);
         elevator_layout[idx].mrea_idx = mrea_idx;

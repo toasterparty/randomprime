@@ -99,6 +99,18 @@ impl World {
             World::ImpactCrater    => 0xc13b09d1,
         }
     }
+
+    pub fn as_string(&self) -> String {
+        match self {
+            World::FrigateOrpheon  => "Frigate Orpheon"   .to_string(),
+            World::ChozoRuins      => "Chozo Ruins"       .to_string(),
+            World::PhendranaDrifts => "Phendrana Drifts"  .to_string(),
+            World::TallonOverworld => "Tallon Overworld"  .to_string(),
+            World::PhazonMines     => "Mines, Phazon"     .to_string(),
+            World::MagmoorCaverns  => "Magmoor Caverns"   .to_string(),
+            World::ImpactCrater    => "Crater, Impact"    .to_string(),
+        }
+    }
 }
 
 impl DoorType {
