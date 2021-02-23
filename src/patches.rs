@@ -952,6 +952,7 @@ fn make_elevators_patch<'a>(
     layout: &'a [Elevator],
     dest_names: &Vec<String>,
     auto_enabled_elevators: bool,
+    tiny_elvetator_samus: bool,
 )
 {
     let mut idx = 0;
@@ -973,6 +974,12 @@ fn make_elevators_patch<'a>(
                     let wt = obj.property_data.as_world_transporter_mut().unwrap();
                     wt.mrea = dest.mrea;
                     wt.mlvl = dest.mlvl;
+                    wt.volume = 0; // if we don't turn down the volume of the "wooshing" effect, the player will hear it indefinitely if the destination isn't a WorldTransporter
+                    
+                    if tiny_elvetator_samus
+                    {
+                        wt.player_scale = [0.33,0.33,0.33].into();
+                    }
                 }
             }
 
@@ -2700,6 +2707,7 @@ pub struct ParsedConfig
     pub auto_enabled_elevators: bool,
     pub powerbomb_lockpick: bool,
     pub quiet: bool,
+    pub tiny_elvetator_samus: bool,
 
     pub skip_impact_crater: bool,
     pub enable_vault_ledge_door: bool,
@@ -3348,7 +3356,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         patcher.add_resource_patch(resource_info!("FRME_BallHud.FRME").into(), patch_morphball_hud);
 
 
-        make_elevators_patch(&mut patcher, &elevator_layout, &config.elevator_layout_override, config.auto_enabled_elevators);
+        make_elevators_patch(&mut patcher, &elevator_layout, &config.elevator_layout_override, config.auto_enabled_elevators, config.tiny_elvetator_samus);
 
         make_elite_research_fight_prereq_patches(&mut patcher);
 

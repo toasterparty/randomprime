@@ -19,27 +19,26 @@ pub struct WorldTransporter<'r>
     pub mlvl: u32,
     pub mrea: u32,
     pub ancs: AncsProp,
-    pub unknown1: GenericArray<f32, U3>,
-    pub cmdl0: u32,
-    pub unknown2: GenericArray<f32, U3>,
-    pub cmdl1: u32,
-    pub unknown3: GenericArray<f32, U3>,
-    pub unknown4: u8,
-    pub unknown5: u32,
-    pub unknown6: u32,
-    pub unknown7: u32,
-    pub unknown8: u8,
+    pub player_scale: GenericArray<f32, U3>,
+    pub platform_model: u32,
+    pub platform_scale: GenericArray<f32, U3>,
+    pub background_model: u32,
+    pub background_scale: GenericArray<f32, U3>,
+    pub up_elevator: u8,
+    pub elevator_sound: u32,
+    pub volume: u32,
+    pub panning: u32,
+    pub show_text: u8,
     pub font: u32,
     pub strg: u32,
-    pub unknown9: u8,
-    pub unknown10: f32,
-    pub unknown11: f32,
-    pub unknown12: f32,
+    pub fade_white: u8,
+    pub char_fade_in_time: f32,
+    pub chars_per_second: f32,
+    pub show_delay: f32,
 
     #[auto_struct(init = if prop_count == 26 { Some(()) } else { None })]
     pub pal_additions: Option<WorldTransporterPalAdditions<'r>>
 }
-
 
 #[auto_struct(Readable, Writable)]
 #[derive(Debug, Clone)]

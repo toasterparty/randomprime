@@ -39,6 +39,7 @@ struct PatchConfig {
     powerbomb_lockpick: bool,
     enable_one_way_doors: bool,
     patch_map: bool,
+    tiny_elvetator_samus: bool,
 }
 
 #[derive(Deserialize)]
@@ -292,6 +293,7 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         auto_enabled_elevators: false,
         quiet: false,
         patch_vertical_to_blue: false,
+        tiny_elvetator_samus: config.patch_settings.tiny_elvetator_samus,
 
         skip_impact_crater: config.patch_settings.skip_crater,
         enable_vault_ledge_door: config.patch_settings.enable_one_way_doors,

@@ -109,6 +109,9 @@ struct PatchConfig {
     
     #[serde(default = "default_as_false")]
     patch_vertical_to_blue:bool,
+
+    #[serde(default = "default_as_false")]
+    tiny_elvetator_samus: bool,
 }
 
 #[derive(Deserialize)]
@@ -333,6 +336,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         enable_vault_ledge_door: config.patch_settings.enable_one_way_doors,
         artifact_hint_behavior,
         patch_vertical_to_blue: config.patch_settings.patch_vertical_to_blue,
+        tiny_elvetator_samus: config.patch_settings.tiny_elvetator_samus,
 
         flaahgra_music_files,
 
