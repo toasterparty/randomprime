@@ -109,6 +109,9 @@ struct PatchConfig {
     
     #[serde(default = "default_as_false")]
     patch_vertical_to_blue:bool,
+    
+    #[serde(default = "default_as_false")]
+    patch_power_conduits: bool,
 
     #[serde(default = "default_as_false")]
     tiny_elvetator_samus: bool,
@@ -316,6 +319,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         item_seed,door_weights:config.door_weights,
         excluded_doors:config.excluded_doors,
         patch_map:config.patch_settings.patch_map,
+        patch_power_conduits: config.patch_settings.patch_power_conduits,
 
         layout_string,
         elevator_layout_override: config.elevator_layout_override,

@@ -39,6 +39,7 @@ struct PatchConfig {
     powerbomb_lockpick: bool,
     enable_one_way_doors: bool,
     patch_map: bool,
+    patch_power_conduits: bool,
     tiny_elvetator_samus: bool,
 }
 
@@ -277,6 +278,7 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         item_seed,door_weights:config.door_weights,
         excluded_doors:config.excluded_doors,
         patch_map:config.patch_settings.patch_map,
+        patch_power_conduits: config.patch_settings.patch_power_conduits,
 
         layout_string,
         elevator_layout_override: config.elevator_layout_override,

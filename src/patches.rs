@@ -2776,7 +2776,8 @@ pub struct ParsedConfig
     pub door_weights: Weights,
     pub excluded_doors: [HashMap<String,Vec<String>>;7],
     pub patch_map: bool,
-
+    pub patch_power_conduits: bool,
+    
     pub iso_format: IsoFormat,
     pub skip_frigate: bool,
     pub skip_hudmenus: bool,
@@ -3318,8 +3319,9 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
 
         patcher.add_resource_patch(resource_info!("FRME_BallHud.FRME").into(), patch_morphball_hud);
 
-        
-        patch_power_conduits(&mut patcher);
+        if config.patch_power_conduits {
+            patch_power_conduits(&mut patcher);
+        }
 
         make_elevators_patch(&mut patcher, &elevator_layout, &config.elevator_layout_override, config.auto_enabled_elevators, config.tiny_elvetator_samus);
 
