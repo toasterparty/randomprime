@@ -28,6 +28,7 @@ pub enum DoorType {
     Purple,
     White,
     Red,
+    PowerOnly,
     PowerBomb,
     Bomb,
     Boost,
@@ -40,6 +41,7 @@ pub enum DoorType {
     Ai,
     Disabled,
     VerticalBlue,
+    VerticalPowerOnly,
     VerticalPurple,
     VerticalWhite,
     VerticalRed,
@@ -118,6 +120,7 @@ impl DoorType {
     pub const fn is_vertical(&self) -> bool {
         match self {
             DoorType::VerticalBlue         =>   true,
+            DoorType::VerticalPowerOnly    =>   true,
             DoorType::VerticalPurple       =>   true,
             DoorType::VerticalWhite        =>   true,
             DoorType::VerticalRed          =>   true,
@@ -135,9 +138,52 @@ impl DoorType {
         }
     }
 
+    pub fn to_vertical(&self) -> DoorType {
+        match self {
+            DoorType::Blue         =>   DoorType::VerticalBlue         ,
+            DoorType::PowerOnly    =>   DoorType::VerticalPowerOnly    ,
+            DoorType::Purple       =>   DoorType::VerticalPurple       ,
+            DoorType::White        =>   DoorType::VerticalWhite        ,
+            DoorType::Red          =>   DoorType::VerticalRed          ,
+            DoorType::PowerBomb    =>   DoorType::VerticalPowerBomb    ,
+            DoorType::Bomb         =>   DoorType::VerticalBomb         ,
+            DoorType::Missile      =>   DoorType::VerticalMissile      ,
+            DoorType::Charge       =>   DoorType::VerticalCharge       ,
+            DoorType::Super        =>   DoorType::VerticalSuper        ,
+            DoorType::Disabled     =>   DoorType::VerticalDisabled     ,
+            DoorType::Wavebuster   =>   DoorType::VerticalWavebuster   ,
+            DoorType::Icespreader  =>   DoorType::VerticalIcespreader  ,
+            DoorType::Flamethrower =>   DoorType::VerticalFlamethrower ,
+            DoorType::Ai           =>   DoorType::VerticalAi           ,
+            _ => self.clone().to_owned(),
+        }
+    }
+
+    pub fn from_string(string: String) -> Option<Self> {
+        match string.as_str() {
+            "blue"           => Some(DoorType::Blue         ),
+            "power_only"     => Some(DoorType::PowerOnly    ),
+            "purple"         => Some(DoorType::Purple       ),
+            "white"          => Some(DoorType::White        ),
+            "red"            => Some(DoorType::Red          ),
+            "power_bomb"     => Some(DoorType::PowerBomb    ),
+            "bomb"           => Some(DoorType::Bomb         ),
+            "missile"        => Some(DoorType::Missile      ),
+            "charge"         => Some(DoorType::Charge       ),
+            "super"          => Some(DoorType::Super        ),
+            "disabled"       => Some(DoorType::Disabled     ),
+            "wavebuster"     => Some(DoorType::Wavebuster   ),
+            "icespreader"    => Some(DoorType::Icespreader  ),
+            "flamethrower"   => Some(DoorType::Flamethrower ),
+            "ai"             => Some(DoorType::Ai           ),
+            _                => None                         ,
+        }
+    }
+
     pub const fn shield_cmdl(&self) -> u32 { // model of door, includes specification for which 128x128 texture to line door frame with
         match self {
             DoorType::Blue         =>   0x0734977A, // vanilla CMDL - "blueShield_v1" - door frame model
+            DoorType::PowerOnly    =>   0x0734977A, // vanilla CMDL - "blueShield_v1" - door frame model
             DoorType::Purple       =>   0x33188D1B, // vanilla CMDL
             DoorType::White        =>   0x59649E9D, // vanilla CMDL
             DoorType::Red          =>   0xBBBA1EC7, // vanilla CMDL
@@ -155,6 +201,7 @@ impl DoorType {
 
             // vertical doors need a different CMDL, otherwise it will look like this: https://i.imgur.com/jGjWnmg.png //
             DoorType::VerticalBlue         =>   0x18D0AEE6, // vanilla horizontal CMDL (blue)
+            DoorType::VerticalPowerOnly    =>   0x18D0AEE6, // vanilla CMDL
             DoorType::VerticalPurple       =>   0x095B0B93, // vanilla CMDL
             DoorType::VerticalWhite        =>   0xB7A8A4C9, // vanilla CMDL
             DoorType::VerticalRed          =>   custom_asset_ids::VERTICAL_RED_DOOR_CMDL, // vanilla CMDL
@@ -174,6 +221,7 @@ impl DoorType {
     pub const fn map_object_type(&self) -> u32 {
         match self {
             DoorType::Blue          => structs::MapaObjectType::DoorNormal as u32,
+            DoorType::PowerOnly     => structs::MapaObjectType::DoorNormal as u32,
             DoorType::Charge        => structs::MapaObjectType::DoorNormal as u32,
             DoorType::Bomb          => structs::MapaObjectType::DoorNormal as u32,
             DoorType::Purple        => structs::MapaObjectType::DoorWave as u32,
@@ -189,6 +237,7 @@ impl DoorType {
     pub const fn forcefield_txtr(&self) -> u32 { // texture to scroll across center of door for "forcefield" effect 16x16
         match self {
             DoorType::Blue         =>   0x8A7F3683, // vanilla TXTR - blue 16x16
+            DoorType::PowerOnly    =>   0x8A7F3683, // vanilla TXTR
             DoorType::Purple       =>   0xF68DF7F1, // vanilla TXTR
             DoorType::White        =>   0xBE4CD99D, // vanilla TXTR
             DoorType::Red          =>   0xFC095F6C, // vanilla TXTR
@@ -206,6 +255,7 @@ impl DoorType {
 
             // vertical doors use the same textures as their horizontal variants //
             DoorType::VerticalBlue         =>   DoorType::Blue.forcefield_txtr(),
+            DoorType::VerticalPowerOnly    =>   DoorType::PowerOnly.forcefield_txtr(),
             DoorType::VerticalPurple       =>   DoorType::Purple.forcefield_txtr(),
             DoorType::VerticalWhite        =>   DoorType::White.forcefield_txtr(),
             DoorType::VerticalRed          =>   DoorType::Red.forcefield_txtr(),
@@ -224,24 +274,26 @@ impl DoorType {
 
     pub fn holorim_texture(&self) -> u32 { // The the color applied from the rim of the door frame, specified in CMDL
         match self {
-            DoorType::Blue         =>   0x88ED4593, // vanilla TXTR - "blueholorim" texture [128x128]
-            DoorType::Purple       =>   0xAB031EA9, // vanilla TXTR
-            DoorType::White        =>   0xF6870C9F, // vanilla TXTR
-            DoorType::Red          =>   0x61A6945B, // vanilla TXTR
-            DoorType::Boost        =>   0x88ED4593, // unused
-            DoorType::PowerBomb    =>   custom_asset_ids::POWER_BOMB_DOOR_TXTR,
-            DoorType::Bomb         =>   custom_asset_ids::MORPH_BALL_BOMB_DOOR_TXTR,
-            DoorType::Missile      =>   0x459582C1, // "bedroomeyesC"
-            DoorType::Charge       =>   0xC7C8AF66, // banded blue ribbon
-            DoorType::Super        =>   custom_asset_ids::SUPER_MISSILE_DOOR_TXTR,
-            DoorType::Wavebuster   =>   custom_asset_ids::WAVEBUSTER_DOOR_TXTR,
-            DoorType::Icespreader  =>   custom_asset_ids::ICESPREADER_DOOR_TXTR,
-            DoorType::Flamethrower =>   custom_asset_ids::FLAMETHROWER_DOOR_TXTR,
-            DoorType::Disabled     =>   0x717AABCE, // void with specks
-            DoorType::Ai           =>   custom_asset_ids::AI_DOOR_TXTR,
+            DoorType::Blue                 =>   0x88ED4593, // vanilla TXTR - "blueholorim" texture [128x128]
+            DoorType::PowerOnly            =>   0x88ED4593, // vanilla TXTR
+            DoorType::Purple               =>   0xAB031EA9, // vanilla TXTR
+            DoorType::White                =>   0xF6870C9F, // vanilla TXTR
+            DoorType::Red                  =>   0x61A6945B, // vanilla TXTR
+            DoorType::Boost                =>   0x88ED4593, // unused
+            DoorType::PowerBomb            =>   custom_asset_ids::POWER_BOMB_DOOR_TXTR,
+            DoorType::Bomb                 =>   custom_asset_ids::MORPH_BALL_BOMB_DOOR_TXTR,
+            DoorType::Missile              =>   0x459582C1, // "bedroomeyesC"
+            DoorType::Charge               =>   0xC7C8AF66, // banded blue ribbon
+            DoorType::Super                =>   custom_asset_ids::SUPER_MISSILE_DOOR_TXTR,
+            DoorType::Wavebuster           =>   custom_asset_ids::WAVEBUSTER_DOOR_TXTR,
+            DoorType::Icespreader          =>   custom_asset_ids::ICESPREADER_DOOR_TXTR,
+            DoorType::Flamethrower         =>   custom_asset_ids::FLAMETHROWER_DOOR_TXTR,
+            DoorType::Disabled             =>   0x717AABCE, // void with specks
+            DoorType::Ai                   =>   custom_asset_ids::AI_DOOR_TXTR,
             
             // vertical doors use the same textures as their horizontal variants //
             DoorType::VerticalBlue         =>   DoorType::Blue.holorim_texture(),
+            DoorType::VerticalPowerOnly    =>   DoorType::PowerOnly.holorim_texture(),
             DoorType::VerticalPurple       =>   DoorType::Purple.holorim_texture(),
             DoorType::VerticalWhite        =>   DoorType::White.holorim_texture(),
             DoorType::VerticalRed          =>   DoorType::Red.holorim_texture(),
@@ -280,6 +332,7 @@ impl DoorType {
     pub fn iter() -> impl Iterator<Item = DoorType> {
         [
             DoorType::Blue,
+            DoorType::PowerOnly,
             DoorType::Purple,
             DoorType::White,
             DoorType::Red,
@@ -295,6 +348,7 @@ impl DoorType {
             DoorType::Flamethrower,
             DoorType::Ai,
             DoorType::VerticalBlue,
+            DoorType::VerticalPowerOnly,
             DoorType::VerticalPurple,
             DoorType::VerticalWhite,
             DoorType::VerticalRed,
@@ -346,6 +400,41 @@ impl DoorType {
                     wave:TypeVulnerability::Normal as u32,
                     plasma:TypeVulnerability::Normal as u32,
                     phazon:TypeVulnerability::Normal as u32,
+                }
+            },
+            DoorType::PowerOnly => DamageVulnerability {
+                power: TypeVulnerability::Normal as u32,
+                ice: TypeVulnerability::Reflect as u32,
+                wave: TypeVulnerability::Reflect as u32,
+                plasma: TypeVulnerability::Reflect as u32,
+                bomb: TypeVulnerability::Immune as u32,
+                power_bomb: TypeVulnerability::Immune as u32,
+                missile: TypeVulnerability::Reflect as u32,
+                boost_ball: TypeVulnerability::Reflect as u32,
+                phazon: TypeVulnerability::Reflect as u32,
+
+                enemy_weapon0:TypeVulnerability::Immune as u32,
+                enemy_weapon1:TypeVulnerability::Immune as u32,
+                enemy_weapon2:TypeVulnerability::Immune as u32,
+                enemy_weapon3:TypeVulnerability::Immune as u32,
+
+                unknown_weapon0:TypeVulnerability::Immune as u32,
+                unknown_weapon1:TypeVulnerability::Immune as u32,
+                unknown_weapon2:TypeVulnerability::Immune as u32,
+
+                charged_beams:ChargedBeams {
+                    power:TypeVulnerability::Normal as u32,
+                    ice:TypeVulnerability::Reflect as u32,
+                    wave:TypeVulnerability::Reflect as u32,
+                    plasma:TypeVulnerability::Reflect as u32,
+                    phazon:TypeVulnerability::Reflect as u32,
+                },
+                beam_combos:BeamCombos {
+                    power:TypeVulnerability::Normal as u32,
+                    ice:TypeVulnerability::Reflect as u32,
+                    wave:TypeVulnerability::Reflect as u32,
+                    plasma:TypeVulnerability::Reflect as u32,
+                    phazon:TypeVulnerability::Reflect as u32,
                 }
             },
             DoorType::Purple => DamageVulnerability {
@@ -844,6 +933,7 @@ impl DoorType {
 
             // vertical doors use the same damage vulnerabilites as their horizontal variants //
             DoorType::VerticalBlue         =>   DoorType::Blue.vulnerability(),
+            DoorType::VerticalPowerOnly    =>   DoorType::PowerOnly.vulnerability(),
             DoorType::VerticalPurple       =>   DoorType::Purple.vulnerability(),
             DoorType::VerticalWhite        =>   DoorType::White.vulnerability(),
             DoorType::VerticalRed          =>   DoorType::Red.vulnerability(),

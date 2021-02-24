@@ -3088,134 +3088,17 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
 
                 let mut door_type = calculate_door_type(name,&mut door_rng,&config.door_weights); // randomly pick a door color using weights
                 
-                if door_specification == "blue"
-                {
-                    if !is_vertical_door {
-                        door_type = DoorType::Blue;
-                    } else {
+                if door_specification != "random" && door_specification != "default" {
+                    door_type = DoorType::from_string(door_specification.to_string()).unwrap();
+                }
+                
+                if is_vertical_door {
+                    if config.patch_vertical_to_blue {
                         door_type = DoorType::VerticalBlue;
                     }
-                }
-                
-                if door_specification == "purple"
-                {
-                    if !is_vertical_door {
-                        door_type = DoorType::Purple;
-                    } else {
-                        door_type = DoorType::VerticalPurple;
+                    else {
+                        door_type = door_type.to_vertical();
                     }
-                }
-                
-                if door_specification == "white"
-                {
-                    if !is_vertical_door {
-                        door_type = DoorType::White;
-                    } else {
-                        door_type = DoorType::VerticalWhite;
-                    }
-                }
-                
-                if door_specification == "red"
-                {
-                    if !is_vertical_door {
-                        door_type = DoorType::Red;
-                    } else {
-                        door_type = DoorType::VerticalRed;
-                    }
-                }
-
-                if door_specification == "power_bomb"
-                {
-                    if !is_vertical_door {
-                        door_type = DoorType::PowerBomb;
-                    } else {
-                        door_type = DoorType::VerticalPowerBomb;
-                    }
-                }
-                
-                if door_specification == "bomb"
-                {
-                    if !is_vertical_door {
-                        door_type = DoorType::Bomb;
-                    } else {
-                        door_type = DoorType::VerticalBomb;
-                    }
-                }
-                
-                if door_specification == "missile"
-                {
-                    if !is_vertical_door {
-                        door_type = DoorType::Missile;
-                    } else {
-                        door_type = DoorType::VerticalMissile;
-                    }
-                }
-
-                if door_specification == "charge"
-                {
-                    if !is_vertical_door {
-                        door_type = DoorType::Charge;
-                    } else {
-                        door_type = DoorType::VerticalCharge;
-                    }
-                }
-                
-                if door_specification == "super"
-                {
-                    if !is_vertical_door {
-                        door_type = DoorType::Super;
-                    } else {
-                        door_type = DoorType::VerticalSuper;
-                    }
-                }
-
-                if door_specification == "wavebuster"
-                {
-                    if !is_vertical_door {
-                        door_type = DoorType::Wavebuster;
-                    } else {
-                        door_type = DoorType::VerticalWavebuster;
-                    }
-                }
-
-                if door_specification == "icespreader"
-                {
-                    if !is_vertical_door {
-                        door_type = DoorType::Icespreader;
-                    } else {
-                        door_type = DoorType::VerticalIcespreader;
-                    }
-                }
-
-                if door_specification == "flamethrower"
-                {
-                    if !is_vertical_door {
-                        door_type = DoorType::Flamethrower;
-                    } else {
-                        door_type = DoorType::VerticalFlamethrower;
-                    }
-                }
-                
-                if door_specification == "disabled"
-                {
-                    if !is_vertical_door {
-                        door_type = DoorType::Disabled;
-                    } else {
-                        door_type = DoorType::VerticalDisabled;
-                    }
-                }
-
-                if door_specification == "ai"
-                {
-                    if !is_vertical_door {
-                        door_type = DoorType::Ai;
-                    } else {
-                        door_type = DoorType::VerticalAi;
-                    }
-                }
-                
-                if is_vertical_door && config.patch_vertical_to_blue {
-                    door_type = DoorType::VerticalBlue;
                 }
 
                 if (door_specification != "default") || (is_vertical_door && config.patch_vertical_to_blue)
