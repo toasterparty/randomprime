@@ -2973,6 +2973,7 @@ pub struct ParsedConfig
     pub excluded_doors: [HashMap<String,Vec<String>>;7],
     pub patch_map: bool,
     pub patch_power_conduits: bool,
+    pub remove_missile_locks: bool,
 
     pub iso_format: IsoFormat,
     pub skip_frigate: bool,
@@ -3519,7 +3520,10 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             patch_power_conduits(&mut patcher);
         }
 
-        remove_missile_locks(&mut patcher, &config.missile_lock_override);
+        if config.remove_missile_locks:
+        {
+            remove_missile_locks(&mut patcher, &config.missile_lock_override);
+        }
 
         make_elevators_patch(&mut patcher, &elevator_layout, &config.elevator_layout_override, config.auto_enabled_elevators, config.tiny_elvetator_samus);
 

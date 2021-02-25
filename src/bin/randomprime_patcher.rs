@@ -119,6 +119,9 @@ struct PatchConfig {
 
     #[serde(default = "default_as_false")]
     tiny_elvetator_samus: bool,
+
+    #[serde(default = "default_as_false")]
+    remove_missile_locks: bool,
 }
 
 #[derive(Deserialize)]
@@ -328,6 +331,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         excluded_doors:config.excluded_doors,
         patch_map:config.patch_settings.patch_map,
         patch_power_conduits: config.patch_settings.patch_power_conduits,
+        remove_missile_locks: config.patch_settings.remove_missile_locks,
 
         layout_string,
         elevator_layout_override: config.elevator_layout_override,
