@@ -49,6 +49,7 @@ struct Config {
     output_iso: String,
     layout_string: String,
     elevator_layout_override: Vec<String>,
+    missile_lock_override: Vec<bool>,
     starting_room: String,
     seed: u64,
     door_weights: Weights,
@@ -282,6 +283,7 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
 
         layout_string,
         elevator_layout_override: config.elevator_layout_override,
+        missile_lock_override: config.missile_lock_override,
         starting_room: config.starting_room,
 
         iso_format: patches::IsoFormat::Iso,

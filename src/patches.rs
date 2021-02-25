@@ -2108,114 +2108,176 @@ fn patch_remove_missile_lock<'r>(_ps: &mut PatcherState, area: &mut mlvl_wrapper
     Ok(())
 }
 
-fn remove_missile_locks<'a>(patcher: &mut PrimePatcher<'_, 'a>)
+fn remove_missile_locks<'a>(patcher: &mut PrimePatcher<'_, 'a>, overrides: &Vec<bool>)
 {
-    patcher.add_scly_patch(
-        resource_info!("00j_over_hall.MREA").into(), // Temple Security Station
-        patch_remove_missile_lock,
-    );
+    let mut idx = 0;
 
-    patcher.add_scly_patch(
-        resource_info!("00a_over_hall.MREA").into(), // Waterfall Cavern
-        patch_remove_missile_lock,
-    );
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("00j_over_hall.MREA").into(), // Temple Security Station
+            patch_remove_missile_lock,
+        );
+    }
+    idx = idx + 1;
+    
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("00a_over_hall.MREA").into(), // Waterfall Cavern
+            patch_remove_missile_lock,
+        );
+    }
+    idx = idx + 1;
+    
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("06_over_crashed_ship.MREA").into(), // Frigate Crash Site
+            patch_remove_missile_lock,
+        );
+    }
+    idx = idx + 1;
+    
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("00m_over_hall.MREA").into(), // Root Tunnel
+            patch_remove_missile_lock,
+        );
+    }
+    idx = idx + 1;
+    
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("03_over_rootcave.MREA").into(), // Root Cave
+            patch_remove_missile_lock,
+        );    
+    }
+    idx = idx + 1;
+    
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("01_mainplaza.MREA").into(), // Main Plaza
+            patch_remove_missile_lock,
+        );
+    }
+    idx = idx + 1;
+    
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("19_hive_totem.MREA").into(), // Hive Totem
+            patch_remove_missile_lock,
+        );
+    }
+    idx = idx + 1;
+    
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("0b_connect_tunnel.MREA").into(), // Arboretum Access
+            patch_remove_missile_lock,
+        );
+    }
+    idx = idx + 1;
+    
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("08_courtyard.MREA").into(), // Arboretum (x2)
+            patch_remove_missile_lock,
+        );
+    }
+    idx = idx + 1;
+    
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("10_coreentrance.MREA").into(), // Gathering Hall
+            patch_remove_missile_lock,
+        );
+    }
+    idx = idx + 1;
+    
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("0e_connect_tunnel.MREA").into(), // Watery Hall Access
+            patch_remove_missile_lock,
+        );
+    }
+    idx = idx + 1;
+    
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("11_wateryhall.MREA").into(), // Watery Hall
+            patch_remove_missile_lock,
+        );
+    }
+    idx = idx + 1;
+    
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("monkey_shaft.MREA").into(), // Dynamo Access
+            patch_remove_missile_lock,
+        );
+    }
+    idx = idx + 1;
+    
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("18_halfpipe.MREA").into(), // Crossway
+            patch_remove_missile_lock,
+        );
+    }
+    idx = idx + 1;
+    
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("20_reflecting_pool.MREA").into(), // Reflecting Pool (x2)
+            patch_remove_missile_lock,
+        );
+    }
+    idx = idx + 1;
+    
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("15_over_burningtrail.MREA").into(), // Burning Trail
+            patch_remove_missile_lock,
+        );
+    }
+    idx = idx + 1;
+    
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("00_lava_elev_ice_d.MREA").into(), // Transport to Phendrana Drifts South
+            patch_remove_missile_lock,
+        );
+    }
+    idx = idx + 1;
+    
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("03_ice_ruins_b.MREA").into(), // Ice Ruins West
+            patch_remove_missile_lock,
+        );
+    }
+    idx = idx + 1;
+    
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("generic_z6.MREA").into(), // Canyon Entryway
+            patch_remove_missile_lock,
+        );
+    }
+    idx = idx + 1;
+    
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("05_ice_shorelines.MREA").into(), // Ruined Courtyard
+            patch_remove_missile_lock,
+        );
+    }
+    idx = idx + 1;
 
-    patcher.add_scly_patch(
-        resource_info!("06_over_crashed_ship.MREA").into(), // Frigate Crash Site
-        patch_remove_missile_lock,
-    );
-
-    patcher.add_scly_patch(
-        resource_info!("00m_over_hall.MREA").into(), // Root Tunnel
-        patch_remove_missile_lock,
-    );
-
-    patcher.add_scly_patch(
-        resource_info!("03_over_rootcave.MREA").into(), // Root Cave
-        patch_remove_missile_lock,
-    );
-
-    patcher.add_scly_patch(
-        resource_info!("01_mainplaza.MREA").into(), // Main Plaza
-        patch_remove_missile_lock,
-    );
-
-    patcher.add_scly_patch(
-        resource_info!("19_hive_totem.MREA").into(), // Hive Totem
-        patch_remove_missile_lock,
-    );
-
-    patcher.add_scly_patch(
-        resource_info!("0b_connect_tunnel.MREA").into(), // Arboretum Access
-        patch_remove_missile_lock,
-    );
-
-    patcher.add_scly_patch(
-        resource_info!("08_courtyard.MREA").into(), // Arboretum (x2)
-        patch_remove_missile_lock,
-    );
-
-    patcher.add_scly_patch(
-        resource_info!("10_coreentrance.MREA").into(), // Gathering Hall
-        patch_remove_missile_lock,
-    );
-
-    patcher.add_scly_patch(
-        resource_info!("0e_connect_tunnel.MREA").into(), // Watery Hall Access
-        patch_remove_missile_lock,
-    );
-
-    patcher.add_scly_patch(
-        resource_info!("11_wateryhall.MREA").into(), // Watery Hall
-        patch_remove_missile_lock,
-    );
-
-    patcher.add_scly_patch(
-        resource_info!("monkey_shaft.MREA").into(), // Dynamo Access
-        patch_remove_missile_lock,
-    );
-
-    patcher.add_scly_patch(
-        resource_info!("18_halfpipe.MREA").into(), // Crossway
-        patch_remove_missile_lock,
-    );
-
-    patcher.add_scly_patch(
-        resource_info!("20_reflecting_pool.MREA").into(), // Reflecting Pool (x2)
-        patch_remove_missile_lock,
-    );
-
-    patcher.add_scly_patch(
-        resource_info!("15_over_burningtrail.MREA").into(), // Burning Trail
-        patch_remove_missile_lock,
-    );
-
-    patcher.add_scly_patch(
-        resource_info!("00_lava_elev_ice_d.MREA").into(), // Transport to Phendrana Drifts South
-        patch_remove_missile_lock,
-    );
-
-    patcher.add_scly_patch(
-        resource_info!("03_ice_ruins_b.MREA").into(), // Ice Ruins West
-        patch_remove_missile_lock,
-    );
-
-    patcher.add_scly_patch(
-        resource_info!("generic_z6.MREA").into(), // Canyon Entryway
-        patch_remove_missile_lock,
-    );
-
-    patcher.add_scly_patch(
-        resource_info!("05_ice_shorelines.MREA").into(), // Ruined Courtyard
-        patch_remove_missile_lock,
-    );
-
-    patcher.add_scly_patch(
-        resource_info!("11_ice_observatory.MREA").into(), // Observatory
-        patch_remove_missile_lock,
-    );
-
-
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("11_ice_observatory.MREA").into(), // Observatory
+            patch_remove_missile_lock,
+        );
+    }
 }
 
 fn patch_geothermal_core_destructible_rock_pal(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
@@ -2903,6 +2965,7 @@ pub struct ParsedConfig
     pub pickup_layout: Vec<u8>,
     pub elevator_layout: Vec<u8>,
     pub elevator_layout_override: Vec<String>,
+    pub missile_lock_override: Vec<bool>,
     pub starting_room: String,
     pub item_seed: u64,
     pub seed: u64,
@@ -3456,7 +3519,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             patch_power_conduits(&mut patcher);
         }
 
-        remove_missile_locks(&mut patcher);
+        remove_missile_locks(&mut patcher, &config.missile_lock_override);
 
         make_elevators_patch(&mut patcher, &elevator_layout, &config.elevator_layout_override, config.auto_enabled_elevators, config.tiny_elvetator_samus);
 
