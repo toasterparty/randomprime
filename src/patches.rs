@@ -1549,13 +1549,23 @@ fn patch_main_ventilation_shaft_section_b_door<'r>(
     Ok(())
 }
 
-fn make_main_plaza_locked_door_two_ways(
+fn make_main_plaza_locked_door_two_ways<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     door_type: DoorType,
-    config: &ParsedConfig
+    config: &ParsedConfig,
+    door_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
 ) -> Result<(), String>
 {
+    let deps = door_type.dependencies();
+    let deps_iter = deps.iter()
+        .map(|&(file_id, fourcc)| structs::Dependency {
+                asset_id: file_id,
+                asset_type: fourcc,
+        });
+    
+    area.add_dependencies(&door_resources,0,deps_iter);
+    
     let scly = area.mrea().scly_section_mut();
     let layer = &mut scly.layers.as_mut_vec()[0];
 
@@ -1852,7 +1862,7 @@ fn make_main_plaza_locked_door_two_ways(
     locked_door.ancs.unknown = 2;
     locked_door.projectiles_collide = 0;
 
-    if config.excluded_doors[World::ChozoRuins as usize]["Main Plaza"][4] == "default" {
+    {
         let door_force = layer.objects.as_mut_vec().iter_mut()
             .find(|obj| obj.instance_id == trigger_doorunlock_id)
             .and_then(|obj| obj.property_data.as_damageable_trigger_mut())
@@ -1861,7 +1871,7 @@ fn make_main_plaza_locked_door_two_ways(
 
         door_force.damage_vulnerability = door_type.vulnerability();
 
-        if door_type!= DoorType::Blue && !config.powerbomb_lockpick {
+        if door_type != DoorType::Blue && !config.powerbomb_lockpick {
             door_force.damage_vulnerability.power_bomb = 2;
         } else {
             door_force.damage_vulnerability.power_bomb = 1;
@@ -1873,7 +1883,7 @@ fn make_main_plaza_locked_door_two_ways(
             .unwrap();
         door_shield.cmdl = door_type.shield_cmdl();
     }
-
+    
     let trigger_remove_scan_target_locked_door_and_etank = layer.objects.as_mut_vec().iter_mut()
         .find(|obj| obj.instance_id == trigger_remove_scan_target_locked_door_id)
         .and_then(|obj| obj.property_data.as_trigger_mut())
@@ -3622,13 +3632,21 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
     }
 
     if config.enable_vault_ledge_door {
-        let door_type = calculate_door_type("Metroid2.pak",&mut rng,&config.door_weights);
-        if !config.is_item_randomized.unwrap_or(false) {
+
+        let door_specification = &config.excluded_doors[World::ChozoRuins as usize]["Main Plaza"][4];
+        let door_type = match door_specification.as_str() {
+            "random"  => calculate_door_type("Metroid2.pak",&mut rng,&config.door_weights),
+            "default" => DoorType::Blue,
+            _         => DoorType::from_string(door_specification.to_string()).unwrap(),
+        };
+
+        {
             patcher.add_scly_patch(
                 resource_info!("01_mainplaza.MREA").into(),
-                move |ps,area| make_main_plaza_locked_door_two_ways(ps,area, door_type,&config)
+                move |ps,area| make_main_plaza_locked_door_two_ways(ps, area, door_type, &config, &door_resources)
             );
         }
+
         if config.patch_map {
             patcher.add_resource_patch(
                 resource_info!("01_mainplaza.MAPA").into(),
