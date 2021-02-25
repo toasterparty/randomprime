@@ -2290,6 +2290,31 @@ fn remove_missile_locks<'a>(patcher: &mut PrimePatcher<'_, 'a>, overrides: &Vec<
     }
 }
 
+
+fn elite_quarters_access_should_keep<'r>(obj: &structs::SclyObject<'r>) -> bool {
+    let platform = obj.property_data.as_platform();
+    platform.is_none() // keep everything that isn't a platform
+}
+
+fn patch_elite_quarters_access(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
+    -> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[1];
+    layer.objects.as_mut_vec().retain(|obj| elite_quarters_access_should_keep(obj));
+
+    Ok(())
+}
+
+/* removed the beams blocking elite quarters, removing the need for plasma beam */
+fn make_patch_elite_quarters_access<'a>(patcher: &mut PrimePatcher<'_, 'a>)
+{
+    patcher.add_scly_patch(
+        resource_info!("00o_mines_connect.MREA").into(), // Elite Quarters Access
+        patch_elite_quarters_access,
+    );
+}
+
 fn patch_geothermal_core_destructible_rock_pal(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
     -> Result<(), String>
 {
@@ -3534,6 +3559,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         {
             remove_missile_locks(&mut patcher, &config.missile_lock_override);
         }
+
+        make_patch_elite_quarters_access(&mut patcher);
 
         make_elevators_patch(&mut patcher, &elevator_layout, &config.elevator_layout_override, config.auto_enabled_elevators, config.tiny_elvetator_samus);
 
