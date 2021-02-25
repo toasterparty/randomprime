@@ -122,6 +122,9 @@ struct PatchConfig {
 
     #[serde(default = "default_as_false")]
     remove_missile_locks: bool,
+
+    #[serde(default = "default_as_false")]
+    remove_frigidite_lock: bool,
 }
 
 #[derive(Deserialize)]
@@ -332,6 +335,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         patch_map:config.patch_settings.patch_map,
         patch_power_conduits: config.patch_settings.patch_power_conduits,
         remove_missile_locks: config.patch_settings.remove_missile_locks,
+        remove_frigidite_lock: config.patch_settings.remove_frigidite_lock,
 
         layout_string,
         elevator_layout_override: config.elevator_layout_override,
