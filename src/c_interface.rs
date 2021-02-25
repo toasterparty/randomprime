@@ -43,6 +43,7 @@ struct PatchConfig {
     tiny_elvetator_samus: bool,
     remove_missile_locks:  bool,
     remove_frigidite_lock:  bool,
+    remove_mine_security_station_locks: bool,
 }
 
 #[derive(Deserialize)]
@@ -284,6 +285,7 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         patch_power_conduits: config.patch_settings.patch_power_conduits,
         remove_missile_locks: config.patch_settings.remove_missile_locks,
         remove_frigidite_lock: config.patch_settings.remove_frigidite_lock,
+        remove_mine_security_station_locks: config.patch_settings.remove_mine_security_station_locks,
 
         layout_string,
         elevator_layout_override: config.elevator_layout_override,
