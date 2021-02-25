@@ -2315,6 +2315,38 @@ fn make_patch_elite_quarters_access<'a>(patcher: &mut PrimePatcher<'_, 'a>)
     );
 }
 
+fn is_door_lock<'r>(obj: &structs::SclyObject<'r>) -> bool {
+    let actor = obj.property_data.as_actor();
+    
+    if actor.is_none() {
+        false // non-actors are never door locks
+    }
+    else {
+        let _actor = actor.unwrap();
+        _actor.cmdl == 0x5391EDB6 || _actor.cmdl == 0x6E5D6796 // door locks are indentified by their model (check for both horizontal and vertical variants)
+    }
+}
+
+fn remove_mine_security_station_locks(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
+    -> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().retain(|obj| !is_door_lock(obj));  // keep everything that isn't a door lock
+    
+    Ok(())
+}
+
+/* remove the door locks that appear in mine security station so that 
+   the room can be completed without wave beam */
+fn make_remove_mine_security_station_locks_patch<'a>(patcher: &mut PrimePatcher<'_, 'a>)
+{
+    patcher.add_scly_patch(
+        resource_info!("02_mines_shotemup.MREA").into(), // Mines Security Station
+        remove_mine_security_station_locks,
+    );
+}
+
 fn patch_geothermal_core_destructible_rock_pal(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
     -> Result<(), String>
 {
@@ -3564,6 +3596,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         if config.remove_frigidite_lock {
             make_patch_elite_quarters_access(&mut patcher);
         }
+
+        make_remove_mine_security_station_locks_patch(&mut patcher);
 
         make_elevators_patch(&mut patcher, &elevator_layout, &config.elevator_layout_override, config.auto_enabled_elevators, config.tiny_elvetator_samus);
 
