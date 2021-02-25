@@ -3520,7 +3520,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             patch_power_conduits(&mut patcher);
         }
 
-        if config.remove_missile_locks:
+        if config.remove_missile_locks
         {
             remove_missile_locks(&mut patcher, &config.missile_lock_override);
         }
