@@ -33,6 +33,15 @@ impl Elevator
             default_dest: 0xFF,
         }
     }
+
+    pub fn to_spawn_room(&self) -> SpawnRoom {
+        SpawnRoom {
+            pak_name: self.pak_name,
+            mlvl: self.mlvl,
+            mrea: self.mrea,
+            mrea_idx: self.mrea_idx,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -52,12 +61,7 @@ impl SpawnRoom
             SpawnRoom::landing_site_spawn_room()
         } else {
             let elv = &ELEVATORS[idx];
-            SpawnRoom {
-                pak_name: elv.pak_name,
-                mlvl: elv.mlvl,
-                mrea: elv.mrea,
-                mrea_idx: elv.mrea_idx,
-            }
+            elv.to_spawn_room()
         }
     }
 

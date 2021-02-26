@@ -3033,7 +3033,8 @@ pub struct ParsedConfig
     pub elevator_layout: Vec<u8>,
     pub elevator_layout_override: Vec<String>,
     pub missile_lock_override: Vec<bool>,
-    pub starting_room: String,
+    pub new_save_spawn_room: String,
+    pub frigate_done_spawn_room: String,
     pub item_seed: u64,
     pub seed: u64,
     pub door_weights: Weights,
@@ -3210,6 +3211,16 @@ fn spawn_room_from_string(room_string: String) -> SpawnRoom {
         let mut idx: u32 = 0;
         for room_info in rooms.iter() { // for each room in the pak
             if room_info.name.to_lowercase() == room_name.to_lowercase() {
+
+                /*
+                println!("\n'{}' interpreted as:", room_string);
+                println!("'{}'", room_info.name);
+                println!("pak name - {:?}",pak_name);
+                println!("mlvl - {:X}",world.mlvl());
+                println!("mrea - {:X}",room_info.room_id);
+                println!("mrea_idx - {}",idx);
+                */
+
                 return SpawnRoom {
                     pak_name,
                     mlvl: world.mlvl(),
@@ -3221,7 +3232,8 @@ fn spawn_room_from_string(room_string: String) -> SpawnRoom {
         }
     }
 
-    assert!(false);
+    let _valid_room_name_string = false;
+    assert!(_valid_room_name_string == true); // this is so it's obvious to the user what happened
     return SpawnRoom::landing_site_spawn_room();
 }
 
@@ -3272,10 +3284,32 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         elevator_layout[idx].mrea_idx = mrea_idx;
         idx = idx + 1;
     }
-    
-    let spawn_room = spawn_room_from_string(config.starting_room.to_string());
-    assert!(spawn_room.mlvl != World::FrigateOrpheon.mlvl()); // The game will freeze if frigate is skipped, you can never get to the planet if it isn't
-    assert!(spawn_room.mlvl != World::ImpactCrater.mlvl() || !config.skip_impact_crater);
+
+    // The room the player spawns in after starting a new save
+    let new_save_spawn_room = {
+        if config.new_save_spawn_room.to_string() == "" { // if unspecified
+            //println!("picking a default ns spawn room");
+            if config.skip_frigate {
+                elevator_layout[19].to_spawn_room() // go to elevator specified in layout string
+            } else {
+                SpawnRoom::frigate_spawn_room() // spawn on frigate
+            }
+        } else {
+            spawn_room_from_string(config.new_save_spawn_room.to_string()) // use the specified room name
+        }
+    };
+    assert!(new_save_spawn_room.mlvl != World::FrigateOrpheon.mlvl() || !config.skip_frigate); // panic if the games starts in the removed frigate level
+
+    // The room the player spawns in after finishing the frigate level
+    let frigate_done_spawn_room = {
+        if config.frigate_done_spawn_room.to_string() == "" { // if unspecified
+            //println!("picking a default fd spawn room");
+            elevator_layout[19].to_spawn_room() // go to elevator specified in layout string
+        } else {
+            spawn_room_from_string(config.frigate_done_spawn_room.to_string()) // use the specified room name
+        }
+    };
+    assert!(frigate_done_spawn_room.mlvl != World::FrigateOrpheon.mlvl()); // panic if the frigate level gets you stuck in a loop
     
     let mut rng = StdRng::seed_from_u64(config.seed);
     let artifact_totem_strings = build_artifact_temple_totem_scan_strings(pickup_layout, &mut rng);
@@ -3473,20 +3507,20 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                 b"default.dol",
                 move |file| patch_dol(
                     file,
-                    spawn_room,
+                    new_save_spawn_room,
                     version,
                     config.nonvaria_heat_damage,
                     config.staggered_suit_damage,
                 )
             );
             patcher.add_file_patch(b"Metroid1.pak", empty_frigate_pak);
-            rel_config = create_rel_config_file(spawn_room, config.quickplay);
+            rel_config = create_rel_config_file(new_save_spawn_room, config.quickplay);
         } else {
             patcher.add_file_patch(
                 b"default.dol",
                 |file| patch_dol(
                     file,
-                    SpawnRoom::frigate_spawn_room(),
+                    new_save_spawn_room,
                     version,
                     config.nonvaria_heat_damage,
                     config.staggered_suit_damage,
@@ -3494,9 +3528,9 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             );
             patcher.add_scly_patch(
                 resource_info!("01_intro_hanger.MREA").into(),
-                move |_ps, area| patch_frigate_teleporter(area, spawn_room)
+                move |_ps, area| patch_frigate_teleporter(area, frigate_done_spawn_room)
             );
-            rel_config = create_rel_config_file(SpawnRoom::frigate_spawn_room(), config.quickplay);
+            rel_config = create_rel_config_file(new_save_spawn_room, config.quickplay);
         }
 
         gc_disc.add_file(
@@ -3506,28 +3540,46 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
 
         // Patch Frigate Starting Items //
         {
-            let (starting_items, print_sis) = if let Some(starting_items) = config.starting_items_frigate {
+            let (starting_items, _print_sis) = if let Some(starting_items) = config.starting_items_frigate {
                 (starting_items, true)
             } else {
                 (1, false)
             };
+
             patcher.add_scly_patch(
                 (SpawnRoom::frigate_spawn_room().pak_name.as_bytes(), SpawnRoom::frigate_spawn_room().mrea),
-                move |_ps, area| patch_starting_pickups(area, starting_items, print_sis)
+                move |_ps, area| patch_starting_pickups(area, starting_items, false)
             );
+
+            if new_save_spawn_room.mlvl == World::FrigateOrpheon.mlvl() {
+                patcher.add_scly_patch(
+                    (new_save_spawn_room.pak_name.as_bytes(), new_save_spawn_room.mrea),
+                    move |_ps, area| patch_starting_pickups(area, starting_items, false)
+                );
+            }
         }
 
         // Patch TallonIV Starting Items //
         {
-            let (starting_items, print_sis) = if let Some(starting_items) = config.starting_items {
+            let (starting_items, _print_sis) = if let Some(starting_items) = config.starting_items {
                 (starting_items, true)
             } else {
                 (1, false)
             };
-            patcher.add_scly_patch(
-                (spawn_room.pak_name.as_bytes(), spawn_room.mrea),
-                move |_ps, area| patch_starting_pickups(area, starting_items, print_sis)
-            );
+            
+            if new_save_spawn_room.mlvl != World::FrigateOrpheon.mlvl() {
+                patcher.add_scly_patch(
+                    (new_save_spawn_room.pak_name.as_bytes(), new_save_spawn_room.mrea),
+                    move |_ps, area| patch_starting_pickups(area, starting_items, false)
+                );
+            }
+
+            if frigate_done_spawn_room.mlvl != World::FrigateOrpheon.mlvl() {
+                patcher.add_scly_patch(
+                    (frigate_done_spawn_room.pak_name.as_bytes(), frigate_done_spawn_room.mrea),
+                    move |_ps, area| patch_starting_pickups(area, starting_items, false)
+                );
+            }
         }
 
         const ARTIFACT_TOTEM_SCAN_STRGS: &[ResourceInfo] = &[
@@ -3681,7 +3733,33 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             );
         }
 
-        if spawn_room != SpawnRoom::landing_site_spawn_room() {
+        let should_patch_landing_site = {
+            let nssr_is_ls = new_save_spawn_room.mrea != SpawnRoom::landing_site_spawn_room().mrea;
+            let fdsr_is_ls = frigate_done_spawn_room.mrea != SpawnRoom::landing_site_spawn_room().mrea;
+
+            let nssr_is_frig = new_save_spawn_room.mlvl == World::FrigateOrpheon.mlvl();
+            let fdsr_is_frig = frigate_done_spawn_room.mlvl == World::FrigateOrpheon.mlvl();
+
+            assert!(!nssr_is_frig || !fdsr_is_frig);
+
+            if config.skip_frigate
+            {
+                !nssr_is_ls // frigate is skipped, so only remove triggers if landing site isn't spawn location
+            }
+            else
+            {
+                if !nssr_is_ls && !fdsr_is_ls
+                {
+                    true // neither location is landing site
+                }
+                else
+                {
+                    !nssr_is_ls 
+                }
+            }
+        };
+
+        if should_patch_landing_site {
             // If we have a non-default start point, patch the landing site to avoid
             // weirdness with cutscene triggers and the ship spawning.
             patcher.add_scly_patch(

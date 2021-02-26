@@ -95,6 +95,10 @@ fn default_as_empty_bool_vec() -> Vec<bool> {
     Vec::new()
 }
 
+fn default_empty_string() -> String {
+    "".to_string()
+}
+
 #[derive(Deserialize)]
 struct PatchConfig {
     skip_frigate: bool,
@@ -142,7 +146,12 @@ struct Config {
     #[serde(default = "default_as_empty_bool_vec")]
     missile_lock_override: Vec<bool>,
 
-    starting_room: String,
+    #[serde(default = "default_empty_string")]
+    new_save_spawn_room: String,
+
+    #[serde(default = "default_empty_string")]
+    frigate_done_spawn_room: String,
+
     seed: u64,
     door_weights: Weights,
     patch_settings: PatchConfig,
@@ -344,7 +353,8 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         layout_string,
         elevator_layout_override: config.elevator_layout_override,
         missile_lock_override: config.missile_lock_override,
-        starting_room:config.starting_room,
+        new_save_spawn_room: config.new_save_spawn_room,
+        frigate_done_spawn_room: config.frigate_done_spawn_room,
 
         iso_format,
         skip_frigate: config.patch_settings.skip_frigate,
