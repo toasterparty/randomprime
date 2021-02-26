@@ -155,7 +155,7 @@ struct Config {
 
     #[serde(default = "default_empty_string")]
     frigate_done_spawn_room: String,
-
+    
     seed: u64,
     door_weights: Weights,
     patch_settings: PatchConfig,
@@ -163,7 +163,10 @@ struct Config {
     #[serde(default = "default_u64_123456789")]
     starting_pickups: u64,
 
+    #[serde(default = "default_u64_123456789")]
     new_save_starting_items: u64,
+
+    #[serde(default = "default_u64_123456789")]
     frigate_done_starting_items: u64,
     
     excluded_doors: [HashMap<String,Vec<String>>;7],
@@ -347,20 +350,28 @@ fn get_config() -> Result<patches::ParsedConfig, String>
     });
 
     let new_save_starting_items = {
-        if config.starting_pickups != 123456789 {
+        if config.new_save_starting_items != 123456789 {
+            config.new_save_starting_items
+        }
+        else if config.starting_pickups != 123456789 {
             config.starting_pickups
         }
         else {
-            config.new_save_starting_items
+            assert!(false);
+            0
         }
     };
     
     let frigate_done_starting_items = {
-        if config.starting_pickups != 123456789 {
+        if config.frigate_done_starting_items != 123456789 {
+            config.frigate_done_starting_items
+        }
+        else if config.starting_pickups != 123456789 {
             config.starting_pickups
         }
         else {
-            config.frigate_done_starting_items
+            assert!(false);
+            0
         }
     };
 
