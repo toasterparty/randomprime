@@ -255,7 +255,8 @@ fn collect_door_resources<'r>(gc_disc: &structs::GcDisc<'r>)
 }
 
 fn create_custom_door_cmdl<'r>(
-    resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+    resources: &HashMap<(u32, FourCC),
+    structs::Resource<'r>>,
     door_type: DoorType,
 ) -> structs::Resource<'r>
 {
@@ -298,7 +299,8 @@ fn create_custom_door_cmdl<'r>(
 }
 
 fn create_suit_icon_cmdl_and_ancs<'r>(
-    resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+    resources: &HashMap<(u32, FourCC),
+    structs::Resource<'r>>,
     new_cmdl_id: u32,
     new_ancs_id: u32,
     new_txtr1: u32,
@@ -2347,6 +2349,100 @@ fn make_remove_mine_security_station_locks_patch<'a>(patcher: &mut PrimePatcher<
     );
 }
 
+fn patch_superheated_room<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+)
+-> Result<(), String>
+{
+    let area_damage_special_function = structs::SclyObject
+    {
+        instance_id: 1310983,
+        connections: vec![
+            structs::Connection
+            {
+                state: structs::ConnectionState::ENTERED,
+                message: structs::ConnectionMsg::INCREMENT,
+                target_object_id: 1310984
+            },
+            structs::Connection
+            {
+                state: structs::ConnectionState::EXITED,
+                message: structs::ConnectionMsg::DECREMENT,
+                target_object_id: 1310984
+            },
+            structs::Connection
+            {
+                state: structs::ConnectionState::ENTERED,
+                message: structs::ConnectionMsg::ACTIVATE,
+                target_object_id: 1310985
+            },
+            structs::Connection
+            {
+                state: structs::ConnectionState::EXITED,
+                message: structs::ConnectionMsg::DEACTIVATE,
+                target_object_id: 1310985
+            },
+            structs::Connection
+            {
+                state: structs::ConnectionState::ENTERED,
+                message: structs::ConnectionMsg::ACTIVATE,
+                target_object_id: 1310986
+            },
+            structs::Connection
+            {
+                state: structs::ConnectionState::EXITED,
+                message: structs::ConnectionMsg::DEACTIVATE,
+                target_object_id: 1310986
+            },
+            structs::Connection
+            {
+                state: structs::ConnectionState::ENTERED,
+                message: structs::ConnectionMsg::PLAY,
+                target_object_id: 1310987
+            },
+            structs::Connection
+            {
+                state: structs::ConnectionState::EXITED,
+                message: structs::ConnectionMsg::STOP,
+                target_object_id: 1310987
+            },
+            structs::Connection
+            {
+                state: structs::ConnectionState::ENTERED,
+                message: structs::ConnectionMsg::SET_TO_ZERO,
+                target_object_id: 1310988
+            }
+        ].into(),
+        property_data: structs::SclyProperty::SpecialFunction(
+            structs::SpecialFunction
+            {
+                name: b"SpecialFunction Area Damage-component\0".as_cstr(),
+                position: [0., 0., 0.].into(),
+                rotation: [0., 0., 0.].into(),
+                type_: 18,
+                unknown0: b"\0".as_cstr(),
+                unknown1: 10.0,
+                unknown2: 0.0,
+                unknown3: 0.0,
+                layer_change_room_id: 4294967295,
+                layer_change_layer_id: 4294967295,
+                item_id: 0,
+                unknown4: 1,
+                unknown5: 0.0,
+                unknown6: 4294967295,
+                unknown7: 4294967295,
+                unknown8: 4294967295
+            }
+        ),
+    };
+
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().push(area_damage_special_function);
+    Ok(())
+}
+
 fn patch_geothermal_core_destructible_rock_pal(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
     -> Result<(), String>
 {
@@ -3403,8 +3499,17 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             });
         }
     }
-            
-    // TODO: patch other interactive actors here (e.g. power conduits, iced over things, missile locks etc...)
+
+    // Patch superheated rooms
+    let superheated_rooms = [];
+    for room_name in superheated_rooms.iter() {
+        let room = spawn_room_from_string(room_name.to_string());
+
+        patcher.add_scly_patch(
+            (room.pak_name.as_bytes(), room.mrea),
+            move |_ps, area| patch_superheated_room(_ps, area),
+        );
+    }
     
     // Patch pickups and doors
     let mut layout_iterator = pickup_layout.iter();
