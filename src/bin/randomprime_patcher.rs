@@ -99,6 +99,10 @@ fn default_empty_string() -> String {
     "".to_string()
 }
 
+fn default_u64_123456789() -> u64 {
+    123456789
+}
+
 #[derive(Deserialize)]
 struct PatchConfig {
     skip_frigate: bool,
@@ -155,8 +159,13 @@ struct Config {
     seed: u64,
     door_weights: Weights,
     patch_settings: PatchConfig,
+
+    #[serde(default = "default_u64_123456789")]
     starting_pickups: u64,
-    starting_pickups_frigate: u64,
+
+    new_save_starting_items: u64,
+    frigate_done_starting_items: u64,
+    
     excluded_doors: [HashMap<String,Vec<String>>;7],
 }
 
@@ -337,6 +346,24 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         description: Some(String::from("Metroid Prime, but probably a cursed seed")),
     });
 
+    let new_save_starting_items = {
+        if config.starting_pickups != 123456789 {
+            config.starting_pickups
+        }
+        else {
+            config.new_save_starting_items
+        }
+    };
+    
+    let frigate_done_starting_items = {
+        if config.starting_pickups != 123456789 {
+            config.starting_pickups
+        }
+        else {
+            config.frigate_done_starting_items
+        }
+    };
+
     Ok(patches::ParsedConfig {
         input_iso:input_iso_mmap,
         output_iso:out_iso,
@@ -375,8 +402,9 @@ fn get_config() -> Result<patches::ParsedConfig, String>
 
         flaahgra_music_files,
 
-        starting_items: Some(config.starting_pickups),
-        starting_items_frigate: Some(config.starting_pickups_frigate),
+        new_save_starting_items,
+        frigate_done_starting_items,
+
         comment: comment_message,
         main_menu_message: String::from(mpdr_version),
 

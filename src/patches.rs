@@ -3064,8 +3064,9 @@ pub struct ParsedConfig
 
     pub flaahgra_music_files: Option<[nod_wrapper::FileWrapper; 2]>,
 
-    pub starting_items: Option<u64>,
-    pub starting_items_frigate: Option<u64>,
+    pub new_save_starting_items: u64,
+    pub frigate_done_starting_items: u64,
+
     pub comment: String,
     pub main_menu_message: String,
 
@@ -3538,50 +3539,18 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             structs::FstEntryFile::ExternalFile(Box::new(rel_config)),
         )?;
 
-        // Patch Frigate Starting Items //
-        {
-            let (starting_items, _print_sis) = if let Some(starting_items) = config.starting_items_frigate {
-                (starting_items, true)
-            } else {
-                (1, false)
-            };
+        // New Save Room Starting Items //
+        patcher.add_scly_patch(
+            (new_save_spawn_room.pak_name.as_bytes(), new_save_spawn_room.mrea),
+            move |_ps, area| patch_starting_pickups(area, config.new_save_starting_items, false)
+        );
 
-            patcher.add_scly_patch(
-                (SpawnRoom::frigate_spawn_room().pak_name.as_bytes(), SpawnRoom::frigate_spawn_room().mrea),
-                move |_ps, area| patch_starting_pickups(area, starting_items, false)
-            );
-
-            if new_save_spawn_room.mlvl == World::FrigateOrpheon.mlvl() {
-                patcher.add_scly_patch(
-                    (new_save_spawn_room.pak_name.as_bytes(), new_save_spawn_room.mrea),
-                    move |_ps, area| patch_starting_pickups(area, starting_items, false)
-                );
-            }
-        }
-
-        // Patch TallonIV Starting Items //
-        {
-            let (starting_items, _print_sis) = if let Some(starting_items) = config.starting_items {
-                (starting_items, true)
-            } else {
-                (1, false)
-            };
-            
-            if new_save_spawn_room.mlvl != World::FrigateOrpheon.mlvl() {
-                patcher.add_scly_patch(
-                    (new_save_spawn_room.pak_name.as_bytes(), new_save_spawn_room.mrea),
-                    move |_ps, area| patch_starting_pickups(area, starting_items, false)
-                );
-            }
-
-            if frigate_done_spawn_room.mlvl != World::FrigateOrpheon.mlvl() {
-                patcher.add_scly_patch(
-                    (frigate_done_spawn_room.pak_name.as_bytes(), frigate_done_spawn_room.mrea),
-                    move |_ps, area| patch_starting_pickups(area, starting_items, false)
-                );
-            }
-        }
-
+        // Post Frigate Starting Items //
+        patcher.add_scly_patch(
+            (frigate_done_spawn_room.pak_name.as_bytes(), frigate_done_spawn_room.mrea),
+            move |_ps, area| patch_starting_pickups(area, config.frigate_done_starting_items, false)
+        );
+        
         const ARTIFACT_TOTEM_SCAN_STRGS: &[ResourceInfo] = &[
             resource_info!("07_Over_Stonehenge Totem 5.STRG"), // Lifegiver
             resource_info!("07_Over_Stonehenge Totem 4.STRG"), // Wild

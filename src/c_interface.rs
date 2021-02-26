@@ -58,8 +58,8 @@ struct Config {
     seed: u64,
     door_weights: Weights,
     patch_settings: PatchConfig,
-    starting_pickups: u64,
-    starting_pickups_frigate: u64,
+    new_save_starting_items: u64,
+    frigate_done_starting_items: u64,
     excluded_doors: [HashMap<String,Vec<String>>;7],
 }
 
@@ -313,8 +313,9 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
 
         flaahgra_music_files,
 
-        starting_items: Some(config.starting_pickups),
-        starting_items_frigate: Some(config.starting_pickups_frigate),
+        new_save_starting_items: config.new_save_starting_items,
+        frigate_done_starting_items: config.frigate_done_starting_items,
+
         comment: comment_message,
         main_menu_message: String::from(mpdr_version),
 
