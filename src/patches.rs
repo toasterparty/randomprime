@@ -959,14 +959,12 @@ fn make_elevators_patch<'a>(
 {
     let mut idx = 0;
     for (elv, dest) in ELEVATORS.iter().zip(layout) {
-        
-        let dest_name = &dest_names[idx];
-        idx = idx + 1;
-
         if elv.pak_name.len() == 0 {
             // Skip destination only elevators
+            idx = idx + 1;
             continue
         }
+
         patcher.add_scly_patch((elv.pak_name.as_bytes(), elv.mrea), move |ps, area| {
             let scly = area.mrea().scly_section_mut();
             for layer in scly.layers.iter_mut() {
@@ -1021,6 +1019,15 @@ fn make_elevators_patch<'a>(
             Ok(())
         });
 
+        let dest_name = {
+            if dest_names.len() > idx {
+                &dest_names[idx]
+            }
+            else {
+                dest.name
+            }
+        };
+
         let room_dest_name = dest_name.replace('\0', "\n");
         let hologram_name = dest_name.replace('\0', " ");
         let control_name = dest_name.replace('\0', " ");
@@ -1048,6 +1055,8 @@ fn make_elevators_patch<'a>(
             res.kind = structs::ResourceKind::Strg(strg);
             Ok(())
         });
+
+        idx = idx + 1;
     }
 }
 
@@ -3373,7 +3382,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                 elv
             })
         .collect();
-    
+
     let mut idx = 0;
     for elv in &config.elevator_layout_override {
         if elv.to_lowercase() == "credits" {
@@ -3396,9 +3405,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
     // The room the player spawns in after starting a new save
     let new_save_spawn_room = {
         if config.new_save_spawn_room.to_string() == "" { // if unspecified
-            //println!("picking a default ns spawn room");
             if config.skip_frigate {
-                elevator_layout[19].to_spawn_room() // go to elevator specified in layout string
+                SpawnRoom::from_room_idx(config.elevator_layout[20] as usize) // go to elevator specified in layout string
             } else {
                 SpawnRoom::frigate_spawn_room() // spawn on frigate
             }
@@ -3407,18 +3415,19 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         }
     };
     assert!(new_save_spawn_room.mlvl != World::FrigateOrpheon.mlvl() || !config.skip_frigate); // panic if the games starts in the removed frigate level
+    // println!("new_save_spawn_room - 0x{:X}", new_save_spawn_room.mrea);
 
     // The room the player spawns in after finishing the frigate level
     let frigate_done_spawn_room = {
         if config.frigate_done_spawn_room.to_string() == "" { // if unspecified
-            //println!("picking a default fd spawn room");
-            elevator_layout[19].to_spawn_room() // go to elevator specified in layout string
+            SpawnRoom::from_room_idx(config.elevator_layout[20] as usize) // go to elevator specified in layout string
         } else {
             spawn_room_from_string(config.frigate_done_spawn_room.to_string()) // use the specified room name
         }
     };
     assert!(frigate_done_spawn_room.mlvl != World::FrigateOrpheon.mlvl()); // panic if the frigate level gets you stuck in a loop
-    
+    // println!("frigate_done_spawn_room - 0x{:X}", frigate_done_spawn_room.mrea);
+     
     let mut rng = StdRng::seed_from_u64(config.seed);
     let artifact_totem_strings = build_artifact_temple_totem_scan_strings(pickup_layout, &mut rng);
     let mut pickup_resources = collect_pickup_resources(gc_disc);
