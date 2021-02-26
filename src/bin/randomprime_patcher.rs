@@ -155,11 +155,11 @@ struct Config {
 
     #[serde(default = "default_empty_string")]
     frigate_done_spawn_room: String,
-    
+
     seed: u64,
     door_weights: Weights,
     patch_settings: PatchConfig,
-
+    
     #[serde(default = "default_u64_123456789")]
     starting_pickups: u64,
 

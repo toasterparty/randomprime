@@ -3197,6 +3197,10 @@ pub fn patch_iso<T>(mut config: ParsedConfig, mut pn: T) -> Result<(), String>
 }
 
 fn spawn_room_from_string(room_string: String) -> SpawnRoom {
+    if room_string.to_lowercase() == "credits" {
+        return Elevator::end_game_elevator().to_spawn_room();
+    }
+
     let vec: Vec<&str> = room_string.split(":").collect();
     assert!(vec.len() == 2);
     let world_name = vec[0];
@@ -3275,6 +3279,12 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
     
     let mut idx = 0;
     for elv in &config.elevator_layout_override {
+        if elv.to_lowercase() == "credits" {
+            elevator_layout[idx] = Elevator::end_game_elevator();
+            idx = idx + 1;
+            continue;    
+        }
+
         let spawn_room = spawn_room_from_string(elv.to_string());
         
         assert!(!(spawn_room.mlvl == World::FrigateOrpheon.mlvl() && config.skip_frigate)); // panic if a elevator destination takes you to the removed frigate level
@@ -3550,7 +3560,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             (frigate_done_spawn_room.pak_name.as_bytes(), frigate_done_spawn_room.mrea),
             move |_ps, area| patch_starting_pickups(area, config.frigate_done_starting_items, false)
         );
-        
+
         const ARTIFACT_TOTEM_SCAN_STRGS: &[ResourceInfo] = &[
             resource_info!("07_Over_Stonehenge Totem 5.STRG"), // Lifegiver
             resource_info!("07_Over_Stonehenge Totem 4.STRG"), // Wild
