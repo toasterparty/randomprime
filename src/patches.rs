@@ -3528,7 +3528,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         let level = world as usize;
 
         if level == 0 && config.skip_frigate {continue;} // If we're skipping the frigate, there's nothing to patch
-        if level == 6 && config.skip_impact_crater {continue;} // If we're skipping the frigate, there's nothing to patch
+        // if level == 6 && config.skip_impact_crater {continue;} // If we're skipping the frigate, there's nothing to patch
 
         for room_info in rooms.iter() { // for each room in the pak
             // patch the item locations
