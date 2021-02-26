@@ -150,6 +150,9 @@ struct Config {
     #[serde(default = "default_as_empty_bool_vec")]
     missile_lock_override: Vec<bool>,
 
+    #[serde(default = "default_as_empty_str_vec")]
+    superheated_rooms: Vec<String>,
+
     #[serde(default = "default_empty_string")]
     new_save_spawn_room: String,
 
@@ -387,6 +390,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         remove_missile_locks: config.patch_settings.remove_missile_locks,
         remove_frigidite_lock: config.patch_settings.remove_frigidite_lock,
         remove_mine_security_station_locks: config.patch_settings.remove_mine_security_station_locks,
+        superheated_rooms: config.superheated_rooms,
 
         layout_string,
         elevator_layout_override: config.elevator_layout_override,

@@ -3129,6 +3129,7 @@ pub struct ParsedConfig
     pub elevator_layout: Vec<u8>,
     pub elevator_layout_override: Vec<String>,
     pub missile_lock_override: Vec<bool>,
+    pub superheated_rooms: Vec<String>,
     pub new_save_spawn_room: String,
     pub frigate_done_spawn_room: String,
     pub item_seed: u64,
@@ -3501,8 +3502,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
     }
 
     // Patch superheated rooms
-    let superheated_rooms = [];
-    for room_name in superheated_rooms.iter() {
+    for room_name in config.superheated_rooms.iter() {
         let room = spawn_room_from_string(room_name.to_string());
 
         patcher.add_scly_patch(

@@ -53,6 +53,7 @@ struct Config {
     layout_string: String,
     elevator_layout_override: Vec<String>,
     missile_lock_override: Vec<bool>,
+    superheated_rooms: Vec<String>,
     new_save_spawn_room: String,
     frigate_done_spawn_room: String,
     seed: u64,
@@ -287,6 +288,7 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         remove_missile_locks: config.patch_settings.remove_missile_locks,
         remove_frigidite_lock: config.patch_settings.remove_frigidite_lock,
         remove_mine_security_station_locks: config.patch_settings.remove_mine_security_station_locks,
+        superheated_rooms: config.superheated_rooms,
 
         layout_string,
         elevator_layout_override: config.elevator_layout_override,
