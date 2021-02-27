@@ -2358,6 +2358,36 @@ fn make_remove_mine_security_station_locks_patch<'a>(patcher: &mut PrimePatcher<
     );
 }
 
+fn is_forcefield<'r>(obj: &structs::SclyObject<'r>) -> bool {
+    let actor = obj.property_data.as_actor();
+    
+    if actor.is_none() {
+        false // non-actors are never forecefield
+    }
+    else {
+        let _actor = actor.unwrap();
+        _actor.cmdl == 0xD793FEC8 // forecefield defined by it's model
+    }
+}
+
+fn remove_mqb_forcefield(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
+    -> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[2];
+    layer.objects.as_mut_vec().retain(|obj| !is_forcefield(obj));  // keep everything that isn't a forcefield
+    Ok(())
+}
+
+/* Remove the forcefield so you can traverse the room both directions */
+fn make_metroid_quarantine_b_backwards_patch<'a>(patcher: &mut PrimePatcher<'_, 'a>)
+{
+    patcher.add_scly_patch(
+        resource_info!("11_mines.MREA").into(), // Metroid Quarantine B
+        remove_mqb_forcefield,
+    );
+}
+
 fn patch_superheated_room<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -3746,6 +3776,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         if config.remove_mine_security_station_locks {
             make_remove_mine_security_station_locks_patch(&mut patcher);
         }
+
+        make_metroid_quarantine_b_backwards_patch(&mut patcher);
 
         make_elevators_patch(&mut patcher, &elevator_layout, &config.elevator_layout_override, config.auto_enabled_elevators, config.tiny_elvetator_samus);
 
