@@ -3703,6 +3703,12 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             structs::FstEntryFile::ExternalFile(Box::new(rel_config)),
         )?;
 
+        // Patch the landing site to avoid loosing all items with custscene trigger //
+        patcher.add_scly_patch(
+            resource_info!("01_over_mainplaza.MREA").into(),
+            patch_landing_site_cutscene_triggers
+        );
+        
         // New Save Room Starting Items //
         patcher.add_scly_patch(
             (new_save_spawn_room.pak_name.as_bytes(), new_save_spawn_room.mrea),
@@ -3865,41 +3871,6 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             patcher.add_scly_patch(
                 resource_info!("01_mines_mainplaza.MREA").into(),
                 patch_main_quarry_door_lock_pal
-            );
-        }
-
-        let should_patch_landing_site = {
-            let nssr_is_ls = new_save_spawn_room.mrea != SpawnRoom::landing_site_spawn_room().mrea;
-            let fdsr_is_ls = frigate_done_spawn_room.mrea != SpawnRoom::landing_site_spawn_room().mrea;
-
-            let nssr_is_frig = new_save_spawn_room.mlvl == World::FrigateOrpheon.mlvl();
-            let fdsr_is_frig = frigate_done_spawn_room.mlvl == World::FrigateOrpheon.mlvl();
-
-            assert!(!nssr_is_frig || !fdsr_is_frig);
-
-            if config.skip_frigate
-            {
-                !nssr_is_ls // frigate is skipped, so only remove triggers if landing site isn't spawn location
-            }
-            else
-            {
-                if !nssr_is_ls && !fdsr_is_ls
-                {
-                    true // neither location is landing site
-                }
-                else
-                {
-                    !nssr_is_ls 
-                }
-            }
-        };
-
-        if should_patch_landing_site {
-            // If we have a non-default start point, patch the landing site to avoid
-            // weirdness with cutscene triggers and the ship spawning.
-            patcher.add_scly_patch(
-                resource_info!("01_over_mainplaza.MREA").into(),
-                patch_landing_site_cutscene_triggers
             );
         }
 
