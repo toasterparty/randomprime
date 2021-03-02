@@ -136,6 +136,9 @@ struct PatchConfig {
 
     #[serde(default = "default_as_false")]
     remove_mine_security_station_locks: bool,
+
+    #[serde(default = "default_as_false")]
+    lower_mines_backwards: bool,
 }
 
 #[derive(Deserialize)]
@@ -390,6 +393,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         remove_missile_locks: config.patch_settings.remove_missile_locks,
         remove_frigidite_lock: config.patch_settings.remove_frigidite_lock,
         remove_mine_security_station_locks: config.patch_settings.remove_mine_security_station_locks,
+        lower_mines_backwards: config.patch_settings.lower_mines_backwards,
         superheated_rooms: config.superheated_rooms,
 
         layout_string,

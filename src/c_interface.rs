@@ -44,6 +44,7 @@ struct PatchConfig {
     remove_missile_locks:  bool,
     remove_frigidite_lock:  bool,
     remove_mine_security_station_locks: bool,
+    lower_mines_backwards: bool,
 }
 
 #[derive(Deserialize)]
@@ -288,6 +289,7 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         remove_missile_locks: config.patch_settings.remove_missile_locks,
         remove_frigidite_lock: config.patch_settings.remove_frigidite_lock,
         remove_mine_security_station_locks: config.patch_settings.remove_mine_security_station_locks,
+        lower_mines_backwards: config.patch_settings.lower_mines_backwards,
         superheated_rooms: config.superheated_rooms,
 
         layout_string,

@@ -3190,6 +3190,7 @@ pub struct ParsedConfig
     pub remove_missile_locks: bool,
     pub remove_frigidite_lock: bool,
     pub remove_mine_security_station_locks: bool,
+    pub lower_mines_backwards: bool,
 
     pub iso_format: IsoFormat,
     pub skip_frigate: bool,
@@ -3793,7 +3794,9 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             make_remove_mine_security_station_locks_patch(&mut patcher);
         }
 
-        make_remove_forcefields_patch(&mut patcher);
+        if config.lower_mines_backwards {
+            make_remove_forcefields_patch(&mut patcher);
+        }
 
         make_elevators_patch(&mut patcher, &elevator_layout, &config.elevator_layout_override, config.auto_enabled_elevators, config.tiny_elvetator_samus);
 
