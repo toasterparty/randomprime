@@ -2035,6 +2035,7 @@ fn patch_thermal_conduits_damage_vulnerabilities(_ps: &mut PatcherState, area: &
     let thermal_conduit_damageable_trigger_obj_ids = [
         0x000F01C8, // ruined courtyard
         0x0028043F, // research core
+        0x0015006C, // main ventilation shaft section b
         0x0019002C, // reactor core
         0x00190030, // reactor core
         0x0019002E, // reactor core
@@ -2076,6 +2077,11 @@ fn patch_power_conduits<'a>(patcher: &mut PrimePatcher<'_, 'a>)
     );
     
     patcher.add_scly_patch(
+        resource_info!("08b_under_intro_ventshaft.MREA").into(), // Main Ventilation Shaft Section B
+        patch_thermal_conduits_damage_vulnerabilities
+    );
+
+    patcher.add_scly_patch(
         resource_info!("07_under_intro_reactor.MREA").into(), // reactor core
         patch_thermal_conduits_damage_vulnerabilities
     );
@@ -2104,6 +2110,8 @@ fn patch_power_conduits<'a>(patcher: &mut PrimePatcher<'_, 'a>)
         resource_info!("01_mines_mainplaza.MREA").into(), // main quarry
         patch_thermal_conduits_damage_vulnerabilities
     );
+
+    // Note the magmoor ones are missing on purpose
 }
 
 fn is_missile_lock<'r>(obj: &structs::SclyObject<'r>) -> bool {
@@ -2300,7 +2308,7 @@ fn remove_missile_locks<'a>(patcher: &mut PrimePatcher<'_, 'a>, overrides: &Vec<
         );
     }
     idx = idx + 1;
-    
+
     if overrides.len() <= idx || !overrides[idx] {
         patcher.add_scly_patch(
             resource_info!("03_monkey_upper.MREA").into(), // Ruined Gallery
