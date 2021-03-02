@@ -2416,8 +2416,16 @@ fn make_remove_forcefields_patch<'a>(patcher: &mut PrimePatcher<'_, 'a>)
 
 fn is_water<'r>(obj: &structs::SclyObject<'r>) -> bool {
     let water = obj.property_data.as_water();
-    
     water.is_some()
+}
+
+fn is_underwater_sound<'r>(obj: &structs::SclyObject<'r>) -> bool {
+    let sound = obj.property_data.as_sound();
+    if sound.is_none() {
+        false // non-sounds are never underwater sounds
+    } else {
+        sound.unwrap().name.to_str().ok().unwrap().to_string().to_lowercase().contains("underwater") // we define underwater sounds by their name
+    }
 }
 
 /* Removes all water objects from the provided room */
@@ -2428,10 +2436,12 @@ fn patch_remove_water<'r>(
 -> Result<(), String>
 {
     let scly = area.mrea().scly_section_mut();
-    let layer = &mut scly.layers.as_mut_vec()[0];
-    layer.objects.as_mut_vec().retain(|obj| !is_water(obj));
-    
-    // let water_obj = layer.objects.as_mut_vec().iter_mut().find(|obj| obj.instance_id == 0x00190006).unwrap();
+    let layer_count = scly.layers.len();
+    for i in 0..layer_count {
+        let layer = &mut scly.layers.as_mut_vec()[i];
+        layer.objects.as_mut_vec().retain(|obj| !is_water(obj));
+        layer.objects.as_mut_vec().retain(|obj| !is_underwater_sound(obj));
+    }
 
     Ok(())
 }
@@ -3604,7 +3614,6 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
 
     for room_name in config.drain_liquid_rooms.iter() {
         let room = spawn_room_from_string(room_name.to_string());
-
         patcher.add_scly_patch(
             (room.pak_name.as_bytes(), room.mrea),
             move |_ps, area| patch_remove_water(_ps, area),
@@ -3767,10 +3776,12 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         );
 
         // Post Frigate Starting Items //
-        patcher.add_scly_patch(
-            (frigate_done_spawn_room.pak_name.as_bytes(), frigate_done_spawn_room.mrea),
-            move |_ps, area| patch_starting_pickups(area, config.frigate_done_starting_items, false)
-        );
+        if !config.skip_frigate && frigate_done_spawn_room.mrea != new_save_spawn_room.mrea { // but only if it won't override an existing patch
+            patcher.add_scly_patch(
+                (frigate_done_spawn_room.pak_name.as_bytes(), frigate_done_spawn_room.mrea),
+                move |_ps, area| patch_starting_pickups(area, config.frigate_done_starting_items, false)
+            );
+        }
 
         const ARTIFACT_TOTEM_SCAN_STRGS: &[ResourceInfo] = &[
             resource_info!("07_Over_Stonehenge Totem 5.STRG"), // Lifegiver

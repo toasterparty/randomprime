@@ -16,9 +16,22 @@ pub struct Sound<'r>
 
     pub position: GenericArray<f32, U3>,
     pub rotation: GenericArray<f32, U3>,
-
-    // 17 unknown properties
-    pub unknowns: GenericArray<u8, U44>,
+    pub sound_id: u16,
+    
+    pub unknown1: u8,
+    pub unknown2: GenericArray<f32, U3>,
+    pub unknown5: u32,
+    pub unknown6: u32,
+    pub unknown7: u32,
+    pub unknown8: u32,
+    pub unknown9: u8,
+    pub unknown10: u8,
+    pub unknown11: u8,
+    pub unknown12: u8,
+    pub unknown13: u8,
+    pub unknown14: u8,
+    pub unknown15: u8,
+    pub unknown16: u32,
 }
 
 impl<'r> SclyPropertyData for Sound<'r>
