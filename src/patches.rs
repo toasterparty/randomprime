@@ -3499,7 +3499,9 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
 
     // The room the player spawns in after finishing the frigate level
     let frigate_done_spawn_room = {
-        if config.frigate_done_spawn_room.to_string() == "" { // if unspecified
+        if config.skip_frigate {
+            spawn_room_from_string("Tallon:Waterfall Cavern".to_string()) // this is to avoid double patching the landing site item
+        } else if config.frigate_done_spawn_room.to_string() == "" { // if unspecified
             SpawnRoom::from_room_idx(config.elevator_layout[20] as usize) // go to elevator specified in layout string
         } else {
             spawn_room_from_string(config.frigate_done_spawn_room.to_string()) // use the specified room name
