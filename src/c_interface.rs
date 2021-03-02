@@ -1,4 +1,4 @@
-
+/*
 use serde::{Serialize, Deserialize};
 
 use crate::{
@@ -55,7 +55,6 @@ struct Config {
     elevator_layout_override: Vec<String>,
     missile_lock_override: Vec<bool>,
     superheated_rooms: Vec<String>,
-    drain_liquid_rooms: Vec<String>,
     new_save_spawn_room: String,
     frigate_done_spawn_room: String,
     seed: u64,
@@ -292,7 +291,6 @@ fn inner(config_json: *const c_char, cb_data: *const (), cb: extern fn(*const ()
         remove_mine_security_station_locks: config.patch_settings.remove_mine_security_station_locks,
         lower_mines_backwards: config.patch_settings.lower_mines_backwards,
         superheated_rooms: config.superheated_rooms,
-        drain_liquid_rooms: config.drain_liquid_rooms,
 
         layout_string,
         elevator_layout_override: config.elevator_layout_override,
@@ -391,3 +389,4 @@ pub extern fn randomprime_patch_iso(config_json: *const c_char , cb_data: *const
         Err(msg) => cb(cb_data, CbMessage::error_json(&msg).as_ptr()),
     };
 }
+*/
