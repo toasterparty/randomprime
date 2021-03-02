@@ -2299,6 +2299,14 @@ fn remove_missile_locks<'a>(patcher: &mut PrimePatcher<'_, 'a>, overrides: &Vec<
             patch_remove_missile_lock,
         );
     }
+    idx = idx + 1;
+    
+    if overrides.len() <= idx || !overrides[idx] {
+        patcher.add_scly_patch(
+            resource_info!("03_monkey_upper.MREA").into(), // Ruined Gallery
+            patch_remove_missile_lock,
+        );
+    }
 }
 
 
