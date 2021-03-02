@@ -2398,6 +2398,28 @@ fn make_remove_forcefields_patch<'a>(patcher: &mut PrimePatcher<'_, 'a>)
     );
 }
 
+fn is_water<'r>(obj: &structs::SclyObject<'r>) -> bool {
+    let water = obj.property_data.as_water();
+    
+    water.is_some()
+}
+
+/* Removes all water objects from the provided room */
+fn patch_remove_water<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().retain(|obj| !is_water(obj));
+    
+    // let water_obj = layer.objects.as_mut_vec().iter_mut().find(|obj| obj.instance_id == 0x00190006).unwrap();
+
+    Ok(())
+}
+
 fn patch_superheated_room<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -3179,6 +3201,7 @@ pub struct ParsedConfig
     pub elevator_layout_override: Vec<String>,
     pub missile_lock_override: Vec<bool>,
     pub superheated_rooms: Vec<String>,
+    pub drain_liquid_rooms: Vec<String>,
     pub new_save_spawn_room: String,
     pub frigate_done_spawn_room: String,
     pub item_seed: u64,
@@ -3558,6 +3581,15 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         patcher.add_scly_patch(
             (room.pak_name.as_bytes(), room.mrea),
             move |_ps, area| patch_superheated_room(_ps, area),
+        );
+    }
+
+    for room_name in config.drain_liquid_rooms.iter() {
+        let room = spawn_room_from_string(room_name.to_string());
+
+        patcher.add_scly_patch(
+            (room.pak_name.as_bytes(), room.mrea),
+            move |_ps, area| patch_remove_water(_ps, area),
         );
     }
     

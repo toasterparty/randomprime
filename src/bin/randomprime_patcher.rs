@@ -156,6 +156,9 @@ struct Config {
     #[serde(default = "default_as_empty_str_vec")]
     superheated_rooms: Vec<String>,
 
+    #[serde(default = "default_as_empty_str_vec")]
+    drain_liquid_rooms: Vec<String>,
+
     #[serde(default = "default_empty_string")]
     new_save_spawn_room: String,
 
@@ -395,6 +398,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         remove_mine_security_station_locks: config.patch_settings.remove_mine_security_station_locks,
         lower_mines_backwards: config.patch_settings.lower_mines_backwards,
         superheated_rooms: config.superheated_rooms,
+        drain_liquid_rooms: config.drain_liquid_rooms,
 
         layout_string,
         elevator_layout_override: config.elevator_layout_override,
