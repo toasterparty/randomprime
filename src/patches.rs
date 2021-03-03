@@ -200,6 +200,396 @@ fn collect_pickup_resources<'r>(gc_disc: &structs::GcDisc<'r>)
     found
 }
 
+#[derive(Copy, Clone, Debug)]
+pub enum WaterType {
+    Normal,
+    Poision,
+    Lava
+}
+
+impl WaterType
+{
+    pub fn iter() -> impl Iterator<Item = WaterType> {
+        [
+            WaterType::Normal,
+            WaterType::Poision,
+            WaterType::Lava,
+        ].iter().map(|i| *i)
+    }
+
+    fn dependencies(&self)
+    -> Vec<(u32, FourCC)> 
+    {   
+        let water_obj = self.to_obj();
+        let water = water_obj.property_data.as_water().unwrap();
+
+        let mut deps: Vec<(u32, FourCC)> = Vec::new();
+        deps.push((water.txtr1,            FourCC::from_bytes(b"TXTR")));
+        deps.push((water.txtr2,            FourCC::from_bytes(b"TXTR")));
+        deps.push((water.txtr3,            FourCC::from_bytes(b"TXTR")));
+        deps.push((water.txtr4,            FourCC::from_bytes(b"TXTR")));
+        deps.push((water.refl_map_txtr,    FourCC::from_bytes(b"TXTR")));
+        deps.push((water.txtr6,            FourCC::from_bytes(b"TXTR")));
+        deps.push((water.lightmap_txtr,    FourCC::from_bytes(b"TXTR")));
+        deps.push((water.small_enter_part, FourCC::from_bytes(b"PART")));
+        deps.push((water.med_enter_part,   FourCC::from_bytes(b"PART")));
+        deps.push((water.large_enter_part, FourCC::from_bytes(b"PART")));
+        deps.push((water.part4,            FourCC::from_bytes(b"PART")));
+        deps.push((water.part5,            FourCC::from_bytes(b"PART")));
+        deps.retain(|i| i.0 != 0xffffffff && i.0 != 0);
+        deps
+    }
+
+    fn to_obj<'r>(&self)
+    -> structs::SclyObject<'r>
+    {
+        match self {
+            WaterType::Normal  => structs::SclyObject {
+                instance_id: 0xFFFFFFFF,
+                connections: vec![].into(),
+                property_data: structs::SclyProperty::Water(
+                    structs::Water
+                    {
+                        name: b"normal water\0".as_cstr(),
+                        position: [ 0.0, 0.0, 0.0].into(),
+                        scale: [10.0, 10.0, 10.0].into(),
+                        damage_info: structs::structs::DamageInfo { weapon_type: 0, damage:  0.0, radius: 0.0, knockback_power: 0.0 },
+                        unknown1: [0.0, 0.0, 0.0].into(),
+                        unknown2: 2047,
+                        unknown3: 0,
+                        display_fluid_surface: 1,
+                        txtr1: 2003342689,
+                        txtr2: 4059883471,
+                        txtr3:  351283582,
+                        txtr4: 4294967295,
+                        refl_map_txtr: 4294967295,
+                        txtr6: 1899158552,
+                        unknown5: [3.0, 3.0, -4.0].into(),
+                        unkown6:  8.0,
+                        unkown7: 15.0,
+                        unkown8: 15.0,
+                        active: 1,
+                        fluid_type: 0,
+                        unkown11: 0,
+                        unkown12: 0.7,
+                        fluid_uv_motion:
+                            structs::FluidUVMotion
+                            {
+                                fluid_layer_motion1:
+                                structs::FluidLayerMotion
+                                    {
+                                        fluid_uv_motion: 2,
+                                        unknown1: 30.0,
+                                        unknown2: 90.0,
+                                        unknown3:  0.0,
+                                        unknown4:  4.0
+                                    },
+                                fluid_layer_motion2:
+                                structs::FluidLayerMotion
+                                    {
+                                        fluid_uv_motion: 0,
+                                        unknown1: 40.0,
+                                        unknown2: -180.0,
+                                        unknown3:  0.0,
+                                        unknown4: 20.0
+                                    },
+                                fluid_layer_motion3:
+                                structs::FluidLayerMotion
+                                    {
+                                        fluid_uv_motion: 0,
+                                        unknown1: 60.0,
+                                        unknown2: 0.0,
+                                        unknown3:  0.0,
+                                        unknown4: 25.0
+                                    },
+                                unknown1: 1000.0,
+                                unknown2: 0.0
+                            },
+                        unknown30:  0.0,
+                        unknown31:  10.0,
+                        unknown32: 1.0,
+                        unknown33: 1.0,
+                        unknown34: 0.0,
+                        unknown35: 90.0,
+                        unknown36: 0.0,
+                        unknown37: 0.0,
+                        unknown38: [1.0, 1.0, 1.0, 1.0].into(),
+                        unknown39: [0.411765, 0.670588, 0.831373, 1.0].into(),
+                        small_enter_part: 1688698462,
+                        med_enter_part: 678723448,
+                        large_enter_part: 1571480382,
+                        part4: 1859537006,
+                        part5: 1390596347,
+                        sound1: 2499,
+                        sound2: 2499,
+                        sound3:  463,
+                        sound4:  464,
+                        sound5:  465,
+                        unknown40: 2.4,
+                        unknown41: 6,
+                        unknown42: 0.0,
+                        unknown43: 1.0,
+                        unknown44: 0.5,
+                        unknown45: 0.8,
+                        unknown46: 0.5,
+                        unknown47: 0.0,
+                        heat_wave_height: 0.0,
+                        heat_wave_speed: 1.0,
+                        heat_wave_color: [0.596078, 0.752941, 0.819608, 1.0].into(),
+                        lightmap_txtr: 4294967295,
+                        unknown51: 0.3,
+                        unknown52: 0.0,
+                        unknown53: 0.0,
+                        unknown54: 4294967295,
+                        unknown55: 4294967295,
+                        crash_the_game: 0
+                    }            
+                ),
+            },
+            WaterType::Poision => structs::SclyObject {
+                instance_id: 0xFFFFFFFF,
+                connections: vec![].into(),
+                property_data: structs::SclyProperty::Water(
+                    structs::Water {
+                name: b"poision water\0".as_cstr(),
+                position: [ 405.3748, -43.92318, 10.530313].into(),
+                scale: [13.0, 30.0, 1.0].into(),
+                damage_info:
+                    structs::structs::DamageInfo { weapon_type: 10,
+                    damage: 0.11,
+                    radius: 0.0,
+                    knockback_power: 0.0
+                    },
+                unknown1: [0.0, 0.0, 0.0].into(),
+                unknown2: 2047,
+                unknown3: 0,
+                display_fluid_surface: 1,
+                txtr1: 2671389366,
+                txtr2:  430856216,
+                txtr3: 1337209902,
+                txtr4: 4294967295,
+                refl_map_txtr: 4294967295,
+                txtr6: 1899158552,
+                unknown5: [3.0, 3.0, -4.0].into(),
+                unkown6: 48.0,
+                unkown7: 5.0,
+                unkown8: 5.0,
+                active: 1,
+                fluid_type: 1,
+                unkown11: 0,
+                unkown12: 0.8,
+                fluid_uv_motion:
+                structs::FluidUVMotion { fluid_layer_motion1: structs::FluidLayerMotion { fluid_uv_motion: 0,
+                unknown1: 20.0,
+                unknown2:  0.0,
+                unknown3: 0.15,
+                unknown4: 20.0},
+                fluid_layer_motion2:
+                structs::FluidLayerMotion { fluid_uv_motion: 0,
+                unknown1: 10.0,
+                unknown2:  180.0,
+                unknown3: 0.15,
+                unknown4: 10.0 },
+                fluid_layer_motion3: structs::FluidLayerMotion { fluid_uv_motion: 0,
+                unknown1: 40.0,
+                unknown2: 0.0,
+                unknown3: 0.15,
+                unknown4: 25.0 },
+                unknown1:  100.0,
+                unknown2: 0.0 },
+                unknown30: 20.0,
+                unknown31: 100.0,
+                unknown32: 1.0,
+                unknown33: 3.0,
+                unknown34: 0.0,
+                unknown35: 90.0,
+                unknown36: 0.0,
+                unknown37: 0.0,
+                unknown38: [1.0,
+                1.0,
+                1.0,
+                1.0].into(),
+                unknown39: [0.619608,
+                0.705882,
+                0.560784,
+                1.0].into(),
+                small_enter_part: 2237216893,
+                med_enter_part:   4804096,
+                large_enter_part: 3159663901,
+                part4: 1859537006,
+                part5: 1390596347,
+                sound1: 2499,
+                sound2: 2499,
+                sound3:  463,
+                sound4:  464,
+                sound5:  465,
+                unknown40: 2.4,
+                unknown41: 6,
+                unknown42: 0.0,
+                unknown43: 1.0,
+                unknown44: 0.5,
+                unknown45: 0.8,
+                unknown46: 1.0,
+                unknown47: 0.0,
+                heat_wave_height: 0.0,
+                heat_wave_speed: 1.0,
+                heat_wave_color: [0.784314,
+                     1.0,
+                0.27451,
+                 1.0].into(),
+                lightmap_txtr: 4294967295,
+                unknown51: 0.3,
+                unknown52: 0.0,
+                unknown53: 0.0,
+                unknown54: 4294967295,
+                unknown55: 4294967295,
+                crash_the_game: 0
+            })},
+            WaterType::Lava    => structs::SclyObject {
+                instance_id: 0xFFFFFFFF,
+                connections: vec![].into(),
+                property_data: structs::SclyProperty::Water(
+                    structs::Water {
+                name: b"lava\0".as_cstr(),
+                position: [26.634968,
+                -14.81889,
+                 0.237813].into(),
+                scale: [41.601,
+                52.502003,
+                7.0010004].into(),
+                damage_info: structs::structs::DamageInfo { weapon_type: 11,
+                damage:  0.4,
+                radius: 0.0,
+                knockback_power: 0.0 },
+                unknown1: [0.0,
+                0.0,
+                0.0].into(),
+                unknown2: 2047,
+                unknown3: 1,
+                display_fluid_surface: 1,
+                txtr1:  117134624,
+                txtr2: 2154768270,
+                txtr3: 3598011320,
+                txtr4: 1249771730,
+                refl_map_txtr: 4294967295,
+                txtr6: 4294967295,
+                unknown5: [3.0,
+                3.0,
+                -4.0].into(),
+                unkown6: 70.0,
+                unkown7: 15.0,
+                unkown8: 15.0,
+                active: 1,
+                fluid_type: 2,
+                unkown11: 0,
+                unkown12: 0.65,
+                fluid_uv_motion: structs::FluidUVMotion { fluid_layer_motion1: structs::FluidLayerMotion { fluid_uv_motion: 0,
+                unknown1: 30.0,
+                unknown2:  0.0,
+                unknown3: 0.15,
+                unknown4: 10.0},
+                fluid_layer_motion2: structs::FluidLayerMotion { fluid_uv_motion: 0,
+                unknown1: 40.0,
+                unknown2:  180.0,
+                unknown3: 0.15,
+                unknown4: 20.0 },
+                fluid_layer_motion3: structs::FluidLayerMotion { fluid_uv_motion: 0,
+                unknown1: 45.0,
+                unknown2: 0.0,
+                unknown3: 0.15,
+                unknown4: 10.0 },
+                unknown1:   70.0,
+                unknown2: 0.0 },
+                unknown30: 20.0,
+                unknown31: 100.0,
+                unknown32: 1.0,
+                unknown33: 3.0,
+                unknown34: 0.0,
+                unknown35: 90.0,
+                unknown36: 0.0,
+                unknown37: 0.0,
+                unknown38: [1.0,
+                1.0,
+                1.0,
+                1.0].into(),
+                unknown39: [0.631373,
+                0.270588,
+                0.270588,
+                1.0].into(),
+                small_enter_part: 1773746298,
+                med_enter_part: 343573999,
+                large_enter_part: 1354016026,
+                part4: 3917594797,
+                part5: 1390596347,
+                sound1: 2412,
+                sound2: 2412,
+                sound3: 1373,
+                sound4: 1374,
+                sound5: 1375,
+                unknown40: 2.4,
+                unknown41: 6,
+                unknown42: 0.0,
+                unknown43: 1.0,
+                unknown44: 0.5,
+                unknown45: 0.8,
+                unknown46: 0.5,
+                unknown47: 1.7,
+                heat_wave_height: 1.2,
+                heat_wave_speed: 1.0,
+                heat_wave_color: [1.0,
+                     0.682353,
+                0.294118,
+                1.0].into(),
+                lightmap_txtr: 4294967295,
+                unknown51: 0.3,
+                unknown52: 0.0,
+                unknown53: 0.0,
+                unknown54: 4294967295,
+                unknown55: 4294967295,
+                crash_the_game: 0
+            })},
+        }
+    }
+}
+
+fn collect_liquid_resources<'r>(gc_disc: &structs::GcDisc<'r>)
+-> HashMap<(u32, FourCC), structs::Resource<'r>>{
+    // Get list of all dependencies needed by liquids //
+    let mut looking_for: HashSet<_> = WaterType::iter()
+        .flat_map(|pt| pt.dependencies().into_iter())
+        .collect();
+    
+    // Dependencies read from paks and custom assets will go here //
+    let mut found = HashMap::with_capacity(looking_for.len());
+
+    // Iterate through all paks and add add any dependencies to the resource pool //
+    for pak_name in pickup_meta::PICKUP_LOCATIONS.iter().map(|(name, _)| name) { // for all paks
+
+        // get the pak //
+        let file_entry = gc_disc.find_file(pak_name).unwrap();
+        let pak = match *file_entry.file().unwrap() {
+            structs::FstEntryFile::Pak(ref pak) => Cow::Borrowed(pak),
+            structs::FstEntryFile::Unknown(ref reader) => Cow::Owned(reader.clone().read(())),
+            _ => panic!(),
+        };
+
+        // Iterate through all resources in the pak //
+        for res in pak.resources.iter() {
+            let key = (res.file_id, res.fourcc());
+            if looking_for.remove(&key) { // If it's one of our dependencies
+                assert!(found.insert(key, res.into_owned()).is_none()); // collect it
+            }
+        }
+    }
+
+    if !looking_for.is_empty()
+    {
+        println!("error - still looking for {:?}", looking_for);
+    }
+    assert!(looking_for.is_empty());
+    found
+}
+
 // Door assets are not shared across all areas either,
 // so we have to make a cache for them as well.
 fn collect_door_resources<'r>(gc_disc: &structs::GcDisc<'r>)
@@ -2460,6 +2850,42 @@ fn patch_remove_water<'r>(
     Ok(())
 }
 
+fn patch_add_liquid<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    liquid_volume: &LiquidVolume,
+    water_type: WaterType,
+    resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+)
+-> Result<(), String>
+{
+    // add dependencies to area //
+    let deps = water_type.dependencies();
+    let deps_iter = deps.iter()
+        .map(|&(file_id, fourcc)| structs::Dependency {
+                asset_id: file_id,
+                asset_type: fourcc,
+        });
+
+    area.add_dependencies(resources, 0, deps_iter);
+    
+    let mut water_obj = water_type.to_obj();
+    let water = water_obj.property_data.as_water_mut().unwrap();
+    water.position[0] = liquid_volume.position.x;
+    water.position[1] = liquid_volume.position.y;
+    water.position[2] = liquid_volume.position.z;
+    water.scale[0]    = liquid_volume.size.x;
+    water.scale[1]    = liquid_volume.size.y;
+    water.scale[2]    = liquid_volume.size.z;
+
+    // add water to area //
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().push(water_obj);
+
+    Ok(())
+}
+
 fn patch_superheated_room<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -3448,8 +3874,8 @@ fn spawn_room_from_string(room_string: String) -> SpawnRoom {
         }
     }
 
-    let _valid_room_name_string = false;
-    assert!(_valid_room_name_string == true); // this is so it's obvious to the user what happened
+    println!("Error - Could not find room '{}'", room_string);
+    assert!(false);
     return SpawnRoom::landing_site_spawn_room();
 }
 
@@ -3539,6 +3965,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
     let artifact_totem_strings = build_artifact_temple_totem_scan_strings(pickup_layout, &mut rng);
     let mut pickup_resources = collect_pickup_resources(gc_disc);
     let door_resources = collect_door_resources(gc_disc);
+    let liquid_resources = collect_liquid_resources(gc_disc);
     if config.skip_hudmenus {
         add_skip_hudmemos_strgs(&mut pickup_resources);
     }
@@ -3553,6 +3980,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
 
     let pickup_resources = &pickup_resources;
     let door_resources = &door_resources;
+    let liquid_resources = &liquid_resources;
     let mut patcher = PrimePatcher::new();
     if !config.is_item_randomized.unwrap_or(false) && !config.keep_fmvs {
         patcher.add_file_patch(b"opening.bnr", |file| patch_bnr(file, config));
@@ -3633,6 +4061,31 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         patcher.add_scly_patch(
             (room.pak_name.as_bytes(), room.mrea),
             move |_ps, area| patch_remove_water(_ps, area),
+        );
+    }
+
+    // Place liquids
+    for liquid_volume in config.liquid_volumes.iter() {
+        let room = spawn_room_from_string(liquid_volume.room.to_string());
+
+        let water_type = {
+            let liquid_type = liquid_volume.liquid_type.to_lowercase();
+            if liquid_type == "water" || liquid_type == "normal" {
+                WaterType::Normal
+            } else if liquid_type == "poison" || liquid_type == "acid" {
+                WaterType::Poision
+            } else if liquid_type == "lava" || liquid_type == "magma" {
+                WaterType::Lava
+            } else {
+                println!("Error - Unknown Liquid Type '{}'", liquid_type);
+                assert!(false);
+                WaterType::Normal
+            }
+        };
+
+        patcher.add_scly_patch(
+            (room.pak_name.as_bytes(), room.mrea),
+            move |_ps, area| patch_add_liquid(_ps, area, liquid_volume, water_type, liquid_resources),
         );
     }
     
