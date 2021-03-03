@@ -55,6 +55,21 @@ use std::{
     mem,
 };
 
+#[derive(Deserialize, Debug)]
+pub struct Xyz {
+    x: f32,
+    y: f32,
+    z: f32,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct LiquidVolume{
+    room: String,
+    liquid_type: String,
+    position: Xyz,
+    size: Xyz,
+}
+
 const ARTIFACT_OF_TRUTH_REQ_LAYER: u32 = 24;
 const ALWAYS_MODAL_HUDMENUS: &[usize] = &[23, 50, 63];
 
@@ -473,7 +488,6 @@ fn create_item_scan_strg_pair<'r>(
     );
     [scan, strg]
 }
-
 
 fn artifact_layer_change_template<'r>(instance_id: u32, pickup_kind: u32)
     -> structs::SclyObject<'r>
@@ -3228,6 +3242,7 @@ pub struct ParsedConfig
     pub missile_lock_override: Vec<bool>,
     pub superheated_rooms: Vec<String>,
     pub drain_liquid_rooms: Vec<String>,
+    pub liquid_volumes: Vec<LiquidVolume>,
     pub new_save_spawn_room: String,
     pub frigate_done_spawn_room: String,
     pub item_seed: u64,
@@ -3612,6 +3627,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         );
     }
 
+    // Drain rooms of liquids
     for room_name in config.drain_liquid_rooms.iter() {
         let room = spawn_room_from_string(room_name.to_string());
         patcher.add_scly_patch(

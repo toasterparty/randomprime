@@ -31,7 +31,7 @@ pub struct Water<'r>
     pub unkown7: f32,
     pub unkown8: f32,
     pub active: u8,
-    pub fluit_type: u32,
+    pub fluid_type: u32,
     pub unkown11: u8,
     pub unkown12: f32,
     pub fluid_uv_motion: FluidUVMotion,
@@ -96,7 +96,6 @@ pub struct FluidLayerMotion
     pub unknown3: f32,
     pub unknown4: f32,
 }
-
 
 impl<'r> SclyPropertyData for Water<'r>
 {

@@ -95,6 +95,10 @@ fn default_as_empty_bool_vec() -> Vec<bool> {
     Vec::new()
 }
 
+fn default_as_empty_liquid_volume_vec() -> Vec<patches::LiquidVolume> {
+    Vec::new()
+}
+
 fn default_empty_string() -> String {
     "".to_string()
 }
@@ -159,6 +163,9 @@ struct Config {
     #[serde(default = "default_as_empty_str_vec")]
     drain_liquid_rooms: Vec<String>,
 
+    #[serde(default = "default_as_empty_liquid_volume_vec")]
+    liquid_volumes: Vec<patches::LiquidVolume>,
+    
     #[serde(default = "default_empty_string")]
     new_save_spawn_room: String,
 
@@ -399,6 +406,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         lower_mines_backwards: config.patch_settings.lower_mines_backwards,
         superheated_rooms: config.superheated_rooms,
         drain_liquid_rooms: config.drain_liquid_rooms,
+        liquid_volumes: config.liquid_volumes,
 
         layout_string,
         elevator_layout_override: config.elevator_layout_override,
