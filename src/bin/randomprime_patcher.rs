@@ -163,6 +163,9 @@ struct Config {
     #[serde(default = "default_as_empty_str_vec")]
     drain_liquid_rooms: Vec<String>,
 
+    #[serde(default = "default_as_empty_str_vec")]
+    underwater_rooms: Vec<String>,
+
     #[serde(default = "default_as_empty_liquid_volume_vec")]
     liquid_volumes: Vec<patches::LiquidVolume>,
     
@@ -406,6 +409,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         lower_mines_backwards: config.patch_settings.lower_mines_backwards,
         superheated_rooms: config.superheated_rooms,
         drain_liquid_rooms: config.drain_liquid_rooms,
+        underwater_rooms: config.underwater_rooms,
         liquid_volumes: config.liquid_volumes,
 
         layout_string,

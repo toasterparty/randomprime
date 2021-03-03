@@ -2886,6 +2886,74 @@ fn patch_add_liquid<'r>(
     Ok(())
 }
 
+fn patch_full_underwater<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+)
+-> Result<(), String>
+{
+    let water_type = WaterType::Normal;
+
+    // add dependencies to area //
+    let deps = water_type.dependencies();
+    let deps_iter = deps.iter()
+        .map(|&(file_id, fourcc)| structs::Dependency {
+                asset_id: file_id,
+                asset_type: fourcc,
+        });
+
+    area.add_dependencies(resources, 0, deps_iter);
+    
+    let mut water_obj = water_type.to_obj();
+    let water = water_obj.property_data.as_water_mut().unwrap();
+    
+
+    let room_origin = {
+        let area_transform = area.mlvl_area.area_transform;
+
+        Xyz {
+            x: area_transform[3],
+            y: area_transform[7],
+            z: area_transform[11],
+        }
+    };
+
+    let bounding_box_untransformed = area.mlvl_area.area_bounding_box;
+
+    // transform bounding box by origin offset provided in area transform   //
+    // note that we are assuming the area transformation matrix is identity //
+    // on the premise that every door in the game is axis-aligned           //
+    let bounding_box_min = Xyz {
+        x: room_origin.x + bounding_box_untransformed[0],
+        y: room_origin.y + bounding_box_untransformed[1],
+        z: room_origin.z + bounding_box_untransformed[2],
+    };
+
+    let bounding_box_max = Xyz {
+        x: room_origin.x + bounding_box_untransformed[3],
+        y: room_origin.y + bounding_box_untransformed[4],
+        z: room_origin.z + bounding_box_untransformed[5],
+    };
+    
+    // The water is centered at the room's origin //
+    water.position[0] = room_origin.x;
+    water.position[1] = room_origin.y;
+    water.position[2] = room_origin.z;
+
+    // The water's size is the difference in min/max //
+    water.scale[0] = bounding_box_max.x - bounding_box_min.x;
+    water.scale[1] = bounding_box_max.y - bounding_box_min.y;
+    water.scale[2] = bounding_box_max.z - bounding_box_min.z;
+
+    // add water to area //
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().push(water_obj);
+
+    Ok(())
+}
+
 fn patch_superheated_room<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -3668,6 +3736,7 @@ pub struct ParsedConfig
     pub missile_lock_override: Vec<bool>,
     pub superheated_rooms: Vec<String>,
     pub drain_liquid_rooms: Vec<String>,
+    pub underwater_rooms: Vec<String>,
     pub liquid_volumes: Vec<LiquidVolume>,
     pub new_save_spawn_room: String,
     pub frigate_done_spawn_room: String,
@@ -4086,6 +4155,17 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         patcher.add_scly_patch(
             (room.pak_name.as_bytes(), room.mrea),
             move |_ps, area| patch_add_liquid(_ps, area, liquid_volume, water_type, liquid_resources),
+        );
+    }
+
+    // Place bounding box liquids //
+    for room_name in config.underwater_rooms.iter()
+    {
+        let room = spawn_room_from_string(room_name.to_string());
+        println!("submerging {}", room_name.to_string());
+        patcher.add_scly_patch(
+            (room.pak_name.as_bytes(), room.mrea),
+            move |_ps, area| patch_full_underwater(_ps, area, liquid_resources),
         );
     }
     
