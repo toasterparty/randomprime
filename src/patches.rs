@@ -2936,15 +2936,25 @@ fn patch_full_underwater<'r>(
         z: room_origin.z + bounding_box_untransformed[5],
     };
     
-    // The water is centered at the room's origin //
-    water.position[0] = room_origin.x;
-    water.position[1] = room_origin.y;
-    water.position[2] = room_origin.z;
-
     // The water's size is the difference in min/max //
-    water.scale[0] = bounding_box_max.x - bounding_box_min.x;
-    water.scale[1] = bounding_box_max.y - bounding_box_min.y;
-    water.scale[2] = bounding_box_max.z - bounding_box_min.z;
+    water.scale[0] = (bounding_box_max.x - bounding_box_min.x).abs();
+    water.scale[1] = (bounding_box_max.y - bounding_box_min.y).abs();
+    water.scale[2] = (bounding_box_max.z - bounding_box_min.z).abs();
+
+    // The water is centered in the middle of the bounding box //
+    water.position[0] = bounding_box_min.x + (water.scale[0] / 2.0);
+    water.position[1] = bounding_box_min.y + (water.scale[1] / 2.0);
+    water.position[2] = bounding_box_min.z + (water.scale[2] / 2.0);
+
+    /*
+    println!("\nRoom ID = 0x{:X}",area.mrea_file_id());
+    println!("tranform matrix - {:?}", area.mlvl_area.area_transform);
+    println!("bounding box (untransformed) - {:?}", bounding_box_untransformed);
+    println!("bounding box (min) - {:?}", bounding_box_min);
+    println!("bounding box (max) - {:?}", bounding_box_max);
+    println!("water position - {:?}", water.position);
+    println!("water scale - {:?}", water.scale);
+    */
 
     // add water to area //
     let scly = area.mrea().scly_section_mut();
@@ -4162,7 +4172,6 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
     for room_name in config.underwater_rooms.iter()
     {
         let room = spawn_room_from_string(room_name.to_string());
-        println!("submerging {}", room_name.to_string());
         patcher.add_scly_patch(
             (room.pak_name.as_bytes(), room.mrea),
             move |_ps, area| patch_full_underwater(_ps, area, liquid_resources),
