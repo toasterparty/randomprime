@@ -256,6 +256,18 @@ impl PickupType
             PickupType::ShinyMissile,
         ].iter().map(|i| *i)
     }
+
+    pub fn from_string(string: String) -> Self {
+        for i in PickupType::iter() {
+            if i.name().to_string().to_lowercase() == string.to_lowercase() {
+                return i;
+            }
+        }
+
+        println!("Unknown Item Type - {}", string);
+        assert!(false);
+        PickupType::Nothing
+    }
 }
 
 struct PickupTable(Vec<structs::Pickup<'static>>);

@@ -77,6 +77,13 @@ pub struct AetherTransform{
     scale: Xyz,
 }
 
+#[derive(Deserialize, Debug)]
+pub struct AdditionalItem {
+    room: String,
+    item_type: String,
+    position: Xyz,
+}
+
 const ARTIFACT_OF_TRUTH_REQ_LAYER: u32 = 24;
 const ALWAYS_MODAL_HUDMENUS: &[usize] = &[23, 50, 63];
 
@@ -1165,6 +1172,103 @@ impl MaybeObfuscatedPickup
             },
         }
     }
+}
+
+fn patch_add_item<'r>(
+    ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    pickup_type: PickupType,
+    pickup_position: Xyz,
+    pickup_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+    config: &ParsedConfig,
+) -> Result<(), String>
+{
+    // resolve dependencies
+    let location_idx = 0;
+
+    let pickup_type = if config.obfuscate_items {
+        MaybeObfuscatedPickup::Obfuscated(pickup_type)
+    } else {
+        MaybeObfuscatedPickup::Unobfuscated(pickup_type)
+    };
+
+    let deps_iter = pickup_type.dependencies().iter()
+        .map(|&(file_id, fourcc)| structs::Dependency {
+                asset_id: file_id,
+                asset_type: fourcc,
+            });
+
+    let name = CString::new(format!(
+            "Randomizer - Pickup {} ({:?})", location_idx, pickup_type.pickup_data().name)).unwrap();
+    area.add_layer(Cow::Owned(name));
+
+    let new_layer_idx = area.layer_flags.layer_count as usize - 1;
+
+    // Add our custom STRG
+    let hudmemo_dep = structs::Dependency {
+        asset_id: if config.skip_hudmenus && !ALWAYS_MODAL_HUDMENUS.contains(&location_idx) {
+                pickup_type.skip_hudmemos_strg()
+            } else {
+                pickup_type.hudmemo_strg()
+            },
+        asset_type: b"STRG".into(),
+    };
+    let deps_iter = deps_iter.chain(iter::once(hudmemo_dep));
+    area.add_dependencies(pickup_resources, new_layer_idx, deps_iter);
+    
+    let scly = area.mrea().scly_section_mut();
+    let layers = scly.layers.as_mut_vec();
+
+    // create and push pickup
+    let mut pickup = structs::SclyObject {
+        instance_id: 0xFFFFFFFF,
+        connections: vec![].into(),
+        property_data: structs::SclyProperty::Pickup(
+            structs::Pickup {
+                position: [
+                    pickup_position.x,
+                    pickup_position.y,
+                    pickup_position.z,
+                ].into(),
+                hitbox: [1.0, 1.0, 2.0].into(), // missile hitbox
+                scan_offset: [
+                    0.0,
+                    0.0,
+                    1.0,
+                ].into(),
+                
+                fade_in_timer: 0.0,
+                spawn_delay: 0.0,
+                active: 1,
+        
+                ..(pickup_type.pickup_data().into_owned())
+            }
+        )
+    };
+
+    // If this is an artifact, insert a layer change function
+    let pickup_kind = pickup_type.pickup_data().kind;
+    if pickup_kind >= 29 && pickup_kind <= 40 {
+        let instance_id = ps.fresh_instance_id_range.next().unwrap();
+        let function = artifact_layer_change_template(instance_id, pickup_kind);
+        layers[new_layer_idx].objects.as_mut_vec().push(function);
+        pickup.connections.as_mut_vec().push(structs::Connection {
+            state: structs::ConnectionState::ARRIVED,
+            message: structs::ConnectionMsg::INCREMENT,
+            target_object_id: instance_id,
+        });
+    }
+
+    layers[new_layer_idx].objects.as_mut_vec().push(pickup);
+
+
+    // create and push hudmemo
+    // TODO
+
+    // create and push attainment audio
+    // TODO
+
+    Ok(())
 }
 
 fn modify_pickups_in_mrea<'r>(
@@ -2985,7 +3089,7 @@ fn patch_transform_bounding_box<'r>(
         y: (bb[4] - bb[1]).abs(),
         z: (bb[5] - bb[2]).abs(),
     };
-    
+
     area.mlvl_area.area_bounding_box[0] = bb[0] + offset.x + (size.x*0.5 - (size.x*0.5)*scale.x);
     area.mlvl_area.area_bounding_box[1] = bb[1] + offset.y + (size.y*0.5 - (size.y*0.5)*scale.y);
     area.mlvl_area.area_bounding_box[2] = bb[2] + offset.z + (size.z*0.5 - (size.z*0.5)*scale.z);
@@ -3781,6 +3885,7 @@ pub struct ParsedConfig
     pub underwater_rooms: Vec<String>,
     pub liquid_volumes: Vec<LiquidVolume>,
     pub aether_transforms: Vec<AetherTransform>,
+    pub additional_items: Vec<AdditionalItem>,
     pub new_save_spawn_room: String,
     pub frigate_done_spawn_room: String,
     pub item_seed: u64,
@@ -4229,7 +4334,6 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         let level = world as usize;
 
         if level == 0 && config.skip_frigate {continue;} // If we're skipping the frigate, there's nothing to patch
-        // if level == 6 && config.skip_impact_crater {continue;} // If we're skipping the frigate, there's nothing to patch
 
         for room_info in rooms.iter() { // for each room in the pak
             // patch the item locations
@@ -4324,6 +4428,16 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                 }
             }
         }
+    }
+
+    // add additional items //
+    for item in config.additional_items.iter()
+    {
+        let room = spawn_room_from_string(item.room.to_string());
+        patcher.add_scly_patch(
+            (room.pak_name.as_bytes(), room.mrea),
+            move |_ps, area| patch_add_item(_ps, area, PickupType::from_string(item.item_type.to_string()), item.position, pickup_resources, config),
+        );
     }
 
     if !config.is_item_randomized.unwrap_or(false) {

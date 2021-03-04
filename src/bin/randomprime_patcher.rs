@@ -103,6 +103,12 @@ fn default_as_empty_aether_transform_vec() -> Vec<patches::AetherTransform> {
     Vec::new()
 }
 
+
+fn default_as_empty_add_items_vec() -> Vec<patches::AdditionalItem> {
+    Vec::new()
+}
+
+
 fn default_empty_string() -> String {
     "".to_string()
 }
@@ -175,6 +181,9 @@ struct Config {
 
     #[serde(default = "default_as_empty_aether_transform_vec")]
     aether_transforms: Vec<patches::AetherTransform>,
+
+    #[serde(default = "default_as_empty_add_items_vec")]
+    additional_items: Vec<patches::AdditionalItem>,
     
     #[serde(default = "default_empty_string")]
     new_save_spawn_room: String,
@@ -419,8 +428,8 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         underwater_rooms: config.underwater_rooms,
         liquid_volumes: config.liquid_volumes,
         aether_transforms: config.aether_transforms,
+        additional_items: config.additional_items,
         
-
         layout_string,
         elevator_layout_override: config.elevator_layout_override,
         missile_lock_override: config.missile_lock_override,
