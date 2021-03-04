@@ -55,7 +55,7 @@ use std::{
     mem,
 };
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone, Copy)]
 pub struct Xyz {
     x: f32,
     y: f32,
@@ -68,6 +68,13 @@ pub struct LiquidVolume{
     liquid_type: String,
     position: Xyz,
     size: Xyz,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct AetherTransform{
+    room: String,
+    offset: Xyz,
+    scale: Xyz,
 }
 
 const ARTIFACT_OF_TRUTH_REQ_LAYER: u32 = 24;
@@ -2964,6 +2971,31 @@ fn patch_full_underwater<'r>(
     Ok(())
 }
 
+fn patch_transform_bounding_box<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    offset: Xyz,
+    scale: Xyz,
+)
+-> Result<(), String>
+{
+    let bb = area.mlvl_area.area_bounding_box;
+    let size = Xyz {
+        x: (bb[3] - bb[0]).abs(),
+        y: (bb[4] - bb[1]).abs(),
+        z: (bb[5] - bb[2]).abs(),
+    };
+    
+    area.mlvl_area.area_bounding_box[0] = bb[0] + offset.x + (size.x*0.5 - (size.x*0.5)*scale.x);
+    area.mlvl_area.area_bounding_box[1] = bb[1] + offset.y + (size.y*0.5 - (size.y*0.5)*scale.y);
+    area.mlvl_area.area_bounding_box[2] = bb[2] + offset.z + (size.z*0.5 - (size.z*0.5)*scale.z);
+    area.mlvl_area.area_bounding_box[3] = bb[3] + offset.x - (size.x*0.5 - (size.x*0.5)*scale.x);
+    area.mlvl_area.area_bounding_box[4] = bb[4] + offset.y - (size.y*0.5 - (size.y*0.5)*scale.y);
+    area.mlvl_area.area_bounding_box[5] = bb[5] + offset.z - (size.z*0.5 - (size.z*0.5)*scale.z);
+
+    Ok(())
+}
+
 fn patch_superheated_room<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -3748,6 +3780,7 @@ pub struct ParsedConfig
     pub drain_liquid_rooms: Vec<String>,
     pub underwater_rooms: Vec<String>,
     pub liquid_volumes: Vec<LiquidVolume>,
+    pub aether_transforms: Vec<AetherTransform>,
     pub new_save_spawn_room: String,
     pub frigate_done_spawn_room: String,
     pub item_seed: u64,
@@ -4177,6 +4210,16 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             move |_ps, area| patch_full_underwater(_ps, area, liquid_resources),
         );
     }
+
+    // Re-size bounding box //
+    for aether_transform in config.aether_transforms.iter()
+    {
+        let room = spawn_room_from_string(aether_transform.room.to_string());
+        patcher.add_scly_patch(
+            (room.pak_name.as_bytes(), room.mrea),
+            move |_ps, area| patch_transform_bounding_box(_ps, area, aether_transform.offset, aether_transform.scale),
+        );
+    }
     
     // Patch pickups and doors
     let mut layout_iterator = pickup_layout.iter();
@@ -4460,7 +4503,6 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             resource_info!("18_ice_gravity_chamber.MREA").into(),
             patch_gravity_chamber_stalactite_grapple_point
         );
-
 
         if version == Version::Ntsc0_02 {
             patcher.add_scly_patch(
