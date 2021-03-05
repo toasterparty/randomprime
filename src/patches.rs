@@ -1215,13 +1215,10 @@ fn patch_add_item<'r>(
     };
     let deps_iter = deps_iter.chain(iter::once(hudmemo_dep));
     area.add_dependencies(pickup_resources, new_layer_idx, deps_iter);
-    
-    let scly = area.mrea().scly_section_mut();
-    let layers = scly.layers.as_mut_vec();
 
-    // create and push pickup
+    // create pickup
     let mut pickup = structs::SclyObject {
-        instance_id: 0xFFFFFFFF,
+        instance_id: ps.fresh_instance_id_range.next().unwrap(),
         connections: vec![].into(),
         property_data: structs::SclyProperty::Pickup(
             structs::Pickup {
@@ -1246,27 +1243,189 @@ fn patch_add_item<'r>(
         )
     };
 
-    // If this is an artifact, insert a layer change function
+    /*
+    // Create memory relay
+    let memory_relay = {
+        let mut _memory_relay = structs::SclyObject {
+            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            connections: vec![].into(),
+            property_data: structs::SclyProperty::MemoryRelay( structs::MemoryRelay {
+                    name: b"mymemrelay\0".as_cstr(),
+                    unknown: 0,
+                    active: 0,
+                }
+            )
+        };
+
+        // Deactivate item when relay is active
+        _memory_relay.connections.as_mut_vec().push(
+            structs::Connection {
+                state: structs::ConnectionState::ACTIVE,
+                message: structs::ConnectionMsg::DEACTIVATE,
+                target_object_id: pickup.instance_id,
+            }
+        );
+
+        _memory_relay
+    };
+    
+    // Activate the relay when item is picked up
+    pickup.connections.as_mut_vec().push(
+        structs::Connection {
+            state: structs::ConnectionState::ARRIVED,
+            message: structs::ConnectionMsg::ACTIVATE,
+            target_object_id: memory_relay.instance_id,
+        }
+    );
+
+    // Create reference to MemoryRelay in MLVL file
+    area.memory_relay_conns.as_mut_vec().push(
+        structs::MemoryRelayConn {
+            sender_id: memory_relay.instance_id,
+            target_id: pickup.instance_id,
+            message: 0x4, // DEACTIVATE
+            active: 0,
+        }
+    );
+
+    area.memory_relay_conns.as_mut_vec().push(
+        structs::MemoryRelayConn {
+            sender_id: pickup.instance_id,
+            target_id: memory_relay.instance_id,
+            message: 0x1, // ACTIVATE
+            active: 1,
+        }
+    );
+    */
+
+    // create hudmemo
+    let hudmemo = structs::SclyObject {
+        instance_id: ps.fresh_instance_id_range.next().unwrap(),
+        connections: vec![].into(),
+        property_data: structs::SclyProperty::HudMemo(
+            structs::HudMemo {
+                name: b"myhudmemo\0".as_cstr(),
+                first_message_timer: 5.,
+                unknown: 1,
+                memo_type: 0, // not a text box
+                strg: pickup_type.skip_hudmemos_strg(),
+                active: 1,
+            }
+        )
+    };
+
+    // Display hudmemo when item is picked up
+    pickup.connections.as_mut_vec().push(
+        structs::Connection {
+            state: structs::ConnectionState::ARRIVED,
+            message: structs::ConnectionMsg::SET_TO_ZERO,
+            target_object_id: hudmemo.instance_id,
+        }
+    );
+
+    // Create Special Function to disabled layer once item is obtained
+    // This is needed because otherwise the item would re-appear every
+    // time the room is loaded
+    let special_function = structs::SclyObject {
+        instance_id: ps.fresh_instance_id_range.next().unwrap(),
+        connections: vec![].into(),
+        property_data: structs::SclyProperty::SpecialFunction(
+            structs::SpecialFunction {
+                name: b"myspecialfun\0".as_cstr(),
+                position: [0., 0., 0.].into(),
+                rotation: [0., 0., 0.].into(),
+                type_: 16, // layer change
+                unknown0: b"\0".as_cstr(),
+                unknown1: 0.,
+                unknown2: 0.,
+                unknown3: 0.,
+                layer_change_room_id: area.mlvl_area.internal_id,
+                layer_change_layer_id: new_layer_idx as u32,
+                item_id: 0,
+                unknown4: 1, // active
+                unknown5: 0.,
+                unknown6: 0xFFFFFFFF,
+                unknown7: 0xFFFFFFFF,
+                unknown8: 0xFFFFFFFF,
+            }
+        ),
+    };
+
+    // Activate the layer change when item is picked up
+    pickup.connections.as_mut_vec().push(
+        structs::Connection {
+            state: structs::ConnectionState::ARRIVED,
+            message: structs::ConnectionMsg::DECREMENT,
+            target_object_id: special_function.instance_id,
+        }
+    );
+
+    // create attainment audio
+    let attainment_audio = structs::SclyObject {
+        instance_id: ps.fresh_instance_id_range.next().unwrap(),
+        connections: vec![].into(),
+        property_data: structs::SclyProperty::Sound(
+            structs::Sound { // copied from main plaza half-pipe
+                name: b"mysound\0".as_cstr(),
+                position: [
+                    pickup_position.x,
+                    pickup_position.y,
+                    pickup_position.z
+                ].into(),
+                rotation: [0.0,0.0,0.0].into(),
+                sound_id: 117,
+                active: 1,
+                max_dist: 50.0,
+                dist_comp: 0.2,
+                start_delay: 0.0,
+                min_volume: 20,
+                volume: 127,
+                priority: 127,
+                pan: 64,
+                loops: 0,
+                non_emitter: 1,
+                auto_start: 0,
+                occlusion_test: 0,
+                acoustics: 0,
+                world_sfx: 0,
+                allow_duplicates: 0,
+                pitch: 0,
+            }
+        )
+    };
+
+    // Play the sound when item is picked up
+    pickup.connections.as_mut_vec().push(
+        structs::Connection {
+            state: structs::ConnectionState::ARRIVED,
+            message: structs::ConnectionMsg::PLAY,
+            target_object_id: attainment_audio.instance_id,
+        }
+    );
+
+    // update MREA layer with new Objects
+    let scly = area.mrea().scly_section_mut();
+    let layers = scly.layers.as_mut_vec();
+
+    // If this is an artifact, create and push change function
     let pickup_kind = pickup_type.pickup_data().kind;
     if pickup_kind >= 29 && pickup_kind <= 40 {
         let instance_id = ps.fresh_instance_id_range.next().unwrap();
         let function = artifact_layer_change_template(instance_id, pickup_kind);
         layers[new_layer_idx].objects.as_mut_vec().push(function);
-        pickup.connections.as_mut_vec().push(structs::Connection {
-            state: structs::ConnectionState::ARRIVED,
-            message: structs::ConnectionMsg::INCREMENT,
-            target_object_id: instance_id,
-        });
+        pickup.connections.as_mut_vec().push(
+            structs::Connection {
+                state: structs::ConnectionState::ARRIVED,
+                message: structs::ConnectionMsg::INCREMENT,
+                target_object_id: instance_id,
+            }
+        );
     }
 
+    layers[0].objects.as_mut_vec().push(special_function);
+    layers[new_layer_idx].objects.as_mut_vec().push(hudmemo);
+    layers[new_layer_idx].objects.as_mut_vec().push(attainment_audio);
     layers[new_layer_idx].objects.as_mut_vec().push(pickup);
-
-
-    // create and push hudmemo
-    // TODO
-
-    // create and push attainment audio
-    // TODO
 
     Ok(())
 }
