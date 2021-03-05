@@ -1243,61 +1243,6 @@ fn patch_add_item<'r>(
         )
     };
 
-    /*
-    // Create memory relay
-    let memory_relay = {
-        let mut _memory_relay = structs::SclyObject {
-            instance_id: ps.fresh_instance_id_range.next().unwrap(),
-            connections: vec![].into(),
-            property_data: structs::SclyProperty::MemoryRelay( structs::MemoryRelay {
-                    name: b"mymemrelay\0".as_cstr(),
-                    unknown: 0,
-                    active: 0,
-                }
-            )
-        };
-
-        // Deactivate item when relay is active
-        _memory_relay.connections.as_mut_vec().push(
-            structs::Connection {
-                state: structs::ConnectionState::ACTIVE,
-                message: structs::ConnectionMsg::DEACTIVATE,
-                target_object_id: pickup.instance_id,
-            }
-        );
-
-        _memory_relay
-    };
-    
-    // Activate the relay when item is picked up
-    pickup.connections.as_mut_vec().push(
-        structs::Connection {
-            state: structs::ConnectionState::ARRIVED,
-            message: structs::ConnectionMsg::ACTIVATE,
-            target_object_id: memory_relay.instance_id,
-        }
-    );
-
-    // Create reference to MemoryRelay in MLVL file
-    area.memory_relay_conns.as_mut_vec().push(
-        structs::MemoryRelayConn {
-            sender_id: memory_relay.instance_id,
-            target_id: pickup.instance_id,
-            message: 0x4, // DEACTIVATE
-            active: 0,
-        }
-    );
-
-    area.memory_relay_conns.as_mut_vec().push(
-        structs::MemoryRelayConn {
-            sender_id: pickup.instance_id,
-            target_id: memory_relay.instance_id,
-            message: 0x1, // ACTIVATE
-            active: 1,
-        }
-    );
-    */
-
     // create hudmemo
     let hudmemo = structs::SclyObject {
         instance_id: ps.fresh_instance_id_range.next().unwrap(),
