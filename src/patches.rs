@@ -4030,6 +4030,7 @@ pub struct ParsedConfig
     pub remove_frigidite_lock: bool,
     pub remove_mine_security_station_locks: bool,
     pub lower_mines_backwards: bool,
+    pub biohazard_containment_alt_spawn: bool,
 
     pub iso_format: IsoFormat,
     pub skip_frigate: bool,
@@ -4404,6 +4405,13 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         resource_info!("00_mines_savestation_b.MREA").into(), // missile station mines
         move |_ps, area| patch_spawn_point_position(_ps, area, Xyz{x:209.27, y:14.87, z:-140.29}),
     );
+
+    if config.biohazard_containment_alt_spawn {
+        patcher.add_scly_patch(
+            resource_info!("05_under_intro_zoo.MREA").into(), // biohazard containment
+            move |_ps, area| patch_spawn_point_position(_ps, area, Xyz{x:-148.91, y:247.18, z:-71.78}),
+        );  
+    }
 
     // Patch superheated rooms
     for room_name in config.superheated_rooms.iter() {

@@ -153,6 +153,9 @@ struct PatchConfig {
 
     #[serde(default = "default_as_false")]
     lower_mines_backwards: bool,
+
+    #[serde(default = "default_as_false")]
+    biohazard_containment_alt_spawn: bool,
 }
 
 #[derive(Deserialize)]
@@ -423,6 +426,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         remove_frigidite_lock: config.patch_settings.remove_frigidite_lock,
         remove_mine_security_station_locks: config.patch_settings.remove_mine_security_station_locks,
         lower_mines_backwards: config.patch_settings.lower_mines_backwards,
+        biohazard_containment_alt_spawn: config.patch_settings.biohazard_containment_alt_spawn,
         superheated_rooms: config.superheated_rooms,
         drain_liquid_rooms: config.drain_liquid_rooms,
         underwater_rooms: config.underwater_rooms,
