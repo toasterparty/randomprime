@@ -174,6 +174,9 @@ struct Config {
     superheated_rooms: Vec<String>,
 
     #[serde(default = "default_as_empty_str_vec")]
+    deheated_rooms: Vec<String>,
+
+    #[serde(default = "default_as_empty_str_vec")]
     drain_liquid_rooms: Vec<String>,
 
     #[serde(default = "default_as_empty_str_vec")]
@@ -428,6 +431,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         lower_mines_backwards: config.patch_settings.lower_mines_backwards,
         biohazard_containment_alt_spawn: config.patch_settings.biohazard_containment_alt_spawn,
         superheated_rooms: config.superheated_rooms,
+        deheated_rooms: config.deheated_rooms,
         drain_liquid_rooms: config.drain_liquid_rooms,
         underwater_rooms: config.underwater_rooms,
         liquid_volumes: config.liquid_volumes,

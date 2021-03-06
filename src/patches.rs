@@ -3232,6 +3232,35 @@ fn patch_transform_bounding_box<'r>(
     Ok(())
 }
 
+fn is_area_damage_special_function<'r>(obj: &structs::SclyObject<'r>)
+-> bool
+{
+    let special_function = obj.property_data.as_special_function();
+    
+    if special_function.is_none() {
+        false
+    }
+    else {
+        special_function.unwrap().type_ == 18 // is area damage type
+    }
+}
+
+fn patch_deheat_room<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer_count = scly.layers.len();
+    for i in 0..layer_count {
+        let layer = &mut scly.layers.as_mut_vec()[i];
+        layer.objects.as_mut_vec().retain(|obj| !is_area_damage_special_function(obj));
+    }
+    
+    Ok(())
+}
+
 fn patch_superheated_room<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -4013,6 +4042,7 @@ pub struct ParsedConfig
     pub elevator_layout_override: Vec<String>,
     pub missile_lock_override: Vec<bool>,
     pub superheated_rooms: Vec<String>,
+    pub deheated_rooms: Vec<String>,
     pub drain_liquid_rooms: Vec<String>,
     pub underwater_rooms: Vec<String>,
     pub liquid_volumes: Vec<LiquidVolume>,
@@ -4420,6 +4450,15 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         patcher.add_scly_patch(
             (room.pak_name.as_bytes(), room.mrea),
             move |_ps, area| patch_superheated_room(_ps, area),
+        );
+    }
+
+    for room_name in config.deheated_rooms.iter() {
+        let room = spawn_room_from_string(room_name.to_string());
+
+        patcher.add_scly_patch(
+            (room.pak_name.as_bytes(), room.mrea),
+            move |_ps, area| patch_deheat_room(_ps, area),
         );
     }
 
