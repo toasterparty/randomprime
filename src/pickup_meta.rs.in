@@ -67,6 +67,17 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 7] = &[
             objects_to_remove: &[],
         },
         RoomInfo {
+            room_id: 0xC8971E99,
+            name: "Deck Alpha Mech Shaft",
+            name_id: 0x20AA1CFD,
+            mapa_id: 0xE142E5A4,
+            pickup_locations: &[
+            ],
+            door_locations: &[
+            ],
+            objects_to_remove: &[],
+        },
+        RoomInfo {
             room_id: 0x20E48216,
             name: "Emergency Evacuation Area",
             name_id: 0xF60AFC04,
@@ -86,6 +97,17 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 7] = &[
                     door_shield_location: Some(ScriptObjectLocation { layer: 0, instance_id: 262186 }),
                     dock_number: Some(0),
                 },
+            ],
+            objects_to_remove: &[],
+        },
+        RoomInfo {
+            room_id: 0xAE1EC8BD,
+            name: "Connection Elevator to Deck Alpha",
+            name_id: 0x78F0B6AF,
+            mapa_id: 0x87CB3380,
+            pickup_locations: &[
+            ],
+            door_locations: &[
             ],
             objects_to_remove: &[],
         },
@@ -404,6 +426,17 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 7] = &[
             objects_to_remove: &[],
         },
         RoomInfo {
+            room_id: 0xC0BBB28A,
+            name: "Subventilation Shaft Section B",
+            name_id: 0x7574CA8B,
+            mapa_id: 0xE96E49B7,
+            pickup_locations: &[
+            ],
+            door_locations: &[
+            ],
+            objects_to_remove: &[],
+        },
+        RoomInfo {
             room_id: 0x758C4F1C,
             name: "Main Ventilation Shaft Section A",
             name_id: 0x9DB14D78,
@@ -689,6 +722,17 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 7] = &[
                     door_shield_location: Some(ScriptObjectLocation { layer: 0, instance_id: 393229 }),
                     dock_number: Some(1),
                 },
+            ],
+            objects_to_remove: &[],
+        },
+        RoomInfo {
+            room_id: 0x2B3F1CEE,
+            name: "Piston Tunnel",
+            name_id: 0x3BDF0E1A,
+            mapa_id: 0x02EAE7D3,
+            pickup_locations: &[
+            ],
+            door_locations: &[
             ],
             objects_to_remove: &[],
         },
@@ -6409,31 +6453,6 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 7] = &[
             ],
         },
         RoomInfo {
-            room_id: 0xA20201D4,
-            name: "Security Access B",
-            name_id: 0x744827e4,
-            mapa_id: 0x8BD7FAE9,
-            pickup_locations: &[
-            ],
-            door_locations: &[
-                DoorLocation {
-                    door_location: ScriptObjectLocation { layer: 0, instance_id: 721247 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 721242 },
-                    door_shield_location: Some(ScriptObjectLocation { layer: 0, instance_id: 721243 }),
-                    dock_number: Some(0), // the one in the ceiling
-                },
-                DoorLocation {
-                    door_location: ScriptObjectLocation { layer: 0, instance_id: 721020 },
-                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 721016 },
-                    door_shield_location: Some(ScriptObjectLocation { layer: 0, instance_id: 721017 }),
-                    dock_number: Some(1), // the one in the floor
-                },
-            ],
-            objects_to_remove: &[
-
-            ],
-        },
-        RoomInfo {
             room_id: 0x97D2B2F6,
             name: "Ore Processing",
             name_id: 0x984F8443,
@@ -6649,6 +6668,29 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 7] = &[
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 655382 },
                     door_shield_location: Some(ScriptObjectLocation { layer: 0, instance_id: 655383 }),
                     dock_number: Some(1),
+                },
+            ],
+            objects_to_remove: &[],
+        },
+        RoomInfo {
+            room_id: 0xA20201D4,
+            name: "Security Access B",
+            name_id: 0x744827E4,
+            mapa_id: 0x8BD7FAE9,
+            pickup_locations: &[
+            ],
+            door_locations: &[
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 721247 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 721242 },
+                    door_shield_location: Some(ScriptObjectLocation { layer: 0, instance_id: 721243 }),
+                    dock_number: Some(0), // the one in the ceiling
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 721020 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 721016 },
+                    door_shield_location: Some(ScriptObjectLocation { layer: 0, instance_id: 721017 }),
+                    dock_number: Some(1), // the one in the floor
                 },
             ],
             objects_to_remove: &[],
@@ -8960,6 +9002,72 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 7] = &[
                     door_shield_location: Some(ScriptObjectLocation { layer: 0, instance_id: 327694 }),
                     dock_number: Some(1),
                 },
+            ],
+            objects_to_remove: &[],
+        },
+        RoomInfo {
+            room_id: 0xDADF06C3,
+            name: "Subchamber One",
+            name_id: 0x58FB8161,
+            mapa_id: 0xF30AFDFE,
+            pickup_locations: &[
+            ],
+            door_locations: &[
+            ],
+            objects_to_remove: &[],
+        },
+        RoomInfo {
+            room_id: 0x0749DF46,
+            name: "Subchamber Two",
+            name_id: 0x856D58E4,
+            mapa_id: 0x2E9C247B,
+            pickup_locations: &[
+            ],
+            door_locations: &[
+            ],
+            objects_to_remove: &[],
+        },
+        RoomInfo {
+            room_id: 0x7A3AD91E,
+            name: "Subchamber Three",
+            name_id: 0xF81E5EBC,
+            mapa_id: 0x53EF2223,
+            pickup_locations: &[
+            ],
+            door_locations: &[
+            ],
+            objects_to_remove: &[],
+        },
+        RoomInfo {
+            room_id: 0xA7AC009B,
+            name: "Subchamber Four",
+            name_id: 0x25888739,
+            mapa_id: 0x8E79FBA6,
+            pickup_locations: &[
+            ],
+            door_locations: &[
+            ],
+            objects_to_remove: &[],
+        },
+        RoomInfo {
+            room_id: 0x77714498,
+            name: "Subchamber Five",
+            name_id: 0xBFE8F636,
+            mapa_id: 0x5EA4BFA5,
+            pickup_locations: &[
+            ],
+            door_locations: &[
+            ],
+            objects_to_remove: &[],
+        },
+        RoomInfo {
+            room_id: 0x1A666C55,
+            name: "Metroid Prime Lair",
+            name_id: 0x9842EBF7,
+            mapa_id: 0x33B39768,
+            pickup_locations: &[
+            ],
+            door_locations: &[
             ],
             objects_to_remove: &[],
         },

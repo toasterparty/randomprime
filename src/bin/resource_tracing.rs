@@ -1085,7 +1085,7 @@ fn main()
                 }
             }
 
-            if room_locations.len() != 0 || door_locations.len() != 0 {
+            {
                 let strg_id = mrea_name_strg_map[&res.file_id];
                 let strg: structs::Strg = res_db.map[&ResourceKey::new(strg_id, b"STRG".into())]
                     .data.data.clone().read(());
@@ -1093,7 +1093,7 @@ fn main()
                     .string_tables.iter().next().unwrap()
                     .strings.iter().next().unwrap()
                     .into_owned().into_string();
-
+                
                 pak_locations.push(RoomInfo {
                     room_id: res.file_id,
                     name,
