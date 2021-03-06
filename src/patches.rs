@@ -3033,6 +3033,34 @@ fn make_remove_forcefields_patch<'a>(patcher: &mut PrimePatcher<'_, 'a>)
     );
 }
 
+fn patch_spawn_point_position<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    new_position: Xyz,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer_count = scly.layers.len();
+    for i in 0..layer_count {
+        let layer = &mut scly.layers.as_mut_vec()[i];
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+            let _spawn_point = obj.property_data.as_spawn_point_mut();
+            if _spawn_point.is_none() {continue;}
+            let spawn_point = _spawn_point.unwrap();
+            
+            spawn_point.position[0] = new_position.x;
+            spawn_point.position[1] = new_position.y;
+            spawn_point.position[2] = new_position.z;
+            spawn_point.default_spawn = 1;
+            spawn_point.active = 1;
+            spawn_point.morphed = 1;
+        }
+    }
+
+    Ok(())
+}
+
 fn is_water<'r>(obj: &structs::SclyObject<'r>) -> bool {
     let water = obj.property_data.as_water();
     water.is_some()
@@ -4365,6 +4393,17 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             });
         }
     }
+
+    // Fix rooms with stupid spawn points
+    patcher.add_scly_patch(
+        resource_info!("1a_morphballtunnel.MREA").into(), // piston tunnel
+        move |_ps, area| patch_spawn_point_position(_ps, area, Xyz{x:124.57, y:-96.78, z:18.85}),
+    );
+
+    patcher.add_scly_patch(
+        resource_info!("00_mines_savestation_b.MREA").into(), // missile station mines
+        move |_ps, area| patch_spawn_point_position(_ps, area, Xyz{x:209.27, y:14.87, z:-140.29}),
+    );
 
     // Patch superheated rooms
     for room_name in config.superheated_rooms.iter() {
