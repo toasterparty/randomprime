@@ -1380,6 +1380,7 @@ fn modify_pickups_in_mrea<'r>(
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     pickup_type: PickupType,
     pickup_location: pickup_meta::PickupLocation,
+    pickup_count: u32,
     pickup_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     config: &ParsedConfig,
 ) -> Result<(), String>
@@ -1448,7 +1449,7 @@ fn modify_pickups_in_mrea<'r>(
     let pickup = layers[pickup_location.location.layer as usize].objects.iter_mut()
         .find(|obj| obj.instance_id ==  pickup_location.location.instance_id)
         .unwrap();
-    update_pickup(pickup, pickup_type);
+    update_pickup(pickup, pickup_type, pickup_count);
     if additional_connections.len() > 0 {
         pickup.connections.as_mut_vec().extend_from_slice(&additional_connections);
     }
@@ -1458,7 +1459,6 @@ fn modify_pickups_in_mrea<'r>(
         .unwrap();
     update_hudmemo(hudmemo, pickup_type, location_idx, config.skip_hudmenus);
 
-
     let location = pickup_location.attainment_audio;
     let attainment_audio = layers[location.layer as usize].objects.iter_mut()
         .find(|obj| obj.instance_id ==  location.instance_id)
@@ -1467,11 +1467,15 @@ fn modify_pickups_in_mrea<'r>(
     Ok(())
 }
 
-fn update_pickup(pickup: &mut structs::SclyObject, pickup_type: MaybeObfuscatedPickup)
+fn update_pickup(
+    pickup: &mut structs::SclyObject,
+    pickup_type: MaybeObfuscatedPickup,
+    pickup_count: u32,
+)
 {
     let pickup = pickup.property_data.as_pickup_mut().unwrap();
     let original_pickup = pickup.clone();
-
+    
     let original_aabb = pickup_meta::aabb_for_pickup_cmdl(original_pickup.cmdl).unwrap();
     let new_aabb = pickup_meta::aabb_for_pickup_cmdl(pickup_type.pickup_data().cmdl).unwrap();
     let original_center = calculate_center(original_aabb, original_pickup.rotation,
@@ -1500,6 +1504,12 @@ fn update_pickup(pickup: &mut structs::SclyObject, pickup_type: MaybeObfuscatedP
 
         ..(pickup_type.pickup_data().into_owned())
     };
+    
+    if pickup_count != 0xFFFFFFFF
+    {
+        pickup.max_increase  = pickup_count;
+        pickup.curr_increase = pickup_count;
+    }
 }
 
 fn update_hudmemo(
@@ -4554,6 +4564,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                                 area,
                                 pickup_type,
                                 pickup_location,
+                                0xFFFFFFFF,
                                 pickup_resources,
                                 config
                             )
