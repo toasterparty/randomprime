@@ -156,6 +156,9 @@ struct PatchConfig {
 
     #[serde(default = "default_as_false")]
     biohazard_containment_alt_spawn: bool,
+
+    #[serde(default = "default_as_false")]
+    quickplay: bool,
 }
 
 #[derive(Deserialize)]
@@ -469,7 +472,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         comment: comment_message,
         main_menu_message: String::from(mpdr_version),
 
-        quickplay: false,
+        quickplay: config.patch_settings.quickplay,
 
         bnr_game_name: banner.as_mut().and_then(|b| b.game_name.take()),
         bnr_developer: banner.as_mut().and_then(|b| b.developer.take()),
