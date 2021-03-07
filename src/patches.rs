@@ -23,7 +23,7 @@ use crate::{
     memmap,
     mlvl_wrapper,
     pickup_meta::{self, PickupType},
-    door_meta::{DoorType, DoorLocation, Weights, World},
+    door_meta::{DoorType, BlastShieldType, DoorLocation, Weights, World},
     reader_writer,
     patcher::{PatcherState, PrimePatcher},
     structs,
@@ -610,9 +610,25 @@ fn collect_door_resources<'r>(gc_disc: &structs::GcDisc<'r>)
     -> HashMap<(u32, FourCC), structs::Resource<'r>>
 {   
     // Get list of all dependencies needed by custom doors //
-    let mut looking_for: HashSet<_> = DoorType::iter()
-        .flat_map(|pt| pt.dependencies().into_iter())
-        .collect();
+    
+    let mut looking_for = HashSet::<_>::new();
+
+    {
+        let looking_for_door: HashSet<_> = DoorType::iter()
+            .flat_map(|pt| pt.dependencies().into_iter())
+            .collect();
+
+        let looking_for_blast_shield: HashSet<_> = BlastShieldType::iter()
+            .flat_map(|pt| pt.dependencies().into_iter())
+            .collect();
+        
+        for (key, value) in looking_for_door.iter() {
+            looking_for.insert((*key, *value));
+        } 
+        for (key, value) in looking_for_blast_shield.iter() {
+            looking_for.insert((*key, *value));
+        }
+    }
     
     // Dependencies read from paks and custom assets will go here //
     let mut found = HashMap::with_capacity(looking_for.len());
@@ -1802,15 +1818,207 @@ fn calculate_door_type(pak_name: &str, mut rng: &mut StdRng, weights: &Weights) 
     }
 }
 
+/*
+{
+    // resolve dependencies
+    let location_idx = 0;
+
+    let deps_iter = pickup_type.dependencies().iter()
+        .map(|&(file_id, fourcc)| structs::Dependency {
+                asset_id: file_id,
+                asset_type: fourcc,
+            });
+
+    let name = CString::new(format!(
+            "Randomizer - Pickup {} ({:?})", location_idx, pickup_type.pickup_data().name)).unwrap();
+    area.add_layer(Cow::Owned(name));
+
+    let new_layer_idx = area.layer_flags.layer_count as usize - 1;
+
+    // Add our custom STRG
+    let hudmemo_dep = structs::Dependency {
+        asset_id: if config.skip_hudmenus && !ALWAYS_MODAL_HUDMENUS.contains(&location_idx) {
+                pickup_type.skip_hudmemos_strg()
+            } else {
+                pickup_type.hudmemo_strg()
+            },
+        asset_type: b"STRG".into(),
+    };
+    let deps_iter = deps_iter.chain(iter::once(hudmemo_dep));
+    area.add_dependencies(pickup_resources, new_layer_idx, deps_iter);
+
+    // create pickup
+    let mut pickup = structs::SclyObject {
+        instance_id: ps.fresh_instance_id_range.next().unwrap(),
+        connections: vec![].into(),
+        property_data: structs::SclyProperty::Pickup(
+            structs::Pickup {
+                position: [
+                    pickup_position.x,
+                    pickup_position.y,
+                    pickup_position.z,
+                ].into(),
+                hitbox: [1.0, 1.0, 2.0].into(), // missile hitbox
+                scan_offset: [
+                    0.0,
+                    0.0,
+                    1.0,
+                ].into(),
+                
+                fade_in_timer: 0.0,
+                spawn_delay: 0.0,
+                active: 1,
+        
+                ..(pickup_type.pickup_data().into_owned())
+            }
+        )
+    };
+
+    // create hudmemo
+    let hudmemo = structs::SclyObject {
+        instance_id: ps.fresh_instance_id_range.next().unwrap(),
+        connections: vec![].into(),
+        property_data: structs::SclyProperty::HudMemo(
+            structs::HudMemo {
+                name: b"myhudmemo\0".as_cstr(),
+                first_message_timer: 5.,
+                unknown: 1,
+                memo_type: 0, // not a text box
+                strg: pickup_type.skip_hudmemos_strg(),
+                active: 1,
+            }
+        )
+    };
+
+    // Display hudmemo when item is picked up
+    pickup.connections.as_mut_vec().push(
+        structs::Connection {
+            state: structs::ConnectionState::ARRIVED,
+            message: structs::ConnectionMsg::SET_TO_ZERO,
+            target_object_id: hudmemo.instance_id,
+        }
+    );
+
+    // Create Special Function to disabled layer once item is obtained
+    // This is needed because otherwise the item would re-appear every
+    // time the room is loaded
+    let special_function = structs::SclyObject {
+        instance_id: ps.fresh_instance_id_range.next().unwrap(),
+        connections: vec![].into(),
+        property_data: structs::SclyProperty::SpecialFunction(
+            structs::SpecialFunction {
+                name: b"myspecialfun\0".as_cstr(),
+                position: [0., 0., 0.].into(),
+                rotation: [0., 0., 0.].into(),
+                type_: 16, // layer change
+                unknown0: b"\0".as_cstr(),
+                unknown1: 0.,
+                unknown2: 0.,
+                unknown3: 0.,
+                layer_change_room_id: area.mlvl_area.internal_id,
+                layer_change_layer_id: new_layer_idx as u32,
+                item_id: 0,
+                unknown4: 1, // active
+                unknown5: 0.,
+                unknown6: 0xFFFFFFFF,
+                unknown7: 0xFFFFFFFF,
+                unknown8: 0xFFFFFFFF,
+            }
+        ),
+    };
+
+    // Activate the layer change when item is picked up
+    pickup.connections.as_mut_vec().push(
+        structs::Connection {
+            state: structs::ConnectionState::ARRIVED,
+            message: structs::ConnectionMsg::DECREMENT,
+            target_object_id: special_function.instance_id,
+        }
+    );
+
+    // create attainment audio
+    let attainment_audio = structs::SclyObject {
+        instance_id: ps.fresh_instance_id_range.next().unwrap(),
+        connections: vec![].into(),
+        property_data: structs::SclyProperty::Sound(
+            structs::Sound { // copied from main plaza half-pipe
+                name: b"mysound\0".as_cstr(),
+                position: [
+                    pickup_position.x,
+                    pickup_position.y,
+                    pickup_position.z
+                ].into(),
+                rotation: [0.0,0.0,0.0].into(),
+                sound_id: 117,
+                active: 1,
+                max_dist: 50.0,
+                dist_comp: 0.2,
+                start_delay: 0.0,
+                min_volume: 20,
+                volume: 127,
+                priority: 127,
+                pan: 64,
+                loops: 0,
+                non_emitter: 1,
+                auto_start: 0,
+                occlusion_test: 0,
+                acoustics: 0,
+                world_sfx: 0,
+                allow_duplicates: 0,
+                pitch: 0,
+            }
+        )
+    };
+
+    // Play the sound when item is picked up
+    pickup.connections.as_mut_vec().push(
+        structs::Connection {
+            state: structs::ConnectionState::ARRIVED,
+            message: structs::ConnectionMsg::PLAY,
+            target_object_id: attainment_audio.instance_id,
+        }
+    );
+
+    // update MREA layer with new Objects
+    let scly = area.mrea().scly_section_mut();
+    let layers = scly.layers.as_mut_vec();
+
+    // If this is an artifact, create and push change function
+    let pickup_kind = pickup_type.pickup_data().kind;
+    if pickup_kind >= 29 && pickup_kind <= 40 {
+        let instance_id = ps.fresh_instance_id_range.next().unwrap();
+        let function = artifact_layer_change_template(instance_id, pickup_kind);
+        layers[new_layer_idx].objects.as_mut_vec().push(function);
+        pickup.connections.as_mut_vec().push(
+            structs::Connection {
+                state: structs::ConnectionState::ARRIVED,
+                message: structs::ConnectionMsg::INCREMENT,
+                target_object_id: instance_id,
+            }
+        );
+    }
+
+    layers[0].objects.as_mut_vec().push(special_function);
+    layers[new_layer_idx].objects.as_mut_vec().push(hudmemo);
+    layers[new_layer_idx].objects.as_mut_vec().push(attainment_audio);
+    layers[new_layer_idx].objects.as_mut_vec().push(pickup);
+
+    Ok(())
+}
+*/
+
 fn patch_door<'r>(
+    ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     door_loc: DoorLocation,
     door_type: DoorType,
+    blast_shield_type: BlastShieldType,
     door_resources:&HashMap<(u32, FourCC), structs::Resource<'r>>,
     lockpick: bool,
 ) -> Result<(), String> {
 
-    let deps = door_type.dependencies();
+    let mut deps = door_type.dependencies();
+    deps.extend_from_slice(&blast_shield_type.dependencies());
     let deps_iter = deps.iter()
         .map(|&(file_id, fourcc)| structs::Dependency {
                 asset_id: file_id,
@@ -1818,11 +2026,21 @@ fn patch_door<'r>(
         });
 
     area.add_dependencies(&door_resources,0,deps_iter);
+    
+    let new_layer_idx = {
+        if blast_shield_type != BlastShieldType::None {
+            // Create new layer to store the new blast shield //
+            area.add_layer(b"Custom Shield Layer\0".as_cstr());
+            area.layer_flags.layer_count as usize - 1
+        } else {
+            0 // unused
+        }
+    };
 
     let scly = area.mrea().scly_section_mut();
-    let layer = &mut scly.layers.as_mut_vec()[0];
+    let layers = &mut scly.layers.as_mut_vec();
 
-    let door_force = layer.objects.iter_mut()
+    let door_force = layers[0].objects.iter_mut()
         .find(|obj| obj.instance_id == door_loc.door_force_location.instance_id)
         .and_then(|obj| obj.property_data.as_damageable_trigger_mut())
         .unwrap();
@@ -1834,11 +2052,102 @@ fn patch_door<'r>(
     }
 
     if door_loc.door_shield_location.is_some() {
-        let door_shield = layer.objects.iter_mut()
+        let door_shield = layers[0].objects.iter_mut()
             .find(|obj| obj.instance_id == door_loc.door_shield_location.unwrap().instance_id)
             .and_then(|obj| obj.property_data.as_actor_mut())
             .unwrap();
         door_shield.cmdl = door_type.shield_cmdl();
+
+        if blast_shield_type != BlastShieldType::None {
+            // Create new blast shield actor //
+            let blast_shield = structs::SclyObject { // TODO: BlastShieldType::from_door_shield()
+                instance_id: ps.fresh_instance_id_range.next().unwrap(),
+                connections: vec![].into(),
+                property_data: structs::SclyProperty::Actor(
+                    structs::Actor {
+                        name: b"Custom Blast Shield\0".as_cstr(),
+                        position: [door_shield.position[0], door_shield.position[1], door_shield.position[2]].into(), // TODO: stand out from the door a little bit
+                        rotation: [door_shield.rotation[0], door_shield.rotation[1], door_shield.rotation[2]].into(),
+                        scale: [1.0, 1.5, 1.5].into(), // TODO: re-order depending on facing direction
+                        hitbox: [5.0, 0.875, 4.0].into(), // TODO: re-order depending on facing direction
+                        scan_offset: [0.0, 0.438, 2.0].into(), // TODO: re-order depending on facing direction
+                        unknown1: 1.0, // mass  
+                        unknown2: 0.0, // momentum
+                        health_info: structs::structs::HealthInfo {
+                            health: 2.0,
+                            knockback_resistance: 1.0,
+                        },
+                        damage_vulnerability: blast_shield_type.vulnerability(),
+                        cmdl: blast_shield_type.cmdl(),
+                        ancs: structs::structs::AncsProp{
+                            file_id: 0xFFFFFFFF,
+                            node_index: 0,
+                            unknown: 0xFFFFFFFF,
+                        },
+                        actor_params: structs::structs::ActorParameters {
+                            light_params: structs::structs::LightParameters {
+                                unknown0: 1,
+                                unknown1: 1.0,
+                                shadow_tessellation: 0,
+                                unknown2: 1.0,
+                                unknown3: 20.0,
+                                color: [1.0, 1.0, 1.0, 1.0].into(), // RGBA
+                                unknown4: 1,
+                                world_lighting: 1,
+                                light_recalculation: 1,
+                                unknown5: [0.0, 0.0, 0.0].into(),
+                                unknown6: 4,
+                                unknown7: 4,
+                                unknown8: 0,
+                                light_layer_id: 0,
+                            },
+                            scan_params: structs::structs::ScannableParameters {
+                                scan: 0xFFFFFFFF,
+                            },
+                            xray_cmdl: 0xFFFFFFFF,
+                            xray_cskr: 0xFFFFFFFF,
+                            thermal_cmdl: 0xFFFFFFFF,
+                            thermal_cskr: 0xFFFFFFFF,
+                            unknown0: 1,
+                            unknown1: 1.0,
+                            unknown2: 1.0,
+                            visor_params: structs::structs::VisorParameters {
+                                unknown0: 0,
+                                target_passthrough: 0,
+                                unknown2: 15, // Visor Flags : Combat|Scan|Thermal|XRay
+                            },
+                            enable_thermal_heat: 0,
+                            unknown3: 0,
+                            unknown4: 0,
+                            unknown5: 1.0,
+                        },
+                        looping: 1,
+                        snow: 1, // immovable
+                        solid: 1,
+                        camera_passthrough: 0,
+                        active: 1,
+                        unknown8: 0,
+                        unknown9: 1.0,
+                        unknown10: 0,
+                        unknown11: 0,
+                        unknown12: 0,
+                        unknown13: 0,
+                    }
+                ),
+            };
+            
+            // Create layer change special function //
+
+            
+            // Blast shield disables layer when dead //
+            // TODO:
+
+            // sounds //
+            // TODO:
+
+            // add new script objects to layer //
+            layers[new_layer_idx].objects.as_mut_vec().push(blast_shield);
+        }
     }
 
     Ok(())
@@ -1870,7 +2179,7 @@ fn fix_artifact_of_truth_requirements(
 ) -> Result<(), String>
 {
     let truth_req_layer_id = area.layer_flags.layer_count;
-    assert_eq!(truth_req_layer_id, ARTIFACT_OF_TRUTH_REQ_LAYER);
+    // assert_eq!(truth_req_layer_id, ARTIFACT_OF_TRUTH_REQ_LAYER);
 
     // Create a new layer that will be toggled on when the Artifact of Truth is collected
     area.add_layer(b"Randomizer - Got Artifact 1\0".as_cstr());
@@ -2362,7 +2671,7 @@ fn make_main_plaza_locked_door_two_ways<'r>(
                     position: [151.951187, 86.412575, 24.403177].into(),
                     rotation: [0.0, 0.0, 0.0].into(),
                     scale: [1.0, 1.0, 1.0].into(),
-                    unknown0: [0.0, 0.0, 0.0].into(),
+                    hitbox: [0.0, 0.0, 0.0].into(),
                     scan_offset: [0.0, 0.0, 0.0].into(),
                     unknown1: 1.0,
                     unknown2: 0.0,
@@ -4462,6 +4771,11 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         );  
     }
 
+    if config.remove_missile_locks
+    {
+        remove_missile_locks(&mut patcher, &config.missile_lock_override);
+    }
+
     // Make superheated rooms normal temperature
     for room_name in config.deheated_rooms.iter() {
         let room = spawn_room_from_string(room_name.to_string());
@@ -4627,7 +4941,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                 {
                     patcher.add_scly_patch(
                         (name.as_bytes(), room_info.room_id),
-                        move |_ps, area| patch_door(area,door_location,door_type,door_resources,config.powerbomb_lockpick)
+                        move |_ps, area| patch_door(_ps, area,door_location,door_type,BlastShieldType::Missile,door_resources,config.powerbomb_lockpick)
                     );
 
                     if config.patch_map && room_info.mapa_id != 0 {
@@ -4766,11 +5080,6 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
 
         if config.patch_power_conduits {
             patch_power_conduits(&mut patcher);
-        }
-
-        if config.remove_missile_locks
-        {
-            remove_missile_locks(&mut patcher, &config.missile_lock_override);
         }
 
         if config.remove_frigidite_lock {

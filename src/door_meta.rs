@@ -57,6 +57,12 @@ pub enum DoorType {
     VerticalAi,
 }
 
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub enum BlastShieldType {
+    None,
+    Missile,
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Weights {
     pub tallon_overworld: [u8;4],
@@ -983,6 +989,79 @@ impl DoorType {
             0xBE4CD99D => Some(DoorType::White),
             0xFC095F6C => Some(DoorType::Red),
             _ => None,
+        }
+    }
+}
+
+
+impl BlastShieldType {
+    pub fn from_string(string: String) -> Option<Self> {
+        match string.to_lowercase().as_str() {
+            "missile"        => Some(BlastShieldType::Missile),
+            _                => None                          ,
+        }
+    }
+
+    pub const fn cmdl(&self) -> u32 {
+        match self {
+            _ => 0xEFDFFB8C, // Vanilla missile lock model
+        }
+    }
+
+    pub const fn sheet_metal_txtr(&self) -> u32 {
+        match self {
+            _ => 0x6E09EA6B, // Vanilla missile lock txtr
+        }
+    }
+
+    pub const fn glowing_rectangles_txtr(&self) -> u32 {
+        match self {
+            _ => 0x5B97098E, // Vanilla missile lock txtr
+        }
+    }
+
+    pub const fn misc_rectangles_txtr(&self) -> u32 {
+        match self {
+            _ => 0x5C7B215C, // Vanilla missile lock txtr
+        }
+    }
+
+    pub const fn animation_txtr(&self) -> u32 {
+        match self {
+            _ => 0xFA0C2AE8, // Vanilla missile lock txtr
+        }
+    }
+    
+    pub const fn misc_metal_txtr(&self) -> u32 {
+        match self {
+            _ => 0xFDE0023A, // Vanilla missile lock txtr
+        }
+    }
+
+    pub fn dependencies(&self) -> Vec<(u32, FourCC)> { // dependencies to add to the area
+        
+        let mut data: Vec<(u32, FourCC)> = Vec::new();
+        data.push((self.cmdl(),                     FourCC::from_bytes(b"CMDL")));
+        data.push((self.sheet_metal_txtr(),         FourCC::from_bytes(b"TXTR")));
+        data.push((self.glowing_rectangles_txtr(),  FourCC::from_bytes(b"TXTR")));
+        data.push((self.misc_rectangles_txtr(),     FourCC::from_bytes(b"TXTR")));
+        data.push((self.animation_txtr(),           FourCC::from_bytes(b"TXTR")));
+        data.push((self.misc_metal_txtr(),          FourCC::from_bytes(b"TXTR")));
+        data.retain(|i| i.0 != 0xffffffff && i.0 != 0);
+        data
+    }
+
+    pub fn iter() -> impl Iterator<Item = BlastShieldType> {
+        [
+            // BlastShieldType::None,
+            BlastShieldType::Missile,
+        ].iter().map(|i| *i)
+    }
+
+    pub fn vulnerability(&self) -> DamageVulnerability {
+        match self {
+            BlastShieldType::Missile => DoorType::Missile.vulnerability(),
+            _ => DoorType::Disabled.vulnerability(),
         }
     }
 }
