@@ -2059,27 +2059,72 @@ fn patch_door<'r>(
         door_shield.cmdl = door_type.shield_cmdl();
 
         if blast_shield_type != BlastShieldType::None {
+            // Calculate placement //
+            let position: GenericArray<f32, U3> = [door_shield.position[0], door_shield.position[1], door_shield.position[2] - 1.8017].into();
+            let rotation: GenericArray<f32, U3> = [door_shield.rotation[0], door_shield.rotation[1], door_shield.rotation[2]].into();
+            let scale: GenericArray<f32, U3>;
+            let hitbox: GenericArray<f32, U3>;
+            let scan_offset: GenericArray<f32, U3>;
+
+            if rotation[2] >= 45.0 && rotation[2] < 135.0 {
+                // Leads North
+                scale       = [1.0, 1.5, 1.5].into();
+                hitbox      = [5.0, 0.875, 4.0].into();
+                scan_offset = [0.0, 0.438, 2.0].into();
+                
+            } else if (rotation[2] >= 135.0 && rotation[2] < 225.0) || (rotation[2] < -135.0 && rotation[2] > -225.0) {
+                // Leads East
+                scale       = [1.5, 1.0, 1.5].into();
+                hitbox      = [0.875, 5.0, 4.0].into();
+                scan_offset = [0.438, 0.0, 2.0].into();
+                
+            } else if rotation[2] >= -135.0 && rotation[2] < -45.0 {
+                // Leads South
+                scale       = [1.0, 1.5, 1.5].into();
+                hitbox      = [5.0, 0.875, 4.0].into();
+                scan_offset = [0.0, 0.438, 2.0].into();
+
+            } else if rotation[2] >= -45.0 && rotation[2] < 45.0 {
+                // Leads West
+                scale       = [1.5, 1.0, 1.5].into();
+                hitbox      = [0.875, 5.0, 4.0].into();
+                scan_offset = [0.438, 0.0, 2.0].into();
+
+            } else {
+                assert!(false);
+                scale       = [0.0, 0.0, 0.0].into();
+                hitbox      = [0.0, 0.0, 0.0].into();
+                scan_offset = [0.0, 0.0, 0.0].into();
+            }
+
             // Create new blast shield actor //
+            let blast_shield_instance_id = ps.fresh_instance_id_range.next().unwrap();
             let blast_shield = structs::SclyObject { // TODO: BlastShieldType::from_door_shield()
-                instance_id: ps.fresh_instance_id_range.next().unwrap(),
-                connections: vec![].into(),
+                instance_id: blast_shield_instance_id,
+                connections: vec![
+                    structs::Connection {
+                        state: structs::ConnectionState::DEAD,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: blast_shield_instance_id,
+                    },
+                ].into(),
                 property_data: structs::SclyProperty::Actor(
                     structs::Actor {
                         name: b"Custom Blast Shield\0".as_cstr(),
-                        position: [door_shield.position[0], door_shield.position[1], door_shield.position[2]].into(), // TODO: stand out from the door a little bit
-                        rotation: [door_shield.rotation[0], door_shield.rotation[1], door_shield.rotation[2]].into(),
-                        scale: [1.0, 1.5, 1.5].into(), // TODO: re-order depending on facing direction
-                        hitbox: [5.0, 0.875, 4.0].into(), // TODO: re-order depending on facing direction
-                        scan_offset: [0.0, 0.438, 2.0].into(), // TODO: re-order depending on facing direction
+                        position,
+                        rotation,
+                        scale,
+                        hitbox,
+                        scan_offset,
                         unknown1: 1.0, // mass  
                         unknown2: 0.0, // momentum
                         health_info: structs::structs::HealthInfo {
-                            health: 2.0,
+                            health: 1.0,
                             knockback_resistance: 1.0,
                         },
                         damage_vulnerability: blast_shield_type.vulnerability(),
                         cmdl: blast_shield_type.cmdl(),
-                        ancs: structs::structs::AncsProp{
+                        ancs: structs::structs::AncsProp {
                             file_id: 0xFFFFFFFF,
                             node_index: 0,
                             unknown: 0xFFFFFFFF,
@@ -2137,12 +2182,27 @@ fn patch_door<'r>(
             };
             
             // Create layer change special function //
-
+            // TODO:
             
             // Blast shield disables layer when dead //
             // TODO:
 
-            // sounds //
+            // Create Gibbs //
+            // TODO:
+
+            // Blast shield triggers gibbs when dead //
+            // TODO:
+
+            // Create explosion sfx //
+            // TODO:
+
+            // Blast shield triggers explosion sfx when dead //
+            // TODO:
+
+            // Create "You did it" Jingle //
+            // TODO: 
+
+            // Blast shield triggers jingle when dead //
             // TODO:
 
             // add new script objects to layer //
@@ -2996,6 +3056,7 @@ fn patch_thermal_conduits_damage_vulnerabilities(_ps: &mut PatcherState, area: &
         if thermal_conduit_damageable_trigger_obj_ids.contains(&obj.instance_id) {
             let dt = obj.property_data.as_damageable_trigger_mut().unwrap();
             dt.damage_vulnerability = DoorType::Blue.vulnerability();
+            dt.health_info.health = 1.0; // single power beam shot
         }
     }
 
@@ -4941,7 +5002,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                 {
                     patcher.add_scly_patch(
                         (name.as_bytes(), room_info.room_id),
-                        move |_ps, area| patch_door(_ps, area,door_location,door_type,BlastShieldType::Missile,door_resources,config.powerbomb_lockpick)
+                        move |_ps, area| patch_door(_ps, area,door_location,door_type, BlastShieldType::Missile, door_resources,config.powerbomb_lockpick)
                     );
 
                     if config.patch_map && room_info.mapa_id != 0 {
