@@ -1504,7 +1504,7 @@ fn update_pickup(
 
         ..(pickup_type.pickup_data().into_owned())
     };
-    
+
     if pickup_count != 0xFFFFFFFF
     {
         pickup.max_increase  = pickup_count;
@@ -3004,23 +3004,31 @@ fn make_remove_mine_security_station_locks_patch<'a>(patcher: &mut PrimePatcher<
 }
 
 fn is_forcefield<'r>(obj: &structs::SclyObject<'r>) -> bool {
+    if obj.instance_id == 271843679 { // hall of the elders forcefield (PWE shows the wrong instance ID for some reason)
+        return true;
+    }
+
     let actor = obj.property_data.as_actor();
     
     if actor.is_none() {
-        false // non-actors are never forecefield
+        false
     }
     else {
         let _actor = actor.unwrap();
-        _actor.cmdl == 0xD793FEC8 || _actor.cmdl == 0x3FCDAF2C // forecefields are defined by it's model
+        _actor.cmdl == 0xD793FEC8 || _actor.cmdl == 0x3FCDAF2C // orange forcefields
     }
 }
 
-fn remove_forcefields(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea, layer: usize)
+fn remove_forcefields(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
     -> Result<(), String>
 {
     let scly = area.mrea().scly_section_mut();
-    let layer = &mut scly.layers.as_mut_vec()[layer];
-    layer.objects.as_mut_vec().retain(|obj| !is_forcefield(obj));  // keep everything that isn't a forcefield
+    let layer_count = scly.layers.len();
+    for i in 0..layer_count {
+        let layer = &mut scly.layers.as_mut_vec()[i];
+        layer.objects.as_mut_vec().retain(|obj| !is_forcefield(obj));
+    }
+    
     Ok(())
 }
 
@@ -3029,17 +3037,17 @@ fn make_remove_forcefields_patch<'a>(patcher: &mut PrimePatcher<'_, 'a>)
 {
     patcher.add_scly_patch(
         resource_info!("11_mines.MREA").into(), // Metroid Quarantine B
-        move |_ps, area| remove_forcefields(_ps, area, 2),
+        move |_ps, area| remove_forcefields(_ps, area),
     );
 
     patcher.add_scly_patch(
         resource_info!("01_mines_mainplaza.MREA").into(), // Main Quarry
-        move |_ps, area| remove_forcefields(_ps, area, 4),
+        move |_ps, area| remove_forcefields(_ps, area),
     );
 
     patcher.add_scly_patch(
         resource_info!("05_mines_forcefields.MREA").into(), // Elite Control
-        move |_ps, area| remove_forcefields(_ps, area, 1),
+        move |_ps, area| remove_forcefields(_ps, area),
     );
 }
 
@@ -4071,6 +4079,7 @@ pub struct ParsedConfig
     pub remove_mine_security_station_locks: bool,
     pub lower_mines_backwards: bool,
     pub biohazard_containment_alt_spawn: bool,
+    pub remove_hall_of_the_elders_forcefield: bool,
 
     pub iso_format: IsoFormat,
     pub skip_frigate: bool,
@@ -4453,22 +4462,23 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         );  
     }
 
-    // Patch superheated rooms
-    for room_name in config.superheated_rooms.iter() {
-        let room = spawn_room_from_string(room_name.to_string());
-
-        patcher.add_scly_patch(
-            (room.pak_name.as_bytes(), room.mrea),
-            move |_ps, area| patch_superheated_room(_ps, area),
-        );
-    }
-
+    // Make superheated rooms normal temperature
     for room_name in config.deheated_rooms.iter() {
         let room = spawn_room_from_string(room_name.to_string());
 
         patcher.add_scly_patch(
             (room.pak_name.as_bytes(), room.mrea),
             move |_ps, area| patch_deheat_room(_ps, area),
+        );
+    }
+
+    // Make rooms superheated
+    for room_name in config.superheated_rooms.iter() {
+        let room = spawn_room_from_string(room_name.to_string());
+
+        patcher.add_scly_patch(
+            (room.pak_name.as_bytes(), room.mrea),
+            move |_ps, area| patch_superheated_room(_ps, area),
         );
     }
 
@@ -4773,6 +4783,13 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
 
         if config.lower_mines_backwards {
             make_remove_forcefields_patch(&mut patcher);
+        }
+
+        if config.remove_hall_of_the_elders_forcefield {
+            patcher.add_scly_patch(
+                resource_info!("17_chozo_bowling.MREA").into(), // Hall of the elders
+                move |_ps, area| remove_forcefields(_ps, area),
+            );
         }
 
         make_elevators_patch(&mut patcher, &elevator_layout, &config.elevator_layout_override, config.auto_enabled_elevators, config.tiny_elvetator_samus);

@@ -158,6 +158,9 @@ struct PatchConfig {
     biohazard_containment_alt_spawn: bool,
 
     #[serde(default = "default_as_false")]
+    remove_hall_of_the_elders_forcefield: bool,
+
+    #[serde(default = "default_as_false")]
     quickplay: bool,
 }
 
@@ -433,6 +436,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         remove_mine_security_station_locks: config.patch_settings.remove_mine_security_station_locks,
         lower_mines_backwards: config.patch_settings.lower_mines_backwards,
         biohazard_containment_alt_spawn: config.patch_settings.biohazard_containment_alt_spawn,
+        remove_hall_of_the_elders_forcefield: config.patch_settings.remove_hall_of_the_elders_forcefield,
         superheated_rooms: config.superheated_rooms,
         deheated_rooms: config.deheated_rooms,
         drain_liquid_rooms: config.drain_liquid_rooms,
