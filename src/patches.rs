@@ -1284,7 +1284,7 @@ fn patch_add_item<'r>(
         }
     );
 
-    // Create Special Function to disabled layer once item is obtained
+    // Create Special Function to disable layer once item is obtained
     // This is needed because otherwise the item would re-appear every
     // time the room is loaded
     let special_function = structs::SclyObject {
@@ -1820,164 +1820,6 @@ fn calculate_door_type(pak_name: &str, mut rng: &mut StdRng, weights: &Weights) 
 
 /*
 {
-    // resolve dependencies
-    let location_idx = 0;
-
-    let deps_iter = pickup_type.dependencies().iter()
-        .map(|&(file_id, fourcc)| structs::Dependency {
-                asset_id: file_id,
-                asset_type: fourcc,
-            });
-
-    let name = CString::new(format!(
-            "Randomizer - Pickup {} ({:?})", location_idx, pickup_type.pickup_data().name)).unwrap();
-    area.add_layer(Cow::Owned(name));
-
-    let new_layer_idx = area.layer_flags.layer_count as usize - 1;
-
-    // Add our custom STRG
-    let hudmemo_dep = structs::Dependency {
-        asset_id: if config.skip_hudmenus && !ALWAYS_MODAL_HUDMENUS.contains(&location_idx) {
-                pickup_type.skip_hudmemos_strg()
-            } else {
-                pickup_type.hudmemo_strg()
-            },
-        asset_type: b"STRG".into(),
-    };
-    let deps_iter = deps_iter.chain(iter::once(hudmemo_dep));
-    area.add_dependencies(pickup_resources, new_layer_idx, deps_iter);
-
-    // create pickup
-    let mut pickup = structs::SclyObject {
-        instance_id: ps.fresh_instance_id_range.next().unwrap(),
-        connections: vec![].into(),
-        property_data: structs::SclyProperty::Pickup(
-            structs::Pickup {
-                position: [
-                    pickup_position.x,
-                    pickup_position.y,
-                    pickup_position.z,
-                ].into(),
-                hitbox: [1.0, 1.0, 2.0].into(), // missile hitbox
-                scan_offset: [
-                    0.0,
-                    0.0,
-                    1.0,
-                ].into(),
-                
-                fade_in_timer: 0.0,
-                spawn_delay: 0.0,
-                active: 1,
-        
-                ..(pickup_type.pickup_data().into_owned())
-            }
-        )
-    };
-
-    // create hudmemo
-    let hudmemo = structs::SclyObject {
-        instance_id: ps.fresh_instance_id_range.next().unwrap(),
-        connections: vec![].into(),
-        property_data: structs::SclyProperty::HudMemo(
-            structs::HudMemo {
-                name: b"myhudmemo\0".as_cstr(),
-                first_message_timer: 5.,
-                unknown: 1,
-                memo_type: 0, // not a text box
-                strg: pickup_type.skip_hudmemos_strg(),
-                active: 1,
-            }
-        )
-    };
-
-    // Display hudmemo when item is picked up
-    pickup.connections.as_mut_vec().push(
-        structs::Connection {
-            state: structs::ConnectionState::ARRIVED,
-            message: structs::ConnectionMsg::SET_TO_ZERO,
-            target_object_id: hudmemo.instance_id,
-        }
-    );
-
-    // Create Special Function to disabled layer once item is obtained
-    // This is needed because otherwise the item would re-appear every
-    // time the room is loaded
-    let special_function = structs::SclyObject {
-        instance_id: ps.fresh_instance_id_range.next().unwrap(),
-        connections: vec![].into(),
-        property_data: structs::SclyProperty::SpecialFunction(
-            structs::SpecialFunction {
-                name: b"myspecialfun\0".as_cstr(),
-                position: [0., 0., 0.].into(),
-                rotation: [0., 0., 0.].into(),
-                type_: 16, // layer change
-                unknown0: b"\0".as_cstr(),
-                unknown1: 0.,
-                unknown2: 0.,
-                unknown3: 0.,
-                layer_change_room_id: area.mlvl_area.internal_id,
-                layer_change_layer_id: new_layer_idx as u32,
-                item_id: 0,
-                unknown4: 1, // active
-                unknown5: 0.,
-                unknown6: 0xFFFFFFFF,
-                unknown7: 0xFFFFFFFF,
-                unknown8: 0xFFFFFFFF,
-            }
-        ),
-    };
-
-    // Activate the layer change when item is picked up
-    pickup.connections.as_mut_vec().push(
-        structs::Connection {
-            state: structs::ConnectionState::ARRIVED,
-            message: structs::ConnectionMsg::DECREMENT,
-            target_object_id: special_function.instance_id,
-        }
-    );
-
-    // create attainment audio
-    let attainment_audio = structs::SclyObject {
-        instance_id: ps.fresh_instance_id_range.next().unwrap(),
-        connections: vec![].into(),
-        property_data: structs::SclyProperty::Sound(
-            structs::Sound { // copied from main plaza half-pipe
-                name: b"mysound\0".as_cstr(),
-                position: [
-                    pickup_position.x,
-                    pickup_position.y,
-                    pickup_position.z
-                ].into(),
-                rotation: [0.0,0.0,0.0].into(),
-                sound_id: 117,
-                active: 1,
-                max_dist: 50.0,
-                dist_comp: 0.2,
-                start_delay: 0.0,
-                min_volume: 20,
-                volume: 127,
-                priority: 127,
-                pan: 64,
-                loops: 0,
-                non_emitter: 1,
-                auto_start: 0,
-                occlusion_test: 0,
-                acoustics: 0,
-                world_sfx: 0,
-                allow_duplicates: 0,
-                pitch: 0,
-            }
-        )
-    };
-
-    // Play the sound when item is picked up
-    pickup.connections.as_mut_vec().push(
-        structs::Connection {
-            state: structs::ConnectionState::ARRIVED,
-            message: structs::ConnectionMsg::PLAY,
-            target_object_id: attainment_audio.instance_id,
-        }
-    );
 
     // update MREA layer with new Objects
     let scly = area.mrea().scly_section_mut();
@@ -2192,7 +2034,7 @@ fn patch_door<'r>(
                 ),
             };
 
-            // Create Special Function to disabled layer once shield is destroyed
+            // Create Special Function to disable layer once shield is destroyed
             // This is needed because otherwise the shield would re-appear every
             // time the room is loaded
             let special_function = structs::SclyObject {
@@ -2230,25 +2072,86 @@ fn patch_door<'r>(
             );
 
             // Create Gibbs //
-            // TODO:
+            // TODO: It's possible, but there's so many goddam dependencies
 
             // Blast shield triggers gibbs when dead //
             // TODO:
 
             // Create explosion sfx //
-            // TODO:
+            let sound = structs::SclyObject {
+                instance_id: ps.fresh_instance_id_range.next().unwrap(),
+                connections: vec![].into(),
+                property_data: structs::SclyProperty::Sound(
+                    structs::Sound { // copied from main plaza half-pipe
+                        name: b"mysound\0".as_cstr(),
+                        position: [
+                            position[0],
+                            position[1],
+                            position[2],
+                        ].into(),
+                        rotation: [0.0,0.0,0.0].into(),
+                        sound_id: 3621,
+                        active: 1,
+                        max_dist: 100.0,
+                        dist_comp: 0.2,
+                        start_delay: 0.0,
+                        min_volume: 20,
+                        volume: 127,
+                        priority: 127,
+                        pan: 64,
+                        loops: 0,
+                        non_emitter: 0,
+                        auto_start: 0,
+                        occlusion_test: 0,
+                        acoustics: 1,
+                        world_sfx: 0,
+                        allow_duplicates: 0,
+                        pitch: 0,
+                    }
+                )
+            };
 
             // Blast shield triggers explosion sfx when dead //
-            // TODO:
+            blast_shield.connections.as_mut_vec().push(
+                structs::Connection {
+                    state: structs::ConnectionState::DEAD,
+                    message: structs::ConnectionMsg::PLAY,
+                    target_object_id: sound.instance_id,
+                }
+            );
 
             // Create "You did it" Jingle //
-            // TODO: 
+            let streamed_audio = structs::SclyObject {
+                instance_id: ps.fresh_instance_id_range.next().unwrap(),
+                connections: vec![].into(),
+                property_data: structs::SclyProperty::StreamedAudio(
+                    structs::StreamedAudio {
+                        name: b"mystreamedaudio\0".as_cstr(),
+                        active: 1,
+                        audio_file_name: b"/audio/evt_x_event_00.dsp\0".as_cstr(),
+                        no_stop_on_deactivate: 0,
+                        fade_in_time: 0.0,
+                        fade_out_time: 0.0,
+                        volume: 92,
+                        oneshot: 1,
+                        is_music: 1,
+                    }
+                ),
+            };
 
             // Blast shield triggers jingle when dead //
-            // TODO:
+            blast_shield.connections.as_mut_vec().push(
+                structs::Connection {
+                    state: structs::ConnectionState::DEAD,
+                    message: structs::ConnectionMsg::PLAY,
+                    target_object_id: streamed_audio.instance_id,
+                }
+            );
 
             // add new script objects to layer //
             layers[0].objects.as_mut_vec().push(special_function);
+            layers[new_layer_idx].objects.as_mut_vec().push(streamed_audio);
+            layers[new_layer_idx].objects.as_mut_vec().push(sound);
             layers[new_layer_idx].objects.as_mut_vec().push(blast_shield);
         }
     }
