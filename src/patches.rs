@@ -2037,6 +2037,7 @@ fn patch_door<'r>(
         }
     };
 
+    let area_internal_id = area.mlvl_area.internal_id;
     let scly = area.mrea().scly_section_mut();
     let layers = &mut scly.layers.as_mut_vec();
 
@@ -2109,7 +2110,7 @@ fn patch_door<'r>(
 
             // Create new blast shield actor //
             let blast_shield_instance_id = ps.fresh_instance_id_range.next().unwrap();
-            let blast_shield = structs::SclyObject { // TODO: BlastShieldType::from_door_shield()
+            let mut blast_shield = structs::SclyObject {
                 instance_id: blast_shield_instance_id,
                 connections: vec![
                     structs::Connection {
@@ -2190,12 +2191,43 @@ fn patch_door<'r>(
                     }
                 ),
             };
-            
-            // Create layer change special function //
-            // TODO:
-            
-            // Blast shield disables layer when dead //
-            // TODO:
+
+            // Create Special Function to disabled layer once shield is destroyed
+            // This is needed because otherwise the shield would re-appear every
+            // time the room is loaded
+            let special_function = structs::SclyObject {
+                instance_id: ps.fresh_instance_id_range.next().unwrap(),
+                connections: vec![].into(),
+                property_data: structs::SclyProperty::SpecialFunction(
+                    structs::SpecialFunction {
+                        name: b"myspecialfun\0".as_cstr(),
+                        position: [0., 0., 0.].into(),
+                        rotation: [0., 0., 0.].into(),
+                        type_: 16, // layer change
+                        unknown0: b"\0".as_cstr(),
+                        unknown1: 0.,
+                        unknown2: 0.,
+                        unknown3: 0.,
+                        layer_change_room_id: area_internal_id,
+                        layer_change_layer_id: new_layer_idx as u32,
+                        item_id: 0,
+                        unknown4: 1, // active
+                        unknown5: 0.,
+                        unknown6: 0xFFFFFFFF,
+                        unknown7: 0xFFFFFFFF,
+                        unknown8: 0xFFFFFFFF,
+                    }
+                ),
+            };
+
+            // Activate the layer change when blast shield is destroyed
+            blast_shield.connections.as_mut_vec().push(
+                structs::Connection {
+                    state: structs::ConnectionState::DEAD,
+                    message: structs::ConnectionMsg::DECREMENT,
+                    target_object_id: special_function.instance_id,
+                }
+            );
 
             // Create Gibbs //
             // TODO:
@@ -2216,6 +2248,7 @@ fn patch_door<'r>(
             // TODO:
 
             // add new script objects to layer //
+            layers[0].objects.as_mut_vec().push(special_function);
             layers[new_layer_idx].objects.as_mut_vec().push(blast_shield);
         }
     }
@@ -5010,19 +5043,11 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
 
                 if (door_specification != "default") || (is_vertical_door && config.patch_vertical_to_blue)
                 {
-                    let blast_shield_type = {
-                        if room_info.room_id == 0xB2701146 {
-                            BlastShieldType::Missile
-                        } else {
-                            BlastShieldType::None
-                        }
-                    };
-
                     patcher.add_scly_patch(
                         (name.as_bytes(), room_info.room_id),
-                        move |_ps, area| patch_door(_ps, area,door_location,door_type, blast_shield_type, door_resources,config.powerbomb_lockpick)
+                        move |_ps, area| patch_door(_ps, area,door_location,door_type, BlastShieldType::Missile, door_resources,config.powerbomb_lockpick)
                     );
-
+                    
                     if config.patch_map && room_info.mapa_id != 0 {
                         patcher.add_resource_patch(
                             (&[name.as_bytes()], room_info.mapa_id,b"MAPA".into()),
