@@ -61,6 +61,11 @@ pub enum DoorType {
 pub enum BlastShieldType {
     None,
     Missile,
+    PowerBomb,
+    Super,
+    Wavebuster,
+    Icespreader,
+    Flamethrower,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -997,8 +1002,19 @@ impl DoorType {
 impl BlastShieldType {
     pub fn from_string(string: String) -> Option<Self> {
         match string.to_lowercase().as_str() {
-            "missile"        => Some(BlastShieldType::Missile),
-            _                => None                          ,
+            "missile"          => Some(BlastShieldType::Missile      ),
+            "missiles"         => Some(BlastShieldType::Missile      ),
+            "missile_launcher" => Some(BlastShieldType::Missile      ),
+            "power_bomb"       => Some(BlastShieldType::PowerBomb    ),
+            "powerbomb"        => Some(BlastShieldType::PowerBomb    ),
+            "super"            => Some(BlastShieldType::Super        ),
+            "super_missile"    => Some(BlastShieldType::Super        ),
+            "wavebuster"       => Some(BlastShieldType::Wavebuster   ),
+            "wave_buster"      => Some(BlastShieldType::Wavebuster   ),
+            "icespreader"      => Some(BlastShieldType::Icespreader  ),
+            "ice_spreader"     => Some(BlastShieldType::Icespreader  ),
+            "flamethrower"     => Some(BlastShieldType::Flamethrower ),
+            _                  => None                                ,
         }
     }
 
@@ -1055,12 +1071,22 @@ impl BlastShieldType {
         [
             // BlastShieldType::None,
             BlastShieldType::Missile,
+            BlastShieldType::PowerBomb,
+            BlastShieldType::Super,
+            BlastShieldType::Wavebuster,
+            BlastShieldType::Icespreader,
+            BlastShieldType::Flamethrower,
         ].iter().map(|i| *i)
     }
 
-    pub fn vulnerability(&self) -> DamageVulnerability {
+    pub fn vulnerability(&self) -> DamageVulnerability { // just re-use the door vulnerabilites
         match self {
-            BlastShieldType::Missile => DoorType::Missile.vulnerability(),
+            BlastShieldType::Missile        => DoorType::Missile.vulnerability(),
+            BlastShieldType::PowerBomb      => DoorType::PowerBomb.vulnerability(),
+            BlastShieldType::Super          => DoorType::Super.vulnerability(),
+            BlastShieldType::Wavebuster     => DoorType::Wavebuster.vulnerability(),
+            BlastShieldType::Icespreader    => DoorType::Icespreader.vulnerability(),
+            BlastShieldType::Flamethrower   => DoorType::Flamethrower.vulnerability(),
             _ => DoorType::Disabled.vulnerability(),
         }
     }

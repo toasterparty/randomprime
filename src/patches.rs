@@ -2060,38 +2060,48 @@ fn patch_door<'r>(
 
         if blast_shield_type != BlastShieldType::None {
             // Calculate placement //
-            let position: GenericArray<f32, U3> = [door_shield.position[0], door_shield.position[1], door_shield.position[2] - 1.8017].into();
-            let rotation: GenericArray<f32, U3> = [door_shield.rotation[0], door_shield.rotation[1], door_shield.rotation[2]].into();
+            let position: GenericArray<f32, U3>;
+            let rotation: GenericArray<f32, U3>;
             let scale: GenericArray<f32, U3>;
             let hitbox: GenericArray<f32, U3>;
             let scan_offset: GenericArray<f32, U3>;
 
-            if rotation[2] >= 45.0 && rotation[2] < 135.0 {
+            if door_shield.rotation[2] >= 45.0 && door_shield.rotation[2] < 135.0 {
                 // Leads North
+                position    = [door_shield.position[0], door_shield.position[1] - 0.1, door_shield.position[2] - 1.8017].into();
+                rotation    = [door_shield.rotation[0], door_shield.rotation[1], door_shield.rotation[2]].into();
                 scale       = [1.0, 1.5, 1.5].into();
                 hitbox      = [5.0, 0.875, 4.0].into();
                 scan_offset = [0.0, 0.438, 2.0].into();
                 
-            } else if (rotation[2] >= 135.0 && rotation[2] < 225.0) || (rotation[2] < -135.0 && rotation[2] > -225.0) {
+            } else if (door_shield.rotation[2] >= 135.0 && door_shield.rotation[2] < 225.0) || (door_shield.rotation[2] < -135.0 && door_shield.rotation[2] > -225.0) {
                 // Leads East
-                scale       = [1.5, 1.0, 1.5].into();
+                position    = [door_shield.position[0] + 0.1, door_shield.position[1], door_shield.position[2] - 1.8017].into();
+                rotation    = [door_shield.rotation[0], door_shield.rotation[1], 0.0].into();
+                scale       = [1.0, 1.5, 1.5].into();
                 hitbox      = [0.875, 5.0, 4.0].into();
-                scan_offset = [0.438, 0.0, 2.0].into();
-                
-            } else if rotation[2] >= -135.0 && rotation[2] < -45.0 {
+                scan_offset = [-0.438, 0.0, 2.0].into();
+
+            } else if door_shield.rotation[2] >= -135.0 && door_shield.rotation[2] < -45.0 {
                 // Leads South
+                position    = [door_shield.position[0], door_shield.position[1] + 0.1, door_shield.position[2] - 1.8017].into();
+                rotation    = [door_shield.rotation[0], door_shield.rotation[1], door_shield.rotation[2]].into();
                 scale       = [1.0, 1.5, 1.5].into();
                 hitbox      = [5.0, 0.875, 4.0].into();
                 scan_offset = [0.0, 0.438, 2.0].into();
 
-            } else if rotation[2] >= -45.0 && rotation[2] < 45.0 {
+            } else if door_shield.rotation[2] >= -45.0 && door_shield.rotation[2] < 45.0 {
                 // Leads West
-                scale       = [1.5, 1.0, 1.5].into();
+                position    = [door_shield.position[0] - 0.1, door_shield.position[1], door_shield.position[2] - 1.8017].into();
+                rotation    = [door_shield.rotation[0], door_shield.rotation[1], -179.99].into();
+                scale       = [1.0, 1.5, 1.5].into();
                 hitbox      = [0.875, 5.0, 4.0].into();
                 scan_offset = [0.438, 0.0, 2.0].into();
 
             } else {
                 assert!(false);
+                position    = [0.0, 0.0, 0.0].into();
+                rotation    = [0.0, 0.0, 0.0].into();
                 scale       = [0.0, 0.0, 0.0].into();
                 hitbox      = [0.0, 0.0, 0.0].into();
                 scan_offset = [0.0, 0.0, 0.0].into();
@@ -5000,9 +5010,17 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
 
                 if (door_specification != "default") || (is_vertical_door && config.patch_vertical_to_blue)
                 {
+                    let blast_shield_type = {
+                        if room_info.room_id == 0xB2701146 {
+                            BlastShieldType::Missile
+                        } else {
+                            BlastShieldType::None
+                        }
+                    };
+
                     patcher.add_scly_patch(
                         (name.as_bytes(), room_info.room_id),
-                        move |_ps, area| patch_door(_ps, area,door_location,door_type, BlastShieldType::Missile, door_resources,config.powerbomb_lockpick)
+                        move |_ps, area| patch_door(_ps, area,door_location,door_type, blast_shield_type, door_resources,config.powerbomb_lockpick)
                     );
 
                     if config.patch_map && room_info.mapa_id != 0 {
