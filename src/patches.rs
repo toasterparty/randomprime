@@ -2071,12 +2071,12 @@ fn patch_door<'r>(
                 }
             );
 
-            // Create Gibbs //
+            // Create Gibbs and activate on DEAD //
             // TODO: It's possible, but there's so many goddam dependencies
 
-            // Blast shield triggers gibbs when dead //
-            // TODO:
-
+            // Create camera shake and activate on DEAD //
+            // TODO: It's possible, I'm just lazy
+            
             // Create explosion sfx //
             let sound = structs::SclyObject {
                 instance_id: ps.fresh_instance_id_range.next().unwrap(),
