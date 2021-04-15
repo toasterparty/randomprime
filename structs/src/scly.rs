@@ -234,6 +234,7 @@ build_scly_property!(
     SpawnPoint,        is_spawn_point,        as_spawn_point,        as_spawn_point_mut,
     SpecialFunction,   is_special_function,   as_special_function,   as_special_function_mut,
     StreamedAudio,     is_streamed_audio,     as_streamed_audio,     as_streamed_audio_mut,
+    Thardus,           is_thardus,            as_thardus,            as_thardus_mut,
     Timer,             is_timer,              as_timer,              as_timer_mut,
     Trigger,           is_trigger,            as_trigger,            as_trigger_mut,
     Water,             is_water,              as_water,              as_water_mut,
