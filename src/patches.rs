@@ -1848,29 +1848,23 @@ fn calculate_door_type(pak_name: &str, mut rng: &mut StdRng, weights: &Weights) 
     Ok(())
 }
 */
-
 fn patch_door<'r>(
     ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     door_loc: DoorLocation,
     door_type: DoorType,
-    blast_shield_type: BlastShieldType,
+    blast_shield_type: Option<BlastShieldType>,
     door_resources:&HashMap<(u32, FourCC), structs::Resource<'r>>,
     lockpick: bool,
 ) -> Result<(), String> {
 
     let mut deps = door_type.dependencies();
-    deps.extend_from_slice(&blast_shield_type.dependencies());
-    let deps_iter = deps.iter()
-        .map(|&(file_id, fourcc)| structs::Dependency {
-                asset_id: file_id,
-                asset_type: fourcc,
-        });
-
-    area.add_dependencies(&door_resources,0,deps_iter);
     
     let new_layer_idx = {
-        if blast_shield_type != BlastShieldType::None {
+        if blast_shield_type.is_some() {
+            // Update dependencies //
+            deps.extend_from_slice(&blast_shield_type.unwrap().dependencies());
+
             // Create new layer to store the new blast shield //
             area.add_layer(b"Custom Shield Layer\0".as_cstr());
             area.layer_flags.layer_count as usize - 1
@@ -1878,6 +1872,13 @@ fn patch_door<'r>(
             0 // unused
         }
     };
+
+    let deps_iter = deps.iter()
+    .map(|&(file_id, fourcc)| structs::Dependency {
+            asset_id: file_id,
+            asset_type: fourcc,
+    });
+    area.add_dependencies(&door_resources,0,deps_iter);
 
     let area_internal_id = area.mlvl_area.internal_id;
     let scly = area.mrea().scly_section_mut();
@@ -1901,7 +1902,9 @@ fn patch_door<'r>(
             .unwrap();
         door_shield.cmdl = door_type.shield_cmdl();
 
-        if blast_shield_type != BlastShieldType::None {
+        if blast_shield_type.is_some() {
+            let blast_shield_type = blast_shield_type.unwrap();
+
             // Calculate placement //
             let position: GenericArray<f32, U3>;
             let rotation: GenericArray<f32, U3>;
@@ -1961,7 +1964,7 @@ fn patch_door<'r>(
                         target_object_id: blast_shield_instance_id,
                     },
                 ].into(),
-                property_data: structs::SclyProperty::Actor(
+                property_data: structs::SclyProperty::Actor(Box::new(
                     structs::Actor {
                         name: b"Custom Blast Shield\0".as_cstr(),
                         position,
@@ -1971,19 +1974,19 @@ fn patch_door<'r>(
                         scan_offset,
                         unknown1: 1.0, // mass  
                         unknown2: 0.0, // momentum
-                        health_info: structs::structs::HealthInfo {
+                        health_info: structs::scly_structs::HealthInfo {
                             health: 1.0,
                             knockback_resistance: 1.0,
                         },
                         damage_vulnerability: blast_shield_type.vulnerability(),
                         cmdl: blast_shield_type.cmdl(),
-                        ancs: structs::structs::AncsProp {
-                            file_id: 0xFFFFFFFF,
+                        ancs: structs::scly_structs::AncsProp {
+                            file_id: ResId::invalid(),
                             node_index: 0,
-                            unknown: 0xFFFFFFFF,
+                            default_animation: 0xFFFFFFFF,
                         },
-                        actor_params: structs::structs::ActorParameters {
-                            light_params: structs::structs::LightParameters {
+                        actor_params: structs::scly_structs::ActorParameters {
+                            light_params: structs::scly_structs::LightParameters {
                                 unknown0: 1,
                                 unknown1: 1.0,
                                 shadow_tessellation: 0,
@@ -1999,20 +2002,20 @@ fn patch_door<'r>(
                                 unknown8: 0,
                                 light_layer_id: 0,
                             },
-                            scan_params: structs::structs::ScannableParameters {
-                                scan: 0xFFFFFFFF,
+                            scan_params: structs::scly_structs::ScannableParameters {
+                                scan: blast_shield_type.scan(),
                             },
-                            xray_cmdl: 0xFFFFFFFF,
-                            xray_cskr: 0xFFFFFFFF,
-                            thermal_cmdl: 0xFFFFFFFF,
-                            thermal_cskr: 0xFFFFFFFF,
+                            xray_cmdl: ResId::invalid(),
+                            xray_cskr: ResId::invalid(),
+                            thermal_cmdl: ResId::invalid(),
+                            thermal_cskr: ResId::invalid(),
                             unknown0: 1,
                             unknown1: 1.0,
                             unknown2: 1.0,
-                            visor_params: structs::structs::VisorParameters {
+                            visor_params: structs::scly_structs::VisorParameters {
                                 unknown0: 0,
                                 target_passthrough: 0,
-                                unknown2: 15, // Visor Flags : Combat|Scan|Thermal|XRay
+                                visor_mask: 15, // Visor Flags : Combat|Scan|Thermal|XRay
                             },
                             enable_thermal_heat: 0,
                             unknown3: 0,
@@ -2031,7 +2034,7 @@ fn patch_door<'r>(
                         unknown12: 0,
                         unknown13: 0,
                     }
-                ),
+                )),
             };
 
             // Create Special Function to disable layer once shield is destroyed
@@ -2040,7 +2043,7 @@ fn patch_door<'r>(
             let special_function = structs::SclyObject {
                 instance_id: ps.fresh_instance_id_range.next().unwrap(),
                 connections: vec![].into(),
-                property_data: structs::SclyProperty::SpecialFunction(
+                property_data: structs::SclyProperty::SpecialFunction(Box::new(
                     structs::SpecialFunction {
                         name: b"myspecialfun\0".as_cstr(),
                         position: [0., 0., 0.].into(),
@@ -2059,7 +2062,7 @@ fn patch_door<'r>(
                         unknown7: 0xFFFFFFFF,
                         unknown8: 0xFFFFFFFF,
                     }
-                ),
+                )),
             };
 
             // Activate the layer change when blast shield is destroyed
@@ -2081,7 +2084,7 @@ fn patch_door<'r>(
             let sound = structs::SclyObject {
                 instance_id: ps.fresh_instance_id_range.next().unwrap(),
                 connections: vec![].into(),
-                property_data: structs::SclyProperty::Sound(
+                property_data: structs::SclyProperty::Sound(Box::new(
                     structs::Sound { // copied from main plaza half-pipe
                         name: b"mysound\0".as_cstr(),
                         position: [
@@ -2108,7 +2111,7 @@ fn patch_door<'r>(
                         allow_duplicates: 0,
                         pitch: 0,
                     }
-                )
+                ))
             };
 
             // Blast shield triggers explosion sfx when dead //
@@ -2124,7 +2127,7 @@ fn patch_door<'r>(
             let streamed_audio = structs::SclyObject {
                 instance_id: ps.fresh_instance_id_range.next().unwrap(),
                 connections: vec![].into(),
-                property_data: structs::SclyProperty::StreamedAudio(
+                property_data: structs::SclyProperty::StreamedAudio(Box::new(
                     structs::StreamedAudio {
                         name: b"mystreamedaudio\0".as_cstr(),
                         active: 1,
@@ -2136,7 +2139,7 @@ fn patch_door<'r>(
                         oneshot: 1,
                         is_music: 1,
                     }
-                ),
+                )),
             };
 
             // Blast shield triggers jingle when dead //
@@ -2149,7 +2152,7 @@ fn patch_door<'r>(
             );
 
             // add new script objects to layer //
-            layers[0].objects.as_mut_vec().push(special_function);
+            layers[new_layer_idx].objects.as_mut_vec().push(special_function);
             layers[new_layer_idx].objects.as_mut_vec().push(streamed_audio);
             layers[new_layer_idx].objects.as_mut_vec().push(sound);
             layers[new_layer_idx].objects.as_mut_vec().push(blast_shield);
