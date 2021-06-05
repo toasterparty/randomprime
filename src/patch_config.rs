@@ -182,6 +182,7 @@ pub struct PatchConfig
     pub map_default_state: MapState,
     pub auto_enabled_elevators: bool,
     pub multiworld_dol_patches: bool,
+    pub update_hint_state_replacement: Option<Vec<u8>>,
     pub quiet: bool,
 
     pub starting_items: StartingItems,
@@ -237,6 +238,7 @@ struct GameConfig
     heat_damage_per_sec: Option<f32>,
     auto_enabled_elevators: Option<bool>,
     multiworld_dol_patches: Option<bool>,
+    update_hint_state_replacement: Option<Vec<u8>>,
 
     starting_items: Option<StartingItems>,
     item_loss_items: Option<StartingItems>,
@@ -657,6 +659,7 @@ impl PatchConfigPrivate
             heat_damage_per_sec: self.game_config.heat_damage_per_sec.unwrap_or(10.0),
             auto_enabled_elevators: self.game_config.auto_enabled_elevators.unwrap_or(false),
             multiworld_dol_patches: self.game_config.multiworld_dol_patches.unwrap_or(false),
+            update_hint_state_replacement: self.game_config.update_hint_state_replacement.clone(),
             artifact_temple_layer_overrides: self.game_config.artifact_temple_layer_overrides.clone(),
             map_default_state,
 

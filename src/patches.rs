@@ -3465,6 +3465,10 @@ fn patch_dol<'r>(
         dol_patcher.ppcasm_patch(&decr_pickup_patch)?;
     }
 
+    if let Some(update_hint_state_replacement) = &config.update_hint_state_replacement {
+        dol_patcher.patch(symbol_addr!("UpdateHintState__13CStateManagerFf", version), Cow::from(update_hint_state_replacement.clone()))?;
+    }
+
     // Add rel loader to the binary
     let (rel_loader_bytes, rel_loader_map_str) = match version {
         Version::NtscU0_00 => {
