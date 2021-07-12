@@ -311,7 +311,6 @@ pub fn custom_assets<'r>(
                     custom_asset_offset = custom_asset_offset + 1;
 
                     // Build resource //
-                    println!("creating scan/strg pair for {} - {}", level_name, room_name);
                     assets.extend_from_slice(&create_item_scan_strg_pair(
                         scan_id,
                         strg_id,
@@ -526,7 +525,6 @@ fn create_shiny_missile_assets<'r>(
         let cmdl_bytes = shiny_missile_cmdl.decompress().into_owned();
         let mut cmdl = Reader::new(&cmdl_bytes[..]).read::<structs::Cmdl>(());
 
-        // println!("{:#?}", cmdl);
         cmdl.material_sets.as_mut_vec()[0].texture_ids = vec![
             custom_asset_ids::SHINY_MISSILE_TXTR0,
             custom_asset_ids::SHINY_MISSILE_TXTR1,
@@ -606,7 +604,6 @@ fn create_item_scan_strg_pair<'r>(
     contents: &str,
 ) -> [structs::Resource<'r>; 2]
 {
-    println!("scan_id 0x{:X}, uses strg_id 0x{:X}", new_scan.to_u32(), new_strg.to_u32());
     let scan = build_resource(
         new_scan,
         structs::ResourceKind::Scan(structs::Scan {
