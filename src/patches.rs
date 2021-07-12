@@ -438,18 +438,37 @@ fn patch_add_item<'r>(
         PickupType::HealthRefill => 26,
         _ => pickup_type.pickup_data().kind,
     };
+
     let mut pickup = structs::Pickup {
+        // Location Pickup Data
+        // "How is this pickup integrated into the room?"
+        name: b"customItem\0".as_cstr(),
         position: pickup_position.into(),
+        rotation: [0.0, 0.0, 0.0].into(),
+        hitbox: pickup_model_type.pickup_data().hitbox.clone(),
+        scan_offset: pickup_model_type.pickup_data().scan_offset.clone(),
         fade_in_timer: 0.0,
         spawn_delay: 0.0,
-        active: 1,
         disappear_timer: PickupType::Missile.pickup_data().disappear_timer,
+        active: 1,
+        drop_rate: PickupType::Missile.pickup_data().drop_rate,
+
+        // Type Pickup Data
+        // "What does this pickup do?"
         curr_increase,
         max_increase,
         kind,
 
-        ..(pickup_model_type.pickup_data().into_owned())
+        // Model Pickup Data
+        // "What does this pickup look like?"
+        scale: pickup_model_type.pickup_data().scale.clone(),
+        cmdl: pickup_model_type.pickup_data().cmdl.clone(),
+        ancs: pickup_model_type.pickup_data().ancs.clone(),
+        part: pickup_model_type.pickup_data().part.clone(),
+        actor_params: pickup_type.pickup_data().actor_params.clone(),
     };
+
+    // Should we use non-default scan id? //
     if scan_id.is_some() {
         pickup.actor_params.scan_params.scan = scan_id.unwrap();
     }
@@ -669,7 +688,7 @@ fn modify_pickups_in_mrea<'r>(
     let scan_id = {
         if pickup_config.scan_text.is_some() {
             let (scan, strg) = *pickup_scans.get(&pickup_hash_key).unwrap();
-            
+
             let scan_dep: structs::Dependency = scan.into();
             area.add_dependencies(game_resources, new_layer_idx, iter::once(scan_dep));
 
@@ -802,14 +821,14 @@ fn modify_pickups_in_mrea<'r>(
 }
 
 fn update_pickup(
-    pickup: &mut structs::SclyObject,
+    pickup_obj: &mut structs::SclyObject,
     pickup_type: PickupType,
     pickup_model_type: MaybeObfuscatedPickup,
     pickup_config: &PickupConfig,
     scan_id: Option<ResId<res_id::SCAN>>,
 ) -> ([f32; 3], ResId<res_id::SCAN>)
 {
-    let pickup = pickup.property_data.as_pickup_mut().unwrap();
+    let pickup = pickup_obj.property_data.as_pickup_mut().unwrap();
     let mut original_pickup = pickup.clone();
 
     if pickup_config.position.is_some() {
@@ -855,34 +874,48 @@ fn update_pickup(
         _ => pickup_type.pickup_data().kind,
     };
 
+    // The pickup needs to be repositioned so that the center of its model
+    // matches the center of the original.
     let position = [
         original_pickup.position[0] - (new_center[0] - original_center[0]),
         original_pickup.position[1] - (new_center[1] - original_center[1]),
         original_pickup.position[2] - (new_center[2] - original_center[2]),
     ];
 
-    // The pickup needs to be repositioned so that the center of its model
-    // matches the center of the original.
     *pickup = structs::Pickup {
+        // Location Pickup Data
+        // "How is this pickup integrated into the room?"
+        name: original_pickup.name,
         position: position.into(),
+        rotation: original_pickup.rotation,
         hitbox: original_pickup.hitbox,
         scan_offset: [
             original_pickup.scan_offset[0] + (new_center[0] - original_center[0]),
             original_pickup.scan_offset[1] + (new_center[1] - original_center[1]),
             original_pickup.scan_offset[2] + (new_center[2] - original_center[2]),
         ].into(),
-
         fade_in_timer:  original_pickup.fade_in_timer,
         spawn_delay: original_pickup.spawn_delay,
         disappear_timer: original_pickup.disappear_timer,
         active: original_pickup.active,
+        drop_rate: original_pickup.drop_rate,
+
+        // Type Pickup Data
+        // "What does this pickup do?"
         curr_increase,
         max_increase,
         kind,
 
-        ..(pickup_model_type.pickup_data().into_owned())
+        // Model Pickup Data
+        // "What does this pickup look like?"
+        scale: pickup_model_type.pickup_data().scale,
+        cmdl: pickup_model_type.pickup_data().cmdl.clone(),
+        ancs: pickup_model_type.pickup_data().ancs.clone(),
+        part: pickup_model_type.pickup_data().part.clone(),
+        actor_params: pickup_type.pickup_data().actor_params.clone(),
     };
 
+    // Should we use non-default scan id? //
     if scan_id.is_some() {
         pickup.actor_params.scan_params.scan = scan_id.unwrap();
     }
