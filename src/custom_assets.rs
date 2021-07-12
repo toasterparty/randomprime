@@ -125,14 +125,10 @@ pub mod custom_asset_ids {
         FLAMETHROWER_DOOR_TXTR: TXTR,
         DISABLED_DOOR_TXTR: TXTR,
         AI_DOOR_TXTR: TXTR,
-        
-        // Hudmemos derrived from pickup names //
         SKIP_HUDMEMO_STRG_START: STRG,
         SKIP_HUDMEMO_STRG_END: STRG = SKIP_HUDMEMO_STRG_START.to_u32() + 38,
 
-        // User-specified hudmemo and scan strings //
-        EXTRA_IDS_START: STRG = SKIP_HUDMEMO_STRG_END.to_u32() + 1,
-        EXTRA_IDS_END: STRG = EXTRA_IDS_START.to_u32() + 500,
+        EXTRA_IDS_START: STRG,
     }
 }
 
@@ -271,9 +267,7 @@ pub fn custom_assets<'r>(
     }
 
     // Create user-defined hudmemo and scan strings and map to locations //
-    let custom_ids_start = custom_asset_ids::EXTRA_IDS_START.to_u32();
-    let custom_ids_end = custom_asset_ids::EXTRA_IDS_END.to_u32();
-    let mut strg_idx = 0;
+    let mut custom_asset_offset = 0;
     for (level_name, level) in config.level_data.iter() {
         for (room_name, room) in level.rooms.iter() {
             let mut pickup_idx = 0;
@@ -284,9 +278,9 @@ pub fn custom_assets<'r>(
                     let hudmemo_text = pickup.hudmemo_text.as_ref().unwrap();
 
                     // Get next ID //
-                    let strg_id = ResId::<res_id::STRG>::new((custom_ids_start..custom_ids_end).nth(strg_idx).unwrap());
-                    strg_idx = strg_idx + 1;
-                    
+                    let strg_id = ResId::<res_id::STRG>::new(custom_asset_ids::EXTRA_IDS_START.to_u32() + custom_asset_offset);
+                    custom_asset_offset = custom_asset_offset + 1;
+
                     // Build resource //
                     let strg = structs::ResourceKind::Strg(structs::Strg {
                         string_tables: vec![
@@ -311,12 +305,13 @@ pub fn custom_assets<'r>(
                     let scan_text = pickup.scan_text.as_ref().unwrap();
 
                     // Get next 2 IDs //
-                    let strg_id = ResId::<res_id::STRG>::new((custom_ids_start..custom_ids_end).nth(strg_idx).unwrap());
-                    strg_idx = strg_idx + 1;
-                    let scan_id = ResId::<res_id::SCAN>::new((custom_ids_start..custom_ids_end).nth(strg_idx).unwrap());
-                    strg_idx = strg_idx + 1;
+                    let scan_id = ResId::<res_id::SCAN>::new(custom_asset_ids::EXTRA_IDS_START.to_u32() + custom_asset_offset);
+                    custom_asset_offset = custom_asset_offset + 1;
+                    let strg_id = ResId::<res_id::STRG>::new(custom_asset_ids::EXTRA_IDS_START.to_u32() + custom_asset_offset);
+                    custom_asset_offset = custom_asset_offset + 1;
 
                     // Build resource //
+                    println!("creating scan/strg pair for {} - {}", level_name, room_name);
                     assets.extend_from_slice(&create_item_scan_strg_pair(
                         scan_id,
                         strg_id,
@@ -611,6 +606,7 @@ fn create_item_scan_strg_pair<'r>(
     contents: &str,
 ) -> [structs::Resource<'r>; 2]
 {
+    println!("scan_id 0x{:X}, uses strg_id 0x{:X}", new_scan.to_u32(), new_strg.to_u32());
     let scan = build_resource(
         new_scan,
         structs::ResourceKind::Scan(structs::Scan {
