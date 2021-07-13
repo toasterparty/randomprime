@@ -471,13 +471,17 @@ fn patch_add_item<'r>(
         cmdl: pickup_model_type.pickup_data().cmdl.clone(),
         ancs: pickup_model_type.pickup_data().ancs.clone(),
         part: pickup_model_type.pickup_data().part.clone(),
-        actor_params: pickup_type.pickup_data().actor_params.clone(),
+        actor_params: pickup_model_type.pickup_data().actor_params.clone(),
     };
 
     // Should we use non-default scan id? //
-    if scan_id.is_some() {
-        pickup.actor_params.scan_params.scan = scan_id.unwrap();
-    }
+    pickup.actor_params.scan_params.scan = {
+        if scan_id.is_some() {
+            scan_id.unwrap()
+       } else {
+            pickup_type.pickup_data().actor_params.scan_params.scan.clone()
+       }
+    };
     
     let mut pickup_obj = structs::SclyObject {
         instance_id: ps.fresh_instance_id_range.next().unwrap(),
@@ -924,13 +928,17 @@ fn update_pickup(
         cmdl: pickup_model_type.pickup_data().cmdl.clone(),
         ancs: pickup_model_type.pickup_data().ancs.clone(),
         part: pickup_model_type.pickup_data().part.clone(),
-        actor_params: pickup_type.pickup_data().actor_params.clone(),
+        actor_params: pickup_model_type.pickup_data().actor_params.clone(),
     };
 
     // Should we use non-default scan id? //
-    if scan_id.is_some() {
-        pickup.actor_params.scan_params.scan = scan_id.unwrap();
-    }
+    pickup.actor_params.scan_params.scan = {
+        if scan_id.is_some() {
+            scan_id.unwrap()
+       } else {
+            pickup_type.pickup_data().actor_params.scan_params.scan.clone()
+       }
+    };
 
     (position, pickup.actor_params.scan_params.scan)
 }
