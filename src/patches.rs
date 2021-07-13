@@ -269,15 +269,18 @@ fn patch_morphball_hud(res: &mut structs::Resource)
     Ok(())
 }
 
-fn patch_mines_savw_for_phazon_suit_scan(res: &mut structs::Resource)
+fn patch_add_scans_to_savw(res: &mut structs::Resource, savw_scans_to_add: &Vec<ResId<res_id::SCAN>>)
     -> Result<(), String>
 {
-    // Add a scan for the Phazon suit.
     let savw = res.kind.as_savw_mut().unwrap();
-    savw.scan_array.as_mut_vec().push(structs::ScannableObject {
-        scan: custom_asset_ids::PHAZON_SUIT_SCAN.into(),
-        logbook_category: 0,
-    });
+    let scan_array = savw.scan_array.as_mut_vec();
+    for scan_id in savw_scans_to_add {
+        scan_array.push(structs::ScannableObject {
+            scan: ResId::<res_id::SCAN>::new(scan_id.to_u32()),
+            logbook_category: 0,
+        });
+    }
+
     Ok(())
 }
 
@@ -388,8 +391,6 @@ fn patch_add_item<'r>(
     let scan_id = {
         if pickup_config.scan_text.is_some() {
             let (scan, strg) = *pickup_scans.get(&pickup_hash_key).unwrap();
-            // let scan = ResId::<res_id::SCAN>::new(0x37C075A9);
-            // let strg = ResId::<res_id::STRG>::new(0x61805AFF);
             let frme = ResId::<res_id::FRME>::new(0xDCEC3E77);
 
             let scan_dep: structs::Dependency = scan.into();
@@ -698,8 +699,6 @@ fn modify_pickups_in_mrea<'r>(
     let scan_id = {
         if pickup_config.scan_text.is_some() {
             let (scan, strg) = *pickup_scans.get(&pickup_hash_key).unwrap();
-            // let scan = ResId::<res_id::SCAN>::new(0x37C075A9);
-            // let strg = ResId::<res_id::STRG>::new(0x61805AFF);
             let frme = ResId::<res_id::FRME>::new(0xDCEC3E77);
 
             let scan_dep: structs::Dependency = scan.into();
@@ -4716,10 +4715,11 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         }
     };
 
-    let (game_resources, pickup_hudmemos, pickup_scans) = collect_game_resources(gc_disc, starting_memo, &config);
+    let (game_resources, pickup_hudmemos, pickup_scans, savw_scans_to_add) = collect_game_resources(gc_disc, starting_memo, &config);
     let game_resources = &game_resources;
     let pickup_hudmemos = &pickup_hudmemos;
     let pickup_scans = &pickup_scans;
+    let savw_scans_to_add = &savw_scans_to_add;
 
     // XXX These values need to out live the patcher
     let select_game_fmv_suffix = ["A", "B", "C"].choose(&mut rng).unwrap();
@@ -4980,10 +4980,6 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         resource_info!("STRG_Credits.STRG").into(),
         |res| patch_credits(res, config)
     );
-    patcher.add_resource_patch(
-        resource_info!("!MinesWorld_Master.SAVW").into(),
-        patch_mines_savw_for_phazon_suit_scan
-    );
     patcher.add_scly_patch(
         resource_info!("07_stonehenge.MREA").into(),
         |ps, area| fix_artifact_of_truth_requirements(ps, area, config)
@@ -4996,6 +4992,55 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     patcher.add_resource_patch(
         resource_info!("TXTR_SaveBanner.TXTR").into(),
         patch_save_banner_txtr
+    );
+
+    // TODO: only patch what we need
+    patcher.add_resource_patch(
+        resource_info!("!TalonOverworld_Master.SAVW").into(),
+        move |res| patch_add_scans_to_savw(
+            res,
+            &savw_scans_to_add,
+        ),
+    );
+
+    patcher.add_resource_patch(
+        resource_info!("!RuinsWorld_Master.SAVW").into(),
+        move |res| patch_add_scans_to_savw(
+            res,
+            &savw_scans_to_add,
+        ),
+    );
+
+    patcher.add_resource_patch(
+        resource_info!("!LavaWorld_Master.SAVW").into(),
+        move |res| patch_add_scans_to_savw(
+            res,
+            &savw_scans_to_add,
+        ),
+    );
+
+    patcher.add_resource_patch(
+        resource_info!("!IceWorld_Master.SAVW").into(),
+        move |res| patch_add_scans_to_savw(
+            res,
+            &savw_scans_to_add,
+        ),
+    );
+
+    patcher.add_resource_patch(
+        resource_info!("!MinesWorld_Master.SAVW").into(),
+        move |res| patch_add_scans_to_savw(
+            res,
+            &savw_scans_to_add,
+        ),
+    );
+
+    patcher.add_resource_patch(
+        resource_info!("!CraterWorld_Master.SAVW").into(),
+        move |res| patch_add_scans_to_savw(
+            res,
+            &savw_scans_to_add,
+        ),
     );
 
     patcher.add_scly_patch(
@@ -5017,6 +5062,14 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 false,
                 &game_resources,
             )
+        );
+
+        patcher.add_resource_patch(
+            resource_info!("!Intro_Master.SAVW").into(),
+            move |res| patch_add_scans_to_savw(
+                res,
+                &savw_scans_to_add,
+            ),
         );
 
         // TODO: only works for landing site

@@ -192,8 +192,14 @@ pub fn custom_assets<'r>(
     pickup_hudmemos: &mut HashMap::<PickupHashKey, ResId<res_id::STRG>>,
     pickup_scans: &mut HashMap<PickupHashKey, (ResId<res_id::SCAN>, ResId<res_id::STRG>)>,
     config: &PatchConfig,
-) -> Vec<Resource<'r>>
+) -> (Vec<Resource<'r>>, Vec<ResId<res_id::SCAN>>)
 {
+    /*  This is a list of all custom SCAN IDs which might be used throughout the game.
+        We need to patch these into a SAVW file so that the game engine allocates enough space
+        on initialization to store each individual scan's completion %.
+    */
+    let mut savw_scans_to_add: Vec<ResId<res_id::SCAN>> = Vec::new();
+
     // External assets
     let mut assets = extern_assets();
 
@@ -217,11 +223,13 @@ pub fn custom_assets<'r>(
         custom_asset_ids::PHAZON_SUIT_STRG,
         "Phazon Suit\0",
     ));
+    savw_scans_to_add.push(custom_asset_ids::PHAZON_SUIT_SCAN);
     assets.extend_from_slice(&create_item_scan_strg_pair(
         custom_asset_ids::NOTHING_SCAN,
         custom_asset_ids::NOTHING_SCAN_STRG,
         "???\0",
     ));
+    savw_scans_to_add.push(custom_asset_ids::NOTHING_SCAN);
     assets.push(build_resource(
         custom_asset_ids::NOTHING_ACQUIRED_HUDMEMO_STRG,
         structs::ResourceKind::Strg(structs::Strg::from_strings(vec![
@@ -233,11 +241,13 @@ pub fn custom_assets<'r>(
         custom_asset_ids::THERMAL_VISOR_STRG,
         "Thermal Visor\0",
     ));
+    savw_scans_to_add.push(custom_asset_ids::THERMAL_VISOR_SCAN);
     assets.extend_from_slice(&create_item_scan_strg_pair(
         custom_asset_ids::SCAN_VISOR_SCAN,
         custom_asset_ids::SCAN_VISOR_SCAN_STRG,
         "Scan Visor\0",
     ));
+    savw_scans_to_add.push(custom_asset_ids::SCAN_VISOR_SCAN);
     assets.push(build_resource(
         custom_asset_ids::SCAN_VISOR_ACQUIRED_HUDMEMO_STRG,
         structs::ResourceKind::Strg(structs::Strg::from_strings(vec![
@@ -249,6 +259,7 @@ pub fn custom_assets<'r>(
         custom_asset_ids::SHINY_MISSILE_SCAN_STRG,
         "Shiny Missile\0",
     ));
+    savw_scans_to_add.push(custom_asset_ids::SHINY_MISSILE_SCAN);
     assets.extend_from_slice(&create_shiny_missile_assets(resources));
     assets.push(build_resource(
         custom_asset_ids::SHINY_MISSILE_ACQUIRED_HUDMEMO_STRG,
@@ -320,6 +331,7 @@ pub fn custom_assets<'r>(
                     // Map for easy lookup when patching //
                     let key = PickupHashKey::from_location(level_name, room_name, pickup_idx);
                     pickup_scans.insert(key, (scan_id, strg_id));
+                    savw_scans_to_add.push(scan_id);
                 }
 
                 pickup_idx = pickup_idx + 1;
@@ -359,7 +371,7 @@ pub fn custom_assets<'r>(
         }
     }
 
-    assets
+    (assets, savw_scans_to_add)
 }
 
 // When modifying resources in an MREA, we need to give the room a copy of the resources/
@@ -373,6 +385,7 @@ pub fn collect_game_resources<'r>(
         HashMap<(u32, FourCC), structs::Resource<'r>>,
         HashMap<PickupHashKey, ResId<res_id::STRG>>,
         HashMap<PickupHashKey, (ResId<res_id::SCAN>, ResId<res_id::STRG>)>,
+        Vec<ResId<res_id::SCAN>>,
     )
 {
     // Get list of all dependencies patcher needs //
@@ -415,7 +428,8 @@ pub fn collect_game_resources<'r>(
     // Remove extra assets from dependency search since they won't appear     //
     // in any pak. Instead add them to the output resource pool. These assets //
     // are provided as external files checked into the repository.            //
-    for res in custom_assets(&found, starting_memo, &mut pickup_hudmemos, &mut pickup_scans, config) {
+    let (custom_assets, savw_scans_to_add) = custom_assets(&found, starting_memo, &mut pickup_hudmemos, &mut pickup_scans, config);
+    for res in custom_assets {
         let key = (res.file_id, res.fourcc());
         looking_for.remove(&key);
         found.insert(key, res);
@@ -425,7 +439,7 @@ pub fn collect_game_resources<'r>(
         panic!("error - still looking for {:?}", looking_for);
     }
 
-    (found, pickup_hudmemos, pickup_scans)
+    (found, pickup_hudmemos, pickup_scans, savw_scans_to_add)
 }
 
 fn create_custom_door_cmdl<'r>(
