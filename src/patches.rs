@@ -388,12 +388,18 @@ fn patch_add_item<'r>(
     let scan_id = {
         if pickup_config.scan_text.is_some() {
             let (scan, strg) = *pickup_scans.get(&pickup_hash_key).unwrap();
-            
+            // let scan = ResId::<res_id::SCAN>::new(0x37C075A9);
+            // let strg = ResId::<res_id::STRG>::new(0x61805AFF);
+            let frme = ResId::<res_id::FRME>::new(0xDCEC3E77);
+
             let scan_dep: structs::Dependency = scan.into();
             area.add_dependencies(game_resources, new_layer_idx, iter::once(scan_dep));
 
             let strg_dep: structs::Dependency = strg.into();
             area.add_dependencies(game_resources, new_layer_idx, iter::once(strg_dep));
+
+            let frme_dep: structs::Dependency = frme.into();
+            area.add_dependencies(game_resources, new_layer_idx, iter::once(frme_dep));
             
             // TODO: should remove now obsolete vanilla scan from dependencies list
 
@@ -688,12 +694,18 @@ fn modify_pickups_in_mrea<'r>(
     let scan_id = {
         if pickup_config.scan_text.is_some() {
             let (scan, strg) = *pickup_scans.get(&pickup_hash_key).unwrap();
+            // let scan = ResId::<res_id::SCAN>::new(0x37C075A9);
+            // let strg = ResId::<res_id::STRG>::new(0x61805AFF);
+            let frme = ResId::<res_id::FRME>::new(0xDCEC3E77);
 
             let scan_dep: structs::Dependency = scan.into();
             area.add_dependencies(game_resources, new_layer_idx, iter::once(scan_dep));
 
             let strg_dep: structs::Dependency = strg.into();
             area.add_dependencies(game_resources, new_layer_idx, iter::once(strg_dep));
+
+            let frme_dep: structs::Dependency = frme.into();
+            area.add_dependencies(game_resources, new_layer_idx, iter::once(frme_dep));
             
             // TODO: should remove now obsolete vanilla scan from dependencies list
 

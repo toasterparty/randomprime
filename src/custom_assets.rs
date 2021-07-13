@@ -381,6 +381,10 @@ pub fn collect_game_resources<'r>(
     looking_for.extend(PickupType::iter().map(|x| -> (_, _) { x.hudmemo_strg().into() }));
     looking_for.extend(DoorType::iter().flat_map(|x| x.dependencies()));
     looking_for.extend(BlastShieldType::iter().flat_map(|x| x.dependencies()));
+    
+    let mut deps: Vec<(u32, FourCC)> = Vec::new();
+    deps.push((0xDCEC3E77,FourCC::from_bytes(b"FRME")));
+    looking_for.extend(deps);
 
     // Dependencies read from paks and custom assets will go here //
     let mut found = HashMap::with_capacity(looking_for.len());
@@ -607,12 +611,49 @@ fn create_item_scan_strg_pair<'r>(
     let scan = build_resource(
         new_scan,
         structs::ResourceKind::Scan(structs::Scan {
-            frme: ResId::invalid(),
+            frme: ResId::<res_id::FRME>::new(0xDCEC3E77),
             strg: new_strg,
             scan_speed: 0,
             category: 0,
             icon_flag: 0,
-            images: Default::default(),
+            images: [
+                structs::ScanImage {
+                    txtr: ResId::invalid(),
+                    appearance_percent: 0.25,
+                    image_position: 0xFFFFFFFF,
+                    width: 0,
+                    height: 0,
+                    interval: 0.0,
+                    fade_duration: 0.0,
+                },
+                structs::ScanImage {
+                    txtr: ResId::invalid(),
+                    appearance_percent: 0.50,
+                    image_position: 0xFFFFFFFF,
+                    width: 0,
+                    height: 0,
+                    interval: 0.0,
+                    fade_duration: 0.0,
+                },
+                structs::ScanImage {
+                    txtr: ResId::invalid(),
+                    appearance_percent: 0.75,
+                    image_position: 0xFFFFFFFF,
+                    width: 0,
+                    height: 0,
+                    interval: 0.0,
+                    fade_duration: 0.0,
+                },
+                structs::ScanImage {
+                    txtr: ResId::invalid(),
+                    appearance_percent: 1.0,
+                    image_position: 0xFFFFFFFF,
+                    width: 0,
+                    height: 0,
+                    interval: 0.0,
+                    fade_duration: 0.0,
+                },
+            ].into(),
             padding: [255; 23].into(),
             _dummy: std::marker::PhantomData,
         }),
