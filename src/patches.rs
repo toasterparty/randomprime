@@ -4302,7 +4302,7 @@ fn patch_qol_minor_cutscenes(patcher: &mut PrimePatcher, version: Version) {
     );
     patcher.add_scly_patch(
         resource_info!("05_over_xray.MREA").into(), // life grove
-        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![], true),
+        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![0x002A00C4], false), // don't skip ghosts cutscene or ghosts will leave forever
     );
     patcher.add_scly_patch(
         resource_info!("01_mainplaza.MREA").into(), // main plaza
