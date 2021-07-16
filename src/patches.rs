@@ -4817,7 +4817,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 
                 let level = config.level_data.get(world.to_json_key());
                 if level.is_some() {
-                    let room = level.unwrap().rooms.get(room_info.name);
+                    let room = level.unwrap().rooms.get(room_info.name.trim());
                     if room.is_some() {
                         _pickups = room.unwrap().pickups.clone();
                     }
