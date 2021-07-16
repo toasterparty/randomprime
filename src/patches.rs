@@ -805,12 +805,13 @@ fn modify_pickups_in_mrea<'r>(
     for layer in layers.iter_mut() {
         for obj in layer.objects.as_mut_vec().iter_mut() {
             if obj.property_data.is_point_of_interest() {
+                let obj_id = obj.instance_id&0x00FFFFFF;
                 let poi = obj.property_data.as_point_of_interest_mut().unwrap();
                 if f32::abs(poi.position[0] - position[0]) < 6.0 &&
                    f32::abs(poi.position[1] - position[1]) < 6.0 &&
                    f32::abs(poi.position[2] - position[2]) < 3.0 &&
-                   !EXCLUDE_POI.contains(&(obj.instance_id&0x00FFFFFF)) ||
-                   (pickup_location.location.instance_id == 0x428011c && vec![0x002803D0, 0x002803CF, 0x002803CE].contains(&(obj.instance_id&0x00FFFFFF)))  // research core scans
+                   !EXCLUDE_POI.contains(&obj_id) ||
+                   (pickup_location.location.instance_id == 0x428011c && obj_id == 0x002803CE)  // research core scan
                 {
                     poi.scan_param.scan = scan_id_out;
                 }

@@ -322,12 +322,24 @@ pub fn custom_assets<'r>(
                     custom_asset_offset = custom_asset_offset + 1;
 
                     // Build resource //
-                    assets.extend_from_slice(&create_item_scan_strg_pair(
-                        scan_id,
-                        strg_id,
-                        format!("{}\0", scan_text).as_str(),
-                    ));
-    
+                    if room_name.trim().to_lowercase() == "research core" // make the research core scan red because it goes on the terminal
+                    {
+                        assets.extend_from_slice(&create_item_scan_strg_pair_2(
+                            scan_id,
+                            strg_id,
+                            format!("{}\0", scan_text).as_str(),
+                            1,
+                        ));
+                    }
+                    else
+                    {
+                        assets.extend_from_slice(&create_item_scan_strg_pair(
+                            scan_id,
+                            strg_id,
+                            format!("{}\0", scan_text).as_str(),
+                        ));
+                    }
+
                     // Map for easy lookup when patching //
                     let key = PickupHashKey::from_location(level_name, room_name, pickup_idx);
                     pickup_scans.insert(key, (scan_id, strg_id));
@@ -622,6 +634,16 @@ fn create_item_scan_strg_pair<'r>(
     contents: &str,
 ) -> [structs::Resource<'r>; 2]
 {
+    create_item_scan_strg_pair_2(new_scan, new_strg, contents, 0)
+}
+
+fn create_item_scan_strg_pair_2<'r>(
+    new_scan: ResId<res_id::SCAN>,
+    new_strg: ResId<res_id::STRG>,
+    contents: &str,
+    is_important: u8,
+) -> [structs::Resource<'r>; 2]
+{
     let scan = build_resource(
         new_scan,
         structs::ResourceKind::Scan(structs::Scan {
@@ -629,7 +651,7 @@ fn create_item_scan_strg_pair<'r>(
             strg: new_strg,
             scan_speed: 0,
             category: 0,
-            icon_flag: 0,
+            icon_flag: is_important,
             images: [
                 structs::ScanImage {
                     txtr: ResId::invalid(),
