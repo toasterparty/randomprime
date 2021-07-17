@@ -4367,7 +4367,7 @@ fn patch_qol_minor_cutscenes(patcher: &mut PrimePatcher, version: Version) {
     );
     patcher.add_scly_patch(
         resource_info!("11_wateryhall.MREA").into(), // watery hall
-        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![], false),
+        move |ps, area| patch_remove_cutscenes(ps, area, vec![0x0029280A, 0x002927FD], vec![], false),
     );
     patcher.add_scly_patch(
         resource_info!("18_halfpipe.MREA").into(), // crossway
