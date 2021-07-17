@@ -2538,21 +2538,22 @@ fn patch_remove_cutscenes(
     let layer_count = area.layer_flags.layer_count as usize;
     let scly = area.mrea().scly_section_mut();
 
-    // Get a list of all camera instance ids
     let mut camera_ids = Vec::<u32>::new();
-    for layer in scly.layers.iter() {
+    let mut spawn_point_ids = Vec::<u32>::new();
+
+    for i in 0..layer_count {
+        let layer = &mut scly.layers.as_mut_vec()[i];
+        
         for obj in layer.objects.iter() {
-            if !skip_ids.contains(&(obj.instance_id & 0x00FFFFFF)) && obj.property_data.is_camera() {
+            // Get a list of all camera instance ids
+            if !skip_ids.contains(&(obj.instance_id & 0x00FFFFFF))
+            && obj.property_data.is_camera() {
                 camera_ids.push(obj.instance_id & 0x00FFFFFF);
             }
-        }
-    }
 
-    // Get a list of all spawn point ids
-    let mut spawn_point_ids = Vec::<u32>::new();
-    for layer in scly.layers.iter() {
-        for obj in layer.objects.iter() {
-            if !skip_ids.contains(&(obj.instance_id & 0x00FFFFFF)) && obj.property_data.is_spawn_point() {
+            // Get a list of all spawn point ids
+            if !skip_ids.contains(&(obj.instance_id & 0x00FFFFFF)) && obj.property_data.is_spawn_point()
+            && (room_id != 0xf7285979 || i == 4) { // don't patch spawn points in shorelines except for ridley
                 spawn_point_ids.push(obj.instance_id & 0x00FFFFFF);
             }
         }
@@ -2775,16 +2776,32 @@ fn patch_remove_cutscenes(
         }
 
         // remove all cutscene related objects from layer
-        layer.objects.as_mut_vec().retain(|obj|
-            skip_ids.contains(&(&obj.instance_id & 0x00FFFFFF)) || // except for exluded objects
-            !(
-                obj.property_data.is_camera() ||
-                obj.property_data.is_camera_filter_keyframe() ||
-                obj.property_data.is_camera_blur_keyframe() ||
-                obj.property_data.is_player_actor() ||
-                (obj.property_data.is_special_function() && obj.property_data.as_special_function().unwrap().type_ == 0x18) // "show billboard"
-            )
-        );
+        if room_id == 0xf7285979 && i != 4 // the ridley cutscene is okay?
+        {
+            // special shorelines handling
+            let shorelines_triggers = vec![
+                0x00020155, // intro cutscene
+                0x000201F4, // shorelines tower cutscene
+            ];
+
+            layer.objects.as_mut_vec().retain(|obj|
+                skip_ids.contains(&(&obj.instance_id & 0x00FFFFFF)) || // except for exluded objects
+                !(shorelines_triggers.contains(&(&obj.instance_id & 0x00FFFFFF)))
+            );
+        }
+        else
+        {
+            layer.objects.as_mut_vec().retain(|obj|
+                skip_ids.contains(&(&obj.instance_id & 0x00FFFFFF)) || // except for exluded objects
+                !(
+                    obj.property_data.is_camera() ||
+                    obj.property_data.is_camera_filter_keyframe() ||
+                    obj.property_data.is_camera_blur_keyframe() ||
+                    obj.property_data.is_player_actor() || 
+                    (obj.property_data.is_special_function() && obj.property_data.as_special_function().unwrap().type_ == 0x18) // "show billboard"
+                )
+            );
+        }        
     }
 
     Ok(())
@@ -4420,20 +4437,16 @@ fn patch_qol_minor_cutscenes(patcher: &mut PrimePatcher, version: Version) {
         resource_info!("02_mines_shotemup.MREA").into(), // mine security station
         move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![], true),
     );
-}
-
-fn patch_ridley_phendrana_shorelines_cinematic(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
-    -> Result<(), String>
-{
-    let scly = area.mrea().scly_section_mut();
-    scly.layers.as_mut_vec()[4].objects.as_mut_vec().clear();
-    Ok(())
+    patcher.add_scly_patch(
+        resource_info!("01_ice_plaza.MREA").into(), // phendrana shorelines
+        move |ps, area| patch_remove_cutscenes(ps, area, vec![0x00020203], vec![0x000202A9, 0x000202A8, 0x000202B7], true), // keep the ridley cinematic
+    );
 }
 
 pub fn patch_qol_major_cutscenes(patcher: &mut PrimePatcher) {
     patcher.add_scly_patch(
-        resource_info!("01_ice_plaza.MREA").into(),
-        patch_ridley_phendrana_shorelines_cinematic
+        resource_info!("01_ice_plaza.MREA").into(), // phendrana shorelines
+        move |ps, area| patch_remove_cutscenes(ps, area, vec![0x00020203], vec![], false),
     );
     patcher.add_scly_patch(
         resource_info!("07_stonehenge.MREA").into(), // artifact temple
