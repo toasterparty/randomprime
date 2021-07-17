@@ -2604,7 +2604,11 @@ fn patch_remove_cutscenes(
             // If it's a cutscene-related timer, make it take 1 frame
             if obj.property_data.is_timer() && timers_to_zero.contains(&obj_id) {
                 let timer = obj.property_data.as_timer_mut().unwrap();
-                timer.start_time = 0.1;
+                if obj_id == 0x0008024E {
+                    timer.start_time = 3.0;
+                } else {
+                    timer.start_time = 0.1;
+                }
             }
 
             // for each connection in that object
