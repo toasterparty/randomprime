@@ -2761,6 +2761,13 @@ fn patch_remove_cutscenes(
                 let actor = obj.property_data.as_actor_mut().unwrap();
                 actor.hitbox[1] = 0.4;
                 actor.position[1] = actor.position[1] - 0.8;
+            } else if obj_id == 0x0002023E { // main plaza turn crane left relay
+                // snap the crane immediately so fast players don't fall through the intangible animation
+                obj.connections.as_mut_vec().push(structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::ACTIVATE,
+                    target_object_id: 0x0002001F, // platform
+                });
             }
 
             // ball triggers can be mean sometimes when not in the saftey of a cutscene, tone it down from 40 to 10
@@ -4334,8 +4341,7 @@ fn patch_qol_minor_cutscenes(patcher: &mut PrimePatcher, version: Version) {
         resource_info!("01_mines_mainplaza.MREA").into(), // main quarry
         move |ps, area| patch_remove_cutscenes(ps, area,
             vec![0x00020443], // turn the forcefield off faster
-            vec![0x00020021, 0x00020253, // play crane cutscene normally as there is no benefit to skipping it
-            ],
+            vec![],
             false,
         ),
     );
@@ -4470,10 +4476,6 @@ pub fn patch_qol_major_cutscenes(patcher: &mut PrimePatcher) {
     patcher.add_scly_patch(
         resource_info!("03_mines.MREA").into(), // elite research
         move |ps, area| patch_remove_cutscenes(ps, area, vec![0x000D01A9], vec![], true),
-    );
-    patcher.add_scly_patch(
-        resource_info!("01_mines_mainplaza.MREA").into(), // main quarry
-        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![], false),
     );
     patcher.add_scly_patch(
         resource_info!("19_hive_totem.MREA").into(), // hive totem
