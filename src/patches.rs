@@ -4454,7 +4454,7 @@ pub fn patch_qol_major_cutscenes(patcher: &mut PrimePatcher) {
             vec![],
             vec![
                 // progress cutscene
-                // 0x00100463, 0x0010046F,
+                0x00100463, 0x0010046F,
                 // ridley intro cutscene
                 0x0010036F, 0x0010026C, 0x00100202, 0x00100207, 0x00100373, 0x001003C4, 0x001003D9, 0x001003DC, 0x001003E6, 0x001003CE, 0x0010020C, 0x0010021A, 0x001003EF, 0x001003E9, 0x0010021A, 0x00100491, 0x001003EE, 0x001003F0, 0x001003FE, 0x0010021F,
                 // crater entry/exit cutscene
