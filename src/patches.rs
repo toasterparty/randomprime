@@ -4354,10 +4354,6 @@ fn patch_qol_minor_cutscenes(patcher: &mut PrimePatcher, version: Version) {
         move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![], false),
     );
     patcher.add_scly_patch(
-        resource_info!("14_tl_base01.MREA").into(), // tower of light
-        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![], false),
-    );
-    patcher.add_scly_patch(
         resource_info!("04_maproom_d.MREA").into(), // vault
         move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![], false),
     );
