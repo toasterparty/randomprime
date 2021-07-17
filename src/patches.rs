@@ -4051,7 +4051,9 @@ impl fmt::Display for Version
 fn patch_qol_game_breaking(
     patcher: &mut PrimePatcher,
     version: Version,
-    force_vanilla_layout: bool)
+    force_vanilla_layout: bool,
+    small_samus: bool,
+)
 {
     
     // randomizer-induced bugfixes
@@ -4067,14 +4069,16 @@ fn patch_qol_game_breaking(
         resource_info!("00_mines_savestation_b.MREA").into(),
         move |ps, area| patch_spawn_point_position(ps, area, [216.7245, 4.4046, -139.8873], false, true)
     );
-    patcher.add_scly_patch(
-        resource_info!("01_over_mainplaza.MREA").into(),
-        move |_ps, area| patch_spawn_point_position(_ps, area, [0.0, 0.0, 0.5], true, false)
-    );
-    patcher.add_scly_patch(
-        resource_info!("0_elev_lava_b.MREA").into(),
-        move |_ps, area| patch_spawn_point_position(_ps, area, [0.0, 0.0, 1.0], true, false)
-    );
+    if small_samus {
+        patcher.add_scly_patch(
+            resource_info!("01_over_mainplaza.MREA").into(),
+            move |_ps, area| patch_spawn_point_position(_ps, area, [0.0, 0.0, 0.5], true, false)
+        );
+        patcher.add_scly_patch(
+            resource_info!("0_elev_lava_b.MREA").into(),
+            move |_ps, area| patch_spawn_point_position(_ps, area, [0.0, 0.0, 0.7], true, false)
+        );
+    }
 
     if force_vanilla_layout { return; }
 
@@ -5126,7 +5130,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     }
 
     if config.qol_game_breaking {
-        patch_qol_game_breaking(&mut patcher, version, config.force_vanilla_layout);
+        patch_qol_game_breaking(&mut patcher, version, config.force_vanilla_layout, config.ctwk_config.player_size.clone().unwrap_or(1.0) < 0.9);
     }
 
     if config.qol_cosmetic {
