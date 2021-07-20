@@ -191,6 +191,7 @@ pub fn custom_assets<'r>(
     starting_memo: Option<&str>,
     pickup_hudmemos: &mut HashMap::<PickupHashKey, ResId<res_id::STRG>>,
     pickup_scans: &mut HashMap<PickupHashKey, (ResId<res_id::SCAN>, ResId<res_id::STRG>)>,
+    extra_scans: &mut HashMap<PickupHashKey, (ResId<res_id::SCAN>, ResId<res_id::STRG>)>,
     config: &PatchConfig,
 ) -> (Vec<Resource<'r>>, Vec<ResId<res_id::SCAN>>)
 {
@@ -282,6 +283,40 @@ pub fn custom_assets<'r>(
     for (level_name, level) in config.level_data.iter() {
         for (room_name, room) in level.rooms.iter() {
             let mut pickup_idx = 0;
+            let mut extra_scans_idx = 0;
+
+            if room.extra_scans.is_some() {
+                for custom_scan in room.extra_scans.as_ref().unwrap().iter() {
+                    // Get next 2 IDs //
+                    let scan_id = ResId::<res_id::SCAN>::new(custom_asset_ids::EXTRA_IDS_START.to_u32() + custom_asset_offset);
+                    custom_asset_offset = custom_asset_offset + 1;
+                    let strg_id = ResId::<res_id::STRG>::new(custom_asset_ids::EXTRA_IDS_START.to_u32() + custom_asset_offset);
+                    custom_asset_offset = custom_asset_offset + 1;
+
+                    let is_red = {
+                        if custom_scan.is_red {
+                            1
+                        } else {
+                            0
+                        }
+                    };
+
+                    assets.extend_from_slice(&create_item_scan_strg_pair_2(
+                        scan_id,
+                        strg_id,
+                        format!("{}\0", custom_scan.text).as_str(),
+                        is_red,
+                    ));
+
+                    // Map for easy lookup when patching //
+                    let key = PickupHashKey::from_location(level_name, room_name, extra_scans_idx);
+                    extra_scans.insert(key, (scan_id, strg_id));
+                    savw_scans_to_add.push(scan_id);
+
+                    extra_scans_idx = extra_scans_idx + 1;
+                }
+            }
+
             if room.pickups.is_none() { continue };
             for pickup in room.pickups.as_ref().unwrap().iter() {
                 // custom hudmemo string
@@ -398,6 +433,7 @@ pub fn collect_game_resources<'r>(
         HashMap<(u32, FourCC), structs::Resource<'r>>,
         HashMap<PickupHashKey, ResId<res_id::STRG>>,
         HashMap<PickupHashKey, (ResId<res_id::SCAN>, ResId<res_id::STRG>)>,
+        HashMap<PickupHashKey, (ResId<res_id::SCAN>, ResId<res_id::STRG>)>,
         Vec<ResId<res_id::SCAN>>,
     )
 {
@@ -437,11 +473,12 @@ pub fn collect_game_resources<'r>(
     // Maps pickup location to STRG to use
     let mut pickup_hudmemos = HashMap::<PickupHashKey, ResId<res_id::STRG>>::new();
     let mut pickup_scans = HashMap::<PickupHashKey, (ResId<res_id::SCAN>, ResId<res_id::STRG>)>::new();
+    let mut extra_scans = HashMap::<PickupHashKey, (ResId<res_id::SCAN>, ResId<res_id::STRG>)>::new();
 
     // Remove extra assets from dependency search since they won't appear     //
     // in any pak. Instead add them to the output resource pool. These assets //
     // are provided as external files checked into the repository.            //
-    let (custom_assets, savw_scans_to_add) = custom_assets(&found, starting_memo, &mut pickup_hudmemos, &mut pickup_scans, config);
+    let (custom_assets, savw_scans_to_add) = custom_assets(&found, starting_memo, &mut pickup_hudmemos, &mut pickup_scans, &mut extra_scans, config);
     for res in custom_assets {
         let key = (res.file_id, res.fourcc());
         looking_for.remove(&key);
@@ -452,7 +489,7 @@ pub fn collect_game_resources<'r>(
         panic!("error - still looking for {:?}", looking_for);
     }
 
-    (found, pickup_hudmemos, pickup_scans, savw_scans_to_add)
+    (found, pickup_hudmemos, pickup_scans, extra_scans, savw_scans_to_add)
 }
 
 fn create_custom_door_cmdl<'r>(

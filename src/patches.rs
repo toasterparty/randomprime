@@ -624,6 +624,50 @@ fn patch_add_item<'r>(
     Ok(())
 }
 
+fn patch_add_poi<'r>(
+    ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+    scan_id: ResId<res_id::SCAN>,
+    strg_id: ResId<res_id::STRG>,
+    position: [f32;3],
+) -> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layers = scly.layers.as_mut_vec();
+    layers[0].objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            connections: vec![].into(),
+            property_data: structs::SclyProperty::PointOfInterest(
+                Box::new(structs::PointOfInterest {
+                    name: b"mypoi\0".as_cstr(),
+                    position: position.into(),
+                    rotation: [0.0, 0.0, 0.0].into(),
+                    active: 1,
+                    scan_param: structs::scly_structs::ScannableParameters {
+                        scan: scan_id,
+                    },
+                    point_size: 12.0,
+                })
+            ),
+        }
+    );
+
+    let frme_id = ResId::<res_id::FRME>::new(0xDCEC3E77);
+
+    let scan_dep: structs::Dependency = scan_id.into();
+    area.add_dependencies(game_resources, 0, iter::once(scan_dep));
+
+    let strg_dep: structs::Dependency = strg_id.into();
+    area.add_dependencies(game_resources, 0, iter::once(strg_dep));
+
+    let frme_dep: structs::Dependency = frme_id.into();
+    area.add_dependencies(game_resources, 0, iter::once(frme_dep));
+
+    Ok(())
+}
+
 fn modify_pickups_in_mrea<'r>(
     ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -802,6 +846,7 @@ fn modify_pickups_in_mrea<'r>(
         0x000200AF, // main plaza tree    
         0x00190584, 0x0019039C, // research lab hydra
         0x001F025C, // mqb tank
+        custom_asset_ids::MQA_POI_SCAN.to_u32(),
     ];
     for layer in layers.iter_mut() {
         for obj in layer.objects.as_mut_vec().iter_mut() {
@@ -4791,10 +4836,13 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         }
     };
 
-    let (game_resources, pickup_hudmemos, pickup_scans, savw_scans_to_add) = collect_game_resources(gc_disc, starting_memo, &config);
+    let (game_resources, pickup_hudmemos, pickup_scans, extra_scans, savw_scans_to_add) =
+        collect_game_resources(gc_disc, starting_memo, &config);
+
     let game_resources = &game_resources;
     let pickup_hudmemos = &pickup_hudmemos;
     let pickup_scans = &pickup_scans;
+    let extra_scans = &extra_scans;
     let savw_scans_to_add = &savw_scans_to_add;
 
     // XXX These values need to out live the patcher
@@ -4864,9 +4912,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     // Patch pickups
     for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {
         let world = World::from_pak(pak_name).unwrap();
-        
-        for room_info in rooms.iter() {
 
+        for room_info in rooms.iter() {
             if remove_control_disabler {
                 patcher.add_scly_patch(
                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
@@ -4895,20 +4942,26 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 });
             }
 
-            // Get list of pickups specified for this room
-            let pickups = {
+            // Get list of patches specified for this room
+            let (pickups, scans) = {
                 let mut _pickups = Vec::new();
+                let mut _scans = Vec::new();
                 
                 let level = config.level_data.get(world.to_json_key());
                 if level.is_some() {
                     let room = level.unwrap().rooms.get(room_info.name.trim());
                     if room.is_some() {
-                        if room.unwrap().pickups.is_some() {
-                            _pickups = room.unwrap().pickups.clone().unwrap();
+                        let room = room.as_ref().unwrap();
+                        if room.pickups.is_some() {
+                            _pickups = room.pickups.clone().unwrap();
+                        }
+
+                        if room.extra_scans.is_some() {
+                            _scans = room.extra_scans.clone().unwrap();
                         }
                     }
                 }
-                _pickups
+                (_pickups, _scans)
             };
 
             // Patch existing item locations
@@ -4980,6 +5033,26 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                         config.qol_cosmetic,
                         config.obfuscate_items,
                     ),
+                );
+
+                idx = idx + 1;
+            }
+
+            // Add extra scans (poi)
+            idx = 0;
+            for scan in scans.iter() {
+                let scan = scan.clone();
+                let key = PickupHashKey {
+                    level_id: world.mlvl(),
+                    room_id: room_info.room_id.to_u32(),
+                    pickup_idx: idx as u32,
+                };
+
+                let (scan_id, strg_id) = extra_scans.get(&key).unwrap();
+
+                patcher.add_scly_patch(
+                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                    move |ps, area| patch_add_poi(ps, area, game_resources, scan_id.clone(), strg_id.clone(), scan.position),
                 );
 
                 idx = idx + 1;
