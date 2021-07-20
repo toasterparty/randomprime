@@ -2822,7 +2822,7 @@ fn patch_remove_cutscenes(
         }
 
         // remove all cutscene related objects from layer
-        if room_id == 0xf7285979 && i != 4 // the ridley cutscene is okay?
+        if room_id == 0xf7285979 && i != 4 // the ridley cutscene is okay
         {
             // special shorelines handling
             let shorelines_triggers = vec![
@@ -2843,7 +2843,8 @@ fn patch_remove_cutscenes(
                     obj.property_data.is_camera() ||
                     obj.property_data.is_camera_filter_keyframe() ||
                     obj.property_data.is_camera_blur_keyframe() ||
-                    obj.property_data.is_player_actor() || 
+                    obj.property_data.is_player_actor() ||
+                    vec![0x0018028E, 0x001802A1, 0x0018025C, 0x001800CC].contains(&(obj.instance_id&0x00FFFFFF)) || // thardus death sounds
                     (obj.property_data.is_special_function() && obj.property_data.as_special_function().unwrap().type_ == 0x18) // "show billboard"
                 )
             );
@@ -3968,6 +3969,7 @@ fn patch_ctwk_player_gun(res: &mut structs::Resource, ctwk_config: &CtwkConfig)
         ctwk_player_gun.gun_position[2] = ctwk_player_gun.gun_position[2] + gun_position[2];
     }
 
+    // ctwk_player_gun.beams[0].normal.damage = 9999999.0;
     Ok(())
 }
 
