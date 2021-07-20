@@ -282,7 +282,8 @@ pub fn custom_assets<'r>(
     for (level_name, level) in config.level_data.iter() {
         for (room_name, room) in level.rooms.iter() {
             let mut pickup_idx = 0;
-            for pickup in room.pickups.iter() {
+            if room.pickups.is_none() { continue };
+            for pickup in room.pickups.as_ref().unwrap().iter() {
                 // custom hudmemo string
                 if pickup.hudmemo_text.is_some()
                 {

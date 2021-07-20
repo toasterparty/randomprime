@@ -131,7 +131,8 @@ fn build_artifact_temple_totem_scan_strings<R>(
     let mut artifact_locations = Vec::<(&str, PickupType)>::new();
     for (_, level) in config.level_data.iter() {
         for (room_name, room) in level.rooms.iter() {
-            for pickup in room.pickups.iter() {
+            if room.pickups.is_none() { continue };
+            for pickup in room.pickups.as_ref().unwrap().iter() {
                 let pickup_type = PickupType::from_str(&pickup.pickup_type);
                 if pickup_type.idx() >= PickupType::ArtifactOfLifegiver.idx() && pickup_type.idx() <= PickupType::ArtifactOfStrength.idx() {
                     artifact_locations.push((&room_name.as_str(), pickup_type));
@@ -1371,8 +1372,11 @@ fn fix_artifact_of_truth_requirements(
             let rooms = &config.level_data.get(World::TallonOverworld.to_json_key()).unwrap().rooms;
             if rooms.contains_key("Artifact Temple") {
                 let artifact_temple_pickups = &rooms.get("Artifact Temple").unwrap().pickups;
-                if artifact_temple_pickups.len() != 0 {
-                    _at_pickup_kind = PickupType::from_str(&artifact_temple_pickups[0].pickup_type).pickup_data().kind;
+                if artifact_temple_pickups.is_some() {
+                    let artifact_temple_pickups = artifact_temple_pickups.as_ref().unwrap();
+                    if artifact_temple_pickups.len() != 0 {
+                        _at_pickup_kind = PickupType::from_str(&artifact_temple_pickups[0].pickup_type).pickup_data().kind;
+                    }
                 }
             }
         }
@@ -1393,7 +1397,8 @@ fn fix_artifact_of_truth_requirements(
                 if _exists {break;}
                 for (_, room) in level.rooms.iter() {
                     if _exists {break;}
-                    for pickup in room.pickups.iter() {
+                    if room.pickups.is_none() { continue };
+                    for pickup in room.pickups.as_ref().unwrap().iter() {
                         let pickup = PickupType::from_str(&pickup.pickup_type);
                         if pickup.pickup_data().kind == kind {
                             _exists = true; // this artifact is placed somewhere in this world
@@ -3208,7 +3213,8 @@ fn patch_credits(
                 let mut _room_name = String::new();
                 for (_, level) in config.level_data.iter() {
                     for (room_name, room) in level.rooms.iter() {
-                        for pickup_info in room.pickups.iter() {
+                        if room.pickups.is_none() { continue };
+                        for pickup_info in room.pickups.as_ref().unwrap().iter() {
                             if PickupType::from_str(pickup_type.name()) == PickupType::from_str(&pickup_info.pickup_type) {
                                 _room_name = room_name.to_string();
                                 break;
@@ -3969,7 +3975,7 @@ fn patch_ctwk_player_gun(res: &mut structs::Resource, ctwk_config: &CtwkConfig)
         ctwk_player_gun.gun_position[2] = ctwk_player_gun.gun_position[2] + gun_position[2];
     }
 
-    // ctwk_player_gun.beams[0].normal.damage = 9999999.0;
+    ctwk_player_gun.beams[0].normal.damage = 9999999.0;
     Ok(())
 }
 
@@ -4897,7 +4903,9 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 if level.is_some() {
                     let room = level.unwrap().rooms.get(room_info.name.trim());
                     if room.is_some() {
-                        _pickups = room.unwrap().pickups.clone();
+                        if room.unwrap().pickups.is_some() {
+                            _pickups = room.unwrap().pickups.clone().unwrap();
+                        }
                     }
                 }
                 _pickups
