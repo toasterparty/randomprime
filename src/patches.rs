@@ -2904,6 +2904,9 @@ fn patch_remove_cutscenes(
                 !(shorelines_triggers.contains(&(&obj.instance_id & 0x00FFFFFF)))
             );
         }
+        else if room_id == 0xb4b41c48 { // keep the cinematic stuff in end cinema
+            layer.objects.as_mut_vec().retain(|obj| !obj.property_data.is_camera());
+        }
         else
         {
             layer.objects.as_mut_vec().retain(|obj|
@@ -4562,6 +4565,10 @@ fn patch_qol_minor_cutscenes(patcher: &mut PrimePatcher, version: Version) {
 }
 
 pub fn patch_qol_major_cutscenes(patcher: &mut PrimePatcher) {
+    patcher.add_scly_patch(
+        resource_info!("01_endcinema.MREA").into(), // Impact Crater Escape Cinema (cause why not)
+        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![], true),
+    );
     // +Ghost death cutscene
     patcher.add_scly_patch(
         resource_info!("17_chozo_bowling.MREA").into(), // hall of the elders
