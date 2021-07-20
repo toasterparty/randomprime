@@ -4415,6 +4415,7 @@ fn patch_qol_minor_cutscenes(patcher: &mut PrimePatcher, version: Version) {
             vec![
                 0x003400F5, 0x00340046, 0x0034004A, 0x003400EA, 0x0034004F, // leave chozo bowling cutscenes to avoid getting stuck
                 0x0034025C, 0x00340264, 0x00340268, 0x0034025B, // leave missile station cutsene
+                0x00340142, 0x00340378, // leave ghost death cutscene (it's major b/c reposition)
             ],
             false,
         ),
@@ -4489,6 +4490,18 @@ fn patch_qol_minor_cutscenes(patcher: &mut PrimePatcher, version: Version) {
 }
 
 pub fn patch_qol_major_cutscenes(patcher: &mut PrimePatcher) {
+    // +Ghost death cutscene
+    patcher.add_scly_patch(
+        resource_info!("17_chozo_bowling.MREA").into(), // hall of the elders
+        move |ps, area| patch_remove_cutscenes(ps, area,
+            vec![0x003400F4, 0x003400F8, 0x003400F9, 0x0034018C], // speed up release from bomb slots
+            vec![
+                0x003400F5, 0x00340046, 0x0034004A, 0x003400EA, 0x0034004F, // leave chozo bowling cutscenes to avoid getting stuck
+                0x0034025C, 0x00340264, 0x00340268, 0x0034025B, // leave missile station cutsene
+            ],
+            false,
+        ),
+    );
     patcher.add_scly_patch(
         resource_info!("01_ice_plaza.MREA").into(), // phendrana shorelines
         move |ps, area| patch_remove_cutscenes(ps, area, vec![0x00020203], vec![], false),
