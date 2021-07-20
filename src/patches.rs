@@ -26,7 +26,7 @@ use crate::{
     custom_assets::{custom_asset_ids, collect_game_resources, PickupHashKey},
     dol_patcher::DolPatcher,
     ciso_writer::CisoWriter,
-    elevators::{Elevator, SpawnRoom, SpawnRoomData, World},
+    elevators::{Elevator, SpawnRoom, SpawnRoomData, World, is_elevator},
     gcz_writer::GczWriter,
     mlvl_wrapper,
     pickup_meta::{self, PickupType},
@@ -2627,6 +2627,8 @@ fn patch_remove_cutscenes(
 
     let mut camera_ids = Vec::<u32>::new();
     let mut spawn_point_ids = Vec::<u32>::new();
+    
+    let mut elevator_orientation = [0.0, 0.0, 0.0];
 
     for i in 0..layer_count {
         let layer = &mut scly.layers.as_mut_vec()[i];
@@ -2642,6 +2644,13 @@ fn patch_remove_cutscenes(
             if !skip_ids.contains(&(obj.instance_id & 0x00FFFFFF)) && obj.property_data.is_spawn_point()
             && (room_id != 0xf7285979 || i == 4) { // don't patch spawn points in shorelines except for ridley
                 spawn_point_ids.push(obj.instance_id & 0x00FFFFFF);
+            }
+
+            if obj.property_data.is_player_actor() {
+                let rotation = obj.property_data.as_player_actor().unwrap().rotation;
+                elevator_orientation[0] = rotation[0];
+                elevator_orientation[1] = rotation[1];
+                elevator_orientation[2] = rotation[2];
             }
         }
     }
@@ -2688,13 +2697,21 @@ fn patch_remove_cutscenes(
         for obj in layer.objects.as_mut_vec() {
             let obj_id = obj.instance_id & 0x00FFFFFF; // remove uper encoding byte
 
-            // If it's a cutscene-related timer, make it take 1 frame
-            if obj.property_data.is_timer() && timers_to_zero.contains(&obj_id) {
+            // If this is an elevator cutscene skip, orient the player towards the door
+            if is_elevator(room_id.to_u32()) && obj.property_data.is_spawn_point() {
+                obj.property_data.as_spawn_point_mut().unwrap().rotation = elevator_orientation.into();
+            }
+
+            // If it's a cutscene-related timer, make it nearly instantaneous
+            if obj.property_data.is_timer() {
                 let timer = obj.property_data.as_timer_mut().unwrap();
-                if obj_id == 0x0008024E {
-                    timer.start_time = 3.0;
-                } else {
-                    timer.start_time = 0.1;
+
+                if timers_to_zero.contains(&obj_id) {
+                    if obj_id == 0x0008024E {
+                        timer.start_time = 3.0; // chozo ice temple hands
+                    } else {
+                        timer.start_time = 0.1;
+                    }
                 }
             }
 
@@ -4964,6 +4981,18 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     }
                     Ok(())
                 });
+            }
+            
+            if config.qol_major_cutscenes && is_elevator(room_info.room_id.to_u32()) {
+                patcher.add_scly_patch(
+                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                    move |ps, area| patch_remove_cutscenes(
+                        ps, area,
+                        vec![],
+                        vec![],
+                        true,
+                    ),
+                );
             }
 
             // Get list of patches specified for this room
