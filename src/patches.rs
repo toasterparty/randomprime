@@ -1011,6 +1011,7 @@ fn patch_samus_actor_size<'r>(
     player_size: f32,
 ) -> Result<(), String>
 {
+    let mrea_id = area.mlvl_area.mrea.to_u32();
     let scly = area.mrea().scly_section_mut();
     for layer in scly.layers.as_mut_vec() {
         for obj in layer.objects.as_mut_vec() {
@@ -1020,9 +1021,43 @@ fn patch_samus_actor_size<'r>(
                 player_actor.scale[1] = player_actor.scale[1]*player_size;
                 player_actor.scale[2] = player_actor.scale[2]*player_size;
             }
+
+            if mrea_id == 0xb4b41c48
+            {
+                if obj.property_data.is_actor()
+                {
+                    let actor = obj.property_data.as_actor_mut().unwrap();
+                    if actor.name.to_str().unwrap().contains(&"Samus")
+                    {
+                        actor.scale[0] = actor.scale[0]*player_size;
+                        actor.scale[1] = actor.scale[1]*player_size;
+                        actor.scale[2] = actor.scale[2]*player_size;
+                    }
+                }
+
+                // for the end movie, go the extra mile and tilt the cameras down
+                if player_size < 0.75
+                {
+                    if obj.property_data.is_camera()
+                    {
+                        let camera = obj.property_data.as_camera_mut().unwrap();
+                        let name = camera.name.to_str().unwrap().to_lowercase();
+                        if name.contains(&"buttons") {
+                            camera.rotation[0] = -2.0;
+                        } else if name.contains(&"camera4") {
+                            camera.rotation[0] = -5.0;
+                        }
+                    }
+                    
+                    if vec![0x000004AF, 0x000004A4, 0x00000461, 0x00000477, 0x00000476, 0x00000474, 0x00000479, 0x00000478, 0x00000473, 0x0000045B].contains(&(obj.instance_id&0x0000FFFF))
+                    {
+                        let waypoint = obj.property_data.as_waypoint_mut().unwrap();
+                        waypoint.position[2] = waypoint.position[2] - 2.2;
+                    }
+                }
+            }
         }
     }
-
     Ok(())
 }
 
@@ -4796,6 +4831,14 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     e66a4f86.CTWK -> AutoMapper.CTWK
     1d180d7c.CTWK -> Particle.CTWK
     */
+
+    // Patch end sequence (player size)
+    if config.ctwk_config.player_size.is_some() {
+        patcher.add_scly_patch(
+            resource_info!("01_endcinema.MREA").into(),
+            move |ps, area| patch_samus_actor_size(ps, area, config.ctwk_config.player_size.clone().unwrap()),
+        );
+    }
 
     // Patch pickups
     for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {
