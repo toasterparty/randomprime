@@ -853,11 +853,13 @@ fn modify_pickups_in_mrea<'r>(
             if obj.property_data.is_point_of_interest() {
                 let obj_id = obj.instance_id&0x00FFFFFF;
                 let poi = obj.property_data.as_point_of_interest_mut().unwrap();
-                if f32::abs(poi.position[0] - position[0]) < 6.0 &&
-                   f32::abs(poi.position[1] - position[1]) < 6.0 &&
-                   f32::abs(poi.position[2] - position[2]) < 3.0 &&
-                   !EXCLUDE_POI.contains(&obj_id) ||
-                   (pickup_location.location.instance_id == 0x428011c && obj_id == 0x002803CE)  // research core scan
+                if (
+                    f32::abs(poi.position[0] - position[0]) < 6.0 &&
+                    f32::abs(poi.position[1] - position[1]) < 6.0 &&
+                    f32::abs(poi.position[2] - position[2]) < 3.0 &&
+                    !EXCLUDE_POI.contains(&obj_id) &&
+                    pickup_location.location.instance_id != 0x002005EA
+                   ) || (pickup_location.location.instance_id == 0x428011c && obj_id == 0x002803CE)  // research core scan
                 {
                     poi.scan_param.scan = scan_id_out;
                 }
@@ -4908,6 +4910,28 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             move |ps, area| patch_samus_actor_size(ps, area, config.ctwk_config.player_size.clone().unwrap()),
         );
     }
+
+    // Add hard-coded POI
+    patcher.add_scly_patch(
+        resource_info!("01_ice_plaza.MREA").into(), // Phen Shorelines - Scannable in tower
+        move |ps, area| patch_add_poi(
+            ps, area,
+            game_resources,
+            custom_asset_ids::SHORELINES_POI_SCAN,
+            custom_asset_ids::SHORELINES_POI_STRG,
+            [-98.0624, -162.3933, 28.5371],
+        ),
+    );
+    patcher.add_scly_patch(
+        resource_info!("08_mines.MREA").into(), // MQA - Always scan dash from item
+        move |ps, area| patch_add_poi(
+            ps, area,
+            game_resources,
+            custom_asset_ids::MQA_POI_SCAN,
+            custom_asset_ids::MQA_POI_STRG,
+            [224.9169, 255.7093, -67.2823],
+        ),
+    );
 
     // Patch pickups
     for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {

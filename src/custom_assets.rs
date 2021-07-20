@@ -84,6 +84,10 @@ pub mod custom_asset_ids {
         SHINY_MISSILE_ACQUIRED_HUDMEMO_STRG: STRG,
         SHINY_MISSILE_SCAN_STRG: STRG,
         SHINY_MISSILE_SCAN: SCAN,
+        SHORELINES_POI_SCAN: SCAN,
+        SHORELINES_POI_STRG: STRG,
+        MQA_POI_SCAN: SCAN,
+        MQA_POI_STRG: STRG,
         
         // Starting items memo
         STARTING_ITEMS_HUDMEMO_STRG: STRG,
@@ -268,6 +272,18 @@ pub fn custom_assets<'r>(
             "&just=center;Shiny Missile acquired!\0".to_owned(),
         ])),
     ));
+    assets.extend_from_slice(&create_item_scan_strg_pair(
+        custom_asset_ids::SHORELINES_POI_SCAN,
+        custom_asset_ids::SHORELINES_POI_STRG,
+        "you shouldn't see this\0",
+    ));
+    savw_scans_to_add.push(custom_asset_ids::SHORELINES_POI_SCAN);
+    assets.extend_from_slice(&create_item_scan_strg_pair(
+        custom_asset_ids::MQA_POI_SCAN,
+        custom_asset_ids::MQA_POI_STRG,
+        "Scan Visor is a Movement System.\0",
+    ));
+    savw_scans_to_add.push(custom_asset_ids::MQA_POI_SCAN);
 
     if starting_memo.is_some() {
         assets.push(build_resource(
