@@ -85,6 +85,7 @@ These are cutscenes which don't affect gameplay much if removed.
 
 # Level 5 - Major Cutscenes
 Includes all of the above cutscenes and...
+- Arrive/Depart cutscenes for all elevators
 - landing site
 - hive totem
 - ruined shrine
@@ -101,3 +102,4 @@ Includes all of the above cutscenes and...
 - all of metroid prime
 - hall of the elders
 - artifact temple
+- end cinema
