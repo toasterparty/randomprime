@@ -1861,13 +1861,13 @@ fn patch_door<'r>(
 
     let mut deps = door_type.dependencies();
     if blast_shield_type != BlastShieldType::None {
-    deps.extend_from_slice(&blast_shield_type.dependencies());
+        deps.extend_from_slice(&blast_shield_type.dependencies());
+    }
     let deps_iter = deps.iter()
         .map(|&(file_id, fourcc)| structs::Dependency {
                 asset_id: file_id,
                 asset_type: fourcc,
         });
-    }
 
     area.add_dependencies(&door_resources,0,deps_iter);
     
