@@ -1860,12 +1860,14 @@ fn patch_door<'r>(
 ) -> Result<(), String> {
 
     let mut deps = door_type.dependencies();
+    if blast_shield_type != BlastShieldType::None {
     deps.extend_from_slice(&blast_shield_type.dependencies());
     let deps_iter = deps.iter()
         .map(|&(file_id, fourcc)| structs::Dependency {
                 asset_id: file_id,
                 asset_type: fourcc,
         });
+    }
 
     area.add_dependencies(&door_resources,0,deps_iter);
     
@@ -4948,7 +4950,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                 {
                     patcher.add_scly_patch(
                         (name.as_bytes(), room_info.room_id),
-                        move |_ps, area| patch_door(_ps, area,door_location,door_type, BlastShieldType::Missile, door_resources,config.powerbomb_lockpick)
+                        move |_ps, area| patch_door(_ps, area,door_location,door_type, BlastShieldType::None, door_resources,config.powerbomb_lockpick)
                     );
                     
                     if config.patch_map && room_info.mapa_id != 0 {
