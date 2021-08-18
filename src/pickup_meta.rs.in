@@ -1252,11 +1252,23 @@ pub const PICKUP_LOCATIONS: &[(&str, &[RoomInfo]); 7] = &[
                     dock_number: Some(0),
                 },
                 DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1376546 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1376542 },
+                    door_shield_location: Some(ScriptObjectLocation { layer: 0, instance_id: 1376543 }),
+                    dock_number: Some(0),
+                },
+                DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 1376732 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1376733 },
+                    door_shield_location: Some(ScriptObjectLocation { layer: 0, instance_id: 1376735 }),
+                    dock_number: Some(1),
+                },
+                DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 1376732 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 1376728 },
                     door_shield_location: Some(ScriptObjectLocation { layer: 0, instance_id: 1376729 }),
                     dock_number: Some(1),
-                }
+                },
             ],
             objects_to_remove: &[
                 ObjectsToRemove {
