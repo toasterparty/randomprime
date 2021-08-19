@@ -82,6 +82,7 @@ pub struct AdditionalItem {
     room: String,
     item_type: String,
     position: Xyz,
+    count: Option<i32>,
 }
 
 const ARTIFACT_OF_TRUTH_REQ_LAYER: u32 = 24;
@@ -1193,12 +1194,13 @@ impl MaybeObfuscatedPickup
 fn patch_add_item<'r>(
     ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
-    pickup_type: PickupType,
-    pickup_position: Xyz,
+    item: &AdditionalItem,
     pickup_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     config: &ParsedConfig,
 ) -> Result<(), String>
 {
+    let pickup_type = PickupType::from_string(item.item_type.clone());
+
     // resolve dependencies
     let location_idx = 0;
 
@@ -1239,9 +1241,9 @@ fn patch_add_item<'r>(
         property_data: structs::SclyProperty::Pickup(
             structs::Pickup {
                 position: [
-                    pickup_position.x,
-                    pickup_position.y,
-                    pickup_position.z,
+                    item.position.x,
+                    item.position.y,
+                    item.position.z,
                 ].into(),
                 hitbox: [1.0, 1.0, 2.0].into(), // missile hitbox
                 scan_offset: [
@@ -1258,6 +1260,13 @@ fn patch_add_item<'r>(
             }
         )
     };
+
+    if item.count.is_some() {
+        let pickup_count = item.count.as_ref().unwrap();
+        let _pickup = pickup.property_data.as_pickup_mut().unwrap();
+        _pickup.max_increase  = *pickup_count;
+        _pickup.curr_increase = *pickup_count;
+    }
 
     // create hudmemo
     let hudmemo = structs::SclyObject {
@@ -1329,9 +1338,9 @@ fn patch_add_item<'r>(
             structs::Sound { // copied from main plaza half-pipe
                 name: b"mysound\0".as_cstr(),
                 position: [
-                    pickup_position.x,
-                    pickup_position.y,
-                    pickup_position.z
+                    item.position.x,
+                    item.position.y,
+                    item.position.z,
                 ].into(),
                 rotation: [0.0,0.0,0.0].into(),
                 sound_id: 117,
@@ -1396,7 +1405,7 @@ fn modify_pickups_in_mrea<'r>(
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     pickup_type: PickupType,
     pickup_location: pickup_meta::PickupLocation,
-    pickup_count: u32,
+    pickup_count: i32,
     pickup_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     config: &ParsedConfig,
 ) -> Result<(), String>
@@ -1486,7 +1495,7 @@ fn modify_pickups_in_mrea<'r>(
 fn update_pickup(
     pickup: &mut structs::SclyObject,
     pickup_type: MaybeObfuscatedPickup,
-    pickup_count: u32,
+    pickup_count: i32,
 )
 {
     let pickup = pickup.property_data.as_pickup_mut().unwrap();
@@ -1521,7 +1530,7 @@ fn update_pickup(
         ..(pickup_type.pickup_data().into_owned())
     };
 
-    if pickup_count != 0xFFFFFFFF
+    if pickup_count != 0x696969
     {
         pickup.max_increase  = pickup_count;
         pickup.curr_increase = pickup_count;
@@ -4897,7 +4906,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                                 area,
                                 pickup_type,
                                 pickup_location,
-                                0xFFFFFFFF,
+                                0x696969,
                                 pickup_resources,
                                 config
                             )
@@ -4970,7 +4979,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         let room = spawn_room_from_string(item.room.to_string());
         patcher.add_scly_patch(
             (room.pak_name.as_bytes(), room.mrea),
-            move |_ps, area| patch_add_item(_ps, area, PickupType::from_string(item.item_type.to_string()), item.position, pickup_resources, config),
+            move |_ps, area| patch_add_item(_ps, area, &item, pickup_resources, config),
         );
     }
 
