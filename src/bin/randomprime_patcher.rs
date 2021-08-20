@@ -203,6 +203,8 @@ struct Config {
     #[serde(default = "default_empty_string")]
     frigate_done_spawn_room: String,
 
+    essence_dead_spawn_room: Option<String>,
+
     seed: u64,
     door_weights: Weights,
     patch_settings: PatchConfig,
@@ -383,7 +385,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         None
     };
 
-    let mpdr_version = "Plando v1.7";
+    let mpdr_version = "Plando v1.7.1";
     let mut comment_message:String = "Generated with ".to_owned();
     comment_message.push_str(mpdr_version);
 
@@ -450,6 +452,7 @@ fn get_config() -> Result<patches::ParsedConfig, String>
         missile_lock_override: config.missile_lock_override,
         new_save_spawn_room: config.new_save_spawn_room,
         frigate_done_spawn_room: config.frigate_done_spawn_room,
+        essence_dead_spawn_room: config.essence_dead_spawn_room,
 
         iso_format,
         skip_frigate: config.patch_settings.skip_frigate,

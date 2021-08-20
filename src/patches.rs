@@ -1790,7 +1790,6 @@ fn patch_ending_scene_straight_to_credits(
     Ok(())
 }
 
-
 fn patch_frigate_teleporter<'r>(area: &mut mlvl_wrapper::MlvlArea, spawn_room: SpawnRoom)
     -> Result<(), String>
 {
@@ -4395,6 +4394,7 @@ pub struct ParsedConfig
     pub additional_items: Vec<AdditionalItem>,
     pub new_save_spawn_room: String,
     pub frigate_done_spawn_room: String,
+    pub essence_dead_spawn_room: Option<String>,
     pub item_seed: u64,
     pub seed: u64,
     pub door_weights: Weights,
@@ -5197,7 +5197,13 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             );
         }
 
-        if config.skip_impact_crater {
+        if config.essence_dead_spawn_room.is_some() {
+            patcher.add_scly_patch(
+                resource_info!("03f_crater.MREA").into(),
+                move |ps, area| patch_frigate_teleporter(ps, area, spawn_room_from_string(config.essence_dead_spawn_room.as_ref().unwrap().to_string()))
+            );
+        }
+        else if config.skip_impact_crater {
             patcher.add_scly_patch(
                 resource_info!("01_endcinema.MREA").into(),
                 patch_ending_scene_straight_to_credits
