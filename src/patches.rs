@@ -1790,7 +1790,7 @@ fn patch_ending_scene_straight_to_credits(
     Ok(())
 }
 
-fn patch_frigate_teleporter<'r>(area: &mut mlvl_wrapper::MlvlArea, spawn_room: SpawnRoom)
+fn patch_teleporter<'r>(area: &mut mlvl_wrapper::MlvlArea, spawn_room: SpawnRoom)
     -> Result<(), String>
 {
     let scly = area.mrea().scly_section_mut();
@@ -5011,7 +5011,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
             );
             patcher.add_scly_patch(
                 resource_info!("01_intro_hanger.MREA").into(),
-                move |_ps, area| patch_frigate_teleporter(area, frigate_done_spawn_room)
+                move |_ps, area| patch_teleporter(area, frigate_done_spawn_room)
             );
             rel_config = create_rel_config_file(new_save_spawn_room, config.quickplay);
         }
@@ -5200,7 +5200,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
         if config.essence_dead_spawn_room.is_some() {
             patcher.add_scly_patch(
                 resource_info!("03f_crater.MREA").into(),
-                move |ps, area| patch_frigate_teleporter(ps, area, spawn_room_from_string(config.essence_dead_spawn_room.as_ref().unwrap().to_string()))
+                move |_ps, area| patch_teleporter(area,  spawn_room_from_string(config.essence_dead_spawn_room.as_ref().unwrap().to_string()))
             );
         }
         else if config.skip_impact_crater {
