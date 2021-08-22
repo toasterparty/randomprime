@@ -3006,8 +3006,11 @@ fn patch_thermal_conduits_damage_vulnerabilities(_ps: &mut PatcherState, area: &
         0x00200030, // biotech research area 1
         0x0020002E, // biotech research area 1
         0x0002024C, // main quarry
+        0x00170141, // magmoor workstation
+        0x00170142, // magmoor workstation
+        0x00170143, // magmoor workstation
     ];
-    
+
     for obj in layer.objects.as_mut_vec().iter_mut() {
         if thermal_conduit_damageable_trigger_obj_ids.contains(&obj.instance_id) {
             let dt = obj.property_data.as_damageable_trigger_mut().unwrap();
@@ -3066,6 +3069,7 @@ fn patch_power_conduits<'a>(patcher: &mut PrimePatcher<'_, 'a>)
         patch_thermal_conduits_damage_vulnerabilities
     );
 
+    println!("patching thingy");
     patcher.add_scly_patch(
         resource_info!("10_over_1alavaarea.MREA").into(), // magmoor workstation
         patch_thermal_conduits_damage_vulnerabilities
