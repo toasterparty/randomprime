@@ -5210,7 +5210,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &ParsedConfig, v
                 move |_ps, area| patch_teleporter(area,  spawn_room_from_string(config.essence_dead_spawn_room.as_ref().unwrap().to_string()))
             );
         }
-        else if config.skip_impact_crater {
+
+        if config.skip_impact_crater {
             patcher.add_scly_patch(
                 resource_info!("01_endcinema.MREA").into(),
                 patch_ending_scene_straight_to_credits
