@@ -3069,7 +3069,6 @@ fn patch_power_conduits<'a>(patcher: &mut PrimePatcher<'_, 'a>)
         patch_thermal_conduits_damage_vulnerabilities
     );
 
-    println!("patching thingy");
     patcher.add_scly_patch(
         resource_info!("10_over_1alavaarea.MREA").into(), // magmoor workstation
         patch_thermal_conduits_damage_vulnerabilities
