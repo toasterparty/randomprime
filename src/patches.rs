@@ -104,7 +104,7 @@ fn build_artifact_temple_totem_scan_strings<R>(
     config: &PatchConfig,
     rng: &mut R,
     artifact_hints: Option<HashMap<String,String>>,
-    
+
 )
     -> [String; 12]
     where R: Rng
@@ -338,7 +338,7 @@ fn patch_add_item<'r>(
     {
         let frme = ResId::<res_id::FRME>::new(0xDCEC3E77);
         let frme_dep: structs::Dependency = frme.into();
-        area.add_dependencies(game_resources, new_layer_idx, iter::once(frme_dep));    
+        area.add_dependencies(game_resources, new_layer_idx, iter::once(frme_dep));
     }
     let scan_id = {
         if pickup_config.scan_text.is_some() {
@@ -570,13 +570,26 @@ fn patch_add_item<'r>(
                 target_object_id: special_function.instance_id,
             }
         );
-        
+
         layers[new_layer_idx].objects.as_mut_vec().push(special_function);
     }
 
     layers[new_layer_idx].objects.as_mut_vec().push(hudmemo);
     layers[new_layer_idx].objects.as_mut_vec().push(attainment_audio);
     layers[new_layer_idx].objects.as_mut_vec().push(pickup_obj);
+
+    Ok(())
+}
+
+fn patch_add_pickup_dot<'r>(
+    res: &mut structs::Resource,
+    pickup_id: u32,
+    position: [f32;3],
+) -> Result<(), String>
+{
+    let mapa = res.kind.as_mapa_mut().unwrap();
+
+    mapa.add_pickup(pickup_id, position.into());
 
     Ok(())
 }
@@ -641,7 +654,7 @@ fn modify_pickups_in_mrea<'r>(
 {
     // Pickup to use for game functionality //
     let pickup_type = PickupType::from_str(&pickup_config.pickup_type);
-    
+
     // panic if undefined game behavior //
     if (pickup_type == PickupType::UnknownItem1 || pickup_type == PickupType::UnknownItem2 || pickup_type == PickupType::PowerBeam) &&
        (pickup_config.hudmemo_text.is_none() || pickup_config.scan_text.is_none())
@@ -693,7 +706,7 @@ fn modify_pickups_in_mrea<'r>(
     {
         let frme = ResId::<res_id::FRME>::new(0xDCEC3E77);
         let frme_dep: structs::Dependency = frme.into();
-        area.add_dependencies(game_resources, new_layer_idx, iter::once(frme_dep));    
+        area.add_dependencies(game_resources, new_layer_idx, iter::once(frme_dep));
     }
     let scan_id = {
         if pickup_config.scan_text.is_some() {
@@ -729,7 +742,7 @@ fn modify_pickups_in_mrea<'r>(
     let instance_id = ps.fresh_instance_id_range.next().unwrap();
     let relay = post_pickup_relay_template(instance_id,
                                             pickup_location.post_pickup_relay_connections);
-    
+
     additional_connections.push(structs::Connection {
         state: structs::ConnectionState::ARRIVED,
         message: structs::ConnectionMsg::SET_TO_ZERO,
@@ -800,7 +813,7 @@ fn modify_pickups_in_mrea<'r>(
     // find any overlapping POI that give "helpful" hints to the player and replace their scan text with the items //
     if qol_pickup_scans {
         const EXCLUDE_POI: &[u32] = &[
-            0x000200AF, // main plaza tree    
+            0x000200AF, // main plaza tree
             0x00190584, 0x0019039C, // research lab hydra
             0x001F025C, // mqb tank
             custom_asset_ids::MQA_POI_SCAN.to_u32(),
@@ -808,10 +821,10 @@ fn modify_pickups_in_mrea<'r>(
         for layer in layers.iter_mut() {
             for obj in layer.objects.as_mut_vec().iter_mut() {
                 let obj_id = obj.instance_id&0x00FFFFFF;
-    
+
                 // Make the door in magmoor workstaion passthrough so item is scannable
                 if obj_id == 0x0017016E || obj_id == 0x0017016F
-                {    
+                {
                     let actor = obj.property_data.as_actor_mut().unwrap();
                     actor.actor_params.visor_params.target_passthrough = 1;
                 } else if obj.property_data.is_point_of_interest() {
@@ -1059,7 +1072,7 @@ fn patch_samus_actor_size<'r>(
                             camera.rotation[0] = -5.0;
                         }
                     }
-                    
+
                     if vec![0x000004AF, 0x000004A4, 0x00000461, 0x00000477, 0x00000476, 0x00000474, 0x00000479, 0x00000478, 0x00000473, 0x0000045B].contains(&(obj.instance_id&0x0000FFFF))
                     {
                         let waypoint = obj.property_data.as_waypoint_mut().unwrap();
@@ -1187,7 +1200,7 @@ fn make_elevators_patch<'a>(
 
                 Ok(())
             });
-    
+
             let dest_world_name = {
                 if dest.mlvl == World::FrigateOrpheon.mlvl() {
                     "Frigate"
@@ -1373,7 +1386,7 @@ fn fix_artifact_of_truth_requirements(
     // Create a new layer that will be toggled on when the Artifact of Truth is collected
     let truth_req_layer_id = area.layer_flags.layer_count;
     area.add_layer(b"Randomizer - Got Artifact 1\0".as_cstr());
-    
+
     // What is the item at artifact temple?
     let at_pickup_kind = {
         let mut _at_pickup_kind = 0; // nothing item if unspecified
@@ -2609,12 +2622,12 @@ fn patch_remove_cutscenes(
 
     let mut camera_ids = Vec::<u32>::new();
     let mut spawn_point_ids = Vec::<u32>::new();
-    
+
     let mut elevator_orientation = [0.0, 0.0, 0.0];
 
     for i in 0..layer_count {
         let layer = &mut scly.layers.as_mut_vec()[i];
-        
+
         for obj in layer.objects.iter() {
             // If this is an elevator cutscene taking the player up, don't skip it //
             // (skipping it can cause sounds to persist in an annoying fashion)    //
@@ -2721,7 +2734,7 @@ fn patch_remove_cutscenes(
             for connection in obj.connections.as_mut_vec().iter_mut() {
                 // if this object sends messages to a camera, change the message to be
                 // appropriate for a relay
-                if camera_ids.contains(&(connection.target_object_id & 0x00FFFFFF)) { 
+                if camera_ids.contains(&(connection.target_object_id & 0x00FFFFFF)) {
                     if connection.message == structs::ConnectionMsg::ACTIVATE {
                         connection.message = structs::ConnectionMsg::SET_TO_ZERO;
                     }
@@ -2871,7 +2884,7 @@ fn patch_remove_cutscenes(
                 // the puffers will increment the counter instead of me, the kill trigger
                 obj.connections.as_mut_vec().retain(|_conn| false);
             } else if obj_id == 0x001B065F { // central dynamo collision blocker
-                // the power bomb rock collision should not extend beyond the door                
+                // the power bomb rock collision should not extend beyond the door
                 let actor = obj.property_data.as_actor_mut().unwrap();
                 actor.hitbox[1] = 0.4;
                 actor.position[1] = actor.position[1] - 0.8;
@@ -2942,7 +2955,7 @@ fn patch_remove_cutscenes(
                     (obj.property_data.is_special_function() && obj.property_data.as_special_function().unwrap().type_ == 0x18) // "show billboard"
                 )
             );
-        }        
+        }
     }
 
     Ok(())
@@ -3104,7 +3117,7 @@ fn patch_save_station_for_warp_to_start<'r>(
     let scly = area.mrea().scly_section_mut();
     let layer = &mut scly.layers.as_mut_vec()[0];
     let world_transporter_id = ps.fresh_instance_id_range.next().unwrap();
-    
+
     layer.objects
          .as_mut_vec()
          .push(structs::SclyObject {
@@ -3312,7 +3325,7 @@ fn patch_credits(
                 if _room_name.len() == 0 {
                     _room_name = "<Not Present>".to_string();
                 }
-    
+
                 _room_name
             };
             let pickup_name = pickup_type.name();
@@ -3757,7 +3770,7 @@ fn patch_dol<'r>(
     if let Some(update_hint_state_replacement) = &config.update_hint_state_replacement {
         dol_patcher.patch(symbol_addr!("UpdateHintState__13CStateManagerFf", version), Cow::from(update_hint_state_replacement.clone()))?;
     }
-    
+
     if config.warp_to_start
     {
         let handle_no_to_save_msg_patch = ppcasm!(symbol_addr!("ThinkSaveStation__22CScriptSpecialFunctionFfR13CStateManager", version) + 0x54, {
@@ -3785,6 +3798,37 @@ fn patch_dol<'r>(
         });
         dol_patcher.add_text_segment(0x80002200, Cow::Owned(warp_to_start_patch.encoded_bytes()))?;
     }
+
+    if version == Version::Pal {
+		let pickup_dot_switch_case_patch = ppcasm!(0x80002240, {
+			lis r0, { custom_asset_ids::MAP_DOT_TXTR.to_u32() }@h;
+			ori r0, r0, { custom_asset_ids::MAP_DOT_TXTR.to_u32() }@l;
+			b { symbol_addr!("Draw__15CMappableObjectCFiRC13CMapWorldInfofb", version) + 0x284 };
+			nop;
+			nop;
+			nop;
+			nop;
+			nop;
+		});
+		dol_patcher.add_text_segment(0x80002240, Cow::Owned(pickup_dot_switch_case_patch.encoded_bytes()))?;
+	} else {
+		let pickup_dot_switch_case_patch = ppcasm!(0x80002240, {
+			lis r6, { custom_asset_ids::MAP_DOT_TXTR.to_u32() }@h;
+			addi r6, r6, { custom_asset_ids::MAP_DOT_TXTR.to_u32() }@l;
+			b { symbol_addr!("Draw__15CMappableObjectCFiRC13CMapWorldInfofb", version) + 0x298 };
+			nop;
+			nop;
+			nop;
+			nop;
+			nop;
+		});
+		dol_patcher.add_text_segment(0x80002240, Cow::Owned(pickup_dot_switch_case_patch.encoded_bytes()))?;
+	};
+
+    let mappableobject_draw_switch_case_patch = ppcasm!(symbol_addr!("Draw_CMappableObjectSwitchCaseData", version) + 8 * 0x4, {
+        .long 0x80002240 as u32;
+    });
+    dol_patcher.ppcasm_patch(&mappableobject_draw_switch_case_patch)?;
 
     // Add rel loader to the binary
     let (rel_loader_bytes, rel_loader_map_str) = match version {
@@ -3848,6 +3892,25 @@ fn empty_frigate_pak<'r>(file: &mut structs::FstEntryFile)
         structs::ResourceKind::External(vec![0; 64], b"XXXX".into())
     );
     pak.resources = iter::once(res).collect();
+    Ok(())
+}
+
+fn add_dot_to_ui_pak<'r>(file: &mut structs::FstEntryFile)
+    -> Result<(), String>
+{
+    const TXTR_BYTES: &[u8] = include_bytes!("../extra_assets/map_pickupdot.txtr");
+    let pak = match file {
+        structs::FstEntryFile::Pak(pak) => pak,
+        _ => unreachable!(),
+    };
+    let res = crate::custom_assets::build_resource_raw(
+        custom_asset_ids::MAP_DOT_TXTR.to_u32(),
+        structs::ResourceKind::Unknown(Reader::new(TXTR_BYTES), b"TXTR".into())
+    );
+    pak.resources
+       .cursor()
+       .insert_before(iter::once(res));
+
     Ok(())
 }
 
@@ -3932,7 +3995,7 @@ fn patch_ctwk_player(res: &mut structs::Resource, ctwk_config: &CtwkConfig)
 
         if scan_range > ctwk_player.scan_max_target_distance {
             ctwk_player.scan_max_target_distance = scan_range;
-        }        
+        }
     }
 
     if ctwk_config.bomb_jump_height.is_some() {
@@ -3984,7 +4047,7 @@ fn patch_ctwk_player(res: &mut structs::Resource, ctwk_config: &CtwkConfig)
     if ctwk_config.recenter_after_freelook.unwrap_or(false) {
         ctwk_player.freelook_turns_player = 0;
     }
-    
+
     if ctwk_config.toggle_free_look.unwrap_or(false) {
         ctwk_player.hold_buttons_for_free_look = 0;
     }
@@ -3996,11 +4059,11 @@ fn patch_ctwk_player(res: &mut structs::Resource, ctwk_config: &CtwkConfig)
     if ctwk_config.disable_dash.unwrap_or(false) {
         ctwk_player.dash_enabled = 0;
     }
-    
+
     if ctwk_config.varia_damage_reduction.is_some() {
         ctwk_player.varia_damage_reduction = ctwk_player.varia_damage_reduction*ctwk_config.varia_damage_reduction.unwrap();
     }
-    
+
     if ctwk_config.gravity_damage_reduction.is_some() {
         ctwk_player.gravity_damage_reduction = ctwk_player.gravity_damage_reduction*ctwk_config.gravity_damage_reduction.unwrap();
     }
@@ -4118,7 +4181,8 @@ fn patch_ctwk_ball(res: &mut structs::Resource, ctwk_config: &CtwkConfig)
 -> Result<(), String>
 {
     let mut ctwk = res.kind.as_ctwk_mut().unwrap();
- 
+    println!("patched res=0x{:X}", res.file_id);
+
     let ctwk_ball = match &mut ctwk {
         structs::Ctwk::CtwkBall(i) => i,
         _ => panic!("Failed to map res=0x{:X} as CtwkBall", res.file_id),
@@ -4449,7 +4513,7 @@ fn patch_qol_game_breaking(
 
 fn patch_qol_logical(patcher: &mut PrimePatcher, config: &PatchConfig)
 {
-    if config.main_plaza_door {      
+    if config.main_plaza_door {
         patcher.add_scly_patch(
             resource_info!("01_mainplaza.MREA").into(),
             make_main_plaza_locked_door_two_ways
@@ -4467,13 +4531,13 @@ fn patch_qol_logical(patcher: &mut PrimePatcher, config: &PatchConfig)
         );
     }
 
-    if config.backwards_labs {        
+    if config.backwards_labs {
         patcher.add_scly_patch(
             resource_info!("10_ice_research_a.MREA").into(),
             patch_research_lab_hydra_barrier
         );
     }
-    
+
     if config.backwards_upper_mines {
         patcher.add_scly_patch(
             resource_info!("01_mines_mainplaza.MREA").into(),
@@ -5285,7 +5349,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     Ok(())
                 });
             }
-            
+
             if config.qol_cutscenes == CutsceneMode::Major && is_elevator(room_info.room_id.to_u32()) {
                 patcher.add_scly_patch(
                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
@@ -5302,7 +5366,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             let (pickups, scans) = {
                 let mut _pickups = Vec::new();
                 let mut _scans = Vec::new();
-                
+
                 let level = config.level_data.get(world.to_json_key());
                 if level.is_some() {
                     let room = level.unwrap().rooms.get(room_info.name.trim());
@@ -5341,7 +5405,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                         pickups[idx].clone() // TODO: cloning is suboptimal
                     }
                 };
-                
+
                 let key = PickupHashKey {
                     level_id: world.mlvl(),
                     room_id: room_info.room_id.to_u32(),
@@ -5382,6 +5446,12 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                         )
                 );
 
+                // add pickup dot to map
+                patcher.add_resource_patch(
+                    (&[pak_name.as_bytes()], room_info.mapa_id.to_u32(), b"MAPA".into()),
+                    move |res| patch_add_pickup_dot(res, (*pickup_location).location.instance_id, (*pickup_location).position)
+                );
+
                 idx = idx + 1;
             }
 
@@ -5408,7 +5478,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     move |_ps, area| patch_add_item(
                         _ps,
                         area,
-                        &pickup, 
+                        &pickup,
                         game_resources,
                         pickup_hudmemos,
                         pickup_scans,
@@ -5416,6 +5486,12 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                         skip_hudmemos,
                     ),
                 );
+
+                // add pickup dot to map
+                /*patcher.add_resource_patch(
+                    (&[pak_name.as_bytes()], room_info.mapa_id, b"MAPA".into()),
+                    move |res| patch_add_pickup_dot(res, /* instance id */, (*pickup_location).position)
+                );*/
 
                 idx = idx + 1;
             }
@@ -5637,7 +5713,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     }
 
     patch_heat_damage_per_sec(&mut patcher, config.heat_damage_per_sec);
-    
+
     // Always patch out the white flash for photosensitive epileptics
     if version == Version::NtscU0_00 {
         patcher.add_scly_patch(
@@ -5660,6 +5736,11 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     patcher.add_scly_patch(
         resource_info!("00i_mines_connect.MREA").into(), // Dynamo Access (Mines)
         move |ps, area| patch_spawn_point_position(ps, area, [0.0, 0.0, 0.0], true, false)
+    );
+
+    patcher.add_file_patch(
+        b"GGuiSys.pak",
+        |file| add_dot_to_ui_pak(file)
     );
 
     if config.qol_cosmetic {
@@ -5733,7 +5814,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             })
         }
     }
-    
+
     if config.warp_to_start
     {
         const SAVE_STATIONS_ROOMS: &[ResourceInfo] = &[

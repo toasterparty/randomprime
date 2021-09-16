@@ -172,7 +172,7 @@ impl PickupType
     }
 
     /**
-     * asset IDs of default text (e.g. "Power Bombs Aquired")
+     * asset IDs of default text (e.g. "Power Bombs Acquired")
      */
     pub fn scan_strg(&self) -> ResId<res_id::STRG> {
         ResId::<res_id::STRG>::new(custom_asset_ids::DEFAULT_PICKUP_SCAN_STRGS.to_u32() + self.kind())

@@ -122,7 +122,7 @@ impl<'r, 's> PrimePatcher<'r, 's>
             // doesn't allow us to hold mutable references to both at the same time, so create a
             // copy on the stack to modify and then overwrite the canonical MLVL at the end of the
             // PAK.
-            let scly_patch_exists = self.scly_patches.iter().any(|p| p.0.pak_name == &name[..]);
+			let scly_patch_exists = self.scly_patches.iter().any(|p| p.0.pak_name == &name[..]);
             let mut mlvl_editor = if scly_patch_exists {
 
                 // If the pak has few or no resources in it, assume it's been gutted (e.g. frigate skip) //
@@ -154,12 +154,12 @@ impl<'r, 's> PrimePatcher<'r, 's>
                         patch_func(cursor.value().unwrap())?;
                     }
                 }
-
-                let mrea_key = MreaKey {
+				
+				let mrea_key = MreaKey {
                     pak_name: &name[..],
                     room_id: cursor.peek().unwrap().file_id,
                 };
-                if let Some((_, patches)) = self.scly_patches.iter_mut().find(|p| p.0 == mrea_key) {
+				if let Some((_, patches)) = self.scly_patches.iter_mut().find(|p| p.0 == mrea_key) {
                     let mut mlvl_area = mlvl_editor.as_mut().unwrap().get_area(&mut cursor);
                     for patch in patches.iter_mut() {
                         patch(&mut patcher_state, &mut mlvl_area)?;
