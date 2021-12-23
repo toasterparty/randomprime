@@ -522,6 +522,7 @@ pub fn custom_assets<'r>(
                     blast_shield.scan_text(),
                     1,
                 ));
+                savw_scans_to_add.push(blast_shield.scan());
             }
         } else {
             // If vanilla CMDL, then it can't depend on custom textures 
