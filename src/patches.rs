@@ -6428,6 +6428,28 @@ fn patch_modify_dock<'r>(
         panic!("failed to find mrea idx {} in room 0x{:X} when shuffling rooms", old_mrea_idx, mrea_id);
     }
 
+    // Update the door to not immediately render graphics upon opening
+    let layer = &mut area.mrea().scly_section_mut().layers.as_mut_vec()[0];
+    let mut docks: Vec<u32> = Vec::new();
+    for obj in layer.objects.as_mut_vec() {
+        if obj.property_data.is_dock() {
+            let dock = obj.property_data.as_dock_mut().unwrap();
+            if dock.dock_index == dock_num {
+                docks.push(obj.instance_id&0x000FFFFF);
+            }
+        }
+    }
+
+    for obj in layer.objects.as_mut_vec() {
+        if obj.property_data.is_door() {
+            for conn in obj.connections.as_mut_vec() {
+                if docks.contains(&(conn.target_object_id&0x000FFFFF)) && conn.message == structs::ConnectionMsg::INCREMENT {
+                    conn.message = structs::ConnectionMsg::SET_TO_MAX;
+                }
+            }
+        }
+    }
+
     Ok(())
 }
 
