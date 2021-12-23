@@ -460,7 +460,7 @@ fn patch_door<'r>(
 
     if door_loc.door_shield_location.is_some() {
         let door_shield = layers[0].objects.iter_mut()
-            .find(|obj| obj.instance_id == door_loc.door_shield_location.unwrap().instance_id)
+            .find(|obj| obj.instance_id == door_loc.door_shield_location.as_ref().unwrap().instance_id)
             .and_then(|obj| obj.property_data.as_actor_mut())
             .unwrap();
 
@@ -471,6 +471,9 @@ fn patch_door<'r>(
         }
 
         if blast_shield_type.is_some() {
+            let special_function_id = ps.fresh_instance_id_range.next().unwrap();
+            let blast_shield_instance_id = ps.fresh_instance_id_range.next().unwrap();
+    
             let blast_shield_type = blast_shield_type.as_ref().unwrap();
 
             // Calculate placement //
@@ -521,7 +524,6 @@ fn patch_door<'r>(
             }
 
             // Create new blast shield actor //
-            let blast_shield_instance_id = ps.fresh_instance_id_range.next().unwrap();
             let mut blast_shield = structs::SclyObject {
                 instance_id: blast_shield_instance_id,
                 connections: vec![
@@ -608,7 +610,7 @@ fn patch_door<'r>(
             // This is needed because otherwise the shield would re-appear every
             // time the room is loaded
             let special_function = structs::SclyObject {
-                instance_id: ps.fresh_instance_id_range.next().unwrap(),
+                instance_id: special_function_id,
                 connections: vec![].into(),
                 property_data: structs::SclyProperty::SpecialFunction(
                     Box::new(structs::SpecialFunction {
@@ -637,9 +639,49 @@ fn patch_door<'r>(
                 structs::Connection {
                     state: structs::ConnectionState::DEAD,
                     message: structs::ConnectionMsg::DECREMENT,
-                    target_object_id: special_function.instance_id,
+                    target_object_id: special_function_id,
                 }
             );
+
+            let mut _break = false;
+            for obj in layers[0].objects.as_mut_vec() {
+                if _break { break; }
+                if obj.property_data.is_door() {
+                    let connections = obj.connections.clone();
+                    for conn in connections.iter() {
+                        if conn.target_object_id & 0x00FFFFFF == door_loc.door_shield_location.as_ref().unwrap().instance_id & 0x00FFFFFF 
+                        && conn.message == structs::ConnectionMsg::DEACTIVATE {
+                            if obj.property_data.as_door().unwrap().is_morphball_door != 0 {
+                                panic!("Custom Blast Shields cannot be placed on morph ball doors");
+                            }
+
+                            // Activate the layer change when the door is opened from the other side
+                            obj.connections.as_mut_vec().push(
+                                structs::Connection {
+                                    state: structs::ConnectionState::MAX_REACHED,
+                                    message: structs::ConnectionMsg::DECREMENT,
+                                    target_object_id: special_function_id,
+                                }
+                            );
+
+                            // Remove the blast shield when the door is opened from the other side
+                            obj.connections.as_mut_vec().push(
+                                structs::Connection {
+                                    state: structs::ConnectionState::MAX_REACHED,
+                                    message: structs::ConnectionMsg::DEACTIVATE,
+                                    target_object_id: blast_shield_instance_id,
+                                }
+                            );
+                            
+                            _break = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+
+            
 
             // Create Gibbs and activate on DEAD //
             // TODO: It's possible, but there's so many goddam dependencies
