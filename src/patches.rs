@@ -476,47 +476,42 @@ fn patch_door<'r>(
             // Calculate placement //
             let position: GenericArray<f32, U3>;
             let rotation: GenericArray<f32, U3>;
-            let scale: GenericArray<f32, U3>;
+            let scale: GenericArray<f32, U3> = [1.0, 1.5, 1.5].into();
             let hitbox: GenericArray<f32, U3>;
             let scan_offset: GenericArray<f32, U3>;
 
             if door_shield.rotation[2] >= 45.0 && door_shield.rotation[2] < 135.0 {
                 // Leads North
-                position    = [door_shield.position[0], door_shield.position[1] - 0.1, door_shield.position[2] - 1.8017].into();
+                position    = [door_shield.position[0], door_shield.position[1] + 0.2, door_shield.position[2] - 1.8017].into();
                 rotation    = [door_shield.rotation[0], door_shield.rotation[1], door_shield.rotation[2]].into();
-                scale       = [1.0, 1.5, 1.5].into();
                 hitbox      = [5.0, 0.5, 4.0].into();
-                scan_offset = [0.0, 0.7, 2.0].into();
+                scan_offset = [0.0, -1.0, 2.0].into();
                 
             } else if (door_shield.rotation[2] >= 135.0 && door_shield.rotation[2] < 225.0) || (door_shield.rotation[2] < -135.0 && door_shield.rotation[2] > -225.0) {
                 // Leads East
-                position    = [door_shield.position[0] + 0.1, door_shield.position[1], door_shield.position[2] - 1.8017].into();
+                position    = [door_shield.position[0] + 0.2, door_shield.position[1], door_shield.position[2] - 1.8017].into();
                 rotation    = [door_shield.rotation[0], door_shield.rotation[1], 0.0].into();
-                scale       = [1.0, 1.5, 1.5].into();
                 hitbox      = [0.5, 5.0, 4.0].into();
-                scan_offset = [-0.7, 0.0, 2.0].into();
+                scan_offset = [-1.0, 0.0, 2.0].into();
 
             } else if door_shield.rotation[2] >= -135.0 && door_shield.rotation[2] < -45.0 {
                 // Leads South
-                position    = [door_shield.position[0], door_shield.position[1] + 0.1, door_shield.position[2] - 1.8017].into();
+                position    = [door_shield.position[0], door_shield.position[1] - 0.2, door_shield.position[2] - 1.8017].into();
                 rotation    = [door_shield.rotation[0], door_shield.rotation[1], door_shield.rotation[2]].into();
-                scale       = [1.0, 1.5, 1.5].into();
                 hitbox      = [5.0, 0.5, 4.0].into();
-                scan_offset = [0.0, 0.7, 2.0].into();
+                scan_offset = [0.0, 1.0, 2.0].into();
 
             } else if door_shield.rotation[2] >= -45.0 && door_shield.rotation[2] < 45.0 {
                 // Leads West
-                position    = [door_shield.position[0] - 0.1, door_shield.position[1], door_shield.position[2] - 1.8017].into();
+                position    = [door_shield.position[0] - 0.2, door_shield.position[1], door_shield.position[2] - 1.8017].into();
                 rotation    = [door_shield.rotation[0], door_shield.rotation[1], -179.99].into();
-                scale       = [1.0, 1.5, 1.5].into();
                 hitbox      = [0.5, 5.0, 4.0].into();
-                scan_offset = [0.7, 0.0, 2.0].into();
+                scan_offset = [1.0, 0.0, 2.0].into();
 
             } else {
                 assert!(false);
                 position    = [0.0, 0.0, 0.0].into();
                 rotation    = [0.0, 0.0, 0.0].into();
-                scale       = [0.0, 0.0, 0.0].into();
                 hitbox      = [0.0, 0.0, 0.0].into();
                 scan_offset = [0.0, 0.0, 0.0].into();
             }
