@@ -243,6 +243,34 @@ fn patch_save_banner_txtr(res: &mut structs::Resource)
     Ok(())
 }
 
+fn patch_tournament_winners<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+)
+-> Result<(), String>
+{
+    let frme_id = ResId::<res_id::FRME>::new(0xDCEC3E77);
+
+    let scan_dep: structs::Dependency = custom_asset_ids::TOURNEY_WINNERS_SCAN.into();
+    area.add_dependencies(game_resources, 0, iter::once(scan_dep));
+
+    let strg_dep: structs::Dependency = custom_asset_ids::TOURNEY_WINNERS_STRG.into();
+    area.add_dependencies(game_resources, 0, iter::once(strg_dep));
+
+    let frme_dep: structs::Dependency = frme_id.into();
+    area.add_dependencies(game_resources, 0, iter::once(frme_dep));
+
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    let poi = layer.objects.iter_mut()
+            .find(|obj| obj.instance_id&0x00FFFFFF == 0x00100340)
+            .and_then(|obj| obj.property_data.as_point_of_interest_mut())
+            .unwrap();
+    poi.scan_param.scan = custom_asset_ids::TOURNEY_WINNERS_SCAN;
+    Ok(())
+}
+
 fn patch_thermal_conduits_damage_vulnerabilities(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
     -> Result<(), String>
 {
@@ -8297,6 +8325,10 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 move |res| patch_artifact_totem_scan_strg(res, &strg_text),
             );
         }
+        patcher.add_scly_patch(
+            resource_info!("07_stonehenge.MREA").into(),
+            |_ps, area| patch_tournament_winners(_ps, area, game_resources)
+        );
     }
     patcher.add_resource_patch(
         resource_info!("STRG_Main.STRG").into(),// 0x0552a456

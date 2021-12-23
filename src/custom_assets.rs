@@ -78,6 +78,8 @@ pub mod custom_asset_ids {
         MQA_POI_STRG: STRG,
         CFLDG_POI_SCAN: SCAN,
         CFLDG_POI_STRG: STRG,
+        TOURNEY_WINNERS_SCAN: SCAN,
+        TOURNEY_WINNERS_STRG: STRG,
         
         // Starting items memo
         STARTING_ITEMS_HUDMEMO_STRG: STRG,
@@ -315,6 +317,17 @@ pub fn custom_assets<'r>(
         1,
     ));
     savw_scans_to_add.push(custom_asset_ids::CFLDG_POI_SCAN);
+    assets.extend_from_slice(&create_item_scan_strg_pair_2(
+        custom_asset_ids::TOURNEY_WINNERS_SCAN,
+        custom_asset_ids::TOURNEY_WINNERS_STRG,
+        vec![
+            "Chozo script translated.\0".to_string(),
+            "Racing\0".to_string(),
+            "As we have done for millennia, we Chozo work constantly on our speed. Our fastest are our sentinels; They are, and have always been, repositories for our most precious secrets and strongest powers. \n\n2019 - TheWeakestLink64\n2020 - Interslice\n2021 - Dinopony\0".to_string(),
+        ],
+        1,
+    ));
+    savw_scans_to_add.push(custom_asset_ids::TOURNEY_WINNERS_SCAN);
 
     if starting_memo.is_some() {
         assets.push(build_resource(
