@@ -4472,6 +4472,7 @@ fn patch_dol<'r>(
     version: Version,
     config: &PatchConfig,
     remove_ball_color: bool,
+    smoother_teleports: bool,
 ) -> Result<(), String>
 {
     if version == Version::NtscUTrilogy || version == Version::NtscJTrilogy || version == Version::PalTrilogy {
@@ -4605,12 +4606,28 @@ fn patch_dol<'r>(
     });
     dol_patcher.ppcasm_patch(&default_beam_patch)?;
 
-    let default_beam_patch = ppcasm!(symbol_addr!("__ct__13CSplashScreenFQ213CSplashScreen13ESplashScreen", version) + 0x70, {
+    let splash_scren_patch = ppcasm!(symbol_addr!("__ct__13CSplashScreenFQ213CSplashScreen13ESplashScreen", version) + 0x70, {
             nop;
     });
-    dol_patcher.ppcasm_patch(&default_beam_patch)?;
+    dol_patcher.ppcasm_patch(&splash_scren_patch)?;
 
-    // 
+    if smoother_teleports {
+        // Do not holster arm cannon
+        let better_teleport_patch = ppcasm!(symbol_addr!("Teleport__7CPlayerFRC12CTransform4fR13CStateManagerb", version) + 0x31C, {
+                nop;
+        });
+        dol_patcher.ppcasm_patch(&better_teleport_patch)?;
+
+        // Do not force morph/unmorph
+        let better_teleport_patch = ppcasm!(symbol_addr!("AcceptScriptMsg__17CScriptSpawnPointF20EScriptObjectMessage9TUniqueIdR13CStateManager", version) + 0x188, {
+                nop;
+        });
+        dol_patcher.ppcasm_patch(&better_teleport_patch)?;
+        let better_teleport_patch = ppcasm!(symbol_addr!("AcceptScriptMsg__17CScriptSpawnPointF20EScriptObjectMessage9TUniqueIdR13CStateManager", version) + 0x1ec, {
+                nop;
+        });
+        dol_patcher.ppcasm_patch(&better_teleport_patch)?;
+    }
 
     if config.automatic_crash_screen {
         let patch_offset = if version == Version::NtscU0_00 {
@@ -8185,16 +8202,46 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     );
     let skip_frigate = skip_frigate && starting_room.mlvl != World::FrigateOrpheon.mlvl();
 
-    patcher.add_file_patch(
-        b"default.dol",
-        |file| patch_dol(
-            file,
-            starting_room,
-            version,
-            config,
-            remove_ball_color,
-        )
-    );
+    let mut smoother_teleports = false;
+    for (_, level) in config.level_data.iter() {
+        if smoother_teleports { break; }
+        for (_, room) in level.rooms.iter() {
+            if smoother_teleports { break; }
+            if room.doors.is_none() { continue };
+            for (_, door) in room.doors.as_ref().unwrap().iter() {
+                if door.destination.is_some() {
+                    smoother_teleports = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    if smoother_teleports {
+        patcher.add_file_patch(
+            b"default.dol",
+            |file| patch_dol(
+                file,
+                starting_room,
+                version,
+                config,
+                remove_ball_color,
+                true,
+            )
+        );
+    } else {
+        patcher.add_file_patch(
+            b"default.dol",
+            |file| patch_dol(
+                file,
+                starting_room,
+                version,
+                config,
+                remove_ball_color,
+                false,
+            )
+        );
+    }
 
     let rel_config = create_rel_config_file(starting_room, config.quickplay);
 
