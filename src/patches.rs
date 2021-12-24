@@ -8265,6 +8265,11 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     // Get info about the destination room
                     let destination = door_config.destination.clone().unwrap();
                     let destination_room = SpawnRoomData::from_str(format!("{}:{}", world.to_str(), destination.room_name).as_str());
+                    let source_room = SpawnRoomData::from_str(format!("{}:{}", world.to_str(), room_info.name).as_str());
+
+                    if destination_room.mrea == source_room.mrea {
+                        panic!("Dock destination cannot be in same room");;
+                    }
 
                     // Patch the current room to lead to the new destination room
                     patcher.add_scly_patch(
