@@ -1193,15 +1193,15 @@ fn patch_add_poi<'r>(
     Ok(())
 }
 
-fn gen_n_pick_closest<R>(n: u32, rng: &mut R, scale: f32)
+fn gen_n_pick_closest<R>(n: u32, rng: &mut R, min: f32, max: f32, mid: f32)
 -> f32
 where R: Rng
 {
     assert!(n != 0);
-    let mut closest: f32 = 1.1;
+    let mut closest: f32 = 100.1;
     for _ in 0..n {
-        let x = rng.gen_range(1.0-scale, 1.0*scale);
-        if f32::abs(x - 0.5) < f32::abs(closest - 0.5) {
+        let x = rng.gen_range(min, max);
+        if f32::abs(x - mid) < f32::abs(closest - mid) {
             closest = x;
         }
     }
@@ -1226,6 +1226,7 @@ fn modify_pickups_in_mrea<'r>(
 )
 -> Result<(), String>
 {
+    let room_id = area.mlvl_area.mrea.to_u32();
     let mut rng = StdRng::seed_from_u64(seed);
 
     let mut position_override: Option<[f32;3]> = None;
@@ -1237,9 +1238,32 @@ fn modify_pickups_in_mrea<'r>(
             let area_transform = area.mlvl_area.area_transform;
             [area_transform[3], area_transform[7], area_transform[11]]
         };
-        let x_factor: f32 = gen_n_pick_closest(2, &mut rng, 0.85);
-        let y_factor: f32 = gen_n_pick_closest(2, &mut rng, 0.85);
-        let z_factor: f32 = gen_n_pick_closest(2, &mut rng, 0.75);
+
+        let mut offset_xy = 0;
+        let mut offset_z  = 0;
+        if vec![
+            0xC44E7A07, // landing site
+            0xB2701146, // alcove
+            0xB9ABCD56, // fcs
+            0x9A0A03EB, // sunchamber
+            0xFB54A0CB, // hote
+            0xBAD9EDBF, // Triclops pit
+            0x3953C353, // Elite Quarters
+            0x70181194, // Quarantine Cave
+        ].contains(&room_id) {
+            offset_xy = 3;
+            offset_z  = 4;
+        }
+
+        if room_id == 0x2398E906 { // Artifact Temple
+            offset_xy = 10;
+            offset_z = 10;
+        }
+
+        let x_factor: f32 = gen_n_pick_closest(1+offset_xy, &mut rng, 0.1, 0.9, 0.5);
+        let y_factor: f32 = gen_n_pick_closest(1+offset_xy, &mut rng, 0.1, 0.9, 0.5);
+        let z_factor: f32 = gen_n_pick_closest(2+offset_z, &mut rng, 0.1, 0.9, 0.3);
+
         position_override = Some(
             [
                 room_origin[0] + bounding_box[0] + (bounding_box[3]-bounding_box[0])*x_factor,
