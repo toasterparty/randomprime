@@ -1233,14 +1233,24 @@ fn modify_pickups_in_mrea<'r>(
     if shuffle_position {
         // xmin, ymin, zmin,
         // xmax, ymax, zmax,
-        let bounding_box = area.mlvl_area.area_bounding_box.clone();
+        let mut bounding_box = area.mlvl_area.area_bounding_box.clone();
         let room_origin = {
             let area_transform = area.mlvl_area.area_transform;
             [area_transform[3], area_transform[7], area_transform[11]]
         };
+        for i in 0..6 {
+            bounding_box[i] = bounding_box[i] + room_origin[i%3];
+        }
+        if room_id == 0x2398E906 { // Artifact Temple
+            bounding_box = [
+                -410.0, 20.0, -40.0,
+                -335.0, 69.0, -17.0,
+            ].into()
+        }
 
         let mut offset_xy = 0;
         let mut offset_z  = 0;
+        let mut offset_max_z = 0.0;
         if vec![
             0xC44E7A07, // landing site
             0xB2701146, // alcove
@@ -1250,25 +1260,22 @@ fn modify_pickups_in_mrea<'r>(
             0xBAD9EDBF, // Triclops pit
             0x3953C353, // Elite Quarters
             0x70181194, // Quarantine Cave
+            0xC7E821BA, // ttb
         ].contains(&room_id) {
             offset_xy = 3;
             offset_z  = 4;
-        }
-
-        if room_id == 0x2398E906 { // Artifact Temple
-            offset_xy = 10;
-            offset_z = 10;
+            offset_max_z = -0.5;
         }
 
         let x_factor: f32 = gen_n_pick_closest(1+offset_xy, &mut rng, 0.1, 0.9, 0.5);
         let y_factor: f32 = gen_n_pick_closest(1+offset_xy, &mut rng, 0.1, 0.9, 0.5);
-        let z_factor: f32 = gen_n_pick_closest(2+offset_z, &mut rng, 0.1, 0.9, 0.3);
+        let z_factor: f32 = gen_n_pick_closest(2+offset_z, &mut rng, 0.1, 0.9 + offset_max_z, 0.3);
 
         position_override = Some(
             [
-                room_origin[0] + bounding_box[0] + (bounding_box[3]-bounding_box[0])*x_factor,
-                room_origin[1] + bounding_box[1] + (bounding_box[4]-bounding_box[1])*y_factor,
-                room_origin[2] + bounding_box[2] + (bounding_box[5]-bounding_box[2])*z_factor,
+                bounding_box[0] + (bounding_box[3]-bounding_box[0])*x_factor,
+                bounding_box[1] + (bounding_box[4]-bounding_box[1])*y_factor,
+                bounding_box[2] + (bounding_box[5]-bounding_box[2])*z_factor,
             ]
         );
     }
