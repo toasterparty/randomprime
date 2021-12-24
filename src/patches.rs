@@ -1265,12 +1265,12 @@ fn modify_pickups_in_mrea<'r>(
         ].contains(&mrea_id) {
             offset_xy = 3;
             offset_z  = 4;
-            offset_max_z = -0.3;
+            offset_max_z = -0.2;
         }
 
-        let x_factor: f32 = gen_n_pick_closest(1+offset_xy, &mut rng, 0.1, 0.9, 0.5);
-        let y_factor: f32 = gen_n_pick_closest(1+offset_xy, &mut rng, 0.1, 0.9, 0.5);
-        let z_factor: f32 = gen_n_pick_closest(2+offset_z, &mut rng, 0.1, 0.9 + offset_max_z, 0.3);
+        let x_factor: f32 = gen_n_pick_closest(1+offset_xy, &mut rng, 0.1, 0.85, 0.5);
+        let y_factor: f32 = gen_n_pick_closest(1+offset_xy, &mut rng, 0.1, 0.85, 0.5);
+        let z_factor: f32 = gen_n_pick_closest(2+offset_z, &mut rng, 0.1, 0.85 + offset_max_z, 0.3);
 
         position_override = Some(
             [
