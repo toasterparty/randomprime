@@ -6274,6 +6274,31 @@ fn patch_move_item_loss_scan<'r>(
     Ok(())
 }
 
+fn patch_remove_visor_changer<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer_count = scly.layers.len();
+    for i in 0..layer_count {
+        let layer = &mut scly.layers.as_mut_vec()[i];
+        for obj in layer.objects.as_mut_vec() {
+            let mut _player_hint = obj.property_data.as_player_hint_mut();
+            if _player_hint.is_some() {
+                let player_hint = _player_hint.unwrap();
+                player_hint.inner_struct.unknowns[9]  = 0; // Never switch to combat visor
+                player_hint.inner_struct.unknowns[10] = 0; // Never switch to scan visor
+                player_hint.inner_struct.unknowns[11] = 0; // Never switch to thermal visor
+                player_hint.inner_struct.unknowns[12] = 0; // Never switch to xray visor 
+            }
+        }
+    }
+
+    Ok(())
+}
+
 fn patch_remove_control_disabler<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -7974,6 +7999,11 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     patch_remove_control_disabler,
                 );
             }
+
+            patcher.add_scly_patch(
+                (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                patch_remove_visor_changer,
+            );
 
             if config.ctwk_config.player_size.is_some() {
                 patcher.add_scly_patch(
