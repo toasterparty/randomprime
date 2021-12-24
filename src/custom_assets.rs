@@ -408,6 +408,32 @@ pub fn custom_assets<'r>(
                 }
             }
 
+            if room.doors.is_some() {
+                for (_, door) in room.doors.as_ref().unwrap().iter() {
+                    if door.destination.is_none() { continue; }
+
+                    // Get next 2 IDs //
+                    let scan_id = ResId::<res_id::SCAN>::new(custom_asset_ids::EXTRA_IDS_START.to_u32() + custom_asset_offset);
+                    custom_asset_offset = custom_asset_offset + 1;
+                    let strg_id = ResId::<res_id::STRG>::new(custom_asset_ids::EXTRA_IDS_START.to_u32() + custom_asset_offset);
+                    custom_asset_offset = custom_asset_offset + 1;
+
+                    // Create scan/strg pair for destination
+                    let string = door.destination.as_ref().unwrap().room_name.clone() + "\0";
+                    assets.extend_from_slice(&create_item_scan_strg_pair(
+                        scan_id,
+                        strg_id,
+                        string,
+                    ));
+                    savw_scans_to_add.push(scan_id);
+
+                    // Map for easy lookup when patching //
+                    let key = PickupHashKey::from_location(level_name, room_name, extra_scans_idx);
+                    extra_scans.insert(key, (scan_id, strg_id));
+                    extra_scans_idx = extra_scans_idx + 1;
+                }
+            }
+
             if room.pickups.is_none() { continue };
             for pickup in room.pickups.as_ref().unwrap().iter() {
                 // custom hudmemo string

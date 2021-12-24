@@ -6475,11 +6475,23 @@ fn patch_add_dock_teleport<'r>(
 fn patch_modify_dock<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+    scan_id: ResId<res_id::SCAN>,
+    strg_id: ResId<res_id::STRG>,
     dock_num: u32,
     new_mrea_idx: u32,
 )
 -> Result<(), String>
 {
+    // Add dependencies for scan point
+    let frme_id = ResId::<res_id::FRME>::new(0xDCEC3E77);
+    let scan_dep: structs::Dependency = scan_id.into();
+    area.add_dependencies(game_resources, 0, iter::once(scan_dep));
+    let strg_dep: structs::Dependency = strg_id.into();
+    area.add_dependencies(game_resources, 0, iter::once(strg_dep));
+    let frme_dep: structs::Dependency = frme_id.into();
+    area.add_dependencies(game_resources, 0, iter::once(frme_dep));
+
     let mut replaced = false;
     let mrea_id = area.mlvl_area.mrea.to_u32();
     let attached_areas: &mut reader_writer::LazyArray<'r, u16> = &mut area.mlvl_area.attached_areas;
@@ -6510,7 +6522,7 @@ fn patch_modify_dock<'r>(
         panic!("failed to find mrea idx {} in room 0x{:X} when shuffling rooms", old_mrea_idx, mrea_id);
     }
 
-    // Update the door to not immediately render graphics upon opening
+    // Find the dock script object(s)
     let layer = &mut area.mrea().scly_section_mut().layers.as_mut_vec()[0];
     let mut docks: Vec<u32> = Vec::new();
     for obj in layer.objects.as_mut_vec() {
@@ -6521,13 +6533,23 @@ fn patch_modify_dock<'r>(
             }
         }
     }
-
+    
     for obj in layer.objects.as_mut_vec() {
         if obj.property_data.is_door() {
+            
+            let mut is_the_door = false;
+
+            // Update the door to not immediately render graphics upon opening
             for conn in obj.connections.as_mut_vec() {
                 if docks.contains(&(conn.target_object_id&0x000FFFFF)) && conn.message == structs::ConnectionMsg::INCREMENT {
                     conn.message = structs::ConnectionMsg::SET_TO_MAX;
+                    is_the_door = true;
                 }
+            }
+
+            // Update the door's scan to tell the destination room
+            if is_the_door {
+                obj.property_data.as_door_mut().unwrap().actor_params.scan_params.scan = scan_id;
             }
         }
     }
@@ -8228,9 +8250,17 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 if door_config.destination.is_some() {
                     // TODO: special handling is needed if a dock takes you to a room which is already connected to this one at another dock
                     // TODO: special handling is desired if a dock takes you to it's vanilla destination
-                    // TOOD: add scan point on this door to tell what the destination door is
                     // TODO: need to trace dock resources for morph ball tunnels (e.g. fiery shores)
                     // TODO: allow destinations outside this pak
+
+                    // Get the resource info for premade scan point with destination info
+                    let key = PickupHashKey {
+                        level_id: world.mlvl(),
+                        room_id: room_info.room_id.to_u32(),
+                        pickup_idx: idx as u32,
+                    };
+                    idx = idx + 1;
+                    let (dest_scan_id, dest_strg_id) = extra_scans.get(&key).unwrap();
 
                     // Get info about the destination room
                     let destination = door_config.destination.clone().unwrap();
@@ -8239,7 +8269,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     // Patch the current room to lead to the new destination room
                     patcher.add_scly_patch(
                         (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                        move |ps, area| patch_modify_dock(ps, area, dock_num, destination_room.mrea_idx),
+                        move |ps, area| patch_modify_dock(ps, area, game_resources, dest_scan_id.clone(), dest_strg_id.clone(), dock_num, destination_room.mrea_idx),
                     );
 
                     // Patch the destination room to "catch" the player with a teleporter at the same location as this room's dock
