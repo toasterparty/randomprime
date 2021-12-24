@@ -1226,7 +1226,7 @@ fn modify_pickups_in_mrea<'r>(
 )
 -> Result<(), String>
 {
-    let room_id = area.mlvl_area.mrea.to_u32();
+    let mrea_id = area.mlvl_area.mrea.to_u32();
     let mut rng = StdRng::seed_from_u64(seed);
 
     let mut position_override: Option<[f32;3]> = None;
@@ -1241,11 +1241,11 @@ fn modify_pickups_in_mrea<'r>(
         for i in 0..6 {
             bounding_box[i] = bounding_box[i] + room_origin[i%3];
         }
-        if room_id == 0x2398E906 { // Artifact Temple
+        if mrea_id == 0x2398E906 { // Artifact Temple
             bounding_box = [
                 -410.0, 20.0, -40.0,
                 -335.0, 69.0, -17.0,
-            ].into()
+            ].into();
         }
 
         let mut offset_xy = 0;
@@ -1261,10 +1261,10 @@ fn modify_pickups_in_mrea<'r>(
             0x3953C353, // Elite Quarters
             0x70181194, // Quarantine Cave
             0xC7E821BA, // ttb
-        ].contains(&room_id) {
+        ].contains(&mrea_id) {
             offset_xy = 3;
             offset_z  = 4;
-            offset_max_z = -0.5;
+            offset_max_z = -0.3;
         }
 
         let x_factor: f32 = gen_n_pick_closest(1+offset_xy, &mut rng, 0.1, 0.9, 0.5);
