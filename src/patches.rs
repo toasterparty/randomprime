@@ -1242,6 +1242,7 @@ fn modify_pickups_in_mrea<'r>(
             bounding_box[i] = bounding_box[i] + room_origin[i%3];
         }
         if mrea_id == 0x2398E906 { // Artifact Temple
+            // area.layer_flags.flags |= 1 << 20;
             bounding_box = [
                 -410.0, 20.0, -40.0,
                 -335.0, 69.0, -17.0,
@@ -1498,6 +1499,15 @@ fn modify_pickups_in_mrea<'r>(
                 ),
             }
         );
+
+        // Always allow cinema in artifact temple
+        if mrea_id == 0x2398E906 {
+            let trigger = layers[20].objects.iter_mut()
+                .find(|obj| obj.instance_id&0x00FFFFFF == 0x00100470)
+                .and_then(|obj| obj.property_data.as_trigger_mut())
+                .unwrap();
+            trigger.active = 1;
+        }
     }
 
     // find any overlapping POI that give "helpful" hints to the player and replace their scan text with the items //
