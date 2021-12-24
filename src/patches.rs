@@ -6299,6 +6299,36 @@ fn patch_remove_visor_changer<'r>(
     Ok(())
 }
 
+fn is_blast_shield<'r>(obj: &structs::SclyObject<'r>) -> bool {
+    if !obj.property_data.is_actor() {
+        return false;
+    }
+    obj.property_data.as_actor().unwrap().cmdl == 0xEFDFFB8C
+}
+
+fn is_blast_shield_poi<'r>(obj: &structs::SclyObject<'r>) -> bool {
+    if !obj.property_data.is_point_of_interest() {
+        return false;
+    }
+    obj.property_data.as_point_of_interest().unwrap().scan_param.scan.to_u32() == 0x05f56f9d
+}
+
+fn patch_remove_blast_shields<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer_count = scly.layers.len();
+    for i in 0..layer_count {
+        let layer = &mut scly.layers.as_mut_vec()[i];
+        layer.objects.as_mut_vec().retain(|obj| !is_blast_shield(&obj) && !is_blast_shield_poi(&obj));
+    }
+
+    Ok(())
+}
+
 fn patch_remove_control_disabler<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -8000,11 +8030,18 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 );
             }
 
+            if config.remove_vanilla_blast_shields {
+                patcher.add_scly_patch(
+                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                    patch_remove_blast_shields,
+                );
+            }
+
             patcher.add_scly_patch(
                 (pak_name.as_bytes(), room_info.room_id.to_u32()),
                 patch_remove_visor_changer,
             );
-
+            
             if config.ctwk_config.player_size.is_some() {
                 patcher.add_scly_patch(
                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
@@ -8288,9 +8325,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
                 // If specified, patch this door's connection
                 if door_config.destination.is_some() {
-                    // TODO: special handling is needed if a dock takes you to a room which is already connected to this one at another dock
-                    // TODO: special handling is desired if a dock takes you to it's vanilla destination
-                    // TODO: need to trace dock resources for morph ball tunnels (e.g. fiery shores)
+                    // TODO: allow shuffling of morph ball tunnels
                     // TODO: allow destinations outside this pak
 
                     // Get the resource info for premade scan point with destination info

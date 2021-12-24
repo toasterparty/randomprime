@@ -298,6 +298,7 @@ pub struct PatchConfig
 
     pub automatic_crash_screen: bool,
     pub etank_capacity: u32,
+    pub remove_vanilla_blast_shields: bool,
     pub nonvaria_heat_damage: bool,
     pub heat_damage_per_sec: f32,
     pub staggered_suit_damage: bool,
@@ -369,6 +370,7 @@ struct GameConfig
     warp_to_start: Option<bool>,
     warp_to_start_delay_s: Option<f32>,
 
+    remove_vanilla_blast_shields: Option<bool>,
     nonvaria_heat_damage: Option<bool>,
     staggered_suit_damage: Option<bool>,
     heat_damage_per_sec: Option<f32>,
@@ -854,6 +856,7 @@ impl PatchConfigPrivate
             warp_to_start,
             warp_to_start_delay_s: self.game_config.warp_to_start_delay_s.unwrap_or(0.0),
 
+            remove_vanilla_blast_shields: self.game_config.remove_vanilla_blast_shields.unwrap_or(false),
             nonvaria_heat_damage: self.game_config.nonvaria_heat_damage.unwrap_or(false),
             staggered_suit_damage: self.game_config.staggered_suit_damage.unwrap_or(false),
             heat_damage_per_sec: self.game_config.heat_damage_per_sec.unwrap_or(10.0),
