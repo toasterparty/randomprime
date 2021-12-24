@@ -341,10 +341,11 @@ pub fn custom_assets<'r>(
     // Create fallback/default scan/scan-text/hudmemo assets //
     for pt in PickupType::iter() {
         let name: &str = pt.name();
-        assets.extend_from_slice(&create_item_scan_strg_pair(
+        assets.extend_from_slice(&create_item_scan_strg_pair_2(
             pt.scan(),
             pt.scan_strg(),
-            format!("{}\0", name),
+            vec![format!("{}\0", name)],
+            1,
         ));
         savw_scans_to_add.push(pt.scan());
 

@@ -1472,6 +1472,27 @@ fn modify_pickups_in_mrea<'r>(
 
     layers[new_layer_idx].objects.as_mut_vec().push(relay);
 
+    if shuffle_position {
+        layers[0].objects.as_mut_vec().push(
+            structs::SclyObject {
+                instance_id: ps.fresh_instance_id_range.next().unwrap(),
+                connections: vec![].into(),
+                property_data: structs::SclyProperty::PointOfInterest(
+                    Box::new(structs::PointOfInterest {
+                        name: b"mypoi\0".as_cstr(),
+                        position: position.into(),
+                        rotation: [0.0, 0.0, 0.0].into(),
+                        active: 1,
+                        scan_param: structs::scly_structs::ScannableParameters {
+                            scan: scan_id_out,
+                        },
+                        point_size: 500.0,
+                    })
+                ),
+            }
+        );
+    }
+
     // find any overlapping POI that give "helpful" hints to the player and replace their scan text with the items //
     if qol_pickup_scans {
         const EXCLUDE_POI: &[u32] = &[
