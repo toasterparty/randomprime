@@ -6316,7 +6316,7 @@ fn patch_add_dock_teleport<'r>(
     // find the destination dock
     let mut found = false;
     let mut dock_position: GenericArray<f32, U3> = [0.0, 0.0, 0.0].into();
-    
+
     if dest_position.is_some() {
         dock_position = dest_position.unwrap().into();
     } else {
@@ -6337,6 +6337,14 @@ fn patch_add_dock_teleport<'r>(
         if !found {
             panic!("failed to find dock #{} in room 0x{:X}", destination_dock_num, mrea_id)
         }
+    }
+
+    // Check for vanilla door connection via proximity
+    if  f32::abs(source_position[0] - dock_position[0]) < 5.0 &&
+        f32::abs(source_position[1] - dock_position[1]) < 5.0 &&
+        f32::abs(source_position[2] - dock_position[2]) < 5.0
+    {
+        return Ok(()); // No teleport needed
     }
 
     // Find the nearest door
@@ -6542,7 +6550,9 @@ fn patch_modify_dock<'r>(
             // Update the door to not immediately render graphics upon opening
             for conn in obj.connections.as_mut_vec() {
                 if docks.contains(&(conn.target_object_id&0x000FFFFF)) && conn.message == structs::ConnectionMsg::INCREMENT {
-                    conn.message = structs::ConnectionMsg::SET_TO_MAX;
+                    if old_mrea_idx != new_mrea_idx {
+                        conn.message = structs::ConnectionMsg::SET_TO_MAX;
+                    }
                     is_the_door = true;
                 }
             }
@@ -8268,7 +8278,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     let source_room = SpawnRoomData::from_str(format!("{}:{}", world.to_str(), room_info.name).as_str());
 
                     if destination_room.mrea == source_room.mrea {
-                        panic!("Dock destination cannot be in same room");;
+                        panic!("Dock destination cannot be in same room");
                     }
 
                     // Patch the current room to lead to the new destination room
@@ -8284,8 +8294,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             ps, area,
                             door_location.dock_position.clone().unwrap(),
                             door_location.dock_scale.clone().unwrap(),
-                            destination.dock_num, // Used to determined where the player is placed in the new room
-                            None,
+                            destination.dock_num,
+                            None, // If Some, override destination spawn point 
                         ),
                     );
                 }
