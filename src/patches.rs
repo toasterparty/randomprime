@@ -1193,6 +1193,21 @@ fn patch_add_poi<'r>(
     Ok(())
 }
 
+fn gen_n_pick_closest<R>(n: u32, rng: &mut R, scale: f32)
+-> f32
+where R: Rng
+{
+    assert!(n != 0);
+    let mut closest: f32 = 1.1;
+    for _ in 0..n {
+        let x = rng.gen_range(1.0-scale, 1.0*scale);
+        if f32::abs(x - 0.5) < f32::abs(closest - 0.5) {
+            closest = x;
+        }
+    }
+    closest
+}
+
 fn modify_pickups_in_mrea<'r>(
     ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -1206,8 +1221,34 @@ fn modify_pickups_in_mrea<'r>(
     hudmemo_delay: f32,
     qol_pickup_scans: bool,
     extern_models: &HashMap<String, ExternPickupModel>,
-) -> Result<(), String>
+    shuffle_position,
+    seed: u64,
+)
+-> Result<(), String>
 {
+    let mut rng = StdRng::seed_from_u64(seed);
+
+    let mut position_override: Option<[f32;3]> = None;
+    if shuffle_position {
+        // xmin, ymin, zmin,
+        // xmax, ymax, zmax,
+        let bounding_box = area.mlvl_area.area_bounding_box.clone();
+        let room_origin = {
+            let area_transform = area.mlvl_area.area_transform;
+            [area_transform[3], area_transform[7], area_transform[11]]
+        };
+        let x_factor: f32 = gen_n_pick_closest(2, &mut rng, 0.85);
+        let y_factor: f32 = gen_n_pick_closest(2, &mut rng, 0.85);
+        let z_factor: f32 = gen_n_pick_closest(2, &mut rng, 0.75);
+        position_override = Some(
+            [
+                room_origin[0] + bounding_box[0] + (bounding_box[3]-bounding_box[0])*x_factor,
+                room_origin[1] + bounding_box[1] + (bounding_box[4]-bounding_box[1])*y_factor,
+                room_origin[2] + bounding_box[2] + (bounding_box[5]-bounding_box[2])*z_factor,
+            ]
+        );
+    }
+
     // Pickup to use for game functionality //
     let pickup_type = PickupType::from_str(&pickup_config.pickup_type);
 
@@ -1253,9 +1294,7 @@ fn modify_pickups_in_mrea<'r>(
 
     let name = CString::new(format!(
             "Randomizer - Pickup ({:?})", pickup_type.name())).unwrap();
-    if pickup_config.position.as_ref().unwrap_or(&[0.0, 0.0, 0.0])[2] != -10000.0 { // part of an elaborate hack to fix echoes translators
-        area.add_layer(Cow::Owned(name));
-    }
+    area.add_layer(Cow::Owned(name));
     let new_layer_idx = area.layer_flags.layer_count as usize - 1;
 
     let new_layer_2_idx = new_layer_idx + 1;
@@ -1401,7 +1440,7 @@ fn modify_pickups_in_mrea<'r>(
     let pickup_obj = layers[pickup_location.location.layer as usize].objects.iter_mut()
         .find(|obj| obj.instance_id == pickup_location.location.instance_id)
         .unwrap();
-    let (position, scan_id_out) = update_pickup(pickup_obj, pickup_type, pickup_model_data, pickup_config, scan_id);
+    let (position, scan_id_out) = update_pickup(pickup_obj, pickup_type, pickup_model_data, pickup_config, scan_id, position_override);
 
     if additional_connections.len() > 0 {
         pickup_obj.connections.as_mut_vec().extend_from_slice(&additional_connections);
@@ -1470,6 +1509,7 @@ fn update_pickup(
     pickup_model_data: structs::Pickup,
     pickup_config: &PickupConfig,
     scan_id: ResId<res_id::SCAN>,
+    position_override: Option<[f32;3]>,
 ) -> ([f32; 3], ResId<res_id::SCAN>)
 {
     let pickup = pickup_obj.property_data.as_pickup_mut().unwrap();
@@ -1477,6 +1517,10 @@ fn update_pickup(
 
     if pickup_config.position.is_some() {
         original_pickup.position = pickup_config.position.unwrap().into();
+    }
+
+    if position_override.is_some() {
+        original_pickup.position = position_override.unwrap().into();
     }
 
     let original_aabb = pickup_meta::aabb_for_pickup_cmdl(original_pickup.cmdl).unwrap();
@@ -8019,6 +8063,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     }
 
     // Patch pickups
+    let mut seed: u64 = 1;
     for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {
         let world = World::from_pak(pak_name).unwrap();
 
@@ -8162,10 +8207,13 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             hudmemo_delay,
                             config.qol_pickup_scans,
                             extern_models,
+                            config.shuffle_pickup_position,
+                            config.seed + seed,
                         )
                 );
 
                 idx = idx + 1;
+                seed = seed + 1;
             }
 
             // Patch extra item locations
