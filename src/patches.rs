@@ -1221,7 +1221,7 @@ fn modify_pickups_in_mrea<'r>(
     hudmemo_delay: f32,
     qol_pickup_scans: bool,
     extern_models: &HashMap<String, ExternPickupModel>,
-    shuffle_position,
+    shuffle_position: bool,
     seed: u64,
 )
 -> Result<(), String>
