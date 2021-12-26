@@ -1233,20 +1233,48 @@ fn modify_pickups_in_mrea<'r>(
     if shuffle_position {
         // xmin, ymin, zmin,
         // xmax, ymax, zmax,
-        let mut bounding_box = area.mlvl_area.area_bounding_box.clone();
-        let room_origin = {
-            let area_transform = area.mlvl_area.area_transform;
-            [area_transform[3], area_transform[7], area_transform[11]]
-        };
-        for i in 0..6 {
-            bounding_box[i] = bounding_box[i] + room_origin[i%3];
+        let mut bounding_boxes: Vec<[f32; 6]> = Vec::new();
+        {
+            let mut bounding_box = area.mlvl_area.area_bounding_box.clone();
+            let room_origin = {
+                let area_transform = area.mlvl_area.area_transform;
+                [area_transform[3], area_transform[7], area_transform[11]]
+            };
+            for i in 0..6 {
+                bounding_box[i] = bounding_box[i] + room_origin[i%3];
+            }
+            bounding_boxes.push(bounding_box.into());
         }
+
         if mrea_id == 0x2398E906 { // Artifact Temple
-            // area.layer_flags.flags |= 1 << 20;
-            bounding_box = [
-                -410.0, 20.0, -40.0,
-                -335.0, 69.0, -17.0,
-            ].into();
+            bounding_boxes.clear();
+            bounding_boxes.push([
+                    -410.0, 20.0, -40.0,
+                    -335.0, 69.0, -17.0,
+                ].into()
+            );
+            bounding_boxes.push([
+                -411.429, 67.9626, -14.8928,
+                -370.429, 93.9626, -9.8928,
+                ].into()
+            );
+        } else if mrea_id == 0x4148F7B0 { // burn dome
+            bounding_boxes.clear();
+            bounding_boxes.push([
+                565.7892, -27.4683, 30.6111,
+                589.7892, 0.5317, 42.6111,
+                ].into()
+            );
+            bounding_boxes.push([
+                578.9656, 35.3132, 31.0428,
+                598.9656, 44.3132, 37.0428,
+                ].into()
+            );
+            bounding_boxes.push([
+                588.6971, 9.1298, 29.8123,
+                589.6971, 49.1298, 31.8123,
+                ].into()
+            );
         }
 
         let mut offset_xy = 0;
@@ -1262,15 +1290,40 @@ fn modify_pickups_in_mrea<'r>(
             0x3953C353, // Elite Quarters
             0x70181194, // Quarantine Cave
             0xC7E821BA, // ttb
+            0x4148F7B0, // burn dome
         ].contains(&mrea_id) {
-            offset_xy = 3;
+            offset_xy = 1;
             offset_z  = 4;
-            offset_max_z = -0.2;
+            offset_max_z = -0.3;
         }
 
-        let x_factor: f32 = gen_n_pick_closest(1+offset_xy, &mut rng, 0.1, 0.85, 0.5);
-        let y_factor: f32 = gen_n_pick_closest(1+offset_xy, &mut rng, 0.1, 0.85, 0.5);
-        let z_factor: f32 = gen_n_pick_closest(2+offset_z, &mut rng, 0.1, 0.85 + offset_max_z, 0.3);
+        // Pick the relative position inside the bounding box
+        let x_factor: f32 = gen_n_pick_closest(1+offset_xy, &mut rng, 0.1, 0.9, 0.5);
+        let y_factor: f32 = gen_n_pick_closest(1+offset_xy, &mut rng, 0.1, 0.9, 0.5);
+        let z_factor: f32 = gen_n_pick_closest(1+offset_z, &mut rng, 0.1, 0.85 + offset_max_z, 0.3);
+
+        // Pick a bounding box if multiple are available
+        let mut bounding_box = bounding_boxes.choose(&mut rng).unwrap().clone();
+
+        let scly = area.mrea().scly_section_mut();
+        let layers = scly.layers.as_mut_vec();
+        for obj in layers[0].objects.iter() {
+            if obj.property_data.is_door() {
+                let door = obj.property_data.as_door().unwrap();
+                if door.position[0] > bounding_box[0] {
+                    bounding_box[0] = door.position[0];
+                }
+                if door.position[1] > bounding_box[1] {
+                    bounding_box[1] = door.position[1];
+                }
+                if door.position[0] < bounding_box[3] {
+                    bounding_box[3] = door.position[0];
+                }
+                if door.position[1] < bounding_box[4] {
+                    bounding_box[4] = door.position[1];
+                }
+            }
+        }
 
         position_override = Some(
             [
