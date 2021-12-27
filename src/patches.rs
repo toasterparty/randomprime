@@ -1208,6 +1208,95 @@ where R: Rng
     closest
 }
 
+fn get_shuffled_position<'r, R>(
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    rng: &mut R,
+)
+-> [f32; 3] 
+where R: Rng
+{
+    let mrea_id = area.mlvl_area.mrea.to_u32();
+
+    // xmin, ymin, zmin,
+    // xmax, ymax, zmax,
+    let mut bounding_boxes: Vec<[f32; 6]> = Vec::new();
+    {
+        let mut bounding_box = area.mlvl_area.area_bounding_box.clone();
+        let room_origin = {
+            let area_transform = area.mlvl_area.area_transform;
+            [area_transform[3], area_transform[7], area_transform[11]]
+        };
+        for i in 0..6 {
+            bounding_box[i] = bounding_box[i] + room_origin[i%3];
+        }
+        bounding_boxes.push(bounding_box.into());
+    }
+
+    if mrea_id == 0x2398E906 { // Artifact Temple
+        bounding_boxes.clear();
+        bounding_boxes.push([
+                -410.0, 20.0, -40.0,
+                -335.0, 69.0, -17.0,
+            ].into()
+        );
+        bounding_boxes.push([
+            -411.429, 67.9626, -14.8928,
+            -370.429, 93.9626, -9.8928,
+            ].into()
+        );
+    } else if mrea_id == 0x4148F7B0 { // burn dome
+        bounding_boxes.clear();
+        bounding_boxes.push([
+            565.7892, -27.4683, 30.6111,
+            589.7892, 0.5317, 42.6111,
+            ].into()
+        );
+        bounding_boxes.push([
+            578.9656, 35.3132, 31.0428,
+            598.9656, 44.3132, 37.0428,
+            ].into()
+        );
+        bounding_boxes.push([
+            588.6971, 9.1298, 29.8123,
+            589.6971, 49.1298, 31.8123,
+            ].into()
+        );
+    }
+
+    let mut offset_xy = 0;
+    let mut offset_z  = 0;
+    let mut offset_max_z = 0.0;
+    if vec![
+        0xC44E7A07, // landing site
+        0xB2701146, // alcove
+        0xB9ABCD56, // fcs
+        0x9A0A03EB, // sunchamber
+        0xFB54A0CB, // hote
+        0xBAD9EDBF, // Triclops pit
+        0x3953C353, // Elite Quarters
+        0x70181194, // Quarantine Cave
+        0xC7E821BA, // ttb
+        0x4148F7B0, // burn dome
+    ].contains(&mrea_id) {
+        offset_xy = 1;
+        offset_z  = 4;
+        offset_max_z = -0.3;
+    }
+
+    // Pick the relative position inside the bounding box
+    let x_factor: f32 = gen_n_pick_closest(1+offset_xy, rng, 0.1, 0.9, 0.5);
+    let y_factor: f32 = gen_n_pick_closest(1+offset_xy, rng, 0.1, 0.9, 0.5);
+    let z_factor: f32 = gen_n_pick_closest(1+offset_z, rng, 0.1, 0.85 + offset_max_z, 0.3);
+
+    // Pick a bounding box if multiple are available
+    let bounding_box = bounding_boxes.choose(rng).unwrap().clone();
+    [
+        bounding_box[0] + (bounding_box[3]-bounding_box[0])*x_factor,
+        bounding_box[1] + (bounding_box[4]-bounding_box[1])*y_factor,
+        bounding_box[2] + (bounding_box[5]-bounding_box[2])*z_factor,
+    ]
+}
+
 fn modify_pickups_in_mrea<'r>(
     ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -1231,107 +1320,7 @@ fn modify_pickups_in_mrea<'r>(
 
     let mut position_override: Option<[f32;3]> = None;
     if shuffle_position {
-        // xmin, ymin, zmin,
-        // xmax, ymax, zmax,
-        let mut bounding_boxes: Vec<[f32; 6]> = Vec::new();
-        {
-            let mut bounding_box = area.mlvl_area.area_bounding_box.clone();
-            let room_origin = {
-                let area_transform = area.mlvl_area.area_transform;
-                [area_transform[3], area_transform[7], area_transform[11]]
-            };
-            for i in 0..6 {
-                bounding_box[i] = bounding_box[i] + room_origin[i%3];
-            }
-            bounding_boxes.push(bounding_box.into());
-        }
-
-        if mrea_id == 0x2398E906 { // Artifact Temple
-            bounding_boxes.clear();
-            bounding_boxes.push([
-                    -410.0, 20.0, -40.0,
-                    -335.0, 69.0, -17.0,
-                ].into()
-            );
-            bounding_boxes.push([
-                -411.429, 67.9626, -14.8928,
-                -370.429, 93.9626, -9.8928,
-                ].into()
-            );
-        } else if mrea_id == 0x4148F7B0 { // burn dome
-            bounding_boxes.clear();
-            bounding_boxes.push([
-                565.7892, -27.4683, 30.6111,
-                589.7892, 0.5317, 42.6111,
-                ].into()
-            );
-            bounding_boxes.push([
-                578.9656, 35.3132, 31.0428,
-                598.9656, 44.3132, 37.0428,
-                ].into()
-            );
-            bounding_boxes.push([
-                588.6971, 9.1298, 29.8123,
-                589.6971, 49.1298, 31.8123,
-                ].into()
-            );
-        }
-
-        let mut offset_xy = 0;
-        let mut offset_z  = 0;
-        let mut offset_max_z = 0.0;
-        if vec![
-            0xC44E7A07, // landing site
-            0xB2701146, // alcove
-            0xB9ABCD56, // fcs
-            0x9A0A03EB, // sunchamber
-            0xFB54A0CB, // hote
-            0xBAD9EDBF, // Triclops pit
-            0x3953C353, // Elite Quarters
-            0x70181194, // Quarantine Cave
-            0xC7E821BA, // ttb
-            0x4148F7B0, // burn dome
-        ].contains(&mrea_id) {
-            offset_xy = 1;
-            offset_z  = 4;
-            offset_max_z = -0.3;
-        }
-
-        // Pick the relative position inside the bounding box
-        let x_factor: f32 = gen_n_pick_closest(1+offset_xy, &mut rng, 0.1, 0.9, 0.5);
-        let y_factor: f32 = gen_n_pick_closest(1+offset_xy, &mut rng, 0.1, 0.9, 0.5);
-        let z_factor: f32 = gen_n_pick_closest(1+offset_z, &mut rng, 0.1, 0.85 + offset_max_z, 0.3);
-
-        // Pick a bounding box if multiple are available
-        let mut bounding_box = bounding_boxes.choose(&mut rng).unwrap().clone();
-
-        let scly = area.mrea().scly_section_mut();
-        let layers = scly.layers.as_mut_vec();
-        for obj in layers[0].objects.iter() {
-            if obj.property_data.is_door() {
-                let door = obj.property_data.as_door().unwrap();
-                if door.position[0] > bounding_box[0] {
-                    bounding_box[0] = door.position[0];
-                }
-                if door.position[1] > bounding_box[1] {
-                    bounding_box[1] = door.position[1];
-                }
-                if door.position[0] < bounding_box[3] {
-                    bounding_box[3] = door.position[0];
-                }
-                if door.position[1] < bounding_box[4] {
-                    bounding_box[4] = door.position[1];
-                }
-            }
-        }
-
-        position_override = Some(
-            [
-                bounding_box[0] + (bounding_box[3]-bounding_box[0])*x_factor,
-                bounding_box[1] + (bounding_box[4]-bounding_box[1])*y_factor,
-                bounding_box[2] + (bounding_box[5]-bounding_box[2])*z_factor,
-            ]
-        );
+        position_override = Some(get_shuffled_position(area, &mut rng));
     }
 
     // Pickup to use for game functionality //
@@ -8329,6 +8318,10 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
                 idx = idx + 1;
                 seed = seed + 1;
+            }
+
+            if pickups_config_len == 0 {
+
             }
 
             // Patch extra item locations
