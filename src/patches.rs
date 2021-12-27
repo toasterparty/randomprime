@@ -19,6 +19,7 @@ use crate::patch_config::{
     PatchConfig,
     GameBanner,
     LevelConfig,
+    RoomConfig,
     CtwkConfig,
     CutsceneMode,
     DoorConfig,
@@ -114,7 +115,7 @@ fn post_pickup_relay_template<'r>(instance_id: u32, connections: &'static [struc
 }
 
 fn build_artifact_temple_totem_scan_strings<R>(
-    config: &PatchConfig,
+    level_data: &HashMap<String, LevelConfig>,
     rng: &mut R,
     artifact_hints: Option<HashMap<String,String>>,
     
@@ -141,7 +142,7 @@ fn build_artifact_temple_totem_scan_strings<R>(
 
     // Where are the artifacts?
     let mut artifact_locations = Vec::<(&str, PickupType)>::new();
-    for (_, level) in config.level_data.iter() {
+    for (_, level) in level_data.iter() {
         for (room_name, room) in level.rooms.iter() {
             if room.pickups.is_none() { continue };
             for pickup in room.pickups.as_ref().unwrap().iter() {
@@ -782,8 +783,11 @@ fn patch_add_item<'r>(
     pickup_hash_key: PickupHashKey,
     skip_hudmemos: bool,
     extern_models: &HashMap<String, ExternPickupModel>,
+    shuffle_position: bool,
+    seed: u64,
 ) -> Result<(), String>
 {
+    let mut rng = StdRng::seed_from_u64(seed);
     let room_id = area.mlvl_area.internal_id;
 
     // Pickup to use for game functionality //
@@ -934,12 +938,19 @@ fn patch_add_item<'r>(
         }
     };
 
-    if pickup_config.position.is_none() {
-        panic!("Position is required for additional pickup in room '0x{:X}'", pickup_hash_key.room_id);
-    }
-    
+    let mut pickup_position = {
+        if shuffle_position {
+            get_shuffled_position(area, &mut rng)
+        } else {
+            if pickup_config.position.is_none() {    
+                panic!("Position is required for additional pickup in room '0x{:X}'", pickup_hash_key.room_id);
+            }
+
+            pickup_config.position.unwrap()
+        }
+    };
+
     // If this is the echoes missile expansion model, compensate for the Z offset
-    let mut pickup_position = pickup_config.position.unwrap();
     let json_pickup_name = pickup_config.model.as_ref().unwrap_or(&"".to_string()).clone();
     if json_pickup_name.contains(&"MissileExpansion") {
         pickup_position[2] = pickup_position[2] - 1.2;
@@ -1063,6 +1074,27 @@ fn patch_add_item<'r>(
     // update MREA layer with new Objects
     let scly = area.mrea().scly_section_mut();
     let layers = scly.layers.as_mut_vec();
+
+    if shuffle_position {
+        layers[0].objects.as_mut_vec().push(
+            structs::SclyObject {
+                instance_id: ps.fresh_instance_id_range.next().unwrap(),
+                connections: vec![].into(),
+                property_data: structs::SclyProperty::PointOfInterest(
+                    Box::new(structs::PointOfInterest {
+                        name: b"mypoi\0".as_cstr(),
+                        position: pickup_position.into(),
+                        rotation: [0.0, 0.0, 0.0].into(),
+                        active: 1,
+                        scan_param: structs::scly_structs::ScannableParameters {
+                            scan: scan_id,
+                        },
+                        point_size: 500.0,
+                    })
+                ),
+            }
+        );
+    }
 
     // If this is an artifact, create and push change function
     let pickup_kind = pickup_type.kind();
@@ -1284,9 +1316,9 @@ where R: Rng
     }
 
     // Pick the relative position inside the bounding box
-    let x_factor: f32 = gen_n_pick_closest(1+offset_xy, rng, 0.1, 0.9, 0.5);
-    let y_factor: f32 = gen_n_pick_closest(1+offset_xy, rng, 0.1, 0.9, 0.5);
-    let z_factor: f32 = gen_n_pick_closest(1+offset_z, rng, 0.1, 0.85 + offset_max_z, 0.3);
+    let x_factor: f32 = gen_n_pick_closest(1+offset_xy, rng, 0.1, 0.8, 0.5);
+    let y_factor: f32 = gen_n_pick_closest(1+offset_xy, rng, 0.1, 0.8, 0.5);
+    let z_factor: f32 = gen_n_pick_closest(1+offset_z, rng, 0.1, 0.8 + offset_max_z, 0.3);
 
     // Pick a bounding box if multiple are available
     let bounding_box = bounding_boxes.choose(rng).unwrap().clone();
@@ -2417,17 +2449,18 @@ fn fix_artifact_of_truth_requirements(
     config: &PatchConfig,
 ) -> Result<(), String>
 {
+    let level_data: HashMap<String, LevelConfig> = config.level_data.clone();
     let artifact_temple_layer_overrides = config.artifact_temple_layer_overrides.clone().unwrap_or(HashMap::new());
 
     // Create a new layer that will be toggled on when the Artifact of Truth is collected
     let truth_req_layer_id = area.layer_flags.layer_count;
     area.add_layer(b"Randomizer - Got Artifact 1\0".as_cstr());
-    
+
     // What is the item at artifact temple?
     let at_pickup_kind = {
         let mut _at_pickup_kind = 0; // nothing item if unspecified
-        if config.level_data.contains_key(World::TallonOverworld.to_json_key()) {
-            let rooms = &config.level_data.get(World::TallonOverworld.to_json_key()).unwrap().rooms;
+        if level_data.contains_key(World::TallonOverworld.to_json_key()) {
+            let rooms = &level_data.get(World::TallonOverworld.to_json_key()).unwrap().rooms;
             if rooms.contains_key("Artifact Temple") {
                 let artifact_temple_pickups = &rooms.get("Artifact Temple").unwrap().pickups;
                 if artifact_temple_pickups.is_some() {
@@ -2451,7 +2484,7 @@ fn fix_artifact_of_truth_requirements(
 
         let exists = {
             let mut _exists = false;
-            for (_, level) in config.level_data.iter() {
+            for (_, level) in level_data.iter() {
                 if _exists {break;}
                 for (_, room) in level.rooms.iter() {
                     if _exists {break;}
@@ -4470,6 +4503,7 @@ fn patch_credits(
     res: &mut structs::Resource,
     version: Version,
     config: &PatchConfig,
+    level_data: &HashMap<String, LevelConfig>,
 )
     -> Result<(), String>
 {
@@ -4520,7 +4554,7 @@ fn patch_credits(
         for pickup_type in PICKUPS_TO_PRINT {
             let room_name = {
                 let mut _room_name = String::new();
-                for (_, level) in config.level_data.iter() {
+                for (_, level) in level_data.iter() {
                     for (room_name, room) in level.rooms.iter() {
                         if room.pickups.is_none() { continue };
                         for pickup_info in room.pickups.as_ref().unwrap().iter() {
@@ -7962,12 +7996,54 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     let remove_ball_color = config.ctwk_config.morph_ball_size.clone().unwrap_or(1.0) < 0.999;
     let remove_control_disabler = config.ctwk_config.player_size.clone().unwrap_or(1.0) < 0.999 || config.ctwk_config.morph_ball_size.clone().unwrap_or(1.0) < 0.999;
     let move_item_loss_scan = config.ctwk_config.player_size.clone().unwrap_or(1.0) > 1.001;
+    let mut rng = StdRng::seed_from_u64(config.seed);
 
+    let mut level_data: HashMap<String, LevelConfig> = config.level_data.clone();
     let starting_room = SpawnRoomData::from_str(&config.starting_room);
+    
+    for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {
+        let world = World::from_pak(pak_name).unwrap();
+        
+        if level_data.get(world.to_json_key()).is_none() {
+            level_data.insert(world.to_json_key().to_string(), LevelConfig {
+                    transports: HashMap::new(),
+                    rooms: HashMap::new(),
+                }
+            );
+        }
+
+        let level = level_data.get_mut(world.to_json_key()).unwrap();
+
+        let mut items: Vec<PickupType> = Vec::new();
+        for pt in PickupType::iter() {
+            items.push(pt.clone());
+        }
+
+        for room_info in rooms.iter() {
+            if level.rooms.get(room_info.name.trim()).is_none() {
+                level.rooms.insert(room_info.name.trim().to_string(), RoomConfig {
+                        pickups: Some(vec![PickupConfig {
+                            pickup_type: items.choose(&mut rng).unwrap().name().to_string(),
+                            curr_increase: None,
+                            max_increase: None,
+                            model: None,
+                            scan_text: None,
+                            hudmemo_text: None,
+                            respawn: None,
+                            position: None,
+                            modal_hudmemo: None,
+                        }]),
+                        extra_scans: None,
+                        doors: None,
+                    }
+                );
+            }
+        }
+    }
 
     let frigate_done_room = {
         let mut destination_name = "Tallon:Landing Site";
-        let frigate_level = config.level_data.get(World::FrigateOrpheon.to_json_key());
+        let frigate_level = level_data.get(World::FrigateOrpheon.to_json_key());
         if frigate_level.is_some() {
             let x = frigate_level.unwrap().transports.get(&"Frigate Escape Cutscene".to_string());
             if x.is_some() {
@@ -7979,7 +8055,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     };
     let essence_done_room = {
         let mut destination = None;
-        let crater_level = config.level_data.get(World::ImpactCrater.to_json_key());
+        let crater_level = level_data.get(World::ImpactCrater.to_json_key());
         if crater_level.is_some() {
             let x = crater_level.unwrap().transports.get(&"Essence Dead Cutscene".to_string());
             if x.is_some() {
@@ -7987,11 +8063,10 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             }
         }
 
-        destination        
+        destination
     };
 
-    let mut rng = StdRng::seed_from_u64(config.seed);
-    let artifact_totem_strings = build_artifact_temple_totem_scan_strings(config, &mut rng, config.artifact_hints.clone());
+    let artifact_totem_strings = build_artifact_temple_totem_scan_strings(&level_data, &mut rng, config.artifact_hints.clone());
 
     let show_starting_memo = config.starting_memo.is_some();
 
@@ -8230,7 +8305,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 let mut _scans = Vec::new();
                 let mut _doors = HashMap::<u32, DoorConfig>::new();
                 
-                let level = config.level_data.get(world.to_json_key());
+                let level = level_data.get(world.to_json_key());
                 if level.is_some() {
                     let room = level.unwrap().rooms.get(room_info.name.trim());
                     if room.is_some() {
@@ -8354,6 +8429,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                         key,
                         skip_hudmemos,
                         extern_models,
+                        config.shuffle_pickup_position,
+                        config.seed,
                     ),
                 );
 
@@ -8526,7 +8603,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
     let (skip_frigate, skip_ending_cinematic) = make_elevators_patch(
         &mut patcher,
-        &config.level_data,
+        &level_data,
         config.auto_enabled_elevators,
         config.ctwk_config.player_size.clone().unwrap_or(1.0),
         config.force_vanilla_layout,
@@ -8534,7 +8611,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     let skip_frigate = skip_frigate && starting_room.mlvl != World::FrigateOrpheon.mlvl();
 
     let mut smoother_teleports = false;
-    for (_, level) in config.level_data.iter() {
+    for (_, level) in level_data.iter() {
         if smoother_teleports { break; }
         for (_, room) in level.rooms.iter() {
             if smoother_teleports { break; }
@@ -8643,7 +8720,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     );
     patcher.add_resource_patch(
         resource_info!("STRG_Credits.STRG").into(),
-        |res| patch_credits(res, version, config)
+        |res| patch_credits(res, version, config, &level_data)
     );
     patcher.add_scly_patch(
         resource_info!("07_stonehenge.MREA").into(),
@@ -8846,9 +8923,9 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     }
 
     let mut boss_permadeath = false;
-    if config.level_data.contains_key(World::ImpactCrater.to_json_key())
+    if level_data.contains_key(World::ImpactCrater.to_json_key())
     {
-        let transports = &config.level_data.get(World::ImpactCrater.to_json_key()).unwrap().transports;
+        let transports = &level_data.get(World::ImpactCrater.to_json_key()).unwrap().transports;
         if transports.contains_key("Essence Dead Cutscene")
         {
             let destination = &transports.get("Essence Dead Cutscene").unwrap();
