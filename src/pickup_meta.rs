@@ -345,11 +345,18 @@ impl PickupModel
             }
         }
 
-        // Deprecated Maping
+        // Deprecated Mapping
         if vec!["combat visor", "scan visor", "x-ray visor", "xray visor", "thermal visor", "combat", "scan", "xray", "thermal"]
             .contains(&string)
         {
             return Some(PickupModel::Visor);
+        }
+
+        // Placeholder Mapping
+        if vec!["power suit", "power beam"]
+            .contains(&string)
+        {
+            return Some(PickupModel::Nothing);
         }
 
         None
