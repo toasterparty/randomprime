@@ -1554,34 +1554,44 @@ fn modify_pickups_in_mrea<'r>(
         });
     }
 
-    let pickup_obj = layers[pickup_location.location.layer as usize].objects.iter_mut()
-        .find(|obj| obj.instance_id == pickup_location.location.instance_id)
-        .unwrap();
-    let (position, scan_id_out) = update_pickup(pickup_obj, pickup_type, pickup_model_data, pickup_config, scan_id, position_override);
-
-    if additional_connections.len() > 0 {
-        pickup_obj.connections.as_mut_vec().extend_from_slice(&additional_connections);
-    }
-
     layers[new_layer_idx].objects.as_mut_vec().push(relay);
 
     if shuffle_position {
-        layers[0].objects.as_mut_vec().push(
+        layers[new_layer_idx].objects.as_mut_vec().push(
             structs::SclyObject {
                 instance_id: ps.fresh_instance_id_range.next().unwrap(),
                 connections: vec![].into(),
                 property_data: structs::SclyProperty::PointOfInterest(
                     Box::new(structs::PointOfInterest {
                         name: b"mypoi\0".as_cstr(),
-                        position: position.into(),
+                        position: position_override.clone().unwrap().into(),
                         rotation: [0.0, 0.0, 0.0].into(),
                         active: 1,
                         scan_param: structs::scly_structs::ScannableParameters {
-                            scan: scan_id_out,
+                            scan: scan_id,
                         },
                         point_size: 500.0,
                     })
                 ),
+            }
+        );
+
+        // disable poi
+        let special_fn_id = ps.fresh_instance_id_range.next().unwrap();
+        layers[0].objects.as_mut_vec().push(structs::SclyObject {
+            instance_id: special_fn_id,
+            property_data: structs::SpecialFunction::layer_change_fn(
+                b"SpecialFunction - remove poi\0".as_cstr(),
+                room_id,
+                new_layer_idx as u32,
+            ).into(),
+            connections: vec![].into(),
+        });
+        additional_connections.push(
+            structs::Connection {
+                state: structs::ConnectionState::ARRIVED,
+                message: structs::ConnectionMsg::DECREMENT,
+                target_object_id: special_fn_id,
             }
         );
 
@@ -1593,6 +1603,64 @@ fn modify_pickups_in_mrea<'r>(
                 .unwrap();
             trigger.active = 1;
         }
+    }
+
+    // Fix chapel IS
+    if mrea_id == 0x40C548E9 {
+        let trigger_id = ps.fresh_instance_id_range.next().unwrap();
+        additional_connections.push(
+            structs::Connection {
+                state: structs::ConnectionState::ARRIVED,
+                message: structs::ConnectionMsg::SET_TO_ZERO,
+                target_object_id: 0x000E023A,
+            }
+        );
+
+        additional_connections.push(
+            structs::Connection {
+                state: structs::ConnectionState::ARRIVED,
+                message: structs::ConnectionMsg::DEACTIVATE,
+                target_object_id: trigger_id,
+            }
+        );
+
+        layers[0].objects.as_mut_vec().push(
+            structs::SclyObject {
+                instance_id: trigger_id,
+                property_data: structs::Trigger {
+                    name: b"Trigger\0".as_cstr(),
+                    position: [-369.901093, -169.402206, 60.743099].into(),
+                    scale: [20.0, 20.0, 5.0].into(),
+                    damage_info: structs::scly_structs::DamageInfo {
+                        weapon_type: 0,
+                        damage: 0.0,
+                        radius: 0.0,
+                        knockback_power: 0.0
+                    },
+                    force: [0.0, 0.0, 0.0].into(),
+                    flags: 0x1001, // detect morphed+player
+                    active: 1,
+                    deactivate_on_enter: 0,
+                    deactivate_on_exit: 0
+                }.into(),
+                connections: vec![
+                    structs::Connection {
+                        state: structs::ConnectionState::INSIDE,
+                        message: structs::ConnectionMsg::SET_TO_ZERO,
+                        target_object_id: 0x000E023A,
+                    }
+                ].into()
+            }
+        );
+    }
+
+    let pickup_obj = layers[pickup_location.location.layer as usize].objects.iter_mut()
+        .find(|obj| obj.instance_id == pickup_location.location.instance_id)
+        .unwrap();
+    let (position, scan_id_out) = update_pickup(pickup_obj, pickup_type, pickup_model_data, pickup_config, scan_id, position_override);
+    
+    if additional_connections.len() > 0 {
+        pickup_obj.connections.as_mut_vec().extend_from_slice(&additional_connections);
     }
 
     // find any overlapping POI that give "helpful" hints to the player and replace their scan text with the items //
@@ -6917,6 +6985,10 @@ fn patch_qol_game_breaking(
     patcher.add_scly_patch(
         resource_info!("05_bathhall.MREA").into(),
         move |ps, area| patch_spawn_point_position(ps, area, [210.512, -82.424, 19.2174], false, false)
+    );
+    patcher.add_scly_patch(
+        resource_info!("00_mines_savestation_b.MREA").into(),
+        move |ps, area| patch_spawn_point_position(ps, area, [216.7245, 4.4046, -139.8873], false, true)
     );
     patcher.add_scly_patch(
         resource_info!("00_mines_savestation_b.MREA").into(),
