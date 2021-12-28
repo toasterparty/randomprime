@@ -8026,8 +8026,59 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     
             let mut items: Vec<PickupType> = Vec::new();
             for pt in PickupType::iter() {
+                if vec![
+                    PickupType::IceBeam,
+                    PickupType::WaveBeam,
+                    PickupType::PlasmaBeam,
+                    PickupType::Missile,
+                    PickupType::ScanVisor,
+                    PickupType::MorphBallBomb,
+                    PickupType::PowerBomb,
+                    PickupType::Flamethrower,
+                    PickupType::ThermalVisor,
+                    PickupType::ChargeBeam,
+                    PickupType::SuperMissile,
+                    PickupType::GrappleBeam,
+                    PickupType::XRayVisor,
+                    PickupType::IceSpreader,
+                    PickupType::SpaceJumpBoots,
+                    PickupType::MorphBall,
+                    PickupType::BoostBall,
+                    PickupType::SpiderBall,
+                    PickupType::GravitySuit,
+                    PickupType::VariaSuit,
+                    PickupType::PhazonSuit,
+                    PickupType::EnergyTank,
+                    PickupType::HealthRefill,
+                    PickupType::Wavebuster,
+                    PickupType::ArtifactOfTruth,
+                    PickupType::ArtifactOfStrength,
+                    PickupType::ArtifactOfElder,
+                    PickupType::ArtifactOfWild,
+                    PickupType::ArtifactOfLifegiver,
+                    PickupType::ArtifactOfWarrior,
+                    PickupType::ArtifactOfChozo,
+                    PickupType::ArtifactOfNature,
+                    PickupType::ArtifactOfSun,
+                    PickupType::ArtifactOfWorld,
+                    PickupType::ArtifactOfSpirit,
+                    PickupType::ArtifactOfNewborn,
+                    PickupType::Nothing,
+                ].contains(&pt) {
+                    continue;
+                }
                 items.push(pt.clone());
             }
+            items.push(PickupType::Missile);
+            items.push(PickupType::Missile);
+            items.push(PickupType::Missile);
+            items.push(PickupType::Missile);
+            items.push(PickupType::Missile);
+            items.push(PickupType::Missile);
+            items.push(PickupType::Nothing);
+            items.push(PickupType::EnergyTank);
+            items.push(PickupType::EnergyTank);
+            items.push(PickupType::EnergyTank);
     
             for room_info in rooms.iter() {
                 if level.rooms.get(room_info.name.trim()).is_none() {
