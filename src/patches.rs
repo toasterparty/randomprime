@@ -1076,9 +1076,10 @@ fn patch_add_item<'r>(
     let layers = scly.layers.as_mut_vec();
 
     if shuffle_position {
-        layers[0].objects.as_mut_vec().push(
+        let poi_id = ps.fresh_instance_id_range.next().unwrap();
+        layers[new_layer_idx].objects.as_mut_vec().push(
             structs::SclyObject {
-                instance_id: ps.fresh_instance_id_range.next().unwrap(),
+                instance_id: poi_id,
                 connections: vec![].into(),
                 property_data: structs::SclyProperty::PointOfInterest(
                     Box::new(structs::PointOfInterest {
@@ -1092,6 +1093,14 @@ fn patch_add_item<'r>(
                         point_size: 500.0,
                     })
                 ),
+            }
+        );
+
+        pickup_obj.connections.as_mut_vec().push(
+            structs::Connection {
+                state: structs::ConnectionState::ARRIVED,
+                message: structs::ConnectionMsg::DEACTIVATE,
+                target_object_id: poi_id,
             }
         );
     }
