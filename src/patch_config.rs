@@ -756,22 +756,6 @@ impl PatchConfigPrivate
             _ => panic!("Unknown cutscene mode {}", self.preferences.qol_cutscenes.as_ref().unwrap()),
         };
 
-        let starting_visor =match self.game_config.starting_visor.as_ref().unwrap_or(&"combat".to_string()).to_lowercase().trim() {
-            "combat" => Visor::Combat,
-            "scan" => Visor::Scan,
-            "thermal" => Visor::Thermal,
-            "xray" => Visor::XRay,
-            _ => panic!("Unknown starting visor {}", self.game_config.starting_visor.as_ref().unwrap()),
-        };
-
-        let starting_beam =match self.game_config.starting_beam.as_ref().unwrap_or(&"power".to_string()).to_lowercase().trim() {
-            "power" => Beam::Power,
-            "ice" => Beam::Ice,
-            "wave" => Beam::Wave,
-            "plasma" => Beam::Plasma,
-            _ => panic!("Unknown starting beam {}", self.game_config.starting_beam.as_ref().unwrap()),
-        };
-
         let starting_room = {
             if force_vanilla_layout {
                 "Frigate:Exterior Docking Hangar".to_string()
@@ -780,15 +764,59 @@ impl PatchConfigPrivate
             }
         };
 
-        let starting_items = {
+        let starting_items: StartingItems = {
             if force_vanilla_layout {
                 StartingItems::from_u64(2188378143)
             } else {
                 self.game_config.starting_items.clone().unwrap_or_else(|| StartingItems::from_u64(1))
             }
         };
+
+        if !starting_items.combat_visor && !starting_items.thermal_visor && !starting_items.xray {
+            panic!("Must start with combat, thermal or xray");
+        }
+
+        if !starting_items.power_beam && !starting_items.wave && !starting_items.ice && !starting_items.plasma {
+            panic!("Must start with a beam");
+        }
+
+        let default_starting_visor = if starting_items.combat_visor {
+            "combat"
+        } else if starting_items.thermal_visor {
+            "thermal"
+        } else if starting_items.xray {
+            "xray"
+        } else {
+            "scan"
+        };
+
+        let starting_visor =match self.game_config.starting_visor.as_ref().unwrap_or(&default_starting_visor.to_string()).to_lowercase().trim() {
+            "combat" => Visor::Combat,
+            "scan" => Visor::Scan,
+            "thermal" => Visor::Thermal,
+            "xray" => Visor::XRay,
+            _ => panic!("Unknown starting visor {}", self.game_config.starting_visor.as_ref().unwrap()),
+        };
+
+        let default_starting_beam = if starting_items.power_beam {
+            "power"
+        } else if starting_items.plasma {
+            "plasma"
+        } else if starting_items.ice {
+            "ice"
+        } else {
+            "wave"
+        };
+
+        let starting_beam =match self.game_config.starting_beam.as_ref().unwrap_or(&default_starting_beam.to_string()).to_lowercase().trim() {
+            "power" => Beam::Power,
+            "ice" => Beam::Ice,
+            "wave" => Beam::Wave,
+            "plasma" => Beam::Plasma,
+            _ => panic!("Unknown starting beam {}", self.game_config.starting_beam.as_ref().unwrap()),
+        };
         
-        let spring_ball   = {
+        let spring_ball = {
             if force_vanilla_layout {
                 false
             } else {
