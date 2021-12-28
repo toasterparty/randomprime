@@ -834,7 +834,7 @@ fn patch_add_item<'r>(
         pickup_model_data.actor_params.thermal_cskr = ResId::invalid();
     }
 
-    let new_layer_idx = if area.layer_flags.layer_count > 60 {
+    let new_layer_idx = if area.layer_flags.layer_count < 60 {
         let name = CString::new(format!(
             "Randomizer - Pickup ({:?})", pickup_model_data.name)).unwrap();
         area.add_layer(Cow::Owned(name));
