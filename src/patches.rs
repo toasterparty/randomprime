@@ -1495,7 +1495,7 @@ fn modify_pickups_in_mrea<'r>(
 
     // Add a post-pickup relay. This is used to support cutscene-skipping
     let instance_id = ps.fresh_instance_id_range.next().unwrap();
-    let relay = post_pickup_relay_template(instance_id,
+    let mut relay = post_pickup_relay_template(instance_id,
                                             pickup_location.post_pickup_relay_connections);
     
     additional_connections.push(structs::Connection {
@@ -1554,12 +1554,11 @@ fn modify_pickups_in_mrea<'r>(
         });
     }
 
-    layers[new_layer_idx].objects.as_mut_vec().push(relay);
-
     if shuffle_position {
+        let poi_id = ps.fresh_instance_id_range.next().unwrap();
         layers[new_layer_idx].objects.as_mut_vec().push(
             structs::SclyObject {
-                instance_id: ps.fresh_instance_id_range.next().unwrap(),
+                instance_id: poi_id,
                 connections: vec![].into(),
                 property_data: structs::SclyProperty::PointOfInterest(
                     Box::new(structs::PointOfInterest {
@@ -1578,7 +1577,7 @@ fn modify_pickups_in_mrea<'r>(
 
         // disable poi
         let special_fn_id = ps.fresh_instance_id_range.next().unwrap();
-        layers[0].objects.as_mut_vec().push(structs::SclyObject {
+        layers[new_layer_idx].objects.as_mut_vec().push(structs::SclyObject {
             instance_id: special_fn_id,
             property_data: structs::SpecialFunction::layer_change_fn(
                 b"SpecialFunction - remove poi\0".as_cstr(),
@@ -1594,6 +1593,27 @@ fn modify_pickups_in_mrea<'r>(
                 target_object_id: special_fn_id,
             }
         );
+        additional_connections.push(
+            structs::Connection {
+                state: structs::ConnectionState::ARRIVED,
+                message: structs::ConnectionMsg::DECREMENT,
+                target_object_id: poi_id,
+            }
+        );
+        relay.connections.as_mut_vec().push(
+            structs::Connection {
+                state: structs::ConnectionState::ZERO,
+                message: structs::ConnectionMsg::DECREMENT,
+                target_object_id: special_fn_id,
+            }
+        );
+        relay.connections.as_mut_vec().push(
+            structs::Connection {
+                state: structs::ConnectionState::ZERO,
+                message: structs::ConnectionMsg::DEACTIVATE,
+                target_object_id: poi_id,
+            }
+        );
 
         // Always allow cinema in artifact temple
         if mrea_id == 0x2398E906 {
@@ -1604,6 +1624,8 @@ fn modify_pickups_in_mrea<'r>(
             trigger.active = 1;
         }
     }
+
+    layers[new_layer_idx].objects.as_mut_vec().push(relay);
 
     // Fix chapel IS
     if mrea_id == 0x40C548E9 {
