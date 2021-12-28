@@ -8000,47 +8000,49 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
     let mut level_data: HashMap<String, LevelConfig> = config.level_data.clone();
     let starting_room = SpawnRoomData::from_str(&config.starting_room);
-    
-    for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {
-        let world = World::from_pak(pak_name).unwrap();
-        
-        if level_data.get(world.to_json_key()).is_none() {
-            level_data.insert(world.to_json_key().to_string(), LevelConfig {
-                    transports: HashMap::new(),
-                    rooms: HashMap::new(),
-                }
-            );
-        }
 
-        let level = level_data.get_mut(world.to_json_key()).unwrap();
-
-        let mut items: Vec<PickupType> = Vec::new();
-        for pt in PickupType::iter() {
-            items.push(pt.clone());
-        }
-
-        for room_info in rooms.iter() {
-            if level.rooms.get(room_info.name.trim()).is_none() {
-                level.rooms.insert(room_info.name.trim().to_string(), RoomConfig {
-                        pickups: Some(vec![PickupConfig {
-                            pickup_type: items.choose(&mut rng).unwrap().name().to_string(),
-                            curr_increase: None,
-                            max_increase: None,
-                            model: None,
-                            scan_text: None,
-                            hudmemo_text: None,
-                            respawn: None,
-                            position: None,
-                            modal_hudmemo: None,
-                        }]),
-                        extra_scans: None,
-                        doors: None,
+    if config.shuffle_pickup_pos_all_rooms {
+        for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {
+            let world = World::from_pak(pak_name).unwrap();
+            
+            if level_data.get(world.to_json_key()).is_none() {
+                level_data.insert(world.to_json_key().to_string(), LevelConfig {
+                        transports: HashMap::new(),
+                        rooms: HashMap::new(),
                     }
                 );
             }
-        }
+    
+            let level = level_data.get_mut(world.to_json_key()).unwrap();
+    
+            let mut items: Vec<PickupType> = Vec::new();
+            for pt in PickupType::iter() {
+                items.push(pt.clone());
+            }
+    
+            for room_info in rooms.iter() {
+                if level.rooms.get(room_info.name.trim()).is_none() {
+                    level.rooms.insert(room_info.name.trim().to_string(), RoomConfig {
+                            pickups: Some(vec![PickupConfig {
+                                pickup_type: items.choose(&mut rng).unwrap().name().to_string(),
+                                curr_increase: None,
+                                max_increase: None,
+                                model: None,
+                                scan_text: None,
+                                hudmemo_text: None,
+                                respawn: None,
+                                position: None,
+                                modal_hudmemo: None,
+                            }]),
+                            extra_scans: None,
+                            doors: None,
+                        }
+                    );
+                }
+            }
+        }    
     }
-
+    
     let frigate_done_room = {
         let mut destination_name = "Tallon:Landing Site";
         let frigate_level = level_data.get(World::FrigateOrpheon.to_json_key());
@@ -8429,7 +8431,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                         key,
                         skip_hudmemos,
                         extern_models,
-                        config.shuffle_pickup_position,
+                        config.shuffle_pickup_pos_all_rooms,
                         config.seed,
                     ),
                 );

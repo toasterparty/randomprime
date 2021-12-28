@@ -299,6 +299,7 @@ pub struct PatchConfig
     pub automatic_crash_screen: bool,
     pub etank_capacity: u32,
     pub shuffle_pickup_position: bool,
+    pub shuffle_pickup_pos_all_rooms: bool,
     pub remove_vanilla_blast_shields: bool,
     pub nonvaria_heat_damage: bool,
     pub heat_damage_per_sec: f32,
@@ -372,6 +373,7 @@ struct GameConfig
     warp_to_start_delay_s: Option<f32>,
 
     shuffle_pickup_position: Option<bool>,
+    shuffle_pickup_pos_all_rooms: Option<bool>,
     remove_vanilla_blast_shields: Option<bool>,
     nonvaria_heat_damage: Option<bool>,
     staggered_suit_damage: Option<bool>,
@@ -859,6 +861,7 @@ impl PatchConfigPrivate
             warp_to_start_delay_s: self.game_config.warp_to_start_delay_s.unwrap_or(0.0),
 
             shuffle_pickup_position: self.game_config.shuffle_pickup_position.unwrap_or(false),
+            shuffle_pickup_pos_all_rooms: self.game_config.shuffle_pickup_pos_all_rooms.unwrap_or(false),
             remove_vanilla_blast_shields: self.game_config.remove_vanilla_blast_shields.unwrap_or(false),
             nonvaria_heat_damage: self.game_config.nonvaria_heat_damage.unwrap_or(false),
             staggered_suit_damage: self.game_config.staggered_suit_damage.unwrap_or(false),
