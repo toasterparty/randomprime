@@ -1318,7 +1318,9 @@ where R: Rng
         0x70181194, // Quarantine Cave
         0xC7E821BA, // ttb
         0x4148F7B0, // burn dome
-    ].contains(&mrea_id) {
+        0x43E4CC25, // hydra
+        0x21B4BFF6, // aether
+        ].contains(&mrea_id) {
         offset_xy = 1;
         offset_z  = 4;
         offset_max_z = -0.3;
