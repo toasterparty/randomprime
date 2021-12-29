@@ -4930,9 +4930,17 @@ fn patch_dol<'r>(
 
     let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFv", version) + 0x68, {
             li      r0, visor; 
-            // stw     r0, 0x14(r31); // currentVisor
             nop;
+            // stw     r0, 0x14(r31); // currentVisor
             stw     r0, 0x18(r31); // transitioningVisor
+    });
+    dol_patcher.ppcasm_patch(&default_visor_patch)?;
+
+    let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFR12CInputStream", version) + 0x70, {
+        li      r0, visor; 
+        nop;
+        // stw     r0, 0x14(r30); // currentVisor
+        stw     r0, 0x18(r30); // transitioningVisor
     });
     dol_patcher.ppcasm_patch(&default_visor_patch)?;
 
