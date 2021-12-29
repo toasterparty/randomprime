@@ -13,6 +13,7 @@ use rand::{
 
 use crate::patch_config::{
     ArtifactHintBehavior,
+    Visor,
     MapState,
     IsoFormat,
     PickupConfig,
@@ -4943,6 +4944,18 @@ fn patch_dol<'r>(
         stw     r0, 0x18(r30); // transitioningVisor
     });
     dol_patcher.ppcasm_patch(&default_visor_patch)?;
+
+    let visor_item = match config.starting_visor {
+        Visor::Combat  => 17,
+        Visor::Scan    => 5,
+        Visor::Thermal => 9,
+        Visor::XRay    => 13,
+    };
+
+    let data: Vec<u8> = vec![0x38, 0x80, 0x00, visor_item as u8];
+    dol_patcher.patch(symbol_addr!("UpdateVisorState__7CPlayerFRC11CFinalInputfR13CStateManager", version) + 0xe8, data.into())?;
+    let data: Vec<u8> = vec![0x38, 0x80, 0x00, visor as u8];
+    dol_patcher.patch(symbol_addr!("UpdateVisorState__7CPlayerFRC11CFinalInputfR13CStateManager", version) + 0xfc, data.into())?;
 
     let patch_offset = if version == Version::Pal || version == Version::NtscJ {
         0xb0
