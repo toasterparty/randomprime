@@ -8349,6 +8349,10 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         resource_info!("FRME_MapScreen.FRME").into(),
         move |res| patch_combat_hud_color(res, &config.ctwk_config),
     );
+    patcher.add_resource_patch(
+        resource_info!("FRME_ThermalHud.FRME").into(),
+        move |res| patch_combat_hud_color(res, &config.ctwk_config),
+    );
 
     // Patch end sequence (player size)
     if config.ctwk_config.player_size.is_some() {
