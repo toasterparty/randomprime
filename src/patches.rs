@@ -4951,11 +4951,21 @@ fn patch_dol<'r>(
         Visor::Thermal => 9,
         Visor::XRay    => 13,
     };
+    
+    let (patch_offset, patch_offset2) = if version == Version::Pal || version == Version::NtscJ {
+        (0xdc, 0xf0)
+    } else {
+        (0xe8, 0xfc)
+    };
 
-    let data: Vec<u8> = vec![0x38, 0x80, 0x00, visor_item as u8];
-    dol_patcher.patch(symbol_addr!("UpdateVisorState__7CPlayerFRC11CFinalInputfR13CStateManager", version) + 0xe8, data.into())?;
-    let data: Vec<u8> = vec![0x38, 0x80, 0x00, visor as u8];
-    dol_patcher.patch(symbol_addr!("UpdateVisorState__7CPlayerFRC11CFinalInputfR13CStateManager", version) + 0xfc, data.into())?;
+    let default_visor_patch = ppcasm!(symbol_addr!("UpdateVisorState__7CPlayerFRC11CFinalInputfR13CStateManager", version) + patch_offset, {
+            li r4, visor_item;
+    });
+    dol_patcher.ppcasm_patch(&default_visor_patch)?;
+    let default_visor_patch = ppcasm!(symbol_addr!("UpdateVisorState__7CPlayerFRC11CFinalInputfR13CStateManager", version) + patch_offset2, {
+            li r4, visor;
+    });
+    dol_patcher.ppcasm_patch(&default_visor_patch)?;
 
     let patch_offset = if version == Version::Pal || version == Version::NtscJ {
         0xb0
