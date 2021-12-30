@@ -352,7 +352,7 @@ pub fn custom_assets<'r>(
         assets.push(build_resource(
             pt.hudmemo_strg(),
             structs::ResourceKind::Strg(structs::Strg::from_strings(vec![
-                format!("&just=center;{} aquired\0", name),
+                format!("&just=center;{} acquired!\0", name),
             ])),
         ));
     }
