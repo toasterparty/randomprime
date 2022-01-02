@@ -312,6 +312,7 @@ pub fn custom_assets<'r>(
         custom_asset_ids::CFLDG_POI_STRG,
         vec![
             "Toaster's Champions: Awp82, DiggleWrath, Yeti2000, freak532486, AlphaRage, Csabi,\0".to_string(),
+            "\0".to_string(),
             "BajaBlood, hammergoboom, Firemetroid, Lokir, MeriKatt, Cosmonawt, Haldadrin\0".to_string(),
         ],
         1,

@@ -8172,7 +8172,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
             let mut items: Vec<PickupType> = Vec::new();
             for pt in PickupType::iter() {
-                if vec![
+                if !vec![
                     PickupType::IceBeam,
                     PickupType::WaveBeam,
                     PickupType::PlasmaBeam,
@@ -8209,7 +8209,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     PickupType::ArtifactOfWorld,
                     PickupType::ArtifactOfSpirit,
                     PickupType::ArtifactOfNewborn,
-                    PickupType::Nothing,
+                    PickupType::CombatVisor,
+                    PickupType::PowerBeam,
                 ].contains(&pt) {
                     continue;
                 }
@@ -8221,7 +8222,6 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             items.push(PickupType::Missile);
             items.push(PickupType::Missile);
             items.push(PickupType::Missile);
-            items.push(PickupType::Nothing);
             items.push(PickupType::EnergyTank);
             items.push(PickupType::EnergyTank);
             items.push(PickupType::EnergyTank);
