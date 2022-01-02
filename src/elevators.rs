@@ -642,11 +642,23 @@ impl SpawnRoomData
                         name: room_info.name,
                     };
                 }
+
+                // special handing for second unique room with identical name STRG
+                if "connection elevator to deck beta (2)" == room_name && room_info.room_id.to_u32() == 0x6ED3231B {
+                    return SpawnRoomData {
+                        pak_name,
+                        mlvl: world.mlvl(),
+                        mrea: room_info.room_id.to_u32(),
+                        mrea_idx: idx,
+                        room_id: 0,
+                        name: room_info.name,
+                    };
+                }
                 idx = idx + 1;
             }
         }
 
-        panic!("Error - Could not find destination '{}'", dest_name)
+        panic!("Error - Could not find room '{}'", dest_name)
     }
 }
 
