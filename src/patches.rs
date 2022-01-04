@@ -5005,6 +5005,11 @@ fn patch_dol<'r>(
     });
     dol_patcher.ppcasm_patch(&splash_scren_patch)?;
 
+    // let bouncy_beam_patch = ppcasm!(symbol_addr!("Explode__17CEnergyProjectileFRC9CVector3fRC9CVector3f29EWeaponCollisionResponseTypesR13CStateManagerRC20CDamageVulnerability9TUniqueId", version) + (0x80214cb4 - 0x80214bf8), {
+    //         nop;
+    // });
+    // dol_patcher.ppcasm_patch(&bouncy_beam_patch)?;
+
     if smoother_teleports {
         // Do not holster arm cannon
         let better_teleport_patch = ppcasm!(symbol_addr!("Teleport__7CPlayerFRC12CTransform4fR13CStateManagerb", version) + 0x31C, {
