@@ -3425,6 +3425,22 @@ fn patch_arboretum_invisible_wall(
     Ok(())
 }
 
+fn patch_remove_ids<'r>
+(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    remove_ids: Vec<u32>,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layers = &mut scly.layers.as_mut_vec(); 
+    for layer in layers.iter_mut() {
+        layer.objects.as_mut_vec().retain(|obj| !remove_ids.contains(&(obj.instance_id&0x00FFFFFF)));
+    }
+    Ok(())
+}
+
 fn patch_spawn_point_position<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -7066,6 +7082,11 @@ fn patch_qol_game_breaking(
     patcher.add_scly_patch(
         resource_info!("00_mines_savestation_b.MREA").into(),
         move |ps, area| patch_spawn_point_position(ps, area, [216.7245, 4.4046, -139.8873], false, true)
+    );
+    // Turrets in Vent Shaft Section B always spawn
+    patcher.add_scly_patch(
+        resource_info!("08b_intro_ventshaft.MREA").into(),
+        move |ps, area| patch_remove_ids(ps, area, vec![0x0013001A, 0x0013001C])
     );
     if small_samus {
         patcher.add_scly_patch(
