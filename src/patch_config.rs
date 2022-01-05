@@ -772,22 +772,16 @@ impl PatchConfigPrivate
             }
         };
 
-        if !starting_items.combat_visor && !starting_items.thermal_visor && !starting_items.xray {
-            panic!("Must start with combat, thermal or xray");
-        }
-
-        if !starting_items.power_beam && !starting_items.wave && !starting_items.ice && !starting_items.plasma {
-            panic!("Must start with a beam");
-        }
-
         let default_starting_visor = if starting_items.combat_visor {
             "combat"
         } else if starting_items.thermal_visor {
             "thermal"
         } else if starting_items.xray {
             "xray"
-        } else {
+        } else if starting_items.scan_visor {
             "scan"
+        } else {
+            "combat"
         };
 
         let starting_visor =match self.game_config.starting_visor.as_ref().unwrap_or(&default_starting_visor.to_string()).to_lowercase().trim() {
@@ -804,8 +798,10 @@ impl PatchConfigPrivate
             "plasma"
         } else if starting_items.ice {
             "ice"
-        } else {
+        } else if starting_items.wave {
             "wave"
+        } else {
+            "power"
         };
 
         let starting_beam =match self.game_config.starting_beam.as_ref().unwrap_or(&default_starting_beam.to_string()).to_lowercase().trim() {
