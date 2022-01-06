@@ -918,6 +918,8 @@ fn patch_add_item<'r>(
             } else {
                 if pickup_type == PickupType::Missile {
                     5
+                } else if pickup_type == PickupType::HealthRefill {
+                    50
                 } else {
                     1
                 }
@@ -925,7 +927,7 @@ fn patch_add_item<'r>(
         }
     };
     let max_increase = {
-        if pickup_type == PickupType::Nothing {
+        if pickup_type == PickupType::Nothing || pickup_type == PickupType::HealthRefill {
             0
         } else {
             pickup_config.max_increase.unwrap_or(curr_increase)
@@ -1779,6 +1781,8 @@ fn update_pickup(
             } else {
                 if pickup_type == PickupType::Missile {
                     5
+                } else if pickup_type == PickupType::HealthRefill {
+                    50
                 } else {
                     1
                 }
@@ -1786,7 +1790,7 @@ fn update_pickup(
         }
     };
     let max_increase = {
-        if pickup_type == PickupType::Nothing {
+        if pickup_type == PickupType::Nothing || pickup_type == PickupType::HealthRefill {
             0
         } else {
             pickup_config.max_increase.unwrap_or(curr_increase)
