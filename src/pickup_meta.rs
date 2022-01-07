@@ -378,10 +378,10 @@ impl PickupModel
             .contains(&string)
         {
             return Some(PickupModel::CombatVisor);
-        } else if vec!["scan"]
+        } else if vec!["scan", "scan visor"]
             .contains(&string)
         {
-            return Some(PickupModel::ScanVisor);
+            return Some(PickupModel::Visor);
         } else if vec!["thermal"]
             .contains(&string)
         {
