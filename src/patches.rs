@@ -4859,6 +4859,7 @@ fn patch_dol<'r>(
     config: &PatchConfig,
     remove_ball_color: bool,
     smoother_teleports: bool,
+    skip_splash_screens: bool,
 ) -> Result<(), String>
 {
     if version == Version::NtscUTrilogy || version == Version::NtscJTrilogy || version == Version::PalTrilogy {
@@ -5020,10 +5021,12 @@ fn patch_dol<'r>(
     });
     dol_patcher.ppcasm_patch(&default_beam_patch)?;
 
-    let splash_scren_patch = ppcasm!(symbol_addr!("__ct__13CSplashScreenFQ213CSplashScreen13ESplashScreen", version) + 0x70, {
-            nop;
-    });
-    dol_patcher.ppcasm_patch(&splash_scren_patch)?;
+    if skip_splash_screens {    
+        let splash_scren_patch = ppcasm!(symbol_addr!("__ct__13CSplashScreenFQ213CSplashScreen13ESplashScreen", version) + 0x70, {
+                nop;
+        });
+        dol_patcher.ppcasm_patch(&splash_scren_patch)?;
+    }
 
     // let bouncy_beam_patch = ppcasm!(symbol_addr!("Explode__17CEnergyProjectileFRC9CVector3fRC9CVector3f29EWeaponCollisionResponseTypesR13CStateManagerRC20CDamageVulnerability9TUniqueId", version) + (0x80214cb4 - 0x80214bf8), {
     //         nop;
@@ -8889,6 +8892,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 config,
                 remove_ball_color,
                 true,
+                config.skip_splash_screens,
             )
         );
     } else {
@@ -8901,6 +8905,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 config,
                 remove_ball_color,
                 false,
+                config.skip_splash_screens,
             )
         );
     }
