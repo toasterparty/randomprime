@@ -65,9 +65,12 @@ pub mod custom_asset_ids {
         NOTHING_TXTR: TXTR,
         NOTHING_CMDL: CMDL,
         NOTHING_ANCS: ANCS,
-        THERMAL_TXTR: TXTR,
         THERMAL_CMDL: CMDL,
         THERMAL_ANCS: ANCS,
+        XRAY_CMDL: CMDL,
+        XRAY_ANCS: ANCS,
+        COMBAT_CMDL: CMDL,
+        COMBAT_ANCS: ANCS,
         SHINY_MISSILE_TXTR0: TXTR,
         SHINY_MISSILE_TXTR1: TXTR,
         SHINY_MISSILE_TXTR2: TXTR,
@@ -301,6 +304,18 @@ pub fn custom_assets<'r>(
         custom_asset_ids::THERMAL_CMDL,
         custom_asset_ids::THERMAL_ANCS,
         ResId::<res_id::TXTR>::new(0xFC095F6C),
+    ));
+    assets.extend_from_slice(&create_visor_cmdl_and_ancs(
+        resources,
+        custom_asset_ids::XRAY_CMDL,
+        custom_asset_ids::XRAY_ANCS,
+        ResId::<res_id::TXTR>::new(0xBE4CD99D),
+    ));
+    assets.extend_from_slice(&create_visor_cmdl_and_ancs(
+        resources,
+        custom_asset_ids::COMBAT_CMDL,
+        custom_asset_ids::COMBAT_ANCS,
+        ResId::<res_id::TXTR>::new(0x1D588B22),
     ));
     assets.extend_from_slice(&create_shiny_missile_assets(resources));
     assets.extend_from_slice(&create_item_scan_strg_pair(
