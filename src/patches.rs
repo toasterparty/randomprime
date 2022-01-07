@@ -4966,20 +4966,34 @@ fn patch_dol<'r>(
             li      r0, visor;
     });
     dol_patcher.ppcasm_patch(&default_visor_patch)?;
-
-    let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFv", version) + 0x68, {
-            li      r0, visor;
-            stw     r6, 0x14(r31); // currentVisor = combat
-            stw     r0, 0x18(r31); // transitioningVisor
-    });
-    dol_patcher.ppcasm_patch(&default_visor_patch)?;
-
-    let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFR12CInputStream", version) + 0x70, {
-        li      r0, visor;
-        stw     r5, 0x14(r30); // currentVisor = combat
-        stw     r0, 0x18(r30); // transitioningVisor
-    });
-    dol_patcher.ppcasm_patch(&default_visor_patch)?;
+    
+    if !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray  {
+        let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFv", version) + 0x68, {
+                li      r0, visor;
+                stw     r0, 0x14(r31); // currentVisor
+                stw     r0, 0x18(r31); // transitioningVisor
+        });
+        dol_patcher.ppcasm_patch(&default_visor_patch)?;
+        let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFR12CInputStream", version) + 0x70, {
+                li      r0, visor;
+                stw     r0, 0x14(r30); // currentVisor
+                stw     r0, 0x18(r30); // transitioningVisor
+        });
+        dol_patcher.ppcasm_patch(&default_visor_patch)?;
+    } else {
+        let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFv", version) + 0x68, {
+                li      r0, visor;
+                stw     r6, 0x14(r31); // currentVisor = combat
+                stw     r0, 0x18(r31); // transitioningVisor
+        });
+        dol_patcher.ppcasm_patch(&default_visor_patch)?;
+        let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFR12CInputStream", version) + 0x70, {
+                li      r0, visor;
+                stw     r5, 0x14(r30); // currentVisor = combat
+                stw     r0, 0x18(r30); // transitioningVisor
+        });
+        dol_patcher.ppcasm_patch(&default_visor_patch)?;
+    }
 
     let visor_item = match config.starting_visor {
         Visor::Combat  => 17,
