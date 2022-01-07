@@ -195,6 +195,7 @@ pub enum PickupModel
     Missile,
     EnergyTank,
     Visor,
+    ThermalVisor,
     VariaSuit,
     GravitySuit,
     PhazonSuit,
@@ -241,6 +242,7 @@ impl PickupModel
             PickupModel::Missile =>             "Missile",
             PickupModel::EnergyTank =>          "Energy Tank",
             PickupModel::Visor =>               "Visor",
+            PickupModel::ThermalVisor =>        "Thermal Visor",
             PickupModel::VariaSuit =>           "Varia Suit",
             PickupModel::GravitySuit =>         "Gravity Suit",
             PickupModel::PhazonSuit =>          "Phazon Suit",
@@ -296,7 +298,8 @@ impl PickupModel
         [
             PickupModel::Missile, 
             PickupModel::EnergyTank, 
-            PickupModel::Visor, 
+            PickupModel::Visor,
+            PickupModel::ThermalVisor,
             PickupModel::VariaSuit, 
             PickupModel::GravitySuit, 
             PickupModel::PhazonSuit, 
@@ -345,13 +348,6 @@ impl PickupModel
             }
         }
 
-        // Deprecated Mapping
-        if vec!["combat visor", "scan visor", "x-ray visor", "xray visor", "thermal visor", "combat", "scan", "xray", "thermal"]
-            .contains(&string)
-        {
-            return Some(PickupModel::Visor);
-        }
-
         // Placeholder Mapping
         if vec!["power suit", "power beam"]
             .contains(&string)
@@ -376,7 +372,7 @@ impl PickupModel
             PickupType::MorphBallBomb       => PickupModel::MorphBallBomb,
             PickupType::PowerBomb           => PickupModel::PowerBomb,
             PickupType::Flamethrower        => PickupModel::Flamethrower,
-            PickupType::ThermalVisor        => PickupModel::Visor,
+            PickupType::ThermalVisor        => PickupModel::ThermalVisor,
             PickupType::ChargeBeam          => PickupModel::ChargeBeam,
             PickupType::SuperMissile        => PickupModel::SuperMissile,
             PickupType::GrappleBeam         => PickupModel::GrappleBeam,
