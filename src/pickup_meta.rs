@@ -167,6 +167,25 @@ impl PickupType
                 return i;
             }
         }
+        
+        // Alternate Names
+        if vec!["combat"]
+            .contains(&string)
+        {
+            return PickupType::CombatVisor;
+        } else if vec!["scan"]
+            .contains(&string)
+        {
+            return PickupType::ScanVisor;
+        } else if vec!["thermal"]
+            .contains(&string)
+        {
+            return PickupType::ThermalVisor;
+        } else if vec!["x-ray", "xray", "x-ray visor", "xray visor"]
+            .contains(&string)
+        {
+            return PickupType::XRayVisor;
+        }
 
         panic!("Unknown Pickup Type - {}", string);
     }
@@ -352,6 +371,25 @@ impl PickupModel
             if i.name().to_string().to_lowercase().trim() == string {
                 return Some(i);
             }
+        }
+
+        // Alternate Names
+        if vec!["combat"]
+            .contains(&string)
+        {
+            return Some(PickupModel::CombatVisor);
+        } else if vec!["scan"]
+            .contains(&string)
+        {
+            return Some(PickupModel::ScanVisor);
+        } else if vec!["thermal"]
+            .contains(&string)
+        {
+            return Some(PickupModel::ThermalVisor);
+        } else if vec!["x-ray", "xray", "x-ray visor", "xray visor"]
+            .contains(&string)
+        {
+            return Some(PickupModel::XRayVisor);
         }
 
         // Placeholder Mapping
