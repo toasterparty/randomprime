@@ -5220,7 +5220,7 @@ fn patch_dol<'r>(
         Visor::XRay    => 13,
     };
 
-    let default_visor_patch = ppcasm!(symbol_addr!("SetAreaPlayerHint__7CPlayerFRC17CScriptPlayerHintRC13CStateManager", version) + (0x80284bc8 - 0x80284aa8), {
+    let default_visor_patch = ppcasm!(symbol_addr!("SetAreaPlayerHint__7CPlayerFRC17CScriptPlayerHintRC13CStateManager", version) + 0x120, {
             nop;
     });
     dol_patcher.ppcasm_patch(&default_visor_patch)?;
@@ -5230,34 +5230,54 @@ fn patch_dol<'r>(
         !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray
     )
     {
+        let patch_offset = if version == Version::Pal || version == Version::NtscJ {
+            0x3bc
+        } else {
+            0x434
+        };
+        
         // spawn with weapon holstered instead of drawn
-        let default_visor_patch = ppcasm!(symbol_addr!("__ct__7CPlayerF9TUniqueIdRC12CTransform4fRC6CAABoxUi9CVector3fffffRC13CMaterialList", version) + (0x8001a670 - 0x8001a23c), {
-            li      r0, 0; // r0 = holstered
+        let default_visor_patch = ppcasm!(symbol_addr!("__ct__7CPlayerF9TUniqueIdRC12CTransform4fRC6CAABoxUi9CVector3fffffRC13CMaterialList", version) + patch_offset, {
+                li      r0, 0; // r0 = holstered
         });
         dol_patcher.ppcasm_patch(&default_visor_patch)?;
 
         // stop gun from being drawn after unmorphing
-        let default_visor_patch = ppcasm!(symbol_addr!("UpdateGunState__7CPlayerFRC11CFinalInputR13CStateManager", version) + (0x8001a014 - 0x80019E20), {
+        let default_visor_patch = ppcasm!(symbol_addr!("UpdateGunState__7CPlayerFRC11CFinalInputR13CStateManager", version) + 0x1f4, {
                 nop;
         });
         dol_patcher.ppcasm_patch(&default_visor_patch)?;
-        let default_visor_patch = ppcasm!(symbol_addr!("UpdateGunState__7CPlayerFRC11CFinalInputR13CStateManager", version) + (0x80019fe8 - 0x80019E20), {
+        let default_visor_patch = ppcasm!(symbol_addr!("UpdateGunState__7CPlayerFRC11CFinalInputR13CStateManager", version) + 0x1c8, {
                 nop;
         });
         dol_patcher.ppcasm_patch(&default_visor_patch)?;
-        let default_visor_patch = ppcasm!(symbol_addr!("TransitionFromMorphBallState__7CPlayerFR13CStateManager", version) + (0x8028383c - 0x80283074), {
+        
+        let (patch_offset, patch_offset2) = if version == Version::Pal || version == Version::NtscJ {
+            (0x79c, 0x7a8)
+        } else {
+            (0x7c8, 0x7d4)
+        };
+        
+        let default_visor_patch = ppcasm!(symbol_addr!("TransitionFromMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset, {
                 nop;
         });
         dol_patcher.ppcasm_patch(&default_visor_patch)?;
-        let default_visor_patch = ppcasm!(symbol_addr!("TransitionFromMorphBallState__7CPlayerFR13CStateManager", version) + (0x80283848 - 0x80283074), {
+        let default_visor_patch = ppcasm!(symbol_addr!("TransitionFromMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset2, {
                 nop;
         });
         dol_patcher.ppcasm_patch(&default_visor_patch)?;
-        let default_visor_patch = ppcasm!(symbol_addr!("LeaveMorphBallState__7CPlayerFR13CStateManager", version) + (0x80282ec0 - 0x80282d1c), {
+        
+        let (patch_offset, patch_offset2) = if version == Version::Pal || version == Version::NtscJ {
+            (0x14c, 0x158)
+        } else {
+            (0x1a4, 0x1b0)
+        };
+        
+        let default_visor_patch = ppcasm!(symbol_addr!("LeaveMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset, {
                 nop;
         });
         dol_patcher.ppcasm_patch(&default_visor_patch)?;
-        let default_visor_patch = ppcasm!(symbol_addr!("LeaveMorphBallState__7CPlayerFR13CStateManager", version) + (0x80282ecc - 0x80282d1c), {
+        let default_visor_patch = ppcasm!(symbol_addr!("LeaveMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset2, {
                 nop;
         });
         dol_patcher.ppcasm_patch(&default_visor_patch)?;
