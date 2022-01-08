@@ -786,6 +786,7 @@ fn patch_add_item<'r>(
     extern_models: &HashMap<String, ExternPickupModel>,
     shuffle_position: bool,
     seed: u64,
+    no_starting_visor: bool,
 ) -> Result<(), String>
 {
     let mut rng = StdRng::seed_from_u64(seed);
@@ -1074,6 +1075,107 @@ fn patch_add_item<'r>(
         }
     );
 
+    // If scan visor, and starting visor is none, then switch to combat and back to scan when obtaining scan
+    let player_hint_id = ps.fresh_instance_id_range.next().unwrap();
+    let player_hint = structs::SclyObject {
+        instance_id: player_hint_id,
+            property_data: structs::PlayerHint {
+            name: b"combat playerhint\0".as_cstr(),
+            position: [0.0, 0.0, 0.0].into(),
+            rotation: [0.0, 0.0, 0.0].into(),
+            unknown0: 1, // active
+            inner_struct: structs::PlayerHintStruct {
+                unknowns: [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                ].into(),
+            }.into(),
+            unknown1: 10, // priority
+            }.into(),
+            connections: vec![].into(),
+    };
+
+    pickup_obj.connections.as_mut_vec().push(
+        structs::Connection {
+            state: structs::ConnectionState::ARRIVED,
+            message: structs::ConnectionMsg::INCREMENT,
+            target_object_id: player_hint_id,
+        }
+    );
+
+    let player_hint_id_2 = ps.fresh_instance_id_range.next().unwrap();
+    let player_hint_2 = structs::SclyObject {
+        instance_id: player_hint_id_2,
+            property_data: structs::PlayerHint {
+            name: b"combat playerhint\0".as_cstr(),
+            position: [0.0, 0.0, 0.0].into(),
+            rotation: [0.0, 0.0, 0.0].into(),
+            unknown0: 1, // active
+            inner_struct: structs::PlayerHintStruct {
+                unknowns: [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                ].into(),
+            }.into(),
+            unknown1: 10, // priority
+            }.into(),
+            connections: vec![].into(),
+    };
+
+    let timer_id = ps.fresh_instance_id_range.next().unwrap();
+    let timer = structs::SclyObject {
+        instance_id: timer_id,
+        property_data: structs::Timer {
+            name: b"set-scan\0".as_cstr(),
+            start_time: 0.5,
+            max_random_add: 0.0,
+            reset_to_zero: 0,
+            start_immediately: 0,
+            active: 1,
+        }.into(),
+        connections: vec![
+            structs::Connection {
+                state: structs::ConnectionState::ZERO,
+                message: structs::ConnectionMsg::INCREMENT,
+                target_object_id: player_hint_id_2,
+            },
+        ].into(),
+    };
+
+    pickup_obj.connections.as_mut_vec().push(
+        structs::Connection {
+            state: structs::ConnectionState::ARRIVED,
+            message: structs::ConnectionMsg::RESET_AND_START,
+            target_object_id: timer_id,
+        }
+    );
+
     // update MREA layer with new Objects
     let scly = area.mrea().scly_section_mut();
     let layers = scly.layers.as_mut_vec();
@@ -1167,6 +1269,11 @@ fn patch_add_item<'r>(
     layers[new_layer_idx].objects.as_mut_vec().push(hudmemo);
     layers[new_layer_idx].objects.as_mut_vec().push(attainment_audio);
     layers[new_layer_idx].objects.as_mut_vec().push(pickup_obj);
+    if pickup_type == PickupType::ScanVisor && no_starting_visor{
+        layers[new_layer_idx].objects.as_mut_vec().push(player_hint);
+        layers[new_layer_idx].objects.as_mut_vec().push(player_hint_2);
+        layers[new_layer_idx].objects.as_mut_vec().push(timer);
+    }
 
     Ok(())
 }
@@ -4966,16 +5073,17 @@ fn patch_dol<'r>(
             li      r0, visor;
     });
     dol_patcher.ppcasm_patch(&default_visor_patch)?;
-    
+
     if !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray {
+        let scan_visor = Visor::Scan as u16;
         let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFv", version) + 0x68, {
-                li      r0, visor;
+                li      r0, scan_visor;
                 stw     r0, 0x14(r31); // currentVisor
                 stw     r0, 0x18(r31); // transitioningVisor
         });
         dol_patcher.ppcasm_patch(&default_visor_patch)?;
         let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFR12CInputStream", version) + 0x70, {
-                li      r0, visor;
+                li      r0, scan_visor;
                 stw     r0, 0x14(r30); // currentVisor
                 stw     r0, 0x18(r30); // transitioningVisor
         });
@@ -5002,6 +5110,11 @@ fn patch_dol<'r>(
         Visor::XRay    => 13,
     };
 
+    let default_visor_patch = ppcasm!(symbol_addr!("SetAreaPlayerHint__7CPlayerFRC17CScriptPlayerHintRC13CStateManager", version) + (0x80284bc8 - 0x80284aa8), {
+            nop;
+    });
+    dol_patcher.ppcasm_patch(&default_visor_patch)?;
+
     // If scan visor or no visor
     if config.starting_visor == Visor::Scan || (
         !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray
@@ -5013,7 +5126,7 @@ fn patch_dol<'r>(
         });
         dol_patcher.ppcasm_patch(&default_visor_patch)?;
 
-        // stop gun from being drawn when pressing A/Y
+        // stop gun from being drawn after unmorphing
         let default_visor_patch = ppcasm!(symbol_addr!("UpdateGunState__7CPlayerFRC11CFinalInputR13CStateManager", version) + (0x8001a014 - 0x80019E20), {
                 nop;
         });
@@ -5022,8 +5135,6 @@ fn patch_dol<'r>(
                 nop;
         });
         dol_patcher.ppcasm_patch(&default_visor_patch)?;
-
-        // stop gun from being drawn after unmorphing
         let default_visor_patch = ppcasm!(symbol_addr!("TransitionFromMorphBallState__7CPlayerFR13CStateManager", version) + (0x8028383c - 0x80283074), {
                 nop;
         });
@@ -5038,6 +5149,18 @@ fn patch_dol<'r>(
         dol_patcher.ppcasm_patch(&default_visor_patch)?;
         let default_visor_patch = ppcasm!(symbol_addr!("LeaveMorphBallState__7CPlayerFR13CStateManager", version) + (0x80282ecc - 0x80282d1c), {
                 nop;
+        });
+        dol_patcher.ppcasm_patch(&default_visor_patch)?;
+
+        let patch_offset = if version == Version::Pal || version == Version::NtscJ {
+            0xb0
+        } else {
+            0x108
+        };
+
+        let scan_visor = Visor::Scan as u16;
+        let default_visor_patch = ppcasm!(symbol_addr!("EnterMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset, {
+                li      r4, scan_visor;
         });
         dol_patcher.ppcasm_patch(&default_visor_patch)?;
     } else {
@@ -5055,18 +5178,18 @@ fn patch_dol<'r>(
                 li r4, visor;
         });
         dol_patcher.ppcasm_patch(&default_visor_patch)?;
+
+        let patch_offset = if version == Version::Pal || version == Version::NtscJ {
+            0xb0
+        } else {
+            0x108
+        };
+    
+        let default_visor_patch = ppcasm!(symbol_addr!("EnterMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset, {
+                li      r4, visor;
+        });
+        dol_patcher.ppcasm_patch(&default_visor_patch)?;
     }
-
-    let patch_offset = if version == Version::Pal || version == Version::NtscJ {
-        0xb0
-    } else {
-        0x108
-    };
-
-    let default_visor_patch = ppcasm!(symbol_addr!("EnterMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset, {
-            li      r4, visor;
-    });
-    dol_patcher.ppcasm_patch(&default_visor_patch)?;
 
     let beam = config.starting_beam as u16;
     let default_beam_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFv", version) + 0x58, {
@@ -8742,6 +8865,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                         extern_models,
                         config.shuffle_pickup_pos_all_rooms,
                         config.seed,
+                        !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray,
                     ),
                 );
 
