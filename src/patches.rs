@@ -4967,7 +4967,7 @@ fn patch_dol<'r>(
     });
     dol_patcher.ppcasm_patch(&default_visor_patch)?;
     
-    if !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray  {
+    if !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray {
         let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFv", version) + 0x68, {
                 li      r0, visor;
                 stw     r0, 0x14(r31); // currentVisor
@@ -5002,8 +5002,18 @@ fn patch_dol<'r>(
         Visor::XRay    => 13,
     };
 
-    if config.starting_visor == Visor::Scan {
-        // stop gun from being drawn in various scenarios
+    // If scan visor or no visor
+    if config.starting_visor == Visor::Scan || (
+        !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray
+    )
+    {
+        // spawn with weapon holstered instead of drawn
+        let default_visor_patch = ppcasm!(symbol_addr!("__ct__7CPlayerF9TUniqueIdRC12CTransform4fRC6CAABoxUi9CVector3fffffRC13CMaterialList", version) + (0x8001a670 - 0x8001a23c), {
+            li      r0, 0; // r0 = holstered
+        });
+        dol_patcher.ppcasm_patch(&default_visor_patch)?;
+
+        // stop gun from being drawn when pressing A/Y
         let default_visor_patch = ppcasm!(symbol_addr!("UpdateGunState__7CPlayerFRC11CFinalInputR13CStateManager", version) + (0x8001a014 - 0x80019E20), {
                 nop;
         });
@@ -5012,6 +5022,8 @@ fn patch_dol<'r>(
                 nop;
         });
         dol_patcher.ppcasm_patch(&default_visor_patch)?;
+
+        // stop gun from being drawn after unmorphing
         let default_visor_patch = ppcasm!(symbol_addr!("TransitionFromMorphBallState__7CPlayerFR13CStateManager", version) + (0x8028383c - 0x80283074), {
                 nop;
         });
@@ -5028,7 +5040,6 @@ fn patch_dol<'r>(
                 nop;
         });
         dol_patcher.ppcasm_patch(&default_visor_patch)?;
-
     } else {
         let (patch_offset, patch_offset2) = if version == Version::Pal || version == Version::NtscJ {
             (0xdc, 0xf0)
