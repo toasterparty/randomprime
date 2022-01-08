@@ -5002,20 +5002,49 @@ fn patch_dol<'r>(
         Visor::XRay    => 13,
     };
 
-    let (patch_offset, patch_offset2) = if version == Version::Pal || version == Version::NtscJ {
-        (0xdc, 0xf0)
-    } else {
-        (0xe8, 0xfc)
-    };
+    if config.starting_visor == Visor::Scan {
+        // stop gun from being drawn in various scenarios
+        let default_visor_patch = ppcasm!(symbol_addr!("UpdateGunState__7CPlayerFRC11CFinalInputR13CStateManager", version) + (0x8001a014 - 0x80019E20), {
+                nop;
+        });
+        dol_patcher.ppcasm_patch(&default_visor_patch)?;
+        let default_visor_patch = ppcasm!(symbol_addr!("UpdateGunState__7CPlayerFRC11CFinalInputR13CStateManager", version) + (0x80019fe8 - 0x80019E20), {
+                nop;
+        });
+        dol_patcher.ppcasm_patch(&default_visor_patch)?;
+        let default_visor_patch = ppcasm!(symbol_addr!("TransitionFromMorphBallState__7CPlayerFR13CStateManager", version) + (0x8028383c - 0x80283074), {
+                nop;
+        });
+        dol_patcher.ppcasm_patch(&default_visor_patch)?;
+        let default_visor_patch = ppcasm!(symbol_addr!("TransitionFromMorphBallState__7CPlayerFR13CStateManager", version) + (0x80283848 - 0x80283074), {
+                nop;
+        });
+        dol_patcher.ppcasm_patch(&default_visor_patch)?;
+        let default_visor_patch = ppcasm!(symbol_addr!("LeaveMorphBallState__7CPlayerFR13CStateManager", version) + (0x80282ec0 - 0x80282d1c), {
+                nop;
+        });
+        dol_patcher.ppcasm_patch(&default_visor_patch)?;
+        let default_visor_patch = ppcasm!(symbol_addr!("LeaveMorphBallState__7CPlayerFR13CStateManager", version) + (0x80282ecc - 0x80282d1c), {
+                nop;
+        });
+        dol_patcher.ppcasm_patch(&default_visor_patch)?;
 
-    let default_visor_patch = ppcasm!(symbol_addr!("UpdateVisorState__7CPlayerFRC11CFinalInputfR13CStateManager", version) + patch_offset, {
-            li r4, visor_item;
-    });
-    dol_patcher.ppcasm_patch(&default_visor_patch)?;
-    let default_visor_patch = ppcasm!(symbol_addr!("UpdateVisorState__7CPlayerFRC11CFinalInputfR13CStateManager", version) + patch_offset2, {
-            li r4, visor;
-    });
-    dol_patcher.ppcasm_patch(&default_visor_patch)?;
+    } else {
+        let (patch_offset, patch_offset2) = if version == Version::Pal || version == Version::NtscJ {
+            (0xdc, 0xf0)
+        } else {
+            (0xe8, 0xfc)
+        };
+    
+        let default_visor_patch = ppcasm!(symbol_addr!("UpdateVisorState__7CPlayerFRC11CFinalInputfR13CStateManager", version) + patch_offset, {
+                li r4, visor_item;
+        });
+        dol_patcher.ppcasm_patch(&default_visor_patch)?;
+        let default_visor_patch = ppcasm!(symbol_addr!("UpdateVisorState__7CPlayerFRC11CFinalInputfR13CStateManager", version) + patch_offset2, {
+                li r4, visor;
+        });
+        dol_patcher.ppcasm_patch(&default_visor_patch)?;
+    }
 
     let patch_offset = if version == Version::Pal || version == Version::NtscJ {
         0xb0
