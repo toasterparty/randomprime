@@ -1465,6 +1465,7 @@ fn modify_pickups_in_mrea<'r>(
     extern_models: &HashMap<String, ExternPickupModel>,
     shuffle_position: bool,
     seed: u64,
+    no_starting_visor: bool,
 )
 -> Result<(), String>
 {
@@ -1602,6 +1603,115 @@ fn modify_pickups_in_mrea<'r>(
     let layers = scly.layers.as_mut_vec();
 
     let mut additional_connections = Vec::new();
+
+    if pickup_type == PickupType::ScanVisor && no_starting_visor {
+
+    // If scan visor, and starting visor is none, then switch to combat and back to scan when obtaining scan
+    let player_hint_id = ps.fresh_instance_id_range.next().unwrap();
+    let player_hint = structs::SclyObject {
+        instance_id: player_hint_id,
+            property_data: structs::PlayerHint {
+            name: b"combat playerhint\0".as_cstr(),
+            position: [0.0, 0.0, 0.0].into(),
+            rotation: [0.0, 0.0, 0.0].into(),
+            unknown0: 1, // active
+            inner_struct: structs::PlayerHintStruct {
+                unknowns: [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                ].into(),
+            }.into(),
+            unknown1: 10, // priority
+            }.into(),
+            connections: vec![].into(),
+    };
+
+    additional_connections.push(
+        structs::Connection {
+            state: structs::ConnectionState::ARRIVED,
+            message: structs::ConnectionMsg::INCREMENT,
+            target_object_id: player_hint_id,
+        }
+    );
+
+    let player_hint_id_2 = ps.fresh_instance_id_range.next().unwrap();
+    let player_hint_2 = structs::SclyObject {
+        instance_id: player_hint_id_2,
+            property_data: structs::PlayerHint {
+            name: b"combat playerhint\0".as_cstr(),
+            position: [0.0, 0.0, 0.0].into(),
+            rotation: [0.0, 0.0, 0.0].into(),
+            unknown0: 1, // active
+            inner_struct: structs::PlayerHintStruct {
+                unknowns: [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                ].into(),
+            }.into(),
+            unknown1: 10, // priority
+            }.into(),
+            connections: vec![].into(),
+    };
+
+    let timer_id = ps.fresh_instance_id_range.next().unwrap();
+    let timer = structs::SclyObject {
+        instance_id: timer_id,
+        property_data: structs::Timer {
+            name: b"set-scan\0".as_cstr(),
+            start_time: 0.5,
+            max_random_add: 0.0,
+            reset_to_zero: 0,
+            start_immediately: 0,
+            active: 1,
+        }.into(),
+        connections: vec![
+            structs::Connection {
+                state: structs::ConnectionState::ZERO,
+                message: structs::ConnectionMsg::INCREMENT,
+                target_object_id: player_hint_id_2,
+            },
+        ].into(),
+    };
+
+    additional_connections.push(
+        structs::Connection {
+            state: structs::ConnectionState::ARRIVED,
+            message: structs::ConnectionMsg::RESET_AND_START,
+            target_object_id: timer_id,
+        }
+    );
+
+
+        layers[new_layer_idx].objects.as_mut_vec().push(player_hint);
+        layers[new_layer_idx].objects.as_mut_vec().push(player_hint_2);
+        layers[new_layer_idx].objects.as_mut_vec().push(timer);
+    }
 
     // Add a post-pickup relay. This is used to support cutscene-skipping
     let instance_id = ps.fresh_instance_id_range.next().unwrap();
@@ -8822,7 +8932,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             extern_models,
                             config.shuffle_pickup_position,
                             config.seed + seed,
-                        )
+                            !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray,
+                    )
                 );
 
                 idx = idx + 1;
