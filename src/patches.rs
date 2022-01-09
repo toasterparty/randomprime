@@ -3655,7 +3655,7 @@ fn patch_remove_ids<'r>
 -> Result<(), String>
 {
     let scly = area.mrea().scly_section_mut();
-    let layers = &mut scly.layers.as_mut_vec(); 
+    let layers = &mut scly.layers.as_mut_vec();
     for layer in layers.iter_mut() {
         layer.objects.as_mut_vec().retain(|obj| !remove_ids.contains(&(obj.instance_id&0x00FFFFFF)));
     }
@@ -5235,7 +5235,7 @@ fn patch_dol<'r>(
         } else {
             0x434
         };
-        
+
         // spawn with weapon holstered instead of drawn
         let default_visor_patch = ppcasm!(symbol_addr!("__ct__7CPlayerF9TUniqueIdRC12CTransform4fRC6CAABoxUi9CVector3fffffRC13CMaterialList", version) + patch_offset, {
                 li      r0, 0; // r0 = holstered
@@ -5251,13 +5251,13 @@ fn patch_dol<'r>(
                 nop;
         });
         dol_patcher.ppcasm_patch(&default_visor_patch)?;
-        
+
         let (patch_offset, patch_offset2) = if version == Version::Pal || version == Version::NtscJ {
             (0x79c, 0x7a8)
         } else {
             (0x7c8, 0x7d4)
         };
-        
+
         let default_visor_patch = ppcasm!(symbol_addr!("TransitionFromMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset, {
                 nop;
         });
@@ -5266,13 +5266,13 @@ fn patch_dol<'r>(
                 nop;
         });
         dol_patcher.ppcasm_patch(&default_visor_patch)?;
-        
+
         let (patch_offset, patch_offset2) = if version == Version::Pal || version == Version::NtscJ {
             (0x14c, 0x158)
         } else {
             (0x1a4, 0x1b0)
         };
-        
+
         let default_visor_patch = ppcasm!(symbol_addr!("LeaveMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset, {
                 nop;
         });
@@ -5299,7 +5299,7 @@ fn patch_dol<'r>(
         } else {
             (0xe8, 0xfc)
         };
-    
+
         let default_visor_patch = ppcasm!(symbol_addr!("UpdateVisorState__7CPlayerFRC11CFinalInputfR13CStateManager", version) + patch_offset, {
                 li r4, visor_item;
         });
@@ -5314,7 +5314,7 @@ fn patch_dol<'r>(
         } else {
             0x108
         };
-    
+
         let default_visor_patch = ppcasm!(symbol_addr!("EnterMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset, {
                 li      r4, visor;
         });
@@ -5328,7 +5328,7 @@ fn patch_dol<'r>(
     });
     dol_patcher.ppcasm_patch(&default_beam_patch)?;
 
-    if skip_splash_screens {    
+    if skip_splash_screens {
         let splash_scren_patch = ppcasm!(symbol_addr!("__ct__13CSplashScreenFQ213CSplashScreen13ESplashScreen", version) + 0x70, {
                 nop;
         });
@@ -5725,6 +5725,16 @@ fn patch_dol<'r>(
         });
         dol_patcher.ppcasm_patch(&call_compute_spring_ball_movement_patch)?;
 
+        let velocity_offset = match version {
+            Version::NtscU0_00 => 0x138,
+            Version::NtscU0_01 => 0x138,
+            Version::NtscU0_02 => 0x148,
+            Version::NtscK => 0x138,
+            Version::NtscJ => 0x148,
+            Version::Pal => 0x148,
+            _ => unreachable!(),
+        };
+
         let movement_state_offset = match version {
             Version::NtscU0_00 => 0x258,
             Version::NtscU0_01 => 0x258,
@@ -5803,9 +5813,9 @@ fn patch_dol<'r>(
                 lwz       r0, { movement_state_offset }(r14);
                 cmplwi    r0, 0;
                 beq       0x8000246c;
-                b         0x80002504;
+                b         0x80002514;
                 cmplwi    r0, 4;
-                bne       0x80002504;
+                bne       0x80002514;
                 lwz       r0, { out_of_water_ticks_offset }(r14);
                 cmplwi    r0, 2;
                 bne       0x80002480;
@@ -5813,37 +5823,41 @@ fn patch_dol<'r>(
                 b         0x80002484;
                 li        r0, 4;
                 cmplwi    r0, 7;
-                beq       0x80002504;
+                beq       0x80002514;
                 mr        r3, r28;
                 bl        { symbol_addr!("IsMovementAllowed__10CMorphBallCFv", version) };
                 cmplwi    r3, 0;
-                beq       0x80002504;
+                beq       0x80002514;
                 lwz       r3, 0x0(r15);
                 li        r4, 6;
                 bl        { symbol_addr!("HasPowerUp__12CPlayerStateCFQ212CPlayerState9EItemType", version) };
                 cmplwi    r3, 0;
-                beq       0x80002504;
+                beq       0x80002514;
                 lhz       r0, { attached_actor_offset }(r14);
                 cmplwi    r0, 65535;
-                bne       0x80002504;
+                bne       0x80002514;
                 addi      r3, r14, { energy_drain_offset };
                 bl        { symbol_addr!("GetEnergyDrainIntensity__18CPlayerEnergyDrainCFv", version) };
                 fcmpu     cr0, f1, f14;
-                bgt       0x80002504;
+                bgt       0x80002514;
                 lwz       r0, 0x187c(r28);
                 cmplwi    r0, 0;
-                bne       0x80002504;
+                bne       0x80002514;
                 lfs       f1, 0x140(r14);
                 lfs       f16, 0x0c(r16);
                 fcmpu     cr0, f1, f16;
-                bgt       0x80002504;
+                bgt       0x80002514;
                 lfs       f1, 0x14(r29);
                 fcmpu     cr0, f1, f14;
-                ble       0x80002504;
+                ble       0x80002514;
+                lfs       f17, { velocity_offset }(r14);
+                lfs       f18, { velocity_offset + 4 }(r14);
                 mr        r3, r14;
                 mr        r4, r16;
                 mr        r5, r30;
                 bl        { symbol_addr!("BombJump__7CPlayerFRC9CVector3fR13CStateManager", version) };
+                stfs      f17, { velocity_offset }(r14);
+                stfs      f18, { velocity_offset + 4 }(r14);
 
                 // call compute boost ball movement
                 mr        r3, r28;
@@ -5863,12 +5877,6 @@ fn patch_dol<'r>(
                 mtlr      r0;
                 addi      r1, r1, 0x20;
                 blr;
-
-                // padding
-                nop;
-                nop;
-                nop;
-                nop;
             data:
                 .float 0.0;
                 .float 0.0;
