@@ -3659,7 +3659,7 @@ fn patch_cutscene_force_phazon_suit<'r>
     let layers = &mut scly.layers.as_mut_vec();
     let obj = layers[1].objects.as_mut_vec().iter_mut().find(|obj| obj.instance_id & 0x00FFFFFF == 0x001A02AF).unwrap();
     let player_actor: &mut structs::PlayerActor = obj.property_data.as_player_actor_mut().unwrap();
-    player_actor.cmdl = ResId::<res_id::CMDL>::new(resource_info!("phazon_suit_high_rez_bound.CMDL").res_id);
+    player_actor.player_actor_params.unknown0 = 0;
 
     Ok(())
 }
