@@ -3,8 +3,6 @@ use std::convert::TryInto;
 use libsquish_wrapper::{compress_dxt1gcn_block, decompress_dxt1gcn_block};
 use resource_info_table::{resource_info, ResourceInfo};
 
-// TODO: Recolor the morph ball particle effects requires dol patches :(
-
 // 0 - Power
 // 1 - Gravity
 // 2 - Varia

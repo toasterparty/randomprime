@@ -47,7 +47,9 @@ use crate::{
         huerotate_color,
         huerotate_matrix,
         huerotate_in_place,
+        POWER_SUIT_TEXTURES,
         VARIA_SUIT_TEXTURES,
+        GRAVITY_SUIT_TEXTURES,
         PHAZON_SUIT_TEXTURES,
     },
     GcDiscLookupExtensions,
@@ -3642,6 +3644,22 @@ fn patch_arboretum_invisible_wall(
     let scly = area.mrea().scly_section_mut();
     let layer = &mut scly.layers.as_mut_vec()[0];
     layer.objects.as_mut_vec().retain(|obj| obj.instance_id != 0x1302AA);
+
+    Ok(())
+}
+
+fn patch_cutscene_force_phazon_suit<'r>
+(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layers = &mut scly.layers.as_mut_vec();
+    let obj = layers[1].objects.as_mut_vec().iter_mut().find(|obj| obj.instance_id & 0x00FFFFFF == 0x001A02AF).unwrap();
+    let player_actor: &mut structs::PlayerActor = obj.property_data.as_player_actor_mut().unwrap();
+    player_actor.cmdl = ResId::<res_id::CMDL>::new(resource_info!("phazon_suit_high_rez_bound.CMDL").res_id);
 
     Ok(())
 }
@@ -7420,6 +7438,11 @@ fn patch_qol_game_breaking(
             move |_ps, area| patch_spawn_point_position(_ps, area, [0.0, 0.0, 0.7], true, false)
         );
     }
+    // EQ Cutscene always Phazon Suit (avoids multiworld crash when player receives a suit during the fight)
+    patcher.add_scly_patch(
+        resource_info!("12_mines_eliteboss.MREA").into(),
+        move |ps, area| patch_cutscene_force_phazon_suit(ps, area)
+    );
 
     if force_vanilla_layout { return; }
 
@@ -9608,7 +9631,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         let mut angles = Vec::new();
 
         if suit_colors.power_deg.is_some() {
-            suit_textures.push(crate::txtr_conversions::POWER_SUIT_TEXTURES);
+            suit_textures.push(POWER_SUIT_TEXTURES);
             angles.push(suit_colors.power_deg.clone().unwrap());
         }
         if suit_colors.varia_deg.is_some() {
@@ -9616,7 +9639,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             angles.push(suit_colors.varia_deg.clone().unwrap());
         }
         if suit_colors.gravity_deg.is_some() {
-            suit_textures.push(crate::txtr_conversions::GRAVITY_SUIT_TEXTURES);
+            suit_textures.push(GRAVITY_SUIT_TEXTURES);
             angles.push(suit_colors.gravity_deg.clone().unwrap());
         }
         if suit_colors.phazon_deg.is_some() {
