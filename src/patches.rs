@@ -1417,7 +1417,6 @@ where R: Rng
     }
 
     let mut offset_xy = 0;
-    let mut offset_z  = 0;
     let mut offset_max_z = 0.0;
     if vec![
         0xC44E7A07, // landing site
@@ -1433,15 +1432,14 @@ where R: Rng
         0x43E4CC25, // hydra
         0x21B4BFF6, // aether
         ].contains(&mrea_id) {
-        offset_xy = 2;
-        offset_z  = 4;
+        offset_xy = 0.1;
         offset_max_z = -0.3;
     }
 
     // Pick the relative position inside the bounding box
-    let x_factor: f32 = gen_n_pick_closest(2+offset_xy, rng, 0.1, 0.75, 0.5);
-    let y_factor: f32 = gen_n_pick_closest(2+offset_xy, rng, 0.1, 0.75, 0.5);
-    let z_factor: f32 = gen_n_pick_closest(2+offset_z, rng, 0.1, 0.8 + offset_max_z, 0.3);
+    let x_factor: f32 = gen_n_pick_closest(2, rng, 0.15 + offset_xy, 0.85 - offset_xy, 0.5);
+    let y_factor: f32 = gen_n_pick_closest(2, rng, 0.15 + offset_xy, 0.85 - offset_xy, 0.5);
+    let z_factor: f32 = gen_n_pick_closest(2, rng, 0.1, 0.8 + offset_max_z, 0.35);
 
     // Pick a bounding box if multiple are available
     let bounding_box = bounding_boxes.choose(rng).unwrap().clone();
