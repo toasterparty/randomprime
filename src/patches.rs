@@ -1416,7 +1416,7 @@ where R: Rng
         );
     }
 
-    let mut offset_xy = 0;
+    let mut offset_xy = 0.0;
     let mut offset_max_z = 0.0;
     if vec![
         0xC44E7A07, // landing site
@@ -8603,7 +8603,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     let savw_scans_to_add = &savw_scans_to_add;
 
     // XXX These values need to out live the patcher
-    let select_game_fmv_suffix = ["A", "B", "C"].choose(&mut rng).unwrap();
+    let select_game_fmv_suffix = "A";
     let n = format!("Video/02_start_fileselect_{}.thp", select_game_fmv_suffix);
     let start_file_select_fmv = gc_disc.find_file(&n).unwrap().file().unwrap().clone();
     let n = format!("Video/04_fileselect_playgame_{}.thp", select_game_fmv_suffix);
