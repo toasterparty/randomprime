@@ -162,8 +162,10 @@ impl PickupType
     }
 
     pub fn from_str(string: &str) -> Self {
+        let string = string.to_lowercase();
+        let string = string.trim();
         for i in PickupType::iter() {
-            if i.name().to_string().to_lowercase().trim() == string.to_lowercase().trim() {
+            if i.name().to_string().to_lowercase().trim() == string {
                 return i;
             }
         }
