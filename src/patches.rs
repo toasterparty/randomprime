@@ -8357,6 +8357,52 @@ fn patch_power_conduits<'a>(patcher: &mut PrimePatcher<'_, 'a>)
     );
 }
 
+fn patch_hive_mecha<'a>(patcher: &mut PrimePatcher<'_, 'a>)
+{
+    patcher.add_scly_patch(resource_info!("19_hive_totem.MREA").into(), |_ps, area| {
+        let flags = &mut area.layer_flags.flags;
+        *flags &= !(1 << 1); // Turn off "1st pass" layer
+        Ok(())
+    });
+
+    patcher.add_scly_patch(resource_info!("19_hive_totem.MREA").into(), |_ps, area| {
+        let scly = area.mrea().scly_section_mut();
+
+        let layer = &mut scly.layers.as_mut_vec()[0]; // Default
+
+        let relay_id =              
+            layer.objects.iter()
+            .find(|obj| obj.property_data.as_relay()
+                .map(|relay| relay.name == b"Relay - Make Room Already Visited\0".as_cstr())
+                .unwrap_or(false)
+            )
+            .map(|relay| relay.instance_id);        
+    
+        if let Some(relay_id) = relay_id {
+            layer.objects.as_mut_vec().push(structs::SclyObject {
+                instance_id: _ps.fresh_instance_id_range.next().unwrap(),
+                property_data: structs::Timer {
+                    name: b"Auto start relay\0".as_cstr(),    
+                    start_time: 0.001,
+                    max_random_add: 0f32,
+                    reset_to_zero: 0,
+                    start_immediately: 1,
+                    active: 1,
+                }.into(),
+                connections: vec![
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::SET_TO_ZERO,
+                        target_object_id: relay_id,
+                    },
+                ].into(),
+            });
+        }
+
+        Ok(())
+    }); 
+}
+
 pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
     where T: structs::ProgressNotifier
 {
@@ -9279,6 +9325,10 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             resource_info!("02_mines_shotemup.MREA").into(), // Mines Security Station
             remove_door_locks,
         );
+    }
+
+    if config.remove_hive_mecha {
+        patch_hive_mecha(&mut patcher);
     }
 
     // TODO: only patch what we need

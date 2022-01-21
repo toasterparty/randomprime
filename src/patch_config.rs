@@ -287,6 +287,7 @@ pub struct PatchConfig
     pub backwards_lower_mines: bool,
     pub patch_power_conduits: bool,
     pub remove_mine_security_station_locks: bool,
+    pub remove_hive_mecha: bool,
 
     pub level_data: HashMap<String, LevelConfig>,
 
@@ -399,6 +400,7 @@ struct GameConfig
     backwards_lower_mines: Option<bool>,
     patch_power_conduits: Option<bool>,
     remove_mine_security_station_locks: Option<bool>,
+    remove_hive_mecha: Option<bool>,
 
     game_banner: Option<GameBanner>,
     comment: Option<String>,
@@ -868,6 +870,7 @@ impl PatchConfigPrivate
             backwards_lower_mines: self.game_config.backwards_lower_mines.unwrap_or(false),
             patch_power_conduits: self.game_config.patch_power_conduits.unwrap_or(false),
             remove_mine_security_station_locks: self.game_config.remove_mine_security_station_locks.unwrap_or(false),
+            remove_hive_mecha: self.game_config.remove_hive_mecha.unwrap_or(false),
             automatic_crash_screen: self.preferences.automatic_crash_screen.unwrap_or(true),
             artifact_hint_behavior,
             flaahgra_music_files,
