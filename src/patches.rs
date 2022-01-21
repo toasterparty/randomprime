@@ -5825,17 +5825,17 @@ fn patch_dol<'r>(
                 lis       r16, data@h;
                 addi      r16, r16, data@l;
                 lfs       f1, 0x40(r14);
-                lfs       f2, 0x50(r14);
-                lfs       f3, 0x60(r14);
                 stfs      f1, 0x00(r16);
-                stfs      f2, 0x04(r16);
-                stfs      f3, 0x08(r16);
+                lfs       f1, 0x50(r14);
+                stfs      f1, 0x04(r16);
+                lfs       f1, 0x60(r14);
+                stfs      f1, 0x08(r16);
                 lwz       r0, { movement_state_offset }(r14);
                 cmplwi    r0, 0;
                 beq       0x8000246c;
-                b         0x80002514;
+                b         0x80002524;
                 cmplwi    r0, 4;
-                bne       0x80002514;
+                bne       0x80002524;
                 lwz       r0, { out_of_water_ticks_offset }(r14);
                 cmplwi    r0, 2;
                 bne       0x80002480;
@@ -5843,41 +5843,45 @@ fn patch_dol<'r>(
                 b         0x80002484;
                 li        r0, 4;
                 cmplwi    r0, 7;
-                beq       0x80002514;
+                beq       0x80002524;
                 mr        r3, r28;
                 bl        { symbol_addr!("IsMovementAllowed__10CMorphBallCFv", version) };
                 cmplwi    r3, 0;
-                beq       0x80002514;
+                beq       0x80002524;
                 lwz       r3, 0x0(r15);
                 li        r4, 6;
                 bl        { symbol_addr!("HasPowerUp__12CPlayerStateCFQ212CPlayerState9EItemType", version) };
                 cmplwi    r3, 0;
-                beq       0x80002514;
+                beq       0x80002524;
                 lhz       r0, { attached_actor_offset }(r14);
                 cmplwi    r0, 65535;
-                bne       0x80002514;
+                bne       0x80002524;
                 addi      r3, r14, { energy_drain_offset };
                 bl        { symbol_addr!("GetEnergyDrainIntensity__18CPlayerEnergyDrainCFv", version) };
                 fcmpu     cr0, f1, f14;
-                bgt       0x80002514;
+                bgt       0x80002524;
                 lwz       r0, 0x187c(r28);
                 cmplwi    r0, 0;
-                bne       0x80002514;
+                bne       0x80002524;
                 lfs       f1, 0x140(r14);
                 lfs       f16, 0x0c(r16);
                 fcmpu     cr0, f1, f16;
-                bgt       0x80002514;
+                bgt       0x80002524;
                 lfs       f1, 0x14(r29);
                 fcmpu     cr0, f1, f14;
-                ble       0x80002514;
-                lfs       f17, { velocity_offset }(r14);
-                lfs       f18, { velocity_offset + 4 }(r14);
+                ble       0x80002524;
+                lfs       f16, { velocity_offset }(r14);
+                lfs       f17, { velocity_offset + 4 }(r14);
                 mr        r3, r14;
                 mr        r4, r16;
                 mr        r5, r30;
                 bl        { symbol_addr!("BombJump__7CPlayerFRC9CVector3fR13CStateManager", version) };
-                stfs      f17, { velocity_offset }(r14);
-                stfs      f18, { velocity_offset + 4 }(r14);
+                stfs      f16, { velocity_offset }(r14);
+                stfs      f17, { velocity_offset + 4 }(r14);
+                mr        r3, r14;
+                li        r4, 4;
+                mr        r5, r29;
+                bl        { symbol_addr!("SetMoveState__7CPlayerFQ27NPlayer20EPlayerMovementStateR13CStateManager", version) };
 
                 // call compute boost ball movement
                 mr        r3, r28;
@@ -5890,6 +5894,8 @@ fn patch_dol<'r>(
                 lwz       r0, 0x20(r1);
                 fmr       f1, f15;
                 fmr       f15, f14;
+                fmr       f16, f14;
+                fmr       f17, f14;
                 lwz       r31, 0x1c(r1);
                 lwz       r30, 0x18(r1);
                 lwz       r29, 0x14(r1);
@@ -7564,7 +7570,7 @@ fn patch_qol_logical(patcher: &mut PrimePatcher, config: &PatchConfig)
 
     if config.phazon_elite_without_dynamo {
         make_elite_research_fight_prereq_patches(patcher);
-         
+
     }
 
     if config.backwards_frigate {
@@ -8370,19 +8376,19 @@ fn patch_hive_mecha<'a>(patcher: &mut PrimePatcher<'_, 'a>)
 
         let layer = &mut scly.layers.as_mut_vec()[0]; // Default
 
-        let relay_id =              
+        let relay_id =
             layer.objects.iter()
             .find(|obj| obj.property_data.as_relay()
                 .map(|relay| relay.name == b"Relay - Make Room Already Visited\0".as_cstr())
                 .unwrap_or(false)
             )
-            .map(|relay| relay.instance_id);        
-    
+            .map(|relay| relay.instance_id);
+
         if let Some(relay_id) = relay_id {
             layer.objects.as_mut_vec().push(structs::SclyObject {
                 instance_id: _ps.fresh_instance_id_range.next().unwrap(),
                 property_data: structs::Timer {
-                    name: b"Auto start relay\0".as_cstr(),    
+                    name: b"Auto start relay\0".as_cstr(),
                     start_time: 0.001,
                     max_random_add: 0f32,
                     reset_to_zero: 0,
@@ -8400,7 +8406,7 @@ fn patch_hive_mecha<'a>(patcher: &mut PrimePatcher<'_, 'a>)
         }
 
         Ok(())
-    }); 
+    });
 }
 
 pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
