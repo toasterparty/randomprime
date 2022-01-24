@@ -262,6 +262,21 @@ pub struct CtwkConfig
     pub hud_color: Option<[f32;3]>, // RGB, 0 - 1.0
 }
 
+#[derive(Deserialize, Debug, Default, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct IncineratorDroneConfig {
+    pub contraption_start_delay_minimum_time: Option<f32>,
+    pub contraption_start_delay_random_time: Option<f32>,    
+    pub eye_stay_up_minimum_time: Option<f32>,
+    pub eye_stay_up_random_time: Option<f32>,
+    pub eye_wait_initial_minimum_time: Option<f32>,
+    pub eye_wait_initial_random_time: Option<f32>,
+    pub eye_wait_minimum_time: Option<f32>,
+    pub eye_wait_random_time: Option<f32>,
+    pub reset_contraption_minimum_time: Option<f32>,
+    pub reset_contraption_random_time: Option<f32>,
+}
+
 #[derive(Debug)]
 pub struct PatchConfig
 {
@@ -288,6 +303,8 @@ pub struct PatchConfig
     pub patch_power_conduits: bool,
     pub remove_mine_security_station_locks: bool,
     pub remove_hive_mecha: bool,
+
+    pub incinerator_drone_config: Option<IncineratorDroneConfig>,
 
     pub level_data: HashMap<String, LevelConfig>,
 
@@ -401,6 +418,8 @@ struct GameConfig
     patch_power_conduits: Option<bool>,
     remove_mine_security_station_locks: Option<bool>,
     remove_hive_mecha: Option<bool>,
+
+    incinerator_drone_config: Option<IncineratorDroneConfig>,
 
     game_banner: Option<GameBanner>,
     comment: Option<String>,
@@ -871,6 +890,9 @@ impl PatchConfigPrivate
             patch_power_conduits: self.game_config.patch_power_conduits.unwrap_or(false),
             remove_mine_security_station_locks: self.game_config.remove_mine_security_station_locks.unwrap_or(false),
             remove_hive_mecha: self.game_config.remove_hive_mecha.unwrap_or(false),
+
+            incinerator_drone_config: self.game_config.incinerator_drone_config.clone(),
+
             automatic_crash_screen: self.preferences.automatic_crash_screen.unwrap_or(true),
             artifact_hint_behavior,
             flaahgra_music_files,
