@@ -1517,5 +1517,5 @@ fn test_filter_sections()
 {
     let mmaps = mmap_obj_files(["test_data/func_a.o", "test_data/func_b.o"].iter()).unwrap();
     let object_files = object_files_from_mmaps(&mmaps).unwrap();
-    let sections_to_keep = filter_unused_sections(&object_files);
+    let _sections_to_keep = filter_unused_sections(&object_files);
 }

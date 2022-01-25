@@ -8409,6 +8409,29 @@ fn patch_hive_mecha<'a>(patcher: &mut PrimePatcher<'_, 'a>)
     });
 }
 
+fn patch_incinerator_drone_timer<'r>(area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>, timer_name: CString, minimum_time: Option<f32>, random_add: Option<f32>) -> Result<(), String> {
+    let scly = area.mrea().scly_section_mut();
+
+    let layer = &mut scly.layers.as_mut_vec()[0]; // Default
+
+    for obj in layer.objects.iter_mut() {
+        let timer_obj = obj.property_data.as_timer_mut();
+
+        if timer_obj.is_some() {
+            let timer_obj = timer_obj.unwrap();
+            if timer_name.as_c_str() == timer_obj.name.as_ref() {
+                if minimum_time.is_some() {
+                    timer_obj.start_time = minimum_time.unwrap();
+                }
+                if random_add.is_some() {
+                    timer_obj.max_random_add = random_add.unwrap();
+                }
+            }            
+        }
+    }
+    Ok(())
+}
+
 pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
     where T: structs::ProgressNotifier
 {
@@ -9335,6 +9358,69 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
     if config.remove_hive_mecha {
         patch_hive_mecha(&mut patcher);
+    }
+
+    if config.incinerator_drone_config.is_some() {
+        let incinerator_drone_config = config.incinerator_drone_config.clone().unwrap();
+        
+        let reset_contraption_minimum_time = incinerator_drone_config.contraption_start_delay_minimum_time.clone();
+        let reset_contraption_random_time = incinerator_drone_config.contraption_start_delay_random_time.clone();
+        let eye_stay_up_minimum_time = incinerator_drone_config.eye_stay_up_minimum_time.clone();
+        let eye_stay_up_random_time = incinerator_drone_config.eye_stay_up_random_time.clone();
+        let eye_wait_initial_minimum_time = incinerator_drone_config.eye_wait_initial_minimum_time.clone();
+        let eye_wait_initial_random_time = incinerator_drone_config.eye_wait_initial_random_time.clone();
+        let eye_wait_minimum_time = incinerator_drone_config.eye_wait_minimum_time.clone();
+        let eye_wait_random_time = incinerator_drone_config.eye_wait_random_time.clone();
+
+        patcher.add_scly_patch(
+            resource_info!("03_monkey_lower.MREA").into(),
+            move |_ps, area| 
+            patch_incinerator_drone_timer(area, 
+                CString::new("Time Contraption Start Delay").unwrap(), 
+                incinerator_drone_config.contraption_start_delay_minimum_time, 
+                incinerator_drone_config.contraption_start_delay_random_time,
+            )
+        );
+
+        patcher.add_scly_patch(
+            resource_info!("03_monkey_lower.MREA").into(),
+            move |_ps, area| 
+            patch_incinerator_drone_timer(area, 
+                CString::new("Timer Reset Contraption").unwrap(), 
+                reset_contraption_minimum_time, 
+                reset_contraption_random_time,
+            )
+        );
+
+        patcher.add_scly_patch(
+            resource_info!("03_monkey_lower.MREA").into(),
+            move |_ps, area| 
+            patch_incinerator_drone_timer(area, 
+                CString::new("Timer Eye Stay Up Time").unwrap(), 
+                eye_stay_up_minimum_time, 
+                eye_stay_up_random_time,
+            )
+        );
+
+        patcher.add_scly_patch(
+            resource_info!("03_monkey_lower.MREA").into(),
+            move |_ps, area| 
+            patch_incinerator_drone_timer(area, 
+                CString::new("Timer Eye Wait (Initial)").unwrap(), 
+                eye_wait_initial_minimum_time, 
+                eye_wait_initial_random_time,
+            )
+        );
+
+        patcher.add_scly_patch(
+            resource_info!("03_monkey_lower.MREA").into(),
+            move |_ps, area| 
+            patch_incinerator_drone_timer(area, 
+                CString::new("Timer Eye Wait").unwrap(), 
+                eye_wait_minimum_time, 
+                eye_wait_random_time,
+            )
+        );
     }
 
     // TODO: only patch what we need
