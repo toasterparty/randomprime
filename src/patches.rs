@@ -5903,6 +5903,8 @@ fn patch_dol<'r>(
                 mtlr      r0;
                 addi      r1, r1, 0x20;
                 blr;
+                nop;
+                nop;
             data:
                 .float 0.0;
                 .float 0.0;
