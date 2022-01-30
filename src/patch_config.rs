@@ -303,6 +303,7 @@ pub struct PatchConfig
     pub patch_power_conduits: bool,
     pub remove_mine_security_station_locks: bool,
     pub remove_hive_mecha: bool,
+    pub power_bomb_arboretum_sandstone: bool,
 
     pub incinerator_drone_config: Option<IncineratorDroneConfig>,
 
@@ -418,6 +419,7 @@ struct GameConfig
     patch_power_conduits: Option<bool>,
     remove_mine_security_station_locks: Option<bool>,
     remove_hive_mecha: Option<bool>,
+    power_bomb_arboretum_sandstone: Option<bool>,
 
     incinerator_drone_config: Option<IncineratorDroneConfig>,
 
@@ -890,6 +892,8 @@ impl PatchConfigPrivate
             patch_power_conduits: self.game_config.patch_power_conduits.unwrap_or(false),
             remove_mine_security_station_locks: self.game_config.remove_mine_security_station_locks.unwrap_or(false),
             remove_hive_mecha: self.game_config.remove_hive_mecha.unwrap_or(false),
+            power_bomb_arboretum_sandstone: self.game_config.power_bomb_arboretum_sandstone.unwrap_or(false),
+
 
             incinerator_drone_config: self.game_config.incinerator_drone_config.clone(),
 
