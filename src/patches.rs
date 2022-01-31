@@ -8434,6 +8434,25 @@ fn patch_incinerator_drone_timer<'r>(area: &mut mlvl_wrapper::MlvlArea<'r, '_, '
     Ok(())
 }
 
+fn patch_arboretum_sandstone<'a>(patcher: &mut PrimePatcher<'_, 'a>)
+{
+    patcher.add_scly_patch(resource_info!("08_courtyard.MREA").into(), |_ps, area| {
+        let scly = area.mrea().scly_section_mut();
+
+        let layer = &mut scly.layers.as_mut_vec()[0]; // Default
+        for obj in layer.objects.iter_mut() {
+            if obj.property_data
+                .as_damageable_trigger()
+                .map(|dt| dt.name == b"DamageableTrigger-component\0".as_cstr())
+                .unwrap_or(false) {                  
+                obj.property_data.as_damageable_trigger_mut().unwrap().damage_vulnerability.power_bomb = 1;
+            }
+        } 
+        
+        Ok(())
+    });    
+}
+
 pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
     where T: structs::ProgressNotifier
 {
@@ -9360,6 +9379,10 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
     if config.remove_hive_mecha {
         patch_hive_mecha(&mut patcher);
+    }
+
+    if config.power_bomb_arboretum_sandstone {
+        patch_arboretum_sandstone(&mut patcher);
     }
 
     if config.incinerator_drone_config.is_some() {
