@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use std::{fs::{self, File}, io::{self, Read}, path::PathBuf};
+use std::{fs::{self, File}, io::{self, Read}, path::{Path, PathBuf}};
 use std::collections::{HashMap, HashSet};
 use reader_writer::FourCC;
 
@@ -64,7 +64,7 @@ impl ExternPickupModel {
             .map_err(|e| format!("Extern Assets dir parse failed: {}", e))?;
     
         // Deserialize JSON
-        let _metadata = fs::read_to_string(format!("{}\\meta.json", dir)).expect(format!("Unable to read extern model metadata from '{}'", dir).as_str());
+        let _metadata = fs::read_to_string(Path::new(dir).join("meta.json")).expect(format!("Unable to read extern model metadata from '{}'", dir).as_str());
         let metadata: MetadataJson = serde_json::from_str(&_metadata)
             .map_err(|e| format!("Extern Assets metadata.json parse failed: {}", e))?;
 
