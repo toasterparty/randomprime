@@ -827,8 +827,7 @@ fn patch_add_item<'r>(
         pickup_model_data.scale[1] = pickup_model_data.scale[1]*scale;
         pickup_model_data.scale[2] = pickup_model_data.scale[2]*scale;
         pickup_model_data.cmdl = ResId::<res_id::CMDL>::new(extern_model.as_ref().unwrap().cmdl);
-        // pickup_model_data.ancs.file_id = ResId::<res_id::ANCS>::new(extern_model.as_ref().unwrap().ancs);
-        pickup_model_data.ancs.file_id = ResId::invalid();
+        pickup_model_data.ancs.file_id = ResId::<res_id::ANCS>::new(extern_model.as_ref().unwrap().ancs);
         pickup_model_data.part = ResId::invalid();
         pickup_model_data.ancs.node_index = extern_model.as_ref().unwrap().character;
         pickup_model_data.ancs.default_animation = 0;
