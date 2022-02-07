@@ -1138,7 +1138,7 @@ fn main()
                     if !OPENABLE_DOOR_ANCS.contains(&door.ancs.file_id.to_u32()) {continue;}
 
                     // Skip all problematic doors (all in frigate intro level) //
-                    if PROBLEMATIC_DOORS.contains(&obj.instance_id) { continue; }
+                    if *f == "Metroid1.pak" && PROBLEMATIC_DOORS.contains(&obj.instance_id) { continue; }
 
                     let obj_loc = ScriptObjectLocation {
                         instance_id: obj.instance_id,

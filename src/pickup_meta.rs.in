@@ -3702,6 +3702,14 @@ pub const ROOM_INFO: &[(&str, &[RoomInfo]); 7] = &[
             ],
             door_locations: &[
                 DoorLocation {
+                    door_location: ScriptObjectLocation { layer: 0, instance_id: 851972 },
+                    door_force_location: ScriptObjectLocation { layer: 0, instance_id: 851973 },
+                    door_shield_location: Some(ScriptObjectLocation { layer: 0, instance_id: 851975 }),
+                    dock_number: Some(0),
+                    dock_position: Some([-159.93053, -322.09396, 15.858973]),
+                    dock_scale: Some([2.0, 5.0, 5.0]),
+                },
+                DoorLocation {
                     door_location: ScriptObjectLocation { layer: 0, instance_id: 852148 },
                     door_force_location: ScriptObjectLocation { layer: 0, instance_id: 852149 },
                     door_shield_location: Some(ScriptObjectLocation { layer: 0, instance_id: 852151 }),
