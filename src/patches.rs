@@ -5197,155 +5197,157 @@ fn patch_dol<'r>(
         dol_patcher.patch(symbol_addr!("BallGlowColors"         , version), colors[i].clone().into())?;
     }
 
-    let visor = config.starting_visor as u16;
+    if config.starting_visor != Visor::Combat {
+        let visor = config.starting_visor as u16;
 
-    // If no visors, spawn into scan visor without transitioning (spawn without scan GUI)
-    if !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray {
-        let scan_visor = Visor::Scan as u16;
-        let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFv", version) + 0x68, {
-                li      r0, scan_visor;
-                stw     r0, 0x14(r31); // currentVisor
-                stw     r0, 0x18(r31); // transitioningVisor
-        });
-        dol_patcher.ppcasm_patch(&default_visor_patch)?;
-        let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFR12CInputStream", version) + 0x70, {
-                li      r0, scan_visor;
-                stw     r0, 0x14(r30); // currentVisor
-                stw     r0, 0x18(r30); // transitioningVisor
-        });
-        dol_patcher.ppcasm_patch(&default_visor_patch)?;
-    // Otherwise, spawn mid-transition into default visor
-    } else {
-        let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFv", version) + 0x68, {
-                li      r0, visor;
-                stw     r6, 0x14(r31); // currentVisor = combat
-                stw     r0, 0x18(r31); // transitioningVisor
-        });
-        dol_patcher.ppcasm_patch(&default_visor_patch)?;
-        let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFR12CInputStream", version) + 0x70, {
-                li      r0, visor;
-                stw     r5, 0x14(r30); // currentVisor = combat
-                stw     r0, 0x18(r30); // transitioningVisor
-        });
-        dol_patcher.ppcasm_patch(&default_visor_patch)?;
-    }
-
-    // Don't force visor on visor reset
-    let default_visor_patch = ppcasm!(symbol_addr!("ResetVisor__12CPlayerStateFv", version), {
-        nop;
-        nop;
-        nop;
-        nop;
-        nop;
-    });
-    dol_patcher.ppcasm_patch(&default_visor_patch)?;
-
-    let visor_item = match config.starting_visor {
-        Visor::Combat  => 17,
-        Visor::Scan    => 5,
-        Visor::Thermal => 9,
-        Visor::XRay    => 13,
-    };
-
-    // If scan visor or no visor
-    if config.starting_visor == Visor::Scan || (
-        !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray
-    )
-    {
-        // Do not check for combat visor in inventory when switching to it
-        let default_visor_patch = ppcasm!(symbol_addr!("SetAreaPlayerHint__7CPlayerFRC17CScriptPlayerHintRC13CStateManager", version) + 0x120, {
+        // If no visors, spawn into scan visor without transitioning (spawn without scan GUI)
+        if !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray {
+            let scan_visor = Visor::Scan as u16;
+            let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFv", version) + 0x68, {
+                    li      r0, scan_visor;
+                    stw     r0, 0x14(r31); // currentVisor
+                    stw     r0, 0x18(r31); // transitioningVisor
+            });
+            dol_patcher.ppcasm_patch(&default_visor_patch)?;
+            let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFR12CInputStream", version) + 0x70, {
+                    li      r0, scan_visor;
+                    stw     r0, 0x14(r30); // currentVisor
+                    stw     r0, 0x18(r30); // transitioningVisor
+            });
+            dol_patcher.ppcasm_patch(&default_visor_patch)?;
+        // Otherwise, spawn mid-transition into default visor
+        } else {
+            let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFv", version) + 0x68, {
+                    li      r0, visor;
+                    stw     r6, 0x14(r31); // currentVisor = combat
+                    stw     r0, 0x18(r31); // transitioningVisor
+            });
+            dol_patcher.ppcasm_patch(&default_visor_patch)?;
+            let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFR12CInputStream", version) + 0x70, {
+                    li      r0, visor;
+                    stw     r5, 0x14(r30); // currentVisor = combat
+                    stw     r0, 0x18(r30); // transitioningVisor
+            });
+            dol_patcher.ppcasm_patch(&default_visor_patch)?;
+        }
+    
+        // Don't force visor on visor reset
+        let default_visor_patch = ppcasm!(symbol_addr!("ResetVisor__12CPlayerStateFv", version), {
+            nop;
+            nop;
+            nop;
+            nop;
             nop;
         });
         dol_patcher.ppcasm_patch(&default_visor_patch)?;
-
-        // spawn with weapon holstered instead of drawn
-        let patch_offset = if version == Version::Pal || version == Version::NtscJ {
-            0x3bc
-        } else {
-            0x434
+    
+        let visor_item = match config.starting_visor {
+            Visor::Combat  => 17,
+            Visor::Scan    => 5,
+            Visor::Thermal => 9,
+            Visor::XRay    => 13,
         };
-        let default_visor_patch = ppcasm!(symbol_addr!("__ct__7CPlayerF9TUniqueIdRC12CTransform4fRC6CAABoxUi9CVector3fffffRC13CMaterialList", version) + patch_offset, {
-                li      r0, 0; // r0 = holstered
-        });
-        dol_patcher.ppcasm_patch(&default_visor_patch)?;
-
-        // Don't holster weapon when grappling
-        // let default_visor_patch = ppcasm!(symbol_addr!("UpdateGrappleState__7CPlayerFRC11CFinalInputR13CStateManager", version) + (0x8017a998 - 0x8017A668), {
-        //         nop;
-        // });
-        // dol_patcher.ppcasm_patch(&default_visor_patch)?;
-
-        // stop gun from being drawn after unmorphing
-        let (patch_offset, patch_offset2) = if version == Version::Pal || version == Version::NtscJ {
-            (0x79c, 0x7a8)
+    
+        // If scan visor or no visor
+        if config.starting_visor == Visor::Scan || (
+            !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray
+        )
+        {
+            // Do not check for combat visor in inventory when switching to it
+            let default_visor_patch = ppcasm!(symbol_addr!("SetAreaPlayerHint__7CPlayerFRC17CScriptPlayerHintRC13CStateManager", version) + 0x120, {
+                nop;
+            });
+            dol_patcher.ppcasm_patch(&default_visor_patch)?;
+    
+            // spawn with weapon holstered instead of drawn
+            let patch_offset = if version == Version::Pal || version == Version::NtscJ {
+                0x3bc
+            } else {
+                0x434
+            };
+            let default_visor_patch = ppcasm!(symbol_addr!("__ct__7CPlayerF9TUniqueIdRC12CTransform4fRC6CAABoxUi9CVector3fffffRC13CMaterialList", version) + patch_offset, {
+                    li      r0, 0; // r0 = holstered
+            });
+            dol_patcher.ppcasm_patch(&default_visor_patch)?;
+    
+            // Don't holster weapon when grappling
+            // let default_visor_patch = ppcasm!(symbol_addr!("UpdateGrappleState__7CPlayerFRC11CFinalInputR13CStateManager", version) + (0x8017a998 - 0x8017A668), {
+            //         nop;
+            // });
+            // dol_patcher.ppcasm_patch(&default_visor_patch)?;
+    
+            // stop gun from being drawn after unmorphing
+            let (patch_offset, patch_offset2) = if version == Version::Pal || version == Version::NtscJ {
+                (0x79c, 0x7a8)
+            } else {
+                (0x7c8, 0x7d4)
+            };
+            let default_visor_patch = ppcasm!(symbol_addr!("TransitionFromMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset, {
+                    nop;
+            });
+            dol_patcher.ppcasm_patch(&default_visor_patch)?;
+            let default_visor_patch = ppcasm!(symbol_addr!("TransitionFromMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset2, {
+                    nop;
+            });
+            dol_patcher.ppcasm_patch(&default_visor_patch)?;
+    
+            // stop gun from being drawn after unmorphing
+            let (patch_offset, patch_offset2) = if version == Version::Pal || version == Version::NtscJ {
+                (0x14c, 0x158)
+            } else {
+                (0x1a4, 0x1b0)
+            };
+            let default_visor_patch = ppcasm!(symbol_addr!("LeaveMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset, {
+                    nop;
+            });
+            dol_patcher.ppcasm_patch(&default_visor_patch)?;
+            let default_visor_patch = ppcasm!(symbol_addr!("LeaveMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset2, {
+                    nop;
+            });
+            dol_patcher.ppcasm_patch(&default_visor_patch)?;
+            
+            // do not change visors after unmorphing
+            let patch_offset = if version == Version::Pal || version == Version::NtscJ {
+                0xb0
+            } else {
+                0x108
+            };
+            let default_visor_patch = ppcasm!(symbol_addr!("EnterMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset, {
+                    nop;
+                    nop;
+                    nop;
+            });
+            dol_patcher.ppcasm_patch(&default_visor_patch)?;
         } else {
-            (0x7c8, 0x7d4)
-        };
-        let default_visor_patch = ppcasm!(symbol_addr!("TransitionFromMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset, {
-                nop;
-        });
-        dol_patcher.ppcasm_patch(&default_visor_patch)?;
-        let default_visor_patch = ppcasm!(symbol_addr!("TransitionFromMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset2, {
-                nop;
-        });
-        dol_patcher.ppcasm_patch(&default_visor_patch)?;
-
-        // stop gun from being drawn after unmorphing
-        let (patch_offset, patch_offset2) = if version == Version::Pal || version == Version::NtscJ {
-            (0x14c, 0x158)
-        } else {
-            (0x1a4, 0x1b0)
-        };
-        let default_visor_patch = ppcasm!(symbol_addr!("LeaveMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset, {
-                nop;
-        });
-        dol_patcher.ppcasm_patch(&default_visor_patch)?;
-        let default_visor_patch = ppcasm!(symbol_addr!("LeaveMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset2, {
-                nop;
-        });
-        dol_patcher.ppcasm_patch(&default_visor_patch)?;
-        
-        // do not change visors after unmorphing
-        let patch_offset = if version == Version::Pal || version == Version::NtscJ {
-            0xb0
-        } else {
-            0x108
-        };
-        let default_visor_patch = ppcasm!(symbol_addr!("EnterMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset, {
-                nop;
-                nop;
-                nop;
-        });
-        dol_patcher.ppcasm_patch(&default_visor_patch)?;
-    } else {
-        let (patch_offset, patch_offset2) = if version == Version::Pal || version == Version::NtscJ {
-            (0xdc, 0xf0)
-        } else {
-            (0xe8, 0xfc)
-        };
-
-        // When pressing a or y in in scan visor, check for and switch to default visor instead of combat
-        let default_visor_patch = ppcasm!(symbol_addr!("UpdateVisorState__7CPlayerFRC11CFinalInputfR13CStateManager", version) + patch_offset, {
-                li r4, visor_item;
-        });
-        dol_patcher.ppcasm_patch(&default_visor_patch)?;
-        let default_visor_patch = ppcasm!(symbol_addr!("UpdateVisorState__7CPlayerFRC11CFinalInputfR13CStateManager", version) + patch_offset2, {
-                li r4, visor;
-        });
-        dol_patcher.ppcasm_patch(&default_visor_patch)?;
-
-        let patch_offset = if version == Version::Pal || version == Version::NtscJ {
-            0xb0
-        } else {
-            0x108
-        };
-        
-        let default_visor_patch = ppcasm!(symbol_addr!("EnterMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset, {
-                nop;
-                nop;
-                nop;
-        });
-        dol_patcher.ppcasm_patch(&default_visor_patch)?;
+            let (patch_offset, patch_offset2) = if version == Version::Pal || version == Version::NtscJ {
+                (0xdc, 0xf0)
+            } else {
+                (0xe8, 0xfc)
+            };
+    
+            // When pressing a or y in in scan visor, check for and switch to default visor instead of combat
+            let default_visor_patch = ppcasm!(symbol_addr!("UpdateVisorState__7CPlayerFRC11CFinalInputfR13CStateManager", version) + patch_offset, {
+                    li r4, visor_item;
+            });
+            dol_patcher.ppcasm_patch(&default_visor_patch)?;
+            let default_visor_patch = ppcasm!(symbol_addr!("UpdateVisorState__7CPlayerFRC11CFinalInputfR13CStateManager", version) + patch_offset2, {
+                    li r4, visor;
+            });
+            dol_patcher.ppcasm_patch(&default_visor_patch)?;
+    
+            let patch_offset = if version == Version::Pal || version == Version::NtscJ {
+                0xb0
+            } else {
+                0x108
+            };
+            
+            let default_visor_patch = ppcasm!(symbol_addr!("EnterMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset, {
+                    nop;
+                    nop;
+                    nop;
+            });
+            dol_patcher.ppcasm_patch(&default_visor_patch)?;
+        }    
     }
 
     let beam = config.starting_beam as u16;
