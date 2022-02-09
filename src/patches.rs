@@ -788,7 +788,7 @@ fn patch_add_item<'r>(
     extern_models: &HashMap<String, ExternPickupModel>,
     shuffle_position: bool,
     seed: u64,
-    no_starting_visor: bool,
+    _no_starting_visor: bool,
 ) -> Result<(), String>
 {
     let mut rng = StdRng::seed_from_u64(seed);
@@ -1076,106 +1076,107 @@ fn patch_add_item<'r>(
         }
     );
 
-    // If scan visor, and starting visor is none, then switch to combat and back to scan when obtaining scan
-    let player_hint_id = ps.fresh_instance_id_range.next().unwrap();
-    let player_hint = structs::SclyObject {
-        instance_id: player_hint_id,
-            property_data: structs::PlayerHint {
-            name: b"combat playerhint\0".as_cstr(),
-            position: [0.0, 0.0, 0.0].into(),
-            rotation: [0.0, 0.0, 0.0].into(),
-            unknown0: 1, // active
-            inner_struct: structs::PlayerHintStruct {
-                unknowns: [
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    1,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                ].into(),
-            }.into(),
-            unknown1: 10, // priority
-            }.into(),
-            connections: vec![].into(),
-    };
+    // 2022-02-08 - I had to remove this because there's a bug in the vanilla engine where playerhint -> Scan Visor doesn't holster the weapon
+    // // If scan visor, and starting visor is none, then switch to combat and back to scan when obtaining scan
+    // let player_hint_id = ps.fresh_instance_id_range.next().unwrap();
+    // let player_hint = structs::SclyObject {
+    //     instance_id: player_hint_id,
+    //         property_data: structs::PlayerHint {
+    //         name: b"combat playerhint\0".as_cstr(),
+    //         position: [0.0, 0.0, 0.0].into(),
+    //         rotation: [0.0, 0.0, 0.0].into(),
+    //         unknown0: 1, // active
+    //         inner_struct: structs::PlayerHintStruct {
+    //             unknowns: [
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 1,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //             ].into(),
+    //         }.into(),
+    //         unknown1: 10, // priority
+    //         }.into(),
+    //         connections: vec![].into(),
+    // };
 
-    pickup_obj.connections.as_mut_vec().push(
-        structs::Connection {
-            state: structs::ConnectionState::ARRIVED,
-            message: structs::ConnectionMsg::INCREMENT,
-            target_object_id: player_hint_id,
-        }
-    );
+    // pickup_obj.connections.as_mut_vec().push(
+    //     structs::Connection {
+    //         state: structs::ConnectionState::ARRIVED,
+    //         message: structs::ConnectionMsg::INCREMENT,
+    //         target_object_id: player_hint_id,
+    //     }
+    // );
 
-    let player_hint_id_2 = ps.fresh_instance_id_range.next().unwrap();
-    let player_hint_2 = structs::SclyObject {
-        instance_id: player_hint_id_2,
-            property_data: structs::PlayerHint {
-            name: b"combat playerhint\0".as_cstr(),
-            position: [0.0, 0.0, 0.0].into(),
-            rotation: [0.0, 0.0, 0.0].into(),
-            unknown0: 1, // active
-            inner_struct: structs::PlayerHintStruct {
-                unknowns: [
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    1,
-                    0,
-                    0,
-                    0,
-                    0,
-                ].into(),
-            }.into(),
-            unknown1: 10, // priority
-            }.into(),
-            connections: vec![].into(),
-    };
+    // let player_hint_id_2 = ps.fresh_instance_id_range.next().unwrap();
+    // let player_hint_2 = structs::SclyObject {
+    //     instance_id: player_hint_id_2,
+    //         property_data: structs::PlayerHint {
+    //         name: b"combat playerhint\0".as_cstr(),
+    //         position: [0.0, 0.0, 0.0].into(),
+    //         rotation: [0.0, 0.0, 0.0].into(),
+    //         unknown0: 1, // active
+    //         inner_struct: structs::PlayerHintStruct {
+    //             unknowns: [
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 1,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //             ].into(),
+    //         }.into(),
+    //         unknown1: 10, // priority
+    //         }.into(),
+    //         connections: vec![].into(),
+    // };
 
-    let timer_id = ps.fresh_instance_id_range.next().unwrap();
-    let timer = structs::SclyObject {
-        instance_id: timer_id,
-        property_data: structs::Timer {
-            name: b"set-scan\0".as_cstr(),
-            start_time: 0.5,
-            max_random_add: 0.0,
-            reset_to_zero: 0,
-            start_immediately: 0,
-            active: 1,
-        }.into(),
-        connections: vec![
-            structs::Connection {
-                state: structs::ConnectionState::ZERO,
-                message: structs::ConnectionMsg::INCREMENT,
-                target_object_id: player_hint_id_2,
-            },
-        ].into(),
-    };
+    // let timer_id = ps.fresh_instance_id_range.next().unwrap();
+    // let timer = structs::SclyObject {
+    //     instance_id: timer_id,
+    //     property_data: structs::Timer {
+    //         name: b"set-scan\0".as_cstr(),
+    //         start_time: 0.5,
+    //         max_random_add: 0.0,
+    //         reset_to_zero: 0,
+    //         start_immediately: 0,
+    //         active: 1,
+    //     }.into(),
+    //     connections: vec![
+    //         structs::Connection {
+    //             state: structs::ConnectionState::ZERO,
+    //             message: structs::ConnectionMsg::INCREMENT,
+    //             target_object_id: player_hint_id_2,
+    //         },
+    //     ].into(),
+    // };
 
-    pickup_obj.connections.as_mut_vec().push(
-        structs::Connection {
-            state: structs::ConnectionState::ARRIVED,
-            message: structs::ConnectionMsg::RESET_AND_START,
-            target_object_id: timer_id,
-        }
-    );
+    // pickup_obj.connections.as_mut_vec().push(
+    //     structs::Connection {
+    //         state: structs::ConnectionState::ARRIVED,
+    //         message: structs::ConnectionMsg::RESET_AND_START,
+    //         target_object_id: timer_id,
+    //     }
+    // );
 
     // update MREA layer with new Objects
     let scly = area.mrea().scly_section_mut();
@@ -1270,11 +1271,13 @@ fn patch_add_item<'r>(
     layers[new_layer_idx].objects.as_mut_vec().push(hudmemo);
     layers[new_layer_idx].objects.as_mut_vec().push(attainment_audio);
     layers[new_layer_idx].objects.as_mut_vec().push(pickup_obj);
-    if pickup_type == PickupType::ScanVisor && no_starting_visor{
-        layers[new_layer_idx].objects.as_mut_vec().push(player_hint);
-        layers[new_layer_idx].objects.as_mut_vec().push(player_hint_2);
-        layers[new_layer_idx].objects.as_mut_vec().push(timer);
-    }
+
+    // 2022-02-08 - I had to remove this because there's a bug in the vanilla engine where playerhint -> Scan Visor doesn't holster the weapon
+    // if pickup_type == PickupType::ScanVisor && no_starting_visor{
+    //     layers[new_layer_idx].objects.as_mut_vec().push(player_hint);
+    //     layers[new_layer_idx].objects.as_mut_vec().push(player_hint_2);
+    //     layers[new_layer_idx].objects.as_mut_vec().push(timer);
+    // }
 
     Ok(())
 }
@@ -1464,7 +1467,7 @@ fn modify_pickups_in_mrea<'r>(
     extern_models: &HashMap<String, ExternPickupModel>,
     shuffle_position: bool,
     seed: u64,
-    no_starting_visor: bool,
+    _no_starting_visor: bool,
 )
 -> Result<(), String>
 {
@@ -1603,114 +1606,115 @@ fn modify_pickups_in_mrea<'r>(
 
     let mut additional_connections = Vec::new();
 
-    if pickup_type == PickupType::ScanVisor && no_starting_visor {
+    // 2022-02-08 - I had to remove this because there's a bug in the vanilla engine where playerhint -> Scan Visor doesn't holster the weapon
+    // if pickup_type == PickupType::ScanVisor && no_starting_visor {
 
-    // If scan visor, and starting visor is none, then switch to combat and back to scan when obtaining scan
-    let player_hint_id = ps.fresh_instance_id_range.next().unwrap();
-    let player_hint = structs::SclyObject {
-        instance_id: player_hint_id,
-            property_data: structs::PlayerHint {
-            name: b"combat playerhint\0".as_cstr(),
-            position: [0.0, 0.0, 0.0].into(),
-            rotation: [0.0, 0.0, 0.0].into(),
-            unknown0: 1, // active
-            inner_struct: structs::PlayerHintStruct {
-                unknowns: [
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    1,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                ].into(),
-            }.into(),
-            unknown1: 10, // priority
-            }.into(),
-            connections: vec![].into(),
-    };
+    // // If scan visor, and starting visor is none, then switch to combat and back to scan when obtaining scan
+    // let player_hint_id = ps.fresh_instance_id_range.next().unwrap();
+    // let player_hint = structs::SclyObject {
+    //     instance_id: player_hint_id,
+    //         property_data: structs::PlayerHint {
+    //         name: b"combat playerhint\0".as_cstr(),
+    //         position: [0.0, 0.0, 0.0].into(),
+    //         rotation: [0.0, 0.0, 0.0].into(),
+    //         unknown0: 1, // active
+    //         inner_struct: structs::PlayerHintStruct {
+    //             unknowns: [
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 1,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //             ].into(),
+    //         }.into(),
+    //         unknown1: 10, // priority
+    //         }.into(),
+    //         connections: vec![].into(),
+    // };
 
-    additional_connections.push(
-        structs::Connection {
-            state: structs::ConnectionState::ARRIVED,
-            message: structs::ConnectionMsg::INCREMENT,
-            target_object_id: player_hint_id,
-        }
-    );
+    // additional_connections.push(
+    //     structs::Connection {
+    //         state: structs::ConnectionState::ARRIVED,
+    //         message: structs::ConnectionMsg::INCREMENT,
+    //         target_object_id: player_hint_id,
+    //     }
+    // );
 
-    let player_hint_id_2 = ps.fresh_instance_id_range.next().unwrap();
-    let player_hint_2 = structs::SclyObject {
-        instance_id: player_hint_id_2,
-            property_data: structs::PlayerHint {
-            name: b"combat playerhint\0".as_cstr(),
-            position: [0.0, 0.0, 0.0].into(),
-            rotation: [0.0, 0.0, 0.0].into(),
-            unknown0: 1, // active
-            inner_struct: structs::PlayerHintStruct {
-                unknowns: [
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    1,
-                    0,
-                    0,
-                    0,
-                    0,
-                ].into(),
-            }.into(),
-            unknown1: 10, // priority
-            }.into(),
-            connections: vec![].into(),
-    };
+    // let player_hint_id_2 = ps.fresh_instance_id_range.next().unwrap();
+    // let player_hint_2 = structs::SclyObject {
+    //     instance_id: player_hint_id_2,
+    //         property_data: structs::PlayerHint {
+    //         name: b"combat playerhint\0".as_cstr(),
+    //         position: [0.0, 0.0, 0.0].into(),
+    //         rotation: [0.0, 0.0, 0.0].into(),
+    //         unknown0: 1, // active
+    //         inner_struct: structs::PlayerHintStruct {
+    //             unknowns: [
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 1,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 0,
+    //             ].into(),
+    //         }.into(),
+    //         unknown1: 10, // priority
+    //         }.into(),
+    //         connections: vec![].into(),
+    // };
 
-    let timer_id = ps.fresh_instance_id_range.next().unwrap();
-    let timer = structs::SclyObject {
-        instance_id: timer_id,
-        property_data: structs::Timer {
-            name: b"set-scan\0".as_cstr(),
-            start_time: 0.5,
-            max_random_add: 0.0,
-            reset_to_zero: 0,
-            start_immediately: 0,
-            active: 1,
-        }.into(),
-        connections: vec![
-            structs::Connection {
-                state: structs::ConnectionState::ZERO,
-                message: structs::ConnectionMsg::INCREMENT,
-                target_object_id: player_hint_id_2,
-            },
-        ].into(),
-    };
+    // let timer_id = ps.fresh_instance_id_range.next().unwrap();
+    // let timer = structs::SclyObject {
+    //     instance_id: timer_id,
+    //     property_data: structs::Timer {
+    //         name: b"set-scan\0".as_cstr(),
+    //         start_time: 0.5,
+    //         max_random_add: 0.0,
+    //         reset_to_zero: 0,
+    //         start_immediately: 0,
+    //         active: 1,
+    //     }.into(),
+    //     connections: vec![
+    //         structs::Connection {
+    //             state: structs::ConnectionState::ZERO,
+    //             message: structs::ConnectionMsg::INCREMENT,
+    //             target_object_id: player_hint_id_2,
+    //         },
+    //     ].into(),
+    // };
 
-    additional_connections.push(
-        structs::Connection {
-            state: structs::ConnectionState::ARRIVED,
-            message: structs::ConnectionMsg::RESET_AND_START,
-            target_object_id: timer_id,
-        }
-    );
+    // additional_connections.push(
+    //     structs::Connection {
+    //         state: structs::ConnectionState::ARRIVED,
+    //         message: structs::ConnectionMsg::RESET_AND_START,
+    //         target_object_id: timer_id,
+    //     }
+    // );
 
 
-        layers[new_layer_idx].objects.as_mut_vec().push(player_hint);
-        layers[new_layer_idx].objects.as_mut_vec().push(player_hint_2);
-        layers[new_layer_idx].objects.as_mut_vec().push(timer);
-    }
+    //     layers[new_layer_idx].objects.as_mut_vec().push(player_hint);
+    //     layers[new_layer_idx].objects.as_mut_vec().push(player_hint_2);
+    //     layers[new_layer_idx].objects.as_mut_vec().push(timer);
+    // }
 
     // Add a post-pickup relay. This is used to support cutscene-skipping
     let instance_id = ps.fresh_instance_id_range.next().unwrap();
@@ -5199,9 +5203,10 @@ fn patch_dol<'r>(
 
     if config.starting_visor != Visor::Combat {
         let visor = config.starting_visor as u16;
+        let no_starting_visor = !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray;
 
         // If no visors, spawn into scan visor without transitioning (spawn without scan GUI)
-        if !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray {
+        if no_starting_visor {
             let scan_visor = Visor::Scan as u16;
             let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFv", version) + 0x68, {
                     li      r0, scan_visor;
@@ -5249,15 +5254,22 @@ fn patch_dol<'r>(
         };
     
         // If scan visor or no visor
-        if config.starting_visor == Visor::Scan || (
-            !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray
-        )
+        if config.starting_visor == Visor::Scan || no_starting_visor
         {
-            // Do not check for combat visor in inventory when switching to it
-            let default_visor_patch = ppcasm!(symbol_addr!("SetAreaPlayerHint__7CPlayerFRC17CScriptPlayerHintRC13CStateManager", version) + 0x120, {
-                nop;
-            });
-            dol_patcher.ppcasm_patch(&default_visor_patch)?;
+            // 2022-02-08 - I had to remove this because there's a bug in the vanilla engine where playerhint -> Scan Visor doesn't holster the weapon
+            // if no_starting_visor {
+            //     // Do not check for combat visor in inventory when switching to it
+            //     let default_visor_patch = ppcasm!(symbol_addr!("SetAreaPlayerHint__7CPlayerFRC17CScriptPlayerHintRC13CStateManager", version) + 0x120, {
+            //         nop;
+            //     });
+            //     dol_patcher.ppcasm_patch(&default_visor_patch)?;
+
+            //     // Don't holster weapon when grappling
+            //     let default_visor_patch = ppcasm!(symbol_addr!("UpdateGrappleState__7CPlayerFRC11CFinalInputR13CStateManager", version) + (0x8017a998 - 0x8017A668), {
+            //             nop;
+            //     });
+            //     dol_patcher.ppcasm_patch(&default_visor_patch)?;
+            // }
     
             // spawn with weapon holstered instead of drawn
             let patch_offset = if version == Version::Pal || version == Version::NtscJ {
@@ -5269,13 +5281,7 @@ fn patch_dol<'r>(
                     li      r0, 0; // r0 = holstered
             });
             dol_patcher.ppcasm_patch(&default_visor_patch)?;
-    
-            // Don't holster weapon when grappling
-            // let default_visor_patch = ppcasm!(symbol_addr!("UpdateGrappleState__7CPlayerFRC11CFinalInputR13CStateManager", version) + (0x8017a998 - 0x8017A668), {
-            //         nop;
-            // });
-            // dol_patcher.ppcasm_patch(&default_visor_patch)?;
-    
+
             // stop gun from being drawn after unmorphing
             let (patch_offset, patch_offset2) = if version == Version::Pal || version == Version::NtscJ {
                 (0x79c, 0x7a8)

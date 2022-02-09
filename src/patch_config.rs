@@ -804,7 +804,7 @@ impl PatchConfigPrivate
         } else if starting_items.scan_visor {
             "scan"
         } else {
-            "combat"
+            "scan"
         };
 
         let starting_visor =match self.game_config.starting_visor.as_ref().unwrap_or(&default_starting_visor.to_string()).to_lowercase().trim() {
