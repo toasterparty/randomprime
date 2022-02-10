@@ -3112,6 +3112,25 @@ fn patch_research_lab_aether_exploding_wall<'r>(
     Ok(())
 }
 
+fn patch_research_lab_aether_exploding_wall_2<'r>(
+    ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea
+)
+    -> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+
+    // Alert Edward via trigger in lower area instead of relying on gameplay
+    let trigger = layer.objects.iter_mut().find(|obj| obj.instance_id&0x00FFFFFF == 0x003302CE).unwrap();
+    trigger.connections.as_mut_vec().push(structs::Connection {
+        state: structs::ConnectionState::ENTERED,
+        message: structs::ConnectionMsg::RESET_AND_START,
+        target_object_id: 0x003300D7, // Timer to ALERT Edward
+    });
+
+    Ok(())
+}
+
 fn patch_observatory_2nd_pass_solvablility<'r>(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
     -> Result<(), String>
 {
@@ -7530,7 +7549,11 @@ fn patch_qol_game_breaking(
     );
     patcher.add_scly_patch(
         resource_info!("13_ice_vault.MREA").into(),
-        patch_research_lab_aether_exploding_wall
+        patch_research_lab_aether_exploding_wall // Remove wall when dark labs is activated
+    );
+    patcher.add_scly_patch(
+        resource_info!("12_ice_research_b.MREA").into(),
+        patch_research_lab_aether_exploding_wall_2 // Remove AI jank factor from persuading Edward to jump through glass when doing backwards aether
     );
     patcher.add_scly_patch(
         resource_info!("11_ice_observatory.MREA").into(),
