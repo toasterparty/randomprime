@@ -6994,30 +6994,30 @@ fn patch_move_item_loss_scan<'r>(
     Ok(())
 }
 
-fn patch_remove_visor_changer<'r>(
-    _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
-)
--> Result<(), String>
-{
-    let scly = area.mrea().scly_section_mut();
-    let layer_count = scly.layers.len();
-    for i in 0..layer_count {
-        let layer = &mut scly.layers.as_mut_vec()[i];
-        for obj in layer.objects.as_mut_vec() {
-            let mut _player_hint = obj.property_data.as_player_hint_mut();
-            if _player_hint.is_some() {
-                let player_hint = _player_hint.unwrap();
-                player_hint.inner_struct.unknowns[9]  = 0; // Never switch to combat visor
-                player_hint.inner_struct.unknowns[10] = 0; // Never switch to scan visor
-                player_hint.inner_struct.unknowns[11] = 0; // Never switch to thermal visor
-                player_hint.inner_struct.unknowns[12] = 0; // Never switch to xray visor
-            }
-        }
-    }
+// fn patch_remove_visor_changer<'r>(
+//     _ps: &mut PatcherState,
+//     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+// )
+// -> Result<(), String>
+// {
+//     let scly = area.mrea().scly_section_mut();
+//     let layer_count = scly.layers.len();
+//     for i in 0..layer_count {
+//         let layer = &mut scly.layers.as_mut_vec()[i];
+//         for obj in layer.objects.as_mut_vec() {
+//             let mut _player_hint = obj.property_data.as_player_hint_mut();
+//             if _player_hint.is_some() {
+//                 let player_hint = _player_hint.unwrap();
+//                 player_hint.inner_struct.unknowns[9]  = 0; // Never switch to combat visor
+//                 player_hint.inner_struct.unknowns[10] = 0; // Never switch to scan visor
+//                 player_hint.inner_struct.unknowns[11] = 0; // Never switch to thermal visor
+//                 player_hint.inner_struct.unknowns[12] = 0; // Never switch to xray visor
+//             }
+//         }
+//     }
 
-    Ok(())
-}
+//     Ok(())
+// }
 
 fn is_blast_shield<'r>(obj: &structs::SclyObject<'r>) -> bool {
     if !obj.property_data.is_actor() {
@@ -8570,9 +8570,12 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
 fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, version: Version)
     -> Result<(), String>
 {
-    let remove_ball_color = config.ctwk_config.morph_ball_size.clone().unwrap_or(1.0) < 0.999;
-    let remove_control_disabler = config.ctwk_config.player_size.clone().unwrap_or(1.0) < 0.999 || config.ctwk_config.morph_ball_size.clone().unwrap_or(1.0) < 0.999;
-    let move_item_loss_scan = config.ctwk_config.player_size.clone().unwrap_or(1.0) > 1.001;
+    let morph_ball_size = config.ctwk_config.morph_ball_size.clone().unwrap_or(1.0);
+    let player_size = config.ctwk_config.player_size.clone().unwrap_or(1.0);
+
+    let remove_ball_color = morph_ball_size < 0.999;
+    let remove_control_disabler = player_size < 0.999 || morph_ball_size < 0.999;
+    let move_item_loss_scan = player_size > 1.001;
     let mut rng = StdRng::seed_from_u64(config.seed);
 
     let mut level_data: HashMap<String, LevelConfig> = config.level_data.clone();
@@ -8830,7 +8833,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     if config.ctwk_config.player_size.is_some() {
         patcher.add_scly_patch(
             resource_info!("01_endcinema.MREA").into(),
-            move |ps, area| patch_samus_actor_size(ps, area, config.ctwk_config.player_size.clone().unwrap()),
+            move |ps, area| patch_samus_actor_size(ps, area, player_size),
         );
     }
 
@@ -8907,15 +8910,16 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 );
             }
 
-            patcher.add_scly_patch(
-                (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                patch_remove_visor_changer,
-            );
+            // Removed as this was letting the player unmorph in places they shouldn't
+            // patcher.add_scly_patch(
+            //     (pak_name.as_bytes(), room_info.room_id.to_u32()),
+            //     patch_remove_visor_changer,
+            // );
 
             if config.ctwk_config.player_size.is_some() {
                 patcher.add_scly_patch(
                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                    move |ps, area| patch_samus_actor_size(ps, area, config.ctwk_config.player_size.clone().unwrap()),
+                    move |ps, area| patch_samus_actor_size(ps, area, player_size),
                 );
             }
 
@@ -9253,7 +9257,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         &mut patcher,
         &level_data,
         config.auto_enabled_elevators,
-        config.ctwk_config.player_size.clone().unwrap_or(1.0),
+        player_size,
         config.force_vanilla_layout,
     );
     let skip_frigate = skip_frigate && starting_room.mlvl != World::FrigateOrpheon.mlvl();
@@ -9658,7 +9662,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     }
 
     if config.qol_game_breaking {
-        patch_qol_game_breaking(&mut patcher, version, config.force_vanilla_layout, config.ctwk_config.player_size.clone().unwrap_or(1.0) < 0.9);
+        patch_qol_game_breaking(&mut patcher, version, config.force_vanilla_layout, player_size < 0.9);
         if boss_permadeath {
             patcher.add_scly_patch(
                 resource_info!("03a_crater.MREA").into(),
