@@ -1914,6 +1914,7 @@ fn modify_pickups_in_mrea<'r>(
             0x000200AF, // main plaza tree
             0x00190584, 0x0019039C, // research lab hydra
             0x001F025C, // mqb tank
+            0x000D03D9, // Phazon Elite
             custom_asset_ids::MQA_POI_SCAN.to_u32(),
         ];
         for layer in layers.iter_mut() {
@@ -3113,7 +3114,7 @@ fn patch_research_lab_aether_exploding_wall<'r>(
 }
 
 fn patch_research_lab_aether_exploding_wall_2<'r>(
-    ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea
+    _ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea
 )
     -> Result<(), String>
 {
