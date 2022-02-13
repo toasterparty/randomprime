@@ -3705,6 +3705,25 @@ fn patch_remove_ids<'r>
     Ok(())
 }
 
+// fn patch_remove_doors<'r>
+// (
+//     _ps: &mut PatcherState,
+//     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+// )
+// -> Result<(), String>
+// {
+//     let scly = area.mrea().scly_section_mut();
+//     let layers = &mut scly.layers.as_mut_vec();
+//     for layer in layers.iter_mut() {
+//         for obj in layer.objects.as_mut_vec() {
+//             if !obj.property_data.is_door() {continue;}
+//             let door = obj.property_data.as_door_mut().unwrap();
+//             door.position[2] -= 1000.0;
+//         }
+//     }
+//     Ok(())
+// }
+
 fn patch_spawn_point_position<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -8936,6 +8955,11 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     move |ps, area| patch_samus_actor_size(ps, area, player_size),
                 );
             }
+
+            // patcher.add_scly_patch(
+            //     (pak_name.as_bytes(), room_info.room_id.to_u32()),
+            //     move |ps, area| patch_remove_doors(ps, area)
+            // );
 
             if config.force_vanilla_layout {continue;}
 
