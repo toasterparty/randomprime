@@ -9571,67 +9571,69 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             );
         }
 
-        // Patch frigate so that it can be explored any direction without crashing or soft-locking
-        patcher.add_scly_patch(
-            resource_info!("01_intro_hanger_connect.MREA").into(),
-            patch_post_pq_frigate
-        );
-        patcher.add_scly_patch(
-            resource_info!("00h_intro_mechshaft.MREA").into(),
-            patch_post_pq_frigate
-        );
-        patcher.add_scly_patch(
-            resource_info!("04_intro_specimen_chamber.MREA").into(),
-            patch_post_pq_frigate
-        );
-        patcher.add_scly_patch(
-            resource_info!("06_intro_freight_lifts.MREA").into(),
-            patch_post_pq_frigate
-        );
-        patcher.add_scly_patch(
-            resource_info!("06_intro_to_reactor.MREA").into(),
-            patch_post_pq_frigate
-        );
-        patcher.add_scly_patch(
-            resource_info!("02_intro_elevator.MREA").into(),
-            patch_post_pq_frigate
-        );
-        patcher.add_scly_patch(
-            resource_info!("04_intro_specimen_chamber.MREA").into(),
-            move |ps, res| patch_add_circle_platform(
-                ps,
-                res,
-                game_resources,
-                [43.0, -194.0, -44.0],
-            ),
-        );
-        patcher.add_scly_patch(
-            resource_info!("04_intro_specimen_chamber.MREA").into(),
-            move |ps, res| patch_add_circle_platform(
-                ps,
-                res,
-                game_resources,
-                [39.0, -186.0, -41.0],
-            ),
-        );
-        patcher.add_scly_patch(
-            resource_info!("04_intro_specimen_chamber.MREA").into(),
-            move |ps, res| patch_add_circle_platform(
-                ps,
-                res,
-                game_resources,
-                [36.0, -181.0, -39.0],
-            ),
-        );
-        patcher.add_scly_patch(
-            resource_info!("04_intro_specimen_chamber.MREA").into(),
-            move |ps, res| patch_add_circle_platform(
-                ps,
-                res,
-                game_resources,
-                [36.0, -192.0, -39.0],
-            ),
-        );
+        if !config.force_vanilla_layout {
+            // Patch frigate so that it can be explored any direction without crashing or soft-locking
+            patcher.add_scly_patch(
+                resource_info!("01_intro_hanger_connect.MREA").into(),
+                patch_post_pq_frigate
+            );
+            patcher.add_scly_patch(
+                resource_info!("00h_intro_mechshaft.MREA").into(),
+                patch_post_pq_frigate
+            );
+            patcher.add_scly_patch(
+                resource_info!("04_intro_specimen_chamber.MREA").into(),
+                patch_post_pq_frigate
+            );
+            patcher.add_scly_patch(
+                resource_info!("06_intro_freight_lifts.MREA").into(),
+                patch_post_pq_frigate
+            );
+            patcher.add_scly_patch(
+                resource_info!("06_intro_to_reactor.MREA").into(),
+                patch_post_pq_frigate
+            );
+            patcher.add_scly_patch(
+                resource_info!("02_intro_elevator.MREA").into(),
+                patch_post_pq_frigate
+            );
+            patcher.add_scly_patch(
+                resource_info!("04_intro_specimen_chamber.MREA").into(),
+                move |ps, res| patch_add_circle_platform(
+                    ps,
+                    res,
+                    game_resources,
+                    [43.0, -194.0, -44.0],
+                ),
+            );
+            patcher.add_scly_patch(
+                resource_info!("04_intro_specimen_chamber.MREA").into(),
+                move |ps, res| patch_add_circle_platform(
+                    ps,
+                    res,
+                    game_resources,
+                    [39.0, -186.0, -41.0],
+                ),
+            );
+            patcher.add_scly_patch(
+                resource_info!("04_intro_specimen_chamber.MREA").into(),
+                move |ps, res| patch_add_circle_platform(
+                    ps,
+                    res,
+                    game_resources,
+                    [36.0, -181.0, -39.0],
+                ),
+            );
+            patcher.add_scly_patch(
+                resource_info!("04_intro_specimen_chamber.MREA").into(),
+                move |ps, res| patch_add_circle_platform(
+                    ps,
+                    res,
+                    game_resources,
+                    [36.0, -192.0, -39.0],
+                ),
+            );
+        }
     }
 
     if !config.force_vanilla_layout {

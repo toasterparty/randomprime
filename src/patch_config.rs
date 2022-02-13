@@ -702,7 +702,6 @@ impl PatchConfigPrivate
                 .unwrap_or("all")
                 .trim()
                 .to_lowercase();
-
             if artifact_hint_behavior_string == "all" {
                 ArtifactHintBehavior::All
             } else if artifact_hint_behavior_string == "none" {
@@ -746,31 +745,13 @@ impl PatchConfigPrivate
             },
             None => HashMap::new(),
         };
-        if !item_max_capacity.contains_key(&PickupType::EnergyTank) {
+        if !item_max_capacity.contains_key(&PickupType::EnergyTank) && !force_vanilla_layout {
             item_max_capacity.insert(PickupType::EnergyTank, 200);
         }
 
-        let qol_game_breaking   = {
-            if force_vanilla_layout {
-                true
-            } else {
-                self.preferences.qol_game_breaking.unwrap_or(true)
-            }
-        };
-        let qol_cosmetic        = {
-            if force_vanilla_layout {
-                false
-            } else {
-                self.preferences.qol_cosmetic.unwrap_or(true)
-            }
-        };
-        let qol_pickup_scans        = {
-            if force_vanilla_layout {
-                false
-            } else {
-                self.preferences.qol_pickup_scans.unwrap_or(true)
-            }
-        };
+        let qol_game_breaking = self.preferences.qol_game_breaking.unwrap_or(!force_vanilla_layout);
+        let qol_cosmetic = self.preferences.qol_cosmetic.unwrap_or(!force_vanilla_layout);
+        let qol_pickup_scans = self.preferences.qol_pickup_scans.unwrap_or(!force_vanilla_layout);
         let qol_cutscenes = match self.preferences.qol_cutscenes.as_ref().unwrap_or(&"original".to_string()).to_lowercase().trim() {
             "original" => CutsceneMode::Original,
             "competitive" => CutsceneMode::Competitive,
@@ -835,22 +816,8 @@ impl PatchConfigPrivate
             _ => panic!("Unknown starting beam {}", self.game_config.starting_beam.as_ref().unwrap()),
         };
         
-        let spring_ball = {
-            if force_vanilla_layout {
-                false
-            } else {
-                self.game_config.spring_ball.unwrap_or(false)
-            }
-        };
-        
-        let warp_to_start   = {
-            if force_vanilla_layout {
-                false
-            } else {
-                self.game_config.warp_to_start.unwrap_or(false)
-            }
-        };
-
+        let spring_ball = self.game_config.spring_ball.unwrap_or(false);
+        let warp_to_start = self.game_config.warp_to_start.unwrap_or(false);
         let main_menu_message = {
             if force_vanilla_layout {
                 "".to_string()
