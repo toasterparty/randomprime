@@ -354,6 +354,7 @@ pub struct PatchConfig
     pub credits_string: Option<String>,
     pub artifact_hints: Option<HashMap<String,String>>, // e.g. "Strength":"This item can be found in Ruined Fountain"
     pub artifact_temple_layer_overrides: Option<HashMap<String,bool>>,
+    pub no_doors: bool,
     pub ctwk_config: CtwkConfig,
 }
 
@@ -430,6 +431,7 @@ struct GameConfig
     credits_string: Option<String>,
     artifact_hints: Option<HashMap<String,String>>, // e.g. "Strength":"This item can be found in Ruined Fountain"
     artifact_temple_layer_overrides: Option<HashMap<String,bool>>,
+    no_doors: Option<bool>, // Remove every door from the game
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
@@ -890,6 +892,7 @@ impl PatchConfigPrivate
             multiworld_dol_patches: self.game_config.multiworld_dol_patches.unwrap_or(false),
             update_hint_state_replacement: self.game_config.update_hint_state_replacement.clone(),
             artifact_temple_layer_overrides: self.game_config.artifact_temple_layer_overrides.clone(),
+            no_doors: self.game_config.no_doors.unwrap_or(false),
             map_default_state,
 
             starting_items,
