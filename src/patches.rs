@@ -8272,14 +8272,6 @@ pub fn patch_qol_major_cutscenes(patcher: &mut PrimePatcher) {
         ),
     );
     patcher.add_scly_patch(
-        resource_info!("07_ice_chapel.MREA").into(), // chapel of the elders
-        move |ps, area| patch_remove_cutscenes(ps, area,
-            vec![0x000E0057], // Faster adult breakout
-            vec![0x000E019D, 0x000E019B], // keep fight start reposition for wavesun
-            true,
-        ),
-    );
-    patcher.add_scly_patch(
         resource_info!("09_ice_lobby.MREA").into(), // research entrance
         move |ps, area| patch_remove_cutscenes(ps, area,
             vec![0x001402F7, 0x00140243, 0x001402D6, 0x001402D0, 0x001402B3], // start fight faster
@@ -8921,6 +8913,16 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
     if config.qol_cutscenes == CutsceneMode::Major {
         patch_qol_major_cutscenes(&mut patcher);
+        if !config.shuffle_pickup_position {
+            patcher.add_scly_patch(
+                resource_info!("07_ice_chapel.MREA").into(), // chapel of the elders
+                move |ps, area| patch_remove_cutscenes(ps, area,
+                    vec![0x000E0057], // Faster adult breakout
+                    vec![0x000E019D, 0x000E019B], // keep fight start reposition for wavesun
+                    true,
+                ),
+            );
+        }
     }
 
     // Patch pickups
@@ -8966,7 +8968,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             if config.force_vanilla_layout {continue;}
 
             // Remove objects patch
-            if config.qol_cosmetic {
+            if config.qol_cosmetic && !(config.shuffle_pickup_position && room_info.room_id.to_u32() == 0x40C548E9) {
                 patcher.add_scly_patch((pak_name.as_bytes(), room_info.room_id.to_u32()), move |_, area| {
                     let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
                     for otr in room_info.objects_to_remove {
