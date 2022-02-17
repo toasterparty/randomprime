@@ -5879,46 +5879,45 @@ fn patch_dol<'r>(
                 stfs      f1, 0x04(r16);
                 lfs       f1, 0x60(r14);
                 stfs      f1, 0x08(r16);
+                lwz       r0, 0x0c(r16);
+                cmplwi    r0, 0;
+                bgt       0x8000252c;
                 lwz       r0, { movement_state_offset }(r14);
                 cmplwi    r0, 0;
-                beq       0x8000246c;
-                b         0x80002524;
+                beq       0x80002480;
+                b         0x8000252c;
                 cmplwi    r0, 4;
-                bne       0x80002524;
+                bne       0x8000252c;
                 lwz       r0, { out_of_water_ticks_offset }(r14);
                 cmplwi    r0, 2;
-                bne       0x80002480;
+                bne       0x8000248c;
                 lwz       r0, { surface_restraint_type_offset }(r14);
-                b         0x80002484;
+                b         0x80002490;
                 li        r0, 4;
                 cmplwi    r0, 7;
-                beq       0x80002524;
+                beq       0x8000252c;
                 mr        r3, r28;
                 bl        { symbol_addr!("IsMovementAllowed__10CMorphBallCFv", version) };
                 cmplwi    r3, 0;
-                beq       0x80002524;
+                beq       0x8000252c;
                 lwz       r3, 0x0(r15);
                 li        r4, 6;
                 bl        { symbol_addr!("HasPowerUp__12CPlayerStateCFQ212CPlayerState9EItemType", version) };
                 cmplwi    r3, 0;
-                beq       0x80002524;
+                beq       0x8000252c;
                 lhz       r0, { attached_actor_offset }(r14);
                 cmplwi    r0, 65535;
-                bne       0x80002524;
+                bne       0x8000252c;
                 addi      r3, r14, { energy_drain_offset };
                 bl        { symbol_addr!("GetEnergyDrainIntensity__18CPlayerEnergyDrainCFv", version) };
                 fcmpu     cr0, f1, f14;
-                bgt       0x80002524;
+                bgt       0x8000252c;
                 lwz       r0, 0x187c(r28);
                 cmplwi    r0, 0;
-                bne       0x80002524;
-                lfs       f1, 0x140(r14);
-                lfs       f16, 0x0c(r16);
-                fcmpu     cr0, f1, f16;
-                bgt       0x80002524;
+                bne       0x8000252c;
                 lfs       f1, 0x14(r29);
                 fcmpu     cr0, f1, f14;
-                ble       0x80002524;
+                ble       0x8000252c;
                 lfs       f16, { velocity_offset }(r14);
                 lfs       f17, { velocity_offset + 4 }(r14);
                 mr        r3, r14;
@@ -5931,6 +5930,14 @@ fn patch_dol<'r>(
                 li        r4, 4;
                 mr        r5, r29;
                 bl        { symbol_addr!("SetMoveState__7CPlayerFQ27NPlayer20EPlayerMovementStateR13CStateManager", version) };
+                li        r3, 40;
+                stw       r3, 0x0c(r16);
+                b         0x80002540;
+                lwz       r3, 0x0c(r16);
+                cmplwi    r3, 0;
+                beq       0x80002540;
+                addi      r3, r3, -1;
+                stw       r3, 0x0c(r16);
 
                 // call compute boost ball movement
                 mr        r3, r28;
@@ -5952,13 +5959,16 @@ fn patch_dol<'r>(
                 mtlr      r0;
                 addi      r1, r1, 0x20;
                 blr;
+                
+                // align bytes to 32 bytes
+                nop;
                 nop;
                 nop;
             data:
                 .float 0.0;
                 .float 0.0;
                 .float 0.0;
-                .float 1.0;
+                .long 0;
         });
         dol_patcher.add_text_segment(0x80002400, Cow::Owned(spring_ball_patch.encoded_bytes()))?;
     }
