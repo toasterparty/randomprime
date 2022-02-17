@@ -3455,7 +3455,7 @@ fn make_main_plaza_locked_door_two_ways(_ps: &mut PatcherState, area: &mut mlvl_
             instance_id: actor_doorshield_id,
             property_data: structs::Actor {
                 name: b"Actor_DoorShield\0".as_cstr(),
-                position: [151.951187, 86.412575, 24.403177].into(),
+                position: [151.951187, 86.462578, 24.503178].into(),
                 rotation: [0.0, 0.0, 0.0].into(),
                 scale: [1.0, 1.0, 1.0].into(),
                 hitbox: [0.0, 0.0, 0.0].into(),
