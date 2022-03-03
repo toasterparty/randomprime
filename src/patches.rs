@@ -26,7 +26,7 @@ use crate::patch_config::{
     DoorConfig,
 };
 
-use std::{fs::{self, File}, io::{Read}};
+use std::{fs::{self, File}, io::{Read}, path::Path};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
@@ -9836,10 +9836,13 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             angles.push(suit_colors.phazon_deg.clone().unwrap());
         }
 
-        fs::create_dir("cache")
-            .map_err(|e| format!("Failed to create cache dir: {}", e))
-            .ok();
+        let mut complained: bool = false;
 
+        let cache_dir = "cache";
+        if !Path::new(cache_dir).is_dir() && !fs::create_dir(cache_dir).is_ok() {
+            complained = true;
+            println!("Failed to create cache dir for optimal suit rotation");
+        }
         for i in 0..suit_textures.len() {
             let angle = angles[i] % 360;
             if angle == 0 {
@@ -9847,9 +9850,11 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             }
             let angle = angle as f32;
 
-            fs::create_dir(format!("cache/{}", angle))
-                .map_err(|e| format!("Failed to create cache subdir: {}", e))
-                .ok();
+            let cache_subdir = format!("{}/{}", cache_dir, angle);
+            if !Path::new(&cache_subdir).is_dir() && !fs::create_dir(cache_subdir).is_ok() && !complained {
+                complained = true;
+                println!("Failed to create cache dir for optimal suit rotation");
+            }
 
             let matrix = huerotate_matrix(angle);
             for texture in suit_textures[i] {
@@ -9876,9 +9881,10 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     for mipmap in txtr.pixel_data.as_mut_vec() {
                         let hash: u64 = calculate_hash(&mipmap.as_mut_vec().to_vec());
                         // Read file contents to RAM
-                        let filename = format!("cache/{}/{}",angle,hash);
+                        let filename = format!("cache/{}/{}", angle, hash);
+                        let file_ok = File::open(&filename).is_ok();
                         let file = File::open(&filename).ok();
-                        if file.is_some() {
+                        if file_ok && file.is_some() {
                             let metadata = fs::metadata(&filename).expect("unable to read metadata");
                             let mut bytes = vec![0; metadata.len() as usize];
                             file.unwrap().read(&mut bytes)
@@ -9892,10 +9898,17 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             huerotate_in_place(&mut decompressed_bytes[..], w, h, matrix);
                             cmpr_compress(&(decompressed_bytes[..]), w, h, &mut mipmap.as_mut_vec()[..]);
                             // cache.insert(hash, mipmap.as_mut_vec().to_vec());
-                            let mut file = File::create(filename)
-                                .map_err(|e| format!("Failed to create cache file: {}", e))?;
-                            file.write_all(&mipmap.as_mut_vec().to_vec())
-                                .map_err(|e| format!("Failed to write cache file: {}", e))?;
+                            let file = File::create(filename);
+                            if file.is_ok() {
+                                let result = file.ok().unwrap().write_all(&mipmap.as_mut_vec().to_vec());
+                                if !result.is_ok() && !complained {
+                                    complained = true;
+                                    println!("Failed to create cache dir for optimal suit rotation");
+                                }
+                            } else if !complained {
+                                complained = true;
+                                println!("Failed to create cache dir for optimal suit rotation");
+                            }
                         }
                         w = w / 2;
                         h = h / 2;
