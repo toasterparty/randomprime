@@ -5249,8 +5249,18 @@ fn patch_dol<'r>(
                     stw     r0, 0x18(r30); // transitioningVisor
             });
             dol_patcher.ppcasm_patch(&default_visor_patch)?;
+            // spawn after elevator
+            let default_visor_patch = ppcasm!(symbol_addr!("ResetVisor__12CPlayerStateFv", version), {
+                    li      r0, scan_visor;
+                    stw     r0, 0x14(r3); // currentVisor
+                    stw     r0, 0x18(r3); // transitioningVisor
+                    nop;
+                    nop;
+            });
+            dol_patcher.ppcasm_patch(&default_visor_patch)?;
         // Otherwise, spawn mid-transition into default visor
         } else {
+            // spawn on game initalization
             let default_visor_patch = ppcasm!(symbol_addr!("__ct__12CPlayerStateFv", version) + 0x68, {
                     li      r0, visor;
                     stw     r6, 0x14(r31); // currentVisor = combat
@@ -5263,17 +5273,16 @@ fn patch_dol<'r>(
                     stw     r0, 0x18(r30); // transitioningVisor
             });
             dol_patcher.ppcasm_patch(&default_visor_patch)?;
+            // spawn after elevator
+            let default_visor_patch = ppcasm!(symbol_addr!("ResetVisor__12CPlayerStateFv", version), {
+                    li      r0, 0;
+                    stw     r0, 0x14(r3); // currentVisor = combat
+                    li      r0, visor;
+                    stw     r0, 0x18(r3); // transitioningVisor
+                    nop;
+            });
+            dol_patcher.ppcasm_patch(&default_visor_patch)?;
         }
-    
-        // Don't force visor on visor reset
-        let default_visor_patch = ppcasm!(symbol_addr!("ResetVisor__12CPlayerStateFv", version), {
-            nop;
-            nop;
-            nop;
-            nop;
-            nop;
-        });
-        dol_patcher.ppcasm_patch(&default_visor_patch)?;
     
         let visor_item = match config.starting_visor {
             Visor::Combat  => 17,
