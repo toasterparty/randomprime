@@ -343,6 +343,7 @@ pub struct PatchConfig
     pub skip_splash_screens: bool,
     pub default_game_options: Option<DefaultGameOptions>,
     pub suit_colors: Option<SuitColors>,
+    pub cache_dir: String,
 
     pub quickplay: bool,
     pub quickpatch: bool,
@@ -367,6 +368,7 @@ struct Preferences
     skip_splash_screens: Option<bool>,
     default_game_options: Option<DefaultGameOptions>,
     suit_colors: Option<SuitColors>,
+    cache_dir: Option<String>,
 
     qol_game_breaking: Option<bool>,
     qol_cosmetic: Option<bool>,
@@ -870,6 +872,7 @@ impl PatchConfigPrivate
             artifact_hint_behavior,
             flaahgra_music_files,
             suit_colors: self.preferences.suit_colors.clone(),
+            cache_dir: self.preferences.cache_dir.clone().unwrap_or("cache".to_string()),
             skip_splash_screens: self.preferences.skip_splash_screens.unwrap_or(false),
             default_game_options: self.preferences.default_game_options.clone(),
             quiet: self.preferences.quiet.unwrap_or(false),

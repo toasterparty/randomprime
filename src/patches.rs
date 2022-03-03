@@ -9837,9 +9837,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         }
 
         let mut complained: bool = false;
-
-        let cache_dir = "cache";
-        if !Path::new(cache_dir).is_dir() && !fs::create_dir(cache_dir).is_ok() {
+        if !Path::new(&config.cache_dir).is_dir() && !fs::create_dir(&config.cache_dir).is_ok() {
             complained = true;
             println!("Failed to create cache dir for optimal suit rotation");
         }
@@ -9850,7 +9848,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             }
             let angle = angle as f32;
 
-            let cache_subdir = format!("{}/{}", cache_dir, angle);
+            let cache_subdir = format!("{}/{}", config.cache_dir, angle);
             if !Path::new(&cache_subdir).is_dir() && !fs::create_dir(cache_subdir).is_ok() && !complained {
                 complained = true;
                 println!("Failed to create cache dir for optimal suit rotation");
