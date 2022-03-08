@@ -9912,9 +9912,14 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         }
 
         let mut complained: bool = false;
-        if !Path::new(&config.cache_dir).is_dir() && !fs::create_dir(&config.cache_dir).is_ok() {
-            complained = true;
-            println!("Failed to create cache dir for optimal suit rotation");
+        if !Path::new(&config.cache_dir).is_dir() {
+            match fs::create_dir(&config.cache_dir) {
+                Ok(()) => {},
+                Err(error) => {
+                    println!("Failed to create cache dir for optimal suit rotation: {}", error);
+                    complained = true;
+                },
+            }
         }
         for i in 0..suit_textures.len() {
             let angle = angles[i] % 360;
@@ -9924,9 +9929,16 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             let angle = angle as f32;
 
             let cache_subdir = format!("{}/{}", config.cache_dir, angle);
-            if !Path::new(&cache_subdir).is_dir() && !fs::create_dir(cache_subdir).is_ok() && !complained {
-                complained = true;
-                println!("Failed to create cache dir for optimal suit rotation");
+            if !Path::new(&cache_subdir).is_dir() {
+                match fs::create_dir(cache_subdir) {
+                    Ok(()) => {},
+                    Err(error) => {
+                        if !complained {
+                            println!("Failed to create cache subdir for optimal suit rotation: {}", error);
+                            complained = true;
+                        }
+                    },
+                }
             }
 
             let matrix = huerotate_matrix(angle);
@@ -9971,16 +9983,24 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             huerotate_in_place(&mut decompressed_bytes[..], w, h, matrix);
                             cmpr_compress(&(decompressed_bytes[..]), w, h, &mut mipmap.as_mut_vec()[..]);
                             // cache.insert(hash, mipmap.as_mut_vec().to_vec());
-                            let file = File::create(filename);
-                            if file.is_ok() {
-                                let result = file.ok().unwrap().write_all(&mipmap.as_mut_vec().to_vec());
-                                if !result.is_ok() && !complained {
-                                    complained = true;
-                                    println!("Failed to create cache dir for optimal suit rotation");
-                                }
-                            } else if !complained {
-                                complained = true;
-                                println!("Failed to create cache dir for optimal suit rotation");
+                            match File::create(filename) {
+                                Ok(mut file) => {
+                                    match file.write_all(&mipmap.as_mut_vec().to_vec()) {
+                                        Ok(()) => {},
+                                        Err(error) => {
+                                            if !complained {
+                                                println!("Failed to write cache file for optimal suit rotation: {}", error);
+                                                complained = true;
+                                            }
+                                        },
+                                    }
+                                },
+                                Err(error) => {
+                                    if !complained {
+                                        println!("Failed to create cache file for optimal suit rotation: {}", error);
+                                        complained = true;
+                                    }
+                                },
                             }
                         }
                         w = w / 2;
