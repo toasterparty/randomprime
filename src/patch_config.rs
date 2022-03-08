@@ -21,6 +21,14 @@ use crate::{
 
 /*** Parsed Config (fn patch_iso) ***/
 
+#[derive(Deserialize, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub enum RunMode
+{
+    CreateIso,
+    ExportLogbook,
+}
+
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub enum IsoFormat
@@ -280,6 +288,8 @@ pub struct IncineratorDroneConfig {
 #[derive(Debug)]
 pub struct PatchConfig
 {
+    pub run_mode: RunMode, 
+    pub logbook_filename: Option<String>,
     pub extern_assets_dir: Option<String>,
     pub seed: u64,
 
@@ -440,6 +450,8 @@ struct GameConfig
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct PatchConfigPrivate
 {
+    run_mode: Option<String>,
+    logbook_filename: Option<String>,
     input_iso: Option<String>,
     output_iso: Option<String>,
     force_vanilla_layout: Option<bool>,
@@ -674,6 +686,18 @@ impl PatchConfigPrivate
 {
     fn parse(&self) -> Result<PatchConfig, String>
     {
+        let run_mode = {
+            if self.run_mode.is_some() {
+                match self.run_mode.as_ref().unwrap().to_lowercase().trim() {
+                    "create_iso" => RunMode::CreateIso,
+                    "export_logbook" => RunMode::ExportLogbook,
+                    _ => panic!("Unsupported run mode: {}", self.run_mode.as_ref().unwrap())
+                }
+            } else {
+                RunMode::CreateIso
+            }
+        };
+
         let input_iso_path = self.input_iso.as_deref().unwrap_or("prime.iso");
         let input_iso_file = File::open(input_iso_path.trim())
             .map_err(|e| format!("Failed to open {}: {}", input_iso_path, e))?;
@@ -839,6 +863,8 @@ impl PatchConfigPrivate
         };
 
         Ok(PatchConfig {
+            run_mode,
+            logbook_filename: self.logbook_filename.clone(),
             input_iso,
             iso_format,
             output_iso,

@@ -12,6 +12,7 @@ use rand::{
 };
 
 use crate::patch_config::{
+    RunMode,
     ArtifactHintBehavior,
     Visor,
     MapState,
@@ -8521,23 +8522,7 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
     where T: structs::ProgressNotifier
 {
     let mut ct = Vec::new();
-    writeln!(ct, "Created by randomprime version {}", env!("CARGO_PKG_VERSION")).unwrap();
-    writeln!(ct).unwrap();
-    writeln!(ct, "Options used:").unwrap();
-    writeln!(ct, "qol game breaking: {:?}", config.qol_game_breaking).unwrap();
-    writeln!(ct, "qol cosmetic: {:?}", config.qol_cosmetic).unwrap();
-    writeln!(ct, "nonvaria heat damage: {}", config.nonvaria_heat_damage).unwrap();
-    writeln!(ct, "heat damage per sec: {}", config.heat_damage_per_sec).unwrap();
-    writeln!(ct, "staggered suit damage: {}", config.staggered_suit_damage).unwrap();
-    writeln!(ct, "etank capacity: {}", config.etank_capacity).unwrap();
-    writeln!(ct, "map default state: {}", config.map_default_state.to_string().to_lowercase()).unwrap();
-    for (pickup_type, value) in &config.item_max_capacity {
-        writeln!(ct, "{} capacity: {}", pickup_type.name(), value).unwrap();
-    }
-    writeln!(ct, "{}", config.comment).unwrap();
-
     let mut reader = Reader::new(&config.input_iso[..]);
-
     let mut gc_disc: structs::GcDisc = reader.read(());
 
     let version = match (&gc_disc.header.game_identifier(), gc_disc.header.disc_id, gc_disc.header.version) {
@@ -8561,10 +8546,28 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
         ))?
     }
 
+    if config.run_mode == RunMode::ExportLogbook {
+        export_logbook(&mut gc_disc, &config, version)?;
+        return Ok(());
+    }
+
     build_and_run_patches(&mut gc_disc, &config, version)?;
 
+    writeln!(ct, "Created by randomprime version {}", env!("CARGO_PKG_VERSION")).unwrap();
+    writeln!(ct).unwrap();
+    writeln!(ct, "Options used:").unwrap();
+    writeln!(ct, "qol game breaking: {:?}", config.qol_game_breaking).unwrap();
+    writeln!(ct, "qol cosmetic: {:?}", config.qol_cosmetic).unwrap();
+    writeln!(ct, "nonvaria heat damage: {}", config.nonvaria_heat_damage).unwrap();
+    writeln!(ct, "heat damage per sec: {}", config.heat_damage_per_sec).unwrap();
+    writeln!(ct, "staggered suit damage: {}", config.staggered_suit_damage).unwrap();
+    writeln!(ct, "etank capacity: {}", config.etank_capacity).unwrap();
+    writeln!(ct, "map default state: {}", config.map_default_state.to_string().to_lowercase()).unwrap();
+    for (pickup_type, value) in &config.item_max_capacity {
+        writeln!(ct, "{} capacity: {}", pickup_type.name(), value).unwrap();
+    }
+    writeln!(ct, "{}", config.comment).unwrap();
     gc_disc.add_file("randomprime.txt", structs::FstEntryFile::Unknown(Reader::new(&ct)))?;
-
 
     let patches_rel_bytes = match version {
         Version::NtscU0_00    => Some(rel_files::PATCHES_100_REL),
@@ -8608,6 +8611,78 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
             pn.notify_flushing_to_disk();
         }
     };
+    Ok(())
+}
+
+fn export_logbook(gc_disc: &mut structs::GcDisc, config: &PatchConfig, _version: Version)
+    -> Result<(), String>
+{
+    let filenames = [
+        "Metroid1.pak",
+        "Metroid2.pak",
+        "Metroid3.pak",
+        "Metroid4.pak",
+        "metroid5.pak",
+        "Metroid6.pak",
+        "Metroid7.pak",
+    ];
+
+    let mut strgs = Vec::<Vec<String>>::new();
+
+    for f in &filenames {
+        let file_entry = gc_disc.find_file(f).unwrap();
+        let pak = match *file_entry.file().unwrap() {
+            structs::FstEntryFile::Pak(ref pak) => pak.clone(),
+            structs::FstEntryFile::Unknown(ref reader) => reader.clone().read(()),
+            _ => panic!(),
+        };
+
+        let resources = &pak.resources;
+
+        for res in resources.iter() {
+            if res.fourcc() != b"STRG".into() {
+                continue;
+            };
+
+            let mut res = res.into_owned();
+            let strg = res.kind.as_strg_mut().unwrap();
+            let string_table = strg.string_tables.as_mut_vec()[0].strings.as_mut_vec();
+            if string_table.len() != 3 {
+                continue; // not a logbook entry
+            }
+
+            let entry_name = string_table[1].clone().into_string().replace("\u{0}", "");
+            if entry_name.replace(" ", "") == "" {
+                continue; // lore, but not logbook entry
+            }
+
+            if string_table[0].clone().into_string().contains(&"acquired!") {
+                continue; // modal text box that coincidentally has 3 strings
+            }
+
+            let mut exists = false;
+            for s in strgs.iter() {
+                if s[1] == entry_name {
+                    exists = true;
+                    break;
+                }
+            }
+            if exists {continue;}
+            
+            let mut strings = Vec::<String>::new();
+            for string in string_table.iter_mut() {
+                strings.push(string.clone().into_string().replace("\u{0}", ""));
+            }
+            strgs.push(strings);
+        }
+    }
+
+    let logbook = format!("{:?}", strgs);
+    let mut file = File::create(config.logbook_filename.as_ref().unwrap_or(&"logbook.json".to_string()))
+        .map_err(|e| format!("Failed to create logbook file: {}", e))?;
+    file.write_all(logbook.as_bytes())
+        .map_err(|e| format!("Failed to write logbook file: {}", e))?;
+
     Ok(())
 }
 
