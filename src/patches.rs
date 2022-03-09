@@ -9966,7 +9966,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     for mipmap in txtr.pixel_data.as_mut_vec() {
                         let hash: u64 = calculate_hash(&mipmap.as_mut_vec().to_vec());
                         // Read file contents to RAM
-                        let filename = format!("cache/{}/{}", angle, hash);
+                        let filename = format!("{}/{}/{}", config.cache_dir, angle, hash);
                         let file_ok = File::open(&filename).is_ok();
                         let file = File::open(&filename).ok();
                         if file_ok && file.is_some() {
