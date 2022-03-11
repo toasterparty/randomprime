@@ -4412,6 +4412,20 @@ fn patch_remove_cutscenes(
                     ].contains(&(conn.target_object_id & 0x00FFFFFF))
                 );
             }
+            // unlock the artifact temple forcefield when memory relay is flipped, not when ridley dies
+            else if obj_id == 0x00100101 { // ridley
+                obj.connections.as_mut_vec().retain(|conn| !vec![
+                    0x00100112, // forcefield
+                    ].contains(&(conn.target_object_id & 0x00FFFFFF))
+                );
+            }
+            else if obj_id == 0x0010028F { // end of ridley death cine relay
+                obj.connections.as_mut_vec().push(structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::DECREMENT,
+                    target_object_id: 0x00100112, // forcefield gate
+                });
+            }
 
             // ball triggers can be mean sometimes when not in the saftey of a cutscene, tone it down from 40 to 10
             if obj.property_data.is_ball_trigger() && room_id != 0xEF069019 {
