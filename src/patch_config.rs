@@ -12,7 +12,7 @@ use clap::{
     crate_version,
 };
 
-use serde::Deserialize;
+use serde::{Serialize, Deserialize};
 
 use crate::{
     starting_items::StartingItems,
@@ -21,7 +21,7 @@ use crate::{
 
 /*** Parsed Config (fn patch_iso) ***/
 
-#[derive(Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum RunMode
 {
@@ -29,7 +29,7 @@ pub enum RunMode
     ExportLogbook,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub enum IsoFormat
 {
@@ -38,7 +38,7 @@ pub enum IsoFormat
     Ciso,
 }
 
-#[derive(Deserialize, Debug, Copy, Clone)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum ArtifactHintBehavior
 {
@@ -47,7 +47,7 @@ pub enum ArtifactHintBehavior
     All,
 }
 
-#[derive(PartialEq, Debug, Deserialize, Copy, Clone)]
+#[derive(Serialize, PartialEq, Debug, Deserialize, Copy, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum MapState
 {
@@ -62,7 +62,7 @@ impl fmt::Display for MapState {
     }
 }
 
-#[derive(PartialEq, Debug, Deserialize, Copy, Clone)]
+#[derive(PartialEq, Debug, Serialize, Deserialize, Copy, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum CutsceneMode
 {
@@ -72,7 +72,7 @@ pub enum CutsceneMode
     Major,
 }
 
-#[derive(PartialEq, Debug, Deserialize, Copy, Clone)]
+#[derive(PartialEq, Debug, Serialize, Deserialize, Copy, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum Visor
 {
@@ -82,7 +82,7 @@ pub enum Visor
     Thermal,
 }
 
-#[derive(PartialEq, Debug, Deserialize, Copy, Clone)]
+#[derive(PartialEq, Debug, Serialize, Deserialize, Copy, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum Beam
 {
@@ -92,7 +92,7 @@ pub enum Beam
     Plasma,
 }
 
-#[derive(Deserialize, Clone, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct GameBanner
 {
@@ -147,7 +147,7 @@ pub struct DoorConfig
     pub destination: Option<DoorDestination>, // Must be in same area. Ex: "destination":"Main Plaza"
 }
 
-#[derive(Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SuitColors
 {
@@ -157,7 +157,7 @@ pub struct SuitColors
     pub phazon_deg: Option<i16>,
 }
 
-#[derive(Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct DefaultGameOptions
 {
@@ -197,7 +197,7 @@ pub struct LevelConfig
     pub rooms: HashMap<String, RoomConfig>,
 }
 
-#[derive(Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CtwkConfig
 {
@@ -270,7 +270,7 @@ pub struct CtwkConfig
     pub hud_color: Option<[f32;3]>, // RGB, 0 - 1.0
 }
 
-#[derive(Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct IncineratorDroneConfig {
     pub contraption_start_delay_minimum_time: Option<f32>,
@@ -285,7 +285,7 @@ pub struct IncineratorDroneConfig {
     pub reset_contraption_random_time: Option<f32>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct PatchConfig
 {
     pub run_mode: RunMode, 
@@ -295,8 +295,10 @@ pub struct PatchConfig
 
     pub force_vanilla_layout: bool,
 
+    #[serde(skip_serializing)]
     pub input_iso: memmap::Mmap,
     pub iso_format: IsoFormat,
+    #[serde(skip_serializing)]
     pub output_iso: File,
 
     pub qol_cutscenes: CutsceneMode,
@@ -317,6 +319,7 @@ pub struct PatchConfig
 
     pub incinerator_drone_config: Option<IncineratorDroneConfig>,
 
+    #[serde(skip_serializing)] // stop racers from peeking at locations
     pub level_data: HashMap<String, LevelConfig>,
 
     pub starting_room: String,
@@ -348,6 +351,7 @@ pub struct PatchConfig
 
     pub artifact_hint_behavior: ArtifactHintBehavior,
 
+    #[serde(skip_serializing)]
     pub flaahgra_music_files: Option<[nod_wrapper::FileWrapper; 2]>,
 
     pub skip_splash_screens: bool,

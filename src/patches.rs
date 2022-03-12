@@ -8567,21 +8567,12 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
 
     build_and_run_patches(&mut gc_disc, &config, version)?;
 
-    writeln!(ct, "Created by randomprime version {}", env!("CARGO_PKG_VERSION")).unwrap();
-    writeln!(ct).unwrap();
-    writeln!(ct, "Options used:").unwrap();
-    writeln!(ct, "qol game breaking: {:?}", config.qol_game_breaking).unwrap();
-    writeln!(ct, "qol cosmetic: {:?}", config.qol_cosmetic).unwrap();
-    writeln!(ct, "nonvaria heat damage: {}", config.nonvaria_heat_damage).unwrap();
-    writeln!(ct, "heat damage per sec: {}", config.heat_damage_per_sec).unwrap();
-    writeln!(ct, "staggered suit damage: {}", config.staggered_suit_damage).unwrap();
-    writeln!(ct, "etank capacity: {}", config.etank_capacity).unwrap();
-    writeln!(ct, "map default state: {}", config.map_default_state.to_string().to_lowercase()).unwrap();
-    for (pickup_type, value) in &config.item_max_capacity {
-        writeln!(ct, "{} capacity: {}", pickup_type.name(), value).unwrap();
+    {
+        let json_string = serde_json::to_string(&config)
+            .map_err(|e| format!("Failed to serialize patch config: {}", e))?;
+        writeln!(ct, "{}", json_string).unwrap();
+        gc_disc.add_file("randomprime.json", structs::FstEntryFile::Unknown(Reader::new(&ct)))?;
     }
-    writeln!(ct, "{}", config.comment).unwrap();
-    gc_disc.add_file("randomprime.txt", structs::FstEntryFile::Unknown(Reader::new(&ct)))?;
 
     let patches_rel_bytes = match version {
         Version::NtscU0_00    => Some(rel_files::PATCHES_100_REL),
