@@ -1,4 +1,4 @@
-# Small Samus Considerations
+# Small Samus Considerations (0.3 size modifier)
 
 - Some players report getting nauseated
 
@@ -6,10 +6,6 @@
     - Keep in mind, if you are in HAT without gravity suit, you will clip OoB if you simply unmorph
 
 - You need to jump through the large frigate doors to properly transition the room. If you do not, the textures will disapear around you and you will have to turn around. Be extra careful of this during frigate escape because some doors lock behind you.
-
-- Furnace spider track is
-
-- Small morph balls can get permanently stuck in Tower of Light Access
 
 - It is very easy to die in the central dynamo maze, use bomb jump to update the camera if it does not follow you. Walking through the maze is safter than rolling through it.
 

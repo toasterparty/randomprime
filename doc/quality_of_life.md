@@ -1,12 +1,14 @@
 # Quality of Life
 
-These are the 5 Quality of Life categories that I've come up with and a *comprehensive* list of what they entail. Each level is a toggle, so picture the UI as 5 checkboxes all next to one another.
+Randomprime exposes various options all under the `"qol_"` prefix/category which serve to improve player quality of life when playing the game many times over. Many of these options come down to player preference.
 
-# Level 1 - Game Breaking
-*Metroid Prime is a bad video game*
+## "Game Breaking" Fixes `"qolGameBreaking": true`
+
+*Fixes issues originating from the base game or which directly conflict with randomized play. Also reverts "patches" applied to followup releases of the game.*
 
 ### NTSC-00
-- Re-implement retro's fix for research core access soft-lock
+- Fix for research core access soft-lock
+- Fix gravity chamber grapple point not respawning after room is unloaded
 
 ### Post-NTSC-00
 - Remove invisible wall over arboretum gate
@@ -16,90 +18,52 @@ These are the 5 Quality of Life categories that I've come up with and a *compreh
 
 ### Sequence break-induced Soft-Locks
 - Fix suntower deleting flaahgra item
-- Fix research lab aether wall akwardness
-- Fix observatory only being solvable upon first entering
+- Fix research lab aether wall not being destroyed after reseach core item
+- Fix observatory puzzle not being solveable after research core item
 - Fix observatory door lock soft-lock
-- Fix mines security station soft-lock
-- Fix gravity chamber grapple point not respawning after room is unloaded
+- Fix mines security station door lock soft-lock
 - Fix central dynamo crash
+- Fix soft-lock in hive totem
 
 ### Randomizer-Induced Bugfixes
-- Fix shitty room default spawn points*
+- Fix rooms with bad default spawn points
     - Missile Station Mines
     - Piston Tunnel
     - Ruined Fountain
     - Landing Site (small only)
     - Chozo -> Magmoor Elevator room (small only)
+- Patch Metroid Prime (Exo + Essence) to remain dead permanently after killing once
+- Fix processing center access crash
+- Fix door in Ventillation Shaft Section B being permanently locked on 2nd pass
+- Fix crash in Elite Quarters when obtaining a new suit before Omega Pirate death cutscene (multiworld)
 
-# Level 2 - Cosmetic
-- remove all of the "wow look at samus so happy to have this cool upgrade" cutscenes (e.g. Space Jump)
-- remove all but 1 of the file select background videos, so that during races, everyone spawns into the game at the same RTA
+## Cosmetic Improvements `"qolCosmetic": true`
+- remove all of the item aquisition cutscenes (e.g. Space Jump)
+- remove all but 1 of the file select background videos so that during races, everyone spawns into the game at the same RTA
 - remove all but 1 of the attract videos to make copying the game to your wii faster
 - skip item acquisition pop-up message
 - make the morph ball HUD says `X/Y` instead of just `X`
 - If impact crater is skipped, go straight to credits instead of watching the escape sequence
+- Make the vines in arboretum still stay on the ghost layer so that players know to shoot the rune before scanning
 
-# Level 3 - Logical
+## Logical Quality of Life
 
-*Go Backwards*
+*There are several single-option quality of life options affecting logic which can be selected:*
 
-This section is broken up into each affected gameplay area:
-- Main plaza door 2-ways
-- power crashed frigate door from the back
-- scan through research lab hydra from the back
-- turn off the main quarry barrier from the back
-- Go through lower mines backwards
-    - remove PCA locks
-    - remove EQ Access locks
-    - scan through MQB barrier from the back
-    - turn off MQA barrier from the back (metroid aggro trigger)
-    - scan through elite control from the back
+- `"phazonEliteWithoutDynamo"`: Provide access to the Phazon Elite in Elite Research without the maze item
+- `"mainPlazaDoor"`: Enable the etank ledge door in Main Plaza
+- `"backwardsLabs"`: Scan the barrier control panel in research lab aether from both sides
+- `"backwardsFrigate"`: Open the first powered door in frigate from the backside, even if unpowred.
+- `"backwardsUpperMines"`: Automatically turn off main quarry barrier from the back
+- `"backwardsLowerMines"`: Remove processing center access locks, remove elite quarters access lock, scan through Metroid Quarantine B barrier from both sides, turn off Metroid Quarantine A barrier when approaching from the back, scan through the elite control barrier from both sides
 
-# Level 4 - Minor Cutscenes
-These are cutscenes which don't affect gameplay much if removed.
-- research lab aether
-- temple security station
-- energy core
-- magmoor workstation (except for the first one so you can still FJ)
-- all of the "wow look the power is on" in frigate
-- life grove (the ghosts cutscene is left in because they just leave the map and never come back lmao)
-- main plaza
-- phendrana shorelines (the ridley cutscene is left in)
-- main quarry
-- lava lake
-- tower of light
-- vault
-- sun tower
-- training chamber
-- watery hall
-- hall of the elders (just the bomb slots cutscenes are removed)
-- crossway
-- geothermal core
-- vent shaft
-- chozo ice temple
-- phendrana canyon
-- ruined courtyard
-- observatory
-- control tower
-- research core
+## Cutscene Remove `"qolCutscenes": "<level>"`
 
-# Level 5 - Major Cutscenes
-Includes all of the above cutscenes and...
-- Arrive/Depart cutscenes for all elevators
-- landing site
-- hive totem
-- ruined shrine
-- burn dome
-- sunchamber (the first 2 seconds of the death cutscene are left in to reposition the player and give pre-floaty)
-- phen shorelines (ridley cutscene)
-- quarantine cave
-- mine security station
-- elite control
-- elite research
-- central dynamo (kept the bomb jump out of the maze cutscene, otherwise, slow players will get left down there lmao)
-- mqa
-- elite quarters
-- all of metroid prime
-- hall of the elders
-- artifact temple
-- end cinema
+There are 4 cutscene levels to choose from:
+- `"original"`: Same as vanilla
+- `"competitive"`: Removes cutscenes (none of which reposition the player), that do not have any weird gameplay side-effects.
+- `"minor"`: Removes cutscenes (none of which reposition the player), some of which moderately effect how the game is played after the cutscene is triggered.
+- `"major"`: Removes as many cutscenes as possible without breaking the game or common exploits. Some cutscenes don't even speed up the game when removed. This is more of a novel setting.
+
+## Scan Point Quality of Life
+*In many rooms where you could not previously, you can now identify what an item is using scan visor. For example, the item in upper phendrana shorelines now has an extra scan point outside the tower near the item which mirrors the item's description.*
