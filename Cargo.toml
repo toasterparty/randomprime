@@ -2,7 +2,7 @@
 name = "randomprime"
 version = "0.2.3"
 authors = ["April Wade <wayedt@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 adler32 = "1.0"

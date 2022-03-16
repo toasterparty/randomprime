@@ -2,7 +2,7 @@
 name = "ppcasm"
 version = "0.1.0"
 authors = ["April Wade <wayedt@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 ppcasm_macro = { path = "ppcasm_macro" }

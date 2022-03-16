@@ -2,7 +2,7 @@
 name = "resource_info_table"
 version = "0.1.0"
 authors = ["April Wade <wayedt@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 reader_writer = { path = "../../reader_writer" }
