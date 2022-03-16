@@ -1353,6 +1353,38 @@ fn patch_superheated_room<'r>(
     Ok(())
 }
 
+fn is_water<'r>(obj: &structs::SclyObject<'r>) -> bool {
+    let water = obj.property_data.as_water();
+    water.is_some()
+}
+
+fn is_underwater_sound<'r>(obj: &structs::SclyObject<'r>) -> bool {
+    let sound = obj.property_data.as_sound();
+    if sound.is_none() {
+        false // non-sounds are never underwater sounds
+    } else {
+        sound.unwrap().name.to_str().ok().unwrap().to_string().to_lowercase().contains("underwater") // we define underwater sounds by their name
+    }
+}
+
+fn patch_remove_water<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer_count = scly.layers.len();
+    for i in 0..layer_count {
+        let layer = &mut scly.layers.as_mut_vec()[i];
+        layer.objects.as_mut_vec().retain(|obj| !is_water(obj));
+        layer.objects.as_mut_vec().retain(|obj| !is_underwater_sound(obj));
+        // TODO: remove fish and bubbles
+    }
+
+    Ok(())
+}
+
 fn patch_remove_tangle_weed_scan_point<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -8862,6 +8894,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             extra_scans: None,
                             doors: None,
                             superheated: None,
+                            remove_water: None,
                         }
                     );
                 }
@@ -9196,6 +9229,13 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                     move |_ps, area| patch_superheated_room(_ps, area),
                                 );
                             }
+                        }
+
+                        if room.remove_water.clone().unwrap_or(false) {
+                            patcher.add_scly_patch(
+                                (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                move |_ps, area| patch_remove_water(_ps, area),
+                            );
                         }
                     }
                 }

@@ -181,7 +181,7 @@ pub struct DefaultGameOptions
 pub struct RoomConfig
 {
     pub superheated: Option<bool>,
-    // pub remove_water: Option<bool>,
+    pub remove_water: Option<bool>,
     // pub submerge: Option<bool>,
     // pub liquids: Option<Vec<WaterConfig>>,
     pub pickups: Option<Vec<PickupConfig>>,
