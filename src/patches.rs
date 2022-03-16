@@ -25,6 +25,7 @@ use crate::patch_config::{
     CtwkConfig,
     CutsceneMode,
     DoorConfig,
+    WaterConfig,
 };
 
 use std::{fs::{self, File}, io::{Read}, path::Path};
@@ -1833,6 +1834,54 @@ fn patch_submerge_room<'r>(
     water.position[0] = bounding_box_min[0] + (water.scale[0] / 2.0);
     water.position[1] = bounding_box_min[1] + (water.scale[1] / 2.0);
     water.position[2] = bounding_box_min[2] + (water.scale[2] / 2.0);
+
+    // add water to area //
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().push(water_obj);
+
+    Ok(())
+}
+
+fn patch_add_liquid<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    water_config: &WaterConfig,
+    resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+)
+-> Result<(), String>
+{
+    let water_type = {
+        let liquid_type = water_config.liquid_type.to_lowercase();
+        if liquid_type == "water" || liquid_type == "normal" {
+            WaterType::Normal
+        } else if liquid_type == "poison" || liquid_type == "acid" {
+            WaterType::Poision
+        } else if liquid_type == "lava" || liquid_type == "magma" {
+            WaterType::Lava
+        } else {
+            panic!("Unknown Liquid Type '{}'", liquid_type);
+        }
+    };
+
+    // add dependencies to area //
+    let deps = water_type.dependencies();
+    let deps_iter = deps.iter()
+        .map(|&(file_id, fourcc)| structs::Dependency {
+                asset_id: file_id,
+                asset_type: fourcc,
+        });
+
+    area.add_dependencies(resources, 0, deps_iter);
+    
+    let mut water_obj = water_type.to_obj();
+    let water = water_obj.property_data.as_water_mut().unwrap();
+    water.position[0] = water_config.position[0];
+    water.position[1] = water_config.position[1];
+    water.position[2] = water_config.position[2];
+    water.scale[0]    = water_config.scale[0];
+    water.scale[1]    = water_config.scale[1];
+    water.scale[2]    = water_config.scale[2];
 
     // add water to area //
     let scly = area.mrea().scly_section_mut();
@@ -9353,6 +9402,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             superheated: None,
                             remove_water: None,
                             submerge: None,
+                            liquids: None,
                         }
                     );
                 }
@@ -9705,6 +9755,15 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                 (pak_name.as_bytes(), room_info.room_id.to_u32()),
                                 move |_ps, area| patch_submerge_room(_ps, area, liquid_resources),
                             );
+                        }
+                        
+                        if room.liquids.is_some() {
+                            for liquid in room.liquids.as_ref().unwrap().iter() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_liquid(ps, area, liquid, liquid_resources),
+                                );
+                            }
                         }
                     }
                 }

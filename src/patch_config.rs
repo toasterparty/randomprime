@@ -176,6 +176,16 @@ pub struct DefaultGameOptions
     pub swap_beam_controls: Option<bool>,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct WaterConfig
+{
+    #[serde(alias = "type")]
+    pub liquid_type: String,
+    pub position: [f32;3],
+    pub scale: [f32;3],
+}
+
 #[derive(Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RoomConfig
@@ -183,7 +193,7 @@ pub struct RoomConfig
     pub superheated: Option<bool>,
     pub remove_water: Option<bool>,
     pub submerge: Option<bool>,
-    // pub liquids: Option<Vec<WaterConfig>>,
+    pub liquids: Option<Vec<WaterConfig>>,
     pub pickups: Option<Vec<PickupConfig>>,
     pub extra_scans: Option<Vec<ScanConfig>>,
     pub doors: Option<HashMap<u32, DoorConfig>>,
