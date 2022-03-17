@@ -328,6 +328,7 @@ pub struct PatchConfig
     pub power_bomb_arboretum_sandstone: bool,
 
     pub incinerator_drone_config: Option<IncineratorDroneConfig>,
+    pub maze_seeds: Option<Vec<u32>>,
 
     #[serde(skip_serializing)] // stop racers from peeking at locations
     pub level_data: HashMap<String, LevelConfig>,
@@ -449,6 +450,7 @@ struct GameConfig
     power_bomb_arboretum_sandstone: Option<bool>,
 
     incinerator_drone_config: Option<IncineratorDroneConfig>,
+    maze_seeds: Option<Vec<u32>>,
 
     game_banner: Option<GameBanner>,
     comment: Option<String>,
@@ -907,6 +909,7 @@ impl PatchConfigPrivate
 
 
             incinerator_drone_config: self.game_config.incinerator_drone_config.clone(),
+            maze_seeds: self.game_config.maze_seeds.clone(),
 
             automatic_crash_screen: self.preferences.automatic_crash_screen.unwrap_or(true),
             artifact_hint_behavior,

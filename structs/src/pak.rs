@@ -10,6 +10,7 @@ use std::iter;
 use std::ops;
 
 use crate::{
+    dumb::Dumb,
     evnt::Evnt,
     frme::Frme,
     hint::Hint,
@@ -640,6 +641,7 @@ macro_rules! build_resource_data {
 }
 
 build_resource_data!(
+    Dumb, b"DUMB", as_dumb, as_dumb_mut,
     Evnt, b"EVNT", as_evnt, as_evnt_mut,
     Frme, b"FRME", as_frme, as_frme_mut,
     Hint, b"HINT", as_hint, as_hint_mut,
