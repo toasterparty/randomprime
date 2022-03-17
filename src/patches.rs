@@ -957,10 +957,13 @@ fn patch_add_item<'r>(
         }
     };
 
+    let mut scan_offset = pickup_model_data.scan_offset.clone();
+
     // If this is the echoes missile expansion model, compensate for the Z offset
     let json_pickup_name = pickup_config.model.as_ref().unwrap_or(&"".to_string()).clone();
-    if json_pickup_name.contains(&"MissileExpansion") {
-        pickup_position[2] = pickup_position[2] - 1.2;
+    if json_pickup_name.contains(&"prime2_MissileExpansion") {
+        pickup_position[2] -= 1.2;
+        scan_offset[2] += 1.2;
     }
 
     let mut pickup = structs::Pickup {
@@ -970,7 +973,7 @@ fn patch_add_item<'r>(
         position: pickup_position.into(),
         rotation: [0.0, 0.0, 0.0].into(),
         hitbox: pickup_model_data.hitbox.clone(),
-        scan_offset: pickup_model_data.scan_offset.clone(),
+        scan_offset,
         fade_in_timer: 0.0,
         spawn_delay: 0.0,
         disappear_timer: 0.0,
@@ -2642,9 +2645,17 @@ fn update_pickup(
         original_pickup.position[2] - (new_center[2] - original_center[2]),
     ];
 
+    let mut scan_offset = [
+        original_pickup.scan_offset[0] + (new_center[0] - original_center[0]),
+        original_pickup.scan_offset[1] + (new_center[1] - original_center[1]),
+        original_pickup.scan_offset[2] + (new_center[2] - original_center[2]),
+    ];
+
     // If this is the echoes missile expansion model, compensate for the Z offset
-    if pickup_config.model.as_ref().unwrap_or(&"".to_string()).contains(&"MissileExpansion") {
-        position[2] = position[2] - 1.2;
+    let json_pickup_name = pickup_config.model.as_ref().unwrap_or(&"".to_string()).clone();
+    if json_pickup_name.contains(&"prime2_MissileExpansion") {
+        position[2] -= 1.2;
+        scan_offset[2] += 1.2;
     }
 
     *pickup = structs::Pickup {
@@ -2654,11 +2665,7 @@ fn update_pickup(
         position: position.into(),
         rotation: pickup_model_data.rotation.clone().into(),
         hitbox: original_pickup.hitbox,
-        scan_offset: [
-            original_pickup.scan_offset[0] + (new_center[0] - original_center[0]),
-            original_pickup.scan_offset[1] + (new_center[1] - original_center[1]),
-            original_pickup.scan_offset[2] + (new_center[2] - original_center[2]),
-        ].into(),
+        scan_offset: scan_offset.into(),
         fade_in_timer:  original_pickup.fade_in_timer,
         spawn_delay: original_pickup.spawn_delay,
         disappear_timer: original_pickup.disappear_timer,

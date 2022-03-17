@@ -11,3 +11,4 @@ extra_assets/rel_loader_1.02.bin
 extra_assets/rel_loader_1.02.bin.map
 **/cache/**
 logbook.json
+converted/
