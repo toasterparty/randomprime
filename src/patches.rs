@@ -10266,6 +10266,15 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         );
     }
 
+    if config.maze_seeds.is_some() {
+        let mut maze_seeds = config.maze_seeds.clone().unwrap();
+        maze_seeds.shuffle(&mut rng);
+        patcher.add_resource_patch(
+            resource_info!("DUMB_MazeSeeds.DUMB").into(),//0x5d88cac0
+            move |res| patch_maze_seeds(res, maze_seeds.clone())
+        );
+    }
+
     // TODO: only patch what we need
     patcher.add_resource_patch(
         resource_info!("!TalonOverworld_Master.SAVW").into(),
@@ -10725,6 +10734,19 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     let time = Instant::now();
     patcher.run(gc_disc)?;
     println!("Created patches in {:?}", time.elapsed());
+
+    Ok(())
+}
+
+fn patch_maze_seeds(res: &mut structs::Resource, seeds: Vec<u32>) -> Result<(), String> {
+    let res = res.kind.as_dumb_mut();
+
+    if let Some(res) = res {
+        let mut seeds = seeds.into_iter().cycle();
+        for i in 0..300 {
+            res.data[i] = seeds.next().unwrap();
+        }     
+    }
 
     Ok(())
 }

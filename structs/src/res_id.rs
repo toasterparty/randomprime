@@ -32,6 +32,7 @@ decl_res_id_kind! {
     CMDL b"CMDL",
     CSKR b"CSKR",
     DCLN b"DCLN",
+    DUMB b"DUMB",
     ELSC b"ELSC",
     EVNT b"EVNT",
     FONT b"FONT",
