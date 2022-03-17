@@ -961,7 +961,7 @@ fn patch_add_item<'r>(
 
     // If this is the echoes missile expansion model, compensate for the Z offset
     let json_pickup_name = pickup_config.model.as_ref().unwrap_or(&"".to_string()).clone();
-    if json_pickup_name.contains(&"prime2_MissileExpansion") {
+    if json_pickup_name.contains(&"prime2_MissileExpansion") || json_pickup_name.contains(&"prime2_UnlimitedMissiles") {
         pickup_position[2] -= 1.2;
         scan_offset[2] += 1.2;
     }
@@ -2653,7 +2653,7 @@ fn update_pickup(
 
     // If this is the echoes missile expansion model, compensate for the Z offset
     let json_pickup_name = pickup_config.model.as_ref().unwrap_or(&"".to_string()).clone();
-    if json_pickup_name.contains(&"prime2_MissileExpansion") {
+    if json_pickup_name.contains(&"prime2_MissileExpansion") || json_pickup_name.contains(&"prime2_UnlimitedMissiles") {
         position[2] -= 1.2;
         scan_offset[2] += 1.2;
     }
