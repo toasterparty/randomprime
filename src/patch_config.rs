@@ -27,6 +27,7 @@ pub enum RunMode
 {
     CreateIso,
     ExportLogbook,
+    ExportAssets,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -300,6 +301,7 @@ pub struct PatchConfig
 {
     pub run_mode: RunMode, 
     pub logbook_filename: Option<String>,
+    pub export_asset_dir: Option<String>,
     pub extern_assets_dir: Option<String>,
     pub seed: u64,
 
@@ -468,6 +470,7 @@ struct PatchConfigPrivate
 {
     run_mode: Option<String>,
     logbook_filename: Option<String>,
+    export_asset_dir: Option<String>,
     input_iso: Option<String>,
     output_iso: Option<String>,
     force_vanilla_layout: Option<bool>,
@@ -707,6 +710,7 @@ impl PatchConfigPrivate
                 match self.run_mode.as_ref().unwrap().to_lowercase().trim() {
                     "create_iso" => RunMode::CreateIso,
                     "export_logbook" => RunMode::ExportLogbook,
+                    "export_assets" => RunMode::ExportAssets,
                     _ => panic!("Unsupported run mode: {}", self.run_mode.as_ref().unwrap())
                 }
             } else {
@@ -881,6 +885,7 @@ impl PatchConfigPrivate
         Ok(PatchConfig {
             run_mode,
             logbook_filename: self.logbook_filename.clone(),
+            export_asset_dir: self.export_asset_dir.clone(),
             input_iso,
             iso_format,
             output_iso,

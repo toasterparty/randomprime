@@ -9178,6 +9178,9 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
     if config.run_mode == RunMode::ExportLogbook {
         export_logbook(&mut gc_disc, &config, version)?;
         return Ok(());
+    } else if config.run_mode == RunMode::ExportAssets {
+        export_assets(&mut gc_disc, &config)?;
+        return Ok(());
     }
 
     build_and_run_patches(&mut gc_disc, &config, version)?;
@@ -9305,6 +9308,67 @@ fn export_logbook(gc_disc: &mut structs::GcDisc, config: &PatchConfig, _version:
 
     Ok(())
 }
+
+fn export_assets(_gc_disc: &mut structs::GcDisc, config: &PatchConfig)
+    -> Result<(), String>
+{
+    let default_dir = &"assets".to_string();
+    let asset_dir = config.export_asset_dir.as_ref().unwrap_or(default_dir);
+
+    if !Path::new(&asset_dir).is_dir() {
+        match fs::create_dir(&asset_dir) {
+            Ok(()) => {},
+            Err(error) => {
+                panic!("Failed to create asset dir for exporting assets to: {}", error);
+            },
+        }
+    }
+
+    let bytes = include_bytes!("../extra_assets/phazon_suit_texure_1.txtr");
+    let filename = "phazon_suit_texure_1.txtr";
+    let mut file = File::create(format!("{}/{}", asset_dir, filename))
+        .map_err(|e| format!("Failed to create asset file: {}", e))?;
+    file.write_all(bytes)
+        .map_err(|e| format!("Failed to write asset file: {}", e))?;
+    
+    let bytes = include_bytes!("../extra_assets/phazon_suit_texure_2.txtr");
+    let filename = "phazon_suit_texure_2.txtr";
+    let mut file = File::create(format!("{}/{}", asset_dir, filename))
+        .map_err(|e| format!("Failed to create asset file: {}", e))?;
+    file.write_all(bytes)
+        .map_err(|e| format!("Failed to write asset file: {}", e))?;
+    
+    let bytes = include_bytes!("../extra_assets/nothing_texture.txtr"     );
+    let filename = "nothing_texture.txtr";
+    let mut file = File::create(format!("{}/{}", asset_dir, filename))
+        .map_err(|e| format!("Failed to create asset file: {}", e))?;
+    file.write_all(bytes)
+        .map_err(|e| format!("Failed to write asset file: {}", e))?;
+    
+    let bytes = include_bytes!("../extra_assets/shiny-missile0.txtr"      );
+    let filename = "shiny-missile0.txtr";
+    let mut file = File::create(format!("{}/{}", asset_dir, filename))
+        .map_err(|e| format!("Failed to create asset file: {}", e))?;
+    file.write_all(bytes)
+        .map_err(|e| format!("Failed to write asset file: {}", e))?;
+    
+    let bytes = include_bytes!("../extra_assets/shiny-missile1.txtr"      );
+    let filename = "shiny-missile1.txtr";
+    let mut file = File::create(format!("{}/{}", asset_dir, filename))
+        .map_err(|e| format!("Failed to create asset file: {}", e))?;
+    file.write_all(bytes)
+        .map_err(|e| format!("Failed to write asset file: {}", e))?;
+    
+    let bytes = include_bytes!("../extra_assets/shiny-missile2.txtr"      );
+    let filename = "shiny-missile2.txtr";
+    let mut file = File::create(format!("{}/{}", asset_dir, filename))
+        .map_err(|e| format!("Failed to create asset file: {}", e))?;
+    file.write_all(bytes)
+        .map_err(|e| format!("Failed to write asset file: {}", e))?;
+    
+    Ok(())
+}
+
 
 fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, version: Version)
     -> Result<(), String>
