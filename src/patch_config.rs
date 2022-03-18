@@ -383,6 +383,7 @@ pub struct PatchConfig
     pub artifact_hints: Option<HashMap<String,String>>, // e.g. "Strength":"This item can be found in Ruined Fountain"
     pub artifact_temple_layer_overrides: Option<HashMap<String,bool>>,
     pub no_doors: bool,
+    pub boss_sizes: HashMap<String,f32>,
     pub ctwk_config: CtwkConfig,
 }
 
@@ -462,6 +463,7 @@ struct GameConfig
     artifact_hints: Option<HashMap<String,String>>, // e.g. "Strength":"This item can be found in Ruined Fountain"
     artifact_temple_layer_overrides: Option<HashMap<String,bool>>,
     no_doors: Option<bool>, // Remove every door from the game
+    boss_sizes: Option<HashMap<String,f32>>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
@@ -944,6 +946,7 @@ impl PatchConfigPrivate
             update_hint_state_replacement: self.game_config.update_hint_state_replacement.clone(),
             artifact_temple_layer_overrides: self.game_config.artifact_temple_layer_overrides.clone(),
             no_doors: self.game_config.no_doors.unwrap_or(false),
+            boss_sizes: self.game_config.boss_sizes.clone().unwrap_or(HashMap::new()),
             map_default_state,
 
             starting_items,

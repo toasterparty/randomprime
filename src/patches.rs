@@ -8020,6 +8020,48 @@ fn patch_modify_dock<'r>(
     Ok(())
 }
 
+fn patch_thardus_scale<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    scale: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    for layer in scly.layers.as_mut_vec().iter_mut() {
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+            if !obj.property_data.is_thardus() { continue; }
+            let thardus = obj.property_data.as_thardus_mut().unwrap();
+            thardus.scale[0] *= scale;
+            thardus.scale[1] *= scale;
+            thardus.scale[2] *= scale;
+        }
+    }
+
+    Ok(())
+}
+
+fn patch_essence_scale<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    scale: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    for layer in scly.layers.as_mut_vec().iter_mut() {
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+            if !obj.property_data.is_metroidprimestage2() { continue; }
+            let essence = obj.property_data.as_metroidprimestage2_mut().unwrap();
+            essence.scale[0] *= scale;
+            essence.scale[1] *= scale;
+            essence.scale[2] *= scale;
+        }
+    }
+
+    Ok(())
+}
+
 fn patch_bnr(
     file: &mut structs::FstEntryFile,
     banner: &GameBanner,
@@ -10625,6 +10667,24 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
     if !config.force_vanilla_layout {
         patch_qol_logical(&mut patcher, config);
+    }
+
+    for (_boss_name, scale) in config.boss_sizes.iter() {
+        let boss_name = _boss_name.to_lowercase().replace(" ", "");
+        let scale = *scale;
+        if boss_name == "thardus" {
+            patcher.add_scly_patch(
+                resource_info!("19_ice_thardus.MREA").into(),
+                move |_ps, area| patch_thardus_scale(_ps, area, scale)
+            );
+        } else if boss_name == "essence" || boss_name == "metroidprimeessence" {
+            patcher.add_scly_patch(
+                resource_info!("03f_crater.MREA").into(),
+                move |_ps, area| patch_essence_scale(_ps, area, scale)
+            );
+        } else {
+            panic!("Unexpected boss name {}", _boss_name);
+        }
     }
 
     if config.suit_colors.is_some() {
