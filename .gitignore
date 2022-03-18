@@ -9,3 +9,7 @@ extra_assets/rel_loader_1.00.bin
 extra_assets/rel_loader_1.00.bin.map
 extra_assets/rel_loader_1.02.bin
 extra_assets/rel_loader_1.02.bin.map
+**/cache/**
+logbook.json
+converted/
+assets/

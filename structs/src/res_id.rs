@@ -32,6 +32,7 @@ decl_res_id_kind! {
     CMDL b"CMDL",
     CSKR b"CSKR",
     DCLN b"DCLN",
+    DUMB b"DUMB",
     ELSC b"ELSC",
     EVNT b"EVNT",
     FONT b"FONT",
@@ -138,7 +139,7 @@ impl<K: ResIdKind> fmt::Debug for ResId<K>
 {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result
     {
-        write!(formatter, "ResId<{:?}>({:08x})", K::FOURCC, self.0)
+        write!(formatter, "ResId::<res_id::{:?}>::new(0x{:08x})", K::FOURCC, self.0)
     }
 }
 
