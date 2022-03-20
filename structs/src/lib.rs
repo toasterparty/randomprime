@@ -39,7 +39,6 @@ pub mod scly_props
     pub mod effect;
     pub mod hud_memo;
     pub mod memory_relay;
-    pub mod metroidprimestage2;
     pub mod pickup;
     pub mod platorm;
     pub mod point_of_interest;
@@ -51,12 +50,23 @@ pub mod scly_props
     pub mod spawn_point;
     pub mod special_function;
     pub mod streamed_audio;
-    pub mod thardus;
     pub mod timer;
     pub mod trigger;
     pub mod water;
     pub mod waypoint;
     pub mod world_transporter;
+
+    // bosses
+    pub mod new_intro_boss;
+    pub mod actor_contraption;
+    pub mod flaahgra;
+    pub mod ice_sheegoth;
+    pub mod thardus;
+    pub mod elite_pirate;
+    pub mod omega_pirate;
+    pub mod ridley;
+    pub mod metroidprimestage1;
+    pub mod metroidprimestage2;
 
     pub mod structs;
 
@@ -71,7 +81,6 @@ pub mod scly_props
     pub use self::effect::*;
     pub use self::hud_memo::*;
     pub use self::memory_relay::*;
-    pub use self::metroidprimestage2::*;
     pub use self::pickup::*;
     pub use self::platorm::*;
     pub use self::point_of_interest::*;
@@ -83,12 +92,23 @@ pub mod scly_props
     pub use self::spawn_point::*;
     pub use self::special_function::*;
     pub use self::streamed_audio::*;
-    pub use self::thardus::*;
     pub use self::timer::*;
     pub use self::trigger::*;
     pub use self::water::*;
     pub use self::waypoint::*;
     pub use self::world_transporter::*;
+
+    // bosses
+    pub use self::new_intro_boss::*;
+    pub use self::actor_contraption::*;
+    pub use self::flaahgra::*;
+    pub use self::ice_sheegoth::*;
+    pub use self::thardus::*;
+    pub use self::elite_pirate::*;
+    pub use self::omega_pirate::*;
+    pub use self::ridley::*;
+    pub use self::metroidprimestage1::*;
+    pub use self::metroidprimestage2::*;
 }
 
 pub use scly_props::structs as scly_structs;
@@ -103,7 +123,6 @@ pub use scly_props::door::*;
 pub use scly_props::effect::*;
 pub use scly_props::hud_memo::*;
 pub use scly_props::memory_relay::*;
-pub use scly_props::metroidprimestage2::*;
 pub use scly_props::pickup::*;
 pub use scly_props::platorm::*;
 pub use scly_props::point_of_interest::*;
@@ -115,12 +134,23 @@ pub use scly_props::sound::*;
 pub use scly_props::spawn_point::*;
 pub use scly_props::special_function::*;
 pub use scly_props::streamed_audio::*;
-pub use scly_props::thardus::*;
 pub use scly_props::timer::*;
 pub use scly_props::trigger::*;
 pub use scly_props::water::*;
 pub use scly_props::waypoint::*;
 pub use scly_props::world_transporter::*;
+
+// bosses
+pub use scly_props::new_intro_boss::*;
+pub use scly_props::actor_contraption::*;
+pub use scly_props::flaahgra::*;
+pub use scly_props::ice_sheegoth::*;
+pub use scly_props::thardus::*;
+pub use scly_props::elite_pirate::*;
+pub use scly_props::omega_pirate::*;
+pub use scly_props::ridley::*;
+pub use scly_props::metroidprimestage1::*;
+pub use scly_props::metroidprimestage2::*;
 
 pub use res_id::ResId;
 

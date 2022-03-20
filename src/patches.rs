@@ -8020,6 +8020,178 @@ fn patch_modify_dock<'r>(
     Ok(())
 }
 
+fn patch_exo_scale<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    scale: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    for layer in scly.layers.as_mut_vec().iter_mut() {
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+            if !obj.property_data.is_metroidprimestage1() { continue; }
+            let boss = obj.property_data.as_metroidprimestage1_mut().unwrap();
+            boss.scale[0] *= scale;
+            boss.scale[1] *= scale;
+            boss.scale[2] *= scale;
+        }
+    }
+
+    Ok(())
+}
+
+fn patch_ridley_scale<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    scale: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    for layer in scly.layers.as_mut_vec().iter_mut() {
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+            if !obj.property_data.is_ridley() { continue; }
+            let boss = obj.property_data.as_ridley_mut().unwrap();
+            boss.scale[0] *= scale;
+            boss.scale[1] *= scale;
+            boss.scale[2] *= scale;
+        }
+    }
+
+    Ok(())
+}
+
+fn patch_omega_pirate_scale<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    scale: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    for layer in scly.layers.as_mut_vec().iter_mut() {
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+            if !obj.property_data.is_omega_pirate() { continue; }
+            let boss = obj.property_data.as_omega_pirate_mut().unwrap();
+            boss.scale[0] *= scale;
+            boss.scale[1] *= scale;
+            boss.scale[2] *= scale;
+        }
+    }
+
+    Ok(())
+}
+
+
+fn patch_elite_pirate_scale<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    scale: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    for layer in scly.layers.as_mut_vec().iter_mut() {
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+            if !obj.property_data.is_elite_pirate() { continue; }
+            let boss = obj.property_data.as_elite_pirate_mut().unwrap();
+            boss.scale[0] *= scale;
+            boss.scale[1] *= scale;
+            boss.scale[2] *= scale;
+        }
+    }
+
+    Ok(())
+}
+
+
+fn patch_sheegoth_scale<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    scale: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    for layer in scly.layers.as_mut_vec().iter_mut() {
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+            if !obj.property_data.is_ice_sheegoth() { continue; }
+            let boss = obj.property_data.as_ice_sheegoth_mut().unwrap();
+            boss.scale[0] *= scale;
+            boss.scale[1] *= scale;
+            boss.scale[2] *= scale;
+        }
+    }
+
+    Ok(())
+}
+
+
+fn patch_flaahgra_scale<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    scale: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    for layer in scly.layers.as_mut_vec().iter_mut() {
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+            if !obj.property_data.is_flaahgra() { continue; }
+            let boss = obj.property_data.as_flaahgra_mut().unwrap();
+            boss.scale[0] *= scale;
+            boss.scale[1] *= scale;
+            boss.scale[2] *= scale;
+        }
+    }
+
+    Ok(())
+}
+
+
+fn patch_idrone_scale<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    scale: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    for layer in scly.layers.as_mut_vec().iter_mut() {
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+            if !obj.property_data.is_actor_contraption() { continue; }
+            let boss = obj.property_data.as_actor_contraption_mut().unwrap();
+            boss.scale[0] *= scale;
+            boss.scale[1] *= scale;
+            boss.scale[2] *= scale;
+        }
+    }
+
+    Ok(())
+}
+
+fn patch_pq_scale<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    scale: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    for layer in scly.layers.as_mut_vec().iter_mut() {
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+            if !obj.property_data.is_new_intro_boss() { continue; }
+            let boss = obj.property_data.as_new_intro_boss_mut().unwrap();
+            boss.scale[0] *= scale;
+            boss.scale[1] *= scale;
+            boss.scale[2] *= scale;
+        }
+    }
+
+    Ok(())
+}
+
 fn patch_thardus_scale<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -10670,19 +10842,119 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     }
 
     for (_boss_name, scale) in config.boss_sizes.iter() {
-        let boss_name = _boss_name.to_lowercase().replace(" ", "");
+        let boss_name = _boss_name.to_lowercase().replace(" ", "").replace("_", "");
         let scale = *scale;
-        if boss_name == "thardus" {
+        if boss_name == "parasitequeen"
+        {
+            if !skip_frigate {
+                patcher.add_scly_patch(
+                    resource_info!("07_intro_reactor.MREA").into(),
+                    move |_ps, area| patch_pq_scale(_ps, area, scale)
+                );
+            }
+        }
+        else if boss_name == "idrone" || boss_name == "incineratordrone" || boss_name == "zoid"
+        {
+            patcher.add_scly_patch(
+                resource_info!("03_monkey_lower.MREA").into(),
+                move |_ps, area| patch_idrone_scale(_ps, area, scale)
+            );
+        }
+        else if boss_name == "flaahgra" // doesn't work
+        {
+            patcher.add_scly_patch(
+                resource_info!("22_Flaahgra.MREA").into(),
+                move |_ps, area| patch_flaahgra_scale(_ps, area, scale)
+            );
+        }
+        else if boss_name == "adultsheegoth"
+        {
+            patcher.add_scly_patch(
+                resource_info!("07_ice_chapel.MREA").into(),
+                move |_ps, area| patch_sheegoth_scale(_ps, area, scale)
+            );
+        }
+        else if boss_name == "thardus"
+        {
             patcher.add_scly_patch(
                 resource_info!("19_ice_thardus.MREA").into(),
                 move |_ps, area| patch_thardus_scale(_ps, area, scale)
             );
-        } else if boss_name == "essence" || boss_name == "metroidprimeessence" {
+        }
+        else if boss_name == "elitepirate1"
+        {
+            patcher.add_scly_patch(
+                resource_info!("05_mines_forcefields.MREA").into(),
+                move |_ps, area| patch_elite_pirate_scale(_ps, area, scale)
+            );
+        }
+        else if boss_name == "elitepirate2"
+        {
+            patcher.add_scly_patch(
+                resource_info!("06_mines_elitebustout.MREA").into(),
+                move |_ps, area| patch_elite_pirate_scale(_ps, area, scale)
+            );
+        }
+        else if boss_name == "elitepirate3"
+        {
+            patcher.add_scly_patch(
+                resource_info!("00i_mines_connect.MREA").into(),
+                move |_ps, area| patch_elite_pirate_scale(_ps, area, scale)
+            );
+        }
+        else if boss_name == "phazonelite"
+        {
+            patcher.add_scly_patch(
+                resource_info!("03_mines.MREA").into(),
+                move |_ps, area| patch_elite_pirate_scale(_ps, area, scale)
+            );
+        }
+        else if boss_name == "omegapirate"
+        {
+            patcher.add_scly_patch(
+                resource_info!("12_mines_eliteboss.MREA").into(),
+                move |_ps, area| patch_omega_pirate_scale(_ps, area, scale)
+            );
+        }
+        else if boss_name == "ridley" || boss_name == "metaridley"
+        {
+            patcher.add_scly_patch(
+                resource_info!("07_stonehenge.MREA").into(),
+                move |_ps, area| patch_ridley_scale(_ps, area, scale)
+            );
+        }
+        else if boss_name == "exo" || boss_name == "metroidprime" || boss_name == "metroidprimeexoskeleton"
+        {
+            patcher.add_scly_patch(
+                resource_info!("03a_crater.MREA").into(),
+                move |_ps, area| patch_exo_scale(_ps, area, scale)
+            );
+            patcher.add_scly_patch(
+                resource_info!("03b_crater.MREA").into(),
+                move |_ps, area| patch_exo_scale(_ps, area, scale)
+            );
+            patcher.add_scly_patch(
+                resource_info!("03c_crater.MREA").into(),
+                move |_ps, area| patch_exo_scale(_ps, area, scale)
+            );
+            patcher.add_scly_patch(
+                resource_info!("03d_crater.MREA").into(),
+                move |_ps, area| patch_exo_scale(_ps, area, scale)
+            );
+            patcher.add_scly_patch(
+                resource_info!("03e_crater.MREA").into(),
+                move |_ps, area| patch_exo_scale(_ps, area, scale)
+            );
+        }
+        else if boss_name == "essence" || boss_name == "metroidprimeessence"
+        {
             patcher.add_scly_patch(
                 resource_info!("03f_crater.MREA").into(),
                 move |_ps, area| patch_essence_scale(_ps, area, scale)
             );
-        } else {
+        }
+        else
+        {
             panic!("Unexpected boss name {}", _boss_name);
         }
     }

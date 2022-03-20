@@ -35,6 +35,15 @@ pub struct ActorParameters
 
 #[auto_struct(Readable, Writable, FixedSize)]
 #[derive(Debug, Clone)]
+pub struct AnimationParameters
+{
+    pub animation_character_set: u32,
+    pub character: u32,
+    pub default_animation: u32,
+}
+
+#[auto_struct(Readable, Writable, FixedSize)]
+#[derive(Debug, Clone)]
 pub struct AncsProp
 {
     pub file_id: ResId<ANCS>,

@@ -158,6 +158,9 @@ macro_rules! build_scly_property {
                         return None
                     }
                     *self = SclyProperty::$name(data.read(()));
+                    
+                    // println!("type=0x{:X} is {} bytes big", object_type, self.size());
+                    
                     match *self {
                         SclyProperty::$name(ref mut inst) => return Some(inst),
                         _ => panic!(),
@@ -227,7 +230,6 @@ build_scly_property!(
     Effect,               is_effect,                 as_effect,                 as_effect_mut,
     HudMemo,              is_hud_memo,               as_hud_memo,               as_hud_memo_mut,
     MemoryRelay,          is_memory_relay,           as_memory_relay,           as_memory_relay_mut,
-    MetroidPrimeStage2,   is_metroidprimestage2,     as_metroidprimestage2,     as_metroidprimestage2_mut,
     Pickup,               is_pickup,                 as_pickup,                 as_pickup_mut,
     Platform,             is_platform,               as_platform,               as_platform_mut,
     PlayerActor,          is_player_actor,           as_player_actor,           as_player_actor_mut,
@@ -239,12 +241,23 @@ build_scly_property!(
     SpawnPoint,           is_spawn_point,            as_spawn_point,            as_spawn_point_mut,
     SpecialFunction,      is_special_function,       as_special_function,       as_special_function_mut,
     StreamedAudio,        is_streamed_audio,         as_streamed_audio,         as_streamed_audio_mut,
-    Thardus,              is_thardus,                as_thardus,                as_thardus_mut,
     Timer,                is_timer,                  as_timer,                  as_timer_mut,
     Trigger,              is_trigger,                as_trigger,                as_trigger_mut,
     Waypoint,             is_waypoint,               as_waypoint,               as_waypoint_mut,
     Water,                is_water,                  as_water,                  as_water_mut,
     WorldTransporter,     is_world_transporter,      as_world_transporter,      as_world_transporter_mut,
+
+    // bosses
+    NewIntroBoss,         is_new_intro_boss,         as_new_intro_boss,         as_new_intro_boss_mut,
+    ActorContraption,     is_actor_contraption,      as_actor_contraption,      as_actor_contraption_mut,
+    Flaahgra,             is_flaahgra,               as_flaahgra,               as_flaahgra_mut,
+    IceSheegoth,          is_ice_sheegoth,           as_ice_sheegoth,           as_ice_sheegoth_mut,
+    Thardus,              is_thardus,                as_thardus,                as_thardus_mut,
+    ElitePirate,          is_elite_pirate,           as_elite_pirate,           as_elite_pirate_mut,
+    OmegaPirate,          is_omega_pirate,           as_omega_pirate,           as_omega_pirate_mut,
+    Ridley,               is_ridley,                 as_ridley,                 as_ridley_mut,
+    MetroidPrimeStage1,   is_metroidprimestage1,     as_metroidprimestage1,     as_metroidprimestage1_mut,
+    MetroidPrimeStage2,   is_metroidprimestage2,     as_metroidprimestage2,     as_metroidprimestage2_mut,
 );
 
 pub trait SclyPropertyData
