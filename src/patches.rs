@@ -10891,14 +10891,14 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         else if boss_name == "elitepirate2"
         {
             patcher.add_scly_patch(
-                resource_info!("06_mines_elitebustout.MREA").into(),
+                resource_info!("00i_mines_connect.MREA").into(),
                 move |_ps, area| patch_elite_pirate_scale(_ps, area, scale)
             );
         }
         else if boss_name == "elitepirate3"
         {
             patcher.add_scly_patch(
-                resource_info!("00i_mines_connect.MREA").into(),
+                resource_info!("06_mines_elitebustout.MREA").into(),
                 move |_ps, area| patch_elite_pirate_scale(_ps, area, scale)
             );
         }
@@ -10925,14 +10925,17 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         }
         else if boss_name == "exo" || boss_name == "metroidprime" || boss_name == "metroidprimeexoskeleton"
         {
-            patcher.add_scly_patch(
-                resource_info!("03a_crater.MREA").into(),
-                move |_ps, area| patch_exo_scale(_ps, area, scale)
-            );
-            patcher.add_scly_patch(
-                resource_info!("03b_crater.MREA").into(),
-                move |_ps, area| patch_exo_scale(_ps, area, scale)
-            );
+            if scale > 1.7 {
+                patcher.add_scly_patch(
+                    resource_info!("03b_crater.MREA").into(),
+                    move |_ps, area| patch_exo_scale(_ps, area, 1.7)
+                );
+            } else {
+                patcher.add_scly_patch(
+                    resource_info!("03b_crater.MREA").into(),
+                    move |_ps, area| patch_exo_scale(_ps, area, scale)
+                );
+            }
             patcher.add_scly_patch(
                 resource_info!("03c_crater.MREA").into(),
                 move |_ps, area| patch_exo_scale(_ps, area, scale)
