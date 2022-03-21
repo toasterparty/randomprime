@@ -7801,6 +7801,7 @@ fn patch_add_dock_teleport<'r>(
     }
 
     // Find the nearest door
+    let mut is_frigate_door = false;
     let mut door_rotation: GenericArray<f32, U3> = [0.0, 0.0, 0.0].into();
     for obj in layer.objects.as_mut_vec() {
         if !obj.property_data.is_door() {
@@ -7815,28 +7816,36 @@ fn patch_add_dock_teleport<'r>(
         }
 
         door_rotation = door.rotation.clone();
+        is_frigate_door = door.open_close_animation_len > 1.3;
     }
 
     let mut spawn_point_position = dock_position.clone();
     let mut spawn_point_rotation = [0.0, 0.0, 0.0];
-    let door_offset = 3.0;
-    let vertical_offset = -2.0;
+    let mut door_offset = 3.0;
+    let mut vertical_offset = -2.0;
+
+    if is_frigate_door {
+        door_offset = -3.0;
+        vertical_offset = -2.0;
+        spawn_point_rotation[2] = 180.0;
+    }
+
     if door_rotation[2] >= 45.0 && door_rotation[2] < 135.0 {
         // Leads North (Y+)
         spawn_point_position[1] = spawn_point_position[1] - door_offset;
-        spawn_point_rotation[2] = 180.0;
+        spawn_point_rotation[2] += 180.0;
     } else if (door_rotation[2] >= 135.0 && door_rotation[2] < 225.0) || (door_rotation[2] < -135.0 && door_rotation[2] > -225.0) {
         // Leads East (X+)
         spawn_point_position[0] = spawn_point_position[0] + door_offset;
-        spawn_point_rotation[2] = 270.0;
+        spawn_point_rotation[2] += 270.0;
     } else if door_rotation[2] >= -135.0 && door_rotation[2] < -45.0 {
         // Leads South (Y-)
         spawn_point_position[1] = spawn_point_position[1] + door_offset;
-        spawn_point_rotation[2] = 0.0;
+        spawn_point_rotation[2] += 0.0;
     } else if door_rotation[2] >= -45.0 && door_rotation[2] < 45.0 {
         // Leads West (X-)
         spawn_point_position[0] = spawn_point_position[0] - door_offset;
-        spawn_point_rotation[2] = 90.0;
+        spawn_point_rotation[2] += 90.0;
     }
     spawn_point_position[2] = spawn_point_position[2] + vertical_offset;
 
