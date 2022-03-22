@@ -4828,7 +4828,10 @@ fn patch_remove_cutscenes(
             }
 
             // remove every connection to a spawn point, effectively removing all repositions
-            obj.connections.as_mut_vec().retain(|conn| !spawn_point_ids.contains(&(conn.target_object_id & 0x00FFFFFF)));
+            obj.connections.as_mut_vec().retain(|conn| 
+                !spawn_point_ids.contains(&(conn.target_object_id & 0x00FFFFFF)) ||
+                conn.target_object_id&0xFF000000 == 0xDE000000 // keep objects that were added via this program
+            );
 
             // if the object is a camera, create a relay with the same id
             if camera_ids.contains(&obj_id) {
