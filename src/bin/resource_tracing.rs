@@ -5,7 +5,7 @@ pub use randomprime::*;
 use randomprime::custom_assets::custom_asset_ids;
 use randomprime::pickup_meta::{PickupType, PickupModel, ScriptObjectLocation};
 
-use reader_writer::{FourCC, Reader, Writable};
+use reader_writer::{FourCC, Reader, Readable, Writable};
 use structs::{Ancs, Cmdl, Evnt, Pickup, res_id, ResId, Resource, Scan};
 use resource_info_table::{resource_info, ResourceInfo};
 
@@ -353,6 +353,7 @@ struct RoomInfo
     pickups: Vec<PickupLocation>,
     doors: Vec<DoorLocation>,
     objects_to_remove: HashMap<u32, Vec<u32>>,
+    size_index: f32,
 }
 
 fn build_scly_db<'r>(scly: &structs::Scly<'r>) -> HashMap<u32, (usize, structs::SclyObject<'r>)>
@@ -1077,7 +1078,19 @@ fn main()
 
             let mut res = res.into_owned();
             let mrea = res.kind.as_mrea_mut().unwrap();
+
+            let model_count = mrea.world_model_count.clone();
+
             let scly = mrea.scly_section_mut();
+
+            let mut total_object_size = 0;
+            for layer in scly.layers.as_mut_vec() {
+                for obj in layer.objects.as_mut_vec() {
+                    total_object_size += obj.property_data.size();
+                }
+            }
+
+            let mut size_index = (model_count as f32 / 544.0 +  (total_object_size as f32 / 150536.0))/2.0;
 
             let mut room_locations = vec![];
             let mut room_removals = HashMap::new();
@@ -1236,6 +1249,14 @@ fn main()
                     .into_owned().into_string();
 
                 let room_id = ResId::<res_id::MREA>::new(res.file_id);
+
+                if vec![
+                    0x2398E906, // artifact temple
+                    0x5F2EB7B6, // biotech 1
+                ].contains(&res.file_id) {
+                    size_index = 1.0;
+                }
+
                 pak_locations.push(RoomInfo {
                     room_id,
                     name,
@@ -1244,6 +1265,7 @@ fn main()
                     pickups: room_locations,
                     doors: door_locations,
                     objects_to_remove: room_removals,
+                    size_index,
                 })
             }
         }
@@ -1282,6 +1304,7 @@ fn main()
             println!("            name: {:?},", &room_info.name[..(room_info.name.len() - 1)]);
             println!("            name_id: ResId::<res_id::STRG>::new(0x{:08X}),", room_info.name_id.to_u32());
             println!("            mapa_id: ResId::<res_id::MAPA>::new(0x{:08X}),", room_info.mapa_id.to_u32());
+            println!("            size_index: {:.4},", room_info.size_index);
             println!("            pickup_locations: &[");
             for location in room_info.pickups {
                 println!("                PickupLocation {{");

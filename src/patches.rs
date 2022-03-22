@@ -6084,6 +6084,12 @@ fn patch_dol<'r>(
     });
     dol_patcher.ppcasm_patch(&cinematic_skip_patch)?;
 
+    // stop doors from communicating with their partner
+    // let open_door_patch = ppcasm!(symbol_addr!("OpenDoor__11CScriptDoorF9TUniqueIdR13CStateManager", version) + (0x8007ec70 - 0x8007ea64), {
+    //     nop;
+    // });
+    // dol_patcher.ppcasm_patch(&open_door_patch)?;
+
     // pattern 50801f38 981f???? 881f???? 5080177a 981f???? 83e1
     if version == Version::Pal {
         let unlockables_default_ctor_patch = ppcasm!(symbol_addr!("__ct__14CSystemOptionsFv", version) + 0x1dc, {
@@ -7759,10 +7765,29 @@ fn patch_add_dock_teleport<'r>(
     source_scale: [f32;3],
     destination_dock_num: u32,
     dest_position: Option<[f32;3]>,
+    mrea_idx: Option<u32>,
 )
 -> Result<(), String>
 {
     let mrea_id = area.mlvl_area.mrea.to_u32();
+
+    // Update the list of attached areas to use the new area instead of the old one
+    let attached_areas: &mut reader_writer::LazyArray<'r, u16> = &mut area.mlvl_area.attached_areas;
+    if mrea_idx.is_some() {
+        let idx = mrea_idx.unwrap() as u16;
+        let mut missing = true;
+        for i in 0..attached_areas.as_mut_vec().len() {
+            if attached_areas.as_mut_vec()[i] == idx {
+                missing = false;
+                break;
+            }
+        }
+        if missing {
+            attached_areas.as_mut_vec().push(idx);
+            area.mlvl_area.attached_area_count += 1;
+        }
+    }
+
     let layer = &mut area.mrea().scly_section_mut().layers.as_mut_vec()[0];
     let spawn_point_id = ps.fresh_instance_id_range.next().unwrap();
 
@@ -7774,17 +7799,18 @@ fn patch_add_dock_teleport<'r>(
         dock_position = dest_position.unwrap().into();
     } else {
         for obj in layer.objects.as_mut_vec() {
-            if !obj.property_data.is_dock() {
-                continue;
-            }
+            if obj.property_data.is_dock() {
+                let dock = obj.property_data.as_dock_mut().unwrap();
 
-            let dock = obj.property_data.as_dock().unwrap();
-            if dock.dock_index != destination_dock_num {
-                continue;
-            }
+                // Remove all auto-loads in this room
+                dock.load_connected = 0;
 
-            found = true;
-            dock_position = dock.position.clone();
+                // Find the specified dock
+                if dock.dock_index == destination_dock_num {
+                    found = true;
+                    dock_position = dock.position.clone();
+                }
+            }
         }
 
         if !found {
@@ -7802,6 +7828,9 @@ fn patch_add_dock_teleport<'r>(
 
     // Find the nearest door
     let mut is_frigate_door = false;
+    let mut is_ceiling_door = false;
+    let mut is_floor_door = false;
+
     let mut door_rotation: GenericArray<f32, U3> = [0.0, 0.0, 0.0].into();
     for obj in layer.objects.as_mut_vec() {
         if !obj.property_data.is_door() {
@@ -7816,7 +7845,9 @@ fn patch_add_dock_teleport<'r>(
         }
 
         door_rotation = door.rotation.clone();
-        is_frigate_door = door.open_close_animation_len > 1.3;
+        is_frigate_door = door.ancs.file_id == 0xfafb5784;
+        is_ceiling_door = door.ancs.file_id == 0xf57dd484 && door_rotation[0] > -90.0 && door_rotation[0] < 90.0;
+        is_floor_door = door.ancs.file_id == 0xf57dd484 && door_rotation[0] < -90.0 && door_rotation[0] > -270.0;
     }
 
     let mut spawn_point_position = dock_position.clone();
@@ -7828,6 +7859,12 @@ fn patch_add_dock_teleport<'r>(
         door_offset = -3.0;
         vertical_offset = -2.0;
         spawn_point_rotation[2] = 180.0;
+    } else if is_ceiling_door {
+        door_offset = 0.0;
+        vertical_offset = -5.0;
+    } else if is_floor_door {
+        door_offset = 0.0;
+        vertical_offset = 1.0;
     }
 
     if door_rotation[2] >= 45.0 && door_rotation[2] < 135.0 {
@@ -7962,7 +7999,7 @@ fn patch_modify_dock<'r>(
     let frme_dep: structs::Dependency = frme_id.into();
     area.add_dependencies(game_resources, 0, iter::once(frme_dep));
 
-    let mut replaced = false;
+    // let mut replaced = false;
     let mrea_id = area.mlvl_area.mrea.to_u32();
     let attached_areas: &mut reader_writer::LazyArray<'r, u16> = &mut area.mlvl_area.attached_areas;
     let docks: &mut reader_writer::LazyArray<'r, structs::mlvl::Dock<'r>> = &mut area.mlvl_area.docks;
@@ -7971,29 +8008,18 @@ fn patch_modify_dock<'r>(
     {
         panic!("dock num #{} doesn't index attached areas in room 0x{:X}", dock_num, mrea_id);
     }
-    let old_mrea_idx = attached_areas.as_mut_vec()[dock_num as usize] as u32;
 
-    // Update the list of attached areas to use the new area instead of the old one
-    for i in 0..attached_areas.as_mut_vec().len() {
-        if attached_areas.as_mut_vec()[i as usize] == old_mrea_idx as u16 {
-            attached_areas.as_mut_vec()[i as usize] = new_mrea_idx as u16;
-        }
+    if dock_num >= docks.as_mut_vec().len() as u32
+    {
+        panic!("dock num #{} doesn't index docks in room 0x{:X}", dock_num, mrea_id);
     }
 
-    // Update dock(s) to load the new area instead of the old one
-    for i in 0..docks.as_mut_vec().len() {
-        if docks.as_mut_vec()[i].connecting_docks.as_mut_vec()[0].array_index == old_mrea_idx {
-            docks.as_mut_vec()[i].connecting_docks.as_mut_vec()[0].array_index = new_mrea_idx;
-            replaced = true;
-        }
-    }
+    docks.as_mut_vec()[dock_num as usize].connecting_docks.as_mut_vec()[0].array_index = new_mrea_idx;
+    attached_areas.as_mut_vec()[dock_num as usize] = new_mrea_idx as u16;
 
-    if !replaced {
-        panic!("failed to find mrea idx {} in room 0x{:X} when shuffling rooms", old_mrea_idx, mrea_id);
-    }
+    let layer = &mut area.mrea().scly_section_mut().layers.as_mut_vec()[0];
 
     // Find the dock script object(s)
-    let layer = &mut area.mrea().scly_section_mut().layers.as_mut_vec()[0];
     let mut docks: Vec<u32> = Vec::new();
     for obj in layer.objects.as_mut_vec() {
         if obj.property_data.is_dock() {
@@ -8009,20 +8035,21 @@ fn patch_modify_dock<'r>(
 
             let mut is_the_door = false;
 
-            // Update the door to not immediately render graphics upon opening
             for conn in obj.connections.as_mut_vec() {
                 if docks.contains(&(conn.target_object_id&0x000FFFFF)) && conn.message == structs::ConnectionMsg::INCREMENT {
-                    if old_mrea_idx != new_mrea_idx {
-                        conn.message = structs::ConnectionMsg::SET_TO_MAX;
-                    }
                     is_the_door = true;
                 }
             }
 
             // Update the door's scan to tell the destination room
             if is_the_door {
-                obj.property_data.as_door_mut().unwrap().actor_params.scan_params.scan = scan_id;
+                let door = obj.property_data.as_door_mut().unwrap();
+                door.actor_params.scan_params.scan = scan_id;
             }
+        } else if obj.property_data.is_dock() {
+            // remove all auto-loads in this room
+            let dock = obj.property_data.as_dock_mut().unwrap();
+            dock.load_connected = 0;
         }
     }
 
@@ -10319,6 +10346,22 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                         panic!("Dock destination cannot be in same room");
                     }
 
+                    // Get size index (used for slowing door open)
+                    // let destination_size_index = {
+                    //     let mut size_index = -1.0;
+
+                    //     for _room_info in rooms.iter() {
+                    //         if _room_info.room_id == destination_room.mrea {
+                    //             size_index = _room_info.size_index;
+                    //         }
+                    //     }
+
+                    //     if size_index < 0.0 {
+                    //         panic!("Failed size_index lookup");
+                    //     }
+                    //     size_index
+                    // };
+
                     // Patch the current room to lead to the new destination room
                     patcher.add_scly_patch(
                         (pak_name.as_bytes(), room_info.room_id.to_u32()),
@@ -10334,6 +10377,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             door_location.dock_scale.clone().unwrap(),
                             destination.dock_num,
                             None, // If Some, override destination spawn point
+                            Some(source_room.mrea_idx),
                         ),
                     );
                 }
@@ -10810,6 +10854,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     [75.0, 75.0, 50.0], // source scale
                     0, // destination dock #
                     Some([41.5365,-287.8581,-284.6025]),
+                    None,
                 )
             );
         }

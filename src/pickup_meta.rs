@@ -508,6 +508,7 @@ pub struct RoomInfo
     pub pickup_locations: &'static [PickupLocation],
     pub door_locations: &'static [DoorLocation],
     pub objects_to_remove: &'static [ObjectsToRemove],
+    pub size_index: f32, // 0.0 - 1.0 how big is this room?
 }
 
 #[derive(Clone, Copy, Debug)]
