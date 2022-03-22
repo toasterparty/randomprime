@@ -9703,14 +9703,42 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             items.push(PickupType::Missile);
             items.push(PickupType::Missile);
             items.push(PickupType::Missile);
+            items.push(PickupType::Missile);
+            items.push(PickupType::Missile);
+            items.push(PickupType::Missile);
+            items.push(PickupType::Missile);
+            items.push(PickupType::Missile);
+            items.push(PickupType::Missile);
+            items.push(PickupType::PowerBomb);
+            items.push(PickupType::PowerBomb);
+            items.push(PickupType::EnergyTank);
             items.push(PickupType::EnergyTank);
             items.push(PickupType::EnergyTank);
             items.push(PickupType::EnergyTank);
 
             for room_info in rooms.iter() {
-                if level.rooms.get(room_info.name.trim()).is_none() {
-                    level.rooms.insert(room_info.name.trim().to_string(), RoomConfig {
-                            pickups: Some(vec![PickupConfig {
+                let key = room_info.name.trim();
+                if level.rooms.get(key).is_none() {
+                    level.rooms.insert(key.to_string(), RoomConfig{
+                            pickups: Some(vec![]),
+                            extra_scans: None,
+                            doors: None,
+                            superheated: None,
+                            remove_water: None,
+                            submerge: None,
+                            liquids: None,
+                        }
+                    );
+                }
+
+                if level.rooms.get(key).unwrap().pickups.is_none() {
+                    level.rooms.get_mut(key).unwrap().pickups = Some(vec![]);
+                }
+
+                if level.rooms.get_mut(key).unwrap().pickups.clone().unwrap().len() == 0 {
+                    level.rooms.get_mut(key).unwrap().pickups = Some(
+                        vec![
+                            PickupConfig {
                                 pickup_type: items.choose(&mut rng).unwrap().name().to_string(),
                                 curr_increase: None,
                                 max_increase: None,
@@ -9720,14 +9748,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                 respawn: None,
                                 position: None,
                                 modal_hudmemo: None,
-                            }]),
-                            extra_scans: None,
-                            doors: None,
-                            superheated: None,
-                            remove_water: None,
-                            submerge: None,
-                            liquids: None,
-                        }
+                            }
+                        ]
                     );
                 }
             }
