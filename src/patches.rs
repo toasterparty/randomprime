@@ -68,6 +68,7 @@ use reader_writer::{
     CStrConversionExtension,
     FourCC,
     Reader,
+    // Readable,
     Writable,
 };
 use structs::{res_id, ResId};
@@ -391,13 +392,18 @@ fn patch_add_scans_to_savw(res: &mut structs::Resource, savw_scans_to_add: &Vec<
     -> Result<(), String>
 {
     let savw = res.kind.as_savw_mut().unwrap();
+    savw.cinematic_skip_array.as_mut_vec().clear();
     let scan_array = savw.scan_array.as_mut_vec();
+
     for scan_id in savw_scans_to_add {
         scan_array.push(structs::ScannableObject {
             scan: ResId::<res_id::SCAN>::new(scan_id.to_u32()),
             logbook_category: 0,
         });
     }
+
+    // Danger level is about 5,000
+    // println!("size={}", res.size());
 
     Ok(())
 }
@@ -9793,7 +9799,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         }
     };
 
-    let (game_resources, pickup_hudmemos, pickup_scans, extra_scans, savw_scans_to_add, extern_models) =
+    let (game_resources, pickup_hudmemos, pickup_scans, extra_scans, savw_scans_to_add, local_savw_scans_to_add, extern_models) =
         collect_game_resources(gc_disc, starting_memo, &config)?;
 
     let extern_models = &extern_models;
@@ -9801,7 +9807,9 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     let pickup_hudmemos = &pickup_hudmemos;
     let pickup_scans = &pickup_scans;
     let extra_scans = &extra_scans;
+    
     let savw_scans_to_add = &savw_scans_to_add;
+    let local_savw_scans_to_add = &local_savw_scans_to_add;
 
     let liquid_resources = collect_liquid_resources(gc_disc);
     let liquid_resources = &liquid_resources;
@@ -10638,12 +10646,18 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         );
     }
 
-    // TODO: only patch what we need
     patcher.add_resource_patch(
         resource_info!("!TalonOverworld_Master.SAVW").into(),
         move |res| patch_add_scans_to_savw(
             res,
             &savw_scans_to_add,
+        ),
+    );
+    patcher.add_resource_patch(
+        resource_info!("!TalonOverworld_Master.SAVW").into(),
+        move |res| patch_add_scans_to_savw(
+            res,
+            &local_savw_scans_to_add[World::TallonOverworld as usize],
         ),
     );
 
@@ -10654,12 +10668,26 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             &savw_scans_to_add,
         ),
     );
+    patcher.add_resource_patch(
+        resource_info!("!RuinsWorld_Master.SAVW").into(),
+        move |res| patch_add_scans_to_savw(
+            res,
+            &local_savw_scans_to_add[World::ChozoRuins as usize],
+        ),
+    );
 
     patcher.add_resource_patch(
         resource_info!("!LavaWorld_Master.SAVW").into(),
         move |res| patch_add_scans_to_savw(
             res,
             &savw_scans_to_add,
+        ),
+    );
+    patcher.add_resource_patch(
+        resource_info!("!LavaWorld_Master.SAVW").into(),
+        move |res| patch_add_scans_to_savw(
+            res,
+            &local_savw_scans_to_add[World::MagmoorCaverns as usize],
         ),
     );
 
@@ -10670,6 +10698,13 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             &savw_scans_to_add,
         ),
     );
+    patcher.add_resource_patch(
+        resource_info!("!IceWorld_Master.SAVW").into(),
+        move |res| patch_add_scans_to_savw(
+            res,
+            &local_savw_scans_to_add[World::PhendranaDrifts as usize],
+        ),
+    );
 
     patcher.add_resource_patch(
         resource_info!("!MinesWorld_Master.SAVW").into(),
@@ -10678,12 +10713,26 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             &savw_scans_to_add,
         ),
     );
+    patcher.add_resource_patch(
+        resource_info!("!MinesWorld_Master.SAVW").into(),
+        move |res| patch_add_scans_to_savw(
+            res,
+            &local_savw_scans_to_add[World::PhazonMines as usize],
+        ),
+    );
 
     patcher.add_resource_patch(
         resource_info!("!CraterWorld_Master.SAVW").into(),
         move |res| patch_add_scans_to_savw(
             res,
             &savw_scans_to_add,
+        ),
+    );
+    patcher.add_resource_patch(
+        resource_info!("!CraterWorld_Master.SAVW").into(),
+        move |res| patch_add_scans_to_savw(
+            res,
+            &local_savw_scans_to_add[World::ImpactCrater as usize],
         ),
     );
 
@@ -10713,6 +10762,13 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             move |res| patch_add_scans_to_savw(
                 res,
                 &savw_scans_to_add,
+            ),
+        );
+        patcher.add_resource_patch(
+            resource_info!("!Intro_Master.SAVW").into(),
+            move |res| patch_add_scans_to_savw(
+                res,
+                &local_savw_scans_to_add[World::FrigateOrpheon as usize],
             ),
         );
 

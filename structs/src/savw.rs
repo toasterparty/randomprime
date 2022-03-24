@@ -19,7 +19,7 @@ pub struct Savw<'r>
     #[auto_struct(derive = cinematic_skip_array.len() as u32)]
     cinematic_skip_count: u32,
     #[auto_struct(init = (cinematic_skip_count as usize, ()))]
-    pub cinematic_skip_array: RoArray<'r, u32>,
+    pub cinematic_skip_array: LazyArray<'r, u32>,
 
     #[auto_struct(derive = memory_relay_array.len() as u32)]
     memory_relay_count: u32,
