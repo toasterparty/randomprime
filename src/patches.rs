@@ -8030,35 +8030,143 @@ fn patch_modify_dock<'r>(
 
     // Find the dock script object(s)
     let mut docks: Vec<u32> = Vec::new();
+    let mut other_docks: Vec<u32> = Vec::new();
     for obj in layer.objects.as_mut_vec() {
         if obj.property_data.is_dock() {
             let dock = obj.property_data.as_dock_mut().unwrap();
             if dock.dock_index == dock_num {
                 docks.push(obj.instance_id&0x000FFFFF);
+            } else {
+                other_docks.push(obj.instance_id);
             }
         }
     }
 
+    // Edit the door corresponding to this dock
+    let mut door_id = 0;
     for obj in layer.objects.as_mut_vec() {
-        if obj.property_data.is_door() {
+        if !obj.property_data.is_door() {
+            continue;
+        }
 
-            let mut is_the_door = false;
-
-            for conn in obj.connections.as_mut_vec() {
-                if docks.contains(&(conn.target_object_id&0x000FFFFF)) && conn.message == structs::ConnectionMsg::INCREMENT {
-                    is_the_door = true;
-                }
-            }
-
-            // Update the door's scan to tell the destination room
-            if is_the_door {
+        for conn in obj.connections.as_mut_vec() {
+            if docks.contains(&(conn.target_object_id&0x000FFFFF)) && conn.message == structs::ConnectionMsg::INCREMENT {
+                door_id = obj.instance_id;
                 let door = obj.property_data.as_door_mut().unwrap();
                 door.actor_params.scan_params.scan = scan_id;
+                break;
             }
-        } else if obj.property_data.is_dock() {
-            // remove all auto-loads in this room
-            let dock = obj.property_data.as_dock_mut().unwrap();
+        }
+    }
+
+    if door_id == 0 {
+        panic!("Failed to find door corresponding to patched dock in 0x{:X}", mrea_id);
+    }
+
+    // Remove autoloads from this room
+    // let mut autoload_room = false;
+    for obj in layer.objects.as_mut_vec() {
+        if !obj.property_data.is_dock() {
+            continue;
+        }
+
+        // remove all auto-loads in this room
+        let dock = obj.property_data.as_dock_mut().unwrap();
+        if dock.load_connected != 0 {
             dock.load_connected = 0;
+        }
+    }
+
+    // In the event this room was an autoload, we need to rectify this room to properly ensure things are unloaded
+    // when bouncing back and forth between doors like a maniac
+    {
+        let mut dock_has_loader = false;
+        for obj in layer.objects.as_mut_vec() {
+            for conn in obj.connections.as_mut_vec() {
+                if docks.contains(&(conn.target_object_id&0x00FFFFFF)) && conn.message == structs::ConnectionMsg::SET_TO_MAX {
+                    dock_has_loader = true;
+                    break;
+                }
+            }
+            if dock_has_loader {
+                break;
+            }
+        }
+
+        if !dock_has_loader {
+            // find door unlock trigger
+            let mut trigger_pos = [0.0, 0.0, 0.0];
+            let mut trigger_scale = [0.0, 0.0, 0.0];
+            for obj in layer.objects.as_mut_vec() {
+                if !obj.property_data.is_trigger() {
+                    continue;
+                }
+
+                let mut is_the_trigger = false;
+                for conn in obj.connections.as_mut_vec() {
+                    if conn.target_object_id&0x00FFFFFF == door_id&0x00FFFFFF {
+                        is_the_trigger = true;
+                        break;
+                    }
+                }
+
+                if !is_the_trigger {
+                    continue;
+                }
+                
+                let trigger = obj.property_data.as_trigger_mut().unwrap();
+                trigger_pos = trigger.position.into();
+                trigger_scale = trigger.scale.into();
+
+                break;
+            }
+            
+            assert_ne!(trigger_pos, trigger_scale);
+
+            // unload everything upon touching
+            let mut connections: Vec::<structs::Connection> = Vec::new();
+            for dock in other_docks {
+                connections.push(
+                    structs::Connection {
+                        state: structs::ConnectionState::INSIDE,
+                        message: structs::ConnectionMsg::SET_TO_ZERO,
+                        target_object_id: dock,
+                    },
+                );
+            }
+            connections.push(
+                structs::Connection {
+                    state: structs::ConnectionState::INSIDE,
+                    message: structs::ConnectionMsg::SET_TO_MAX,
+                    target_object_id: docks[0],
+                },
+            );
+            layer.objects.as_mut_vec().push(
+                structs::SclyObject {
+                    instance_id: _ps.fresh_instance_id_range.next().unwrap(),
+                    property_data: structs::Trigger {
+                        name: b"Trigger\0".as_cstr(),
+                        position: trigger_pos.into(),
+                        scale: [
+                            trigger_scale[0] + 7.0,
+                            trigger_scale[1] + 7.0,
+                            trigger_scale[2] + 7.0,
+                        ].into(),
+                        damage_info: structs::scly_structs::DamageInfo {
+                            weapon_type: 0,
+                            damage: 0.0,
+                            radius: 0.0,
+                            knockback_power: 0.0
+                        },
+                        force: [0.0, 0.0, 0.0].into(),
+                        flags: 0x1001, // detect morphed+player
+                        active: 1,
+                        deactivate_on_enter: 0,
+                        deactivate_on_exit: 0
+                    }.into(),
+                    connections: connections.into(),
+                }
+            );   
         }
     }
 
@@ -10455,6 +10563,12 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 config.skip_splash_screens,
             )
         );
+
+        // patcher.add_scly_patch(
+        //     resource_info!("01_intro_hanger.MREA").into(),
+        //     move |_ps, area| patch_teleporter_destination(area, frigate_done_room),
+        // );
+
     } else {
         patcher.add_file_patch(
             b"default.dol",
