@@ -4362,6 +4362,7 @@ fn patch_spawn_point_position<'r>(
         let layer = &mut scly.layers.as_mut_vec()[i];
         for obj in layer.objects.as_mut_vec().iter_mut() {
             if !obj.property_data.is_spawn_point() {continue;}
+            if obj.instance_id & 0xFF000000 == 0xDE000000 { continue; } // don't move spawn points placed by this program
 
             let spawn_point = obj.property_data.as_spawn_point_mut().unwrap();
             if relative_position {
