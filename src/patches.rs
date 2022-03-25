@@ -8128,7 +8128,7 @@ fn patch_modify_dock<'r>(
             for dock in other_docks {
                 connections.push(
                     structs::Connection {
-                        state: structs::ConnectionState::INSIDE,
+                        state: structs::ConnectionState::ENTERED,
                         message: structs::ConnectionMsg::SET_TO_ZERO,
                         target_object_id: dock,
                     },
