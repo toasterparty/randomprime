@@ -2536,6 +2536,9 @@ fn modify_pickups_in_mrea<'r>(
             custom_asset_ids::MQA_POI_SCAN.to_u32(),
         ];
         for layer in layers.iter_mut() {
+            if mrea_id == 0x2398E906 {
+                continue; // Avoid deleting hints
+            }
             for obj in layer.objects.as_mut_vec().iter_mut() {
                 let obj_id = obj.instance_id&0x00FFFFFF;
 
