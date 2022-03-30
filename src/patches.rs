@@ -10514,12 +10514,19 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     );
 
                     // Patch the destination room to "catch" the player with a teleporter at the same location as this room's dock
+
+                    // Scale the height down a little so you can transition the dock without teleporting from OoB
+                    let position = door_location.dock_position.clone().unwrap();
+                    let position: [f32;3] = [position[0], position[1], position[2] - 0.9];
+                    let scale = door_location.dock_scale.clone().unwrap();
+                    let scale: [f32;3] = [scale[0]*0.75, scale[1]*0.75, scale[2] - 1.8];
+
                     patcher.add_scly_patch(
                         (pak_name.as_bytes(), destination_room.mrea),
                         move |ps, area| patch_add_dock_teleport(
                             ps, area,
-                            door_location.dock_position.clone().unwrap(),
-                            door_location.dock_scale.clone().unwrap(),
+                            position,
+                            scale,
                             destination.dock_num,
                             None, // If Some, override destination spawn point
                             Some(source_room.mrea_idx),
