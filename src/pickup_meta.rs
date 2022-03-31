@@ -484,6 +484,7 @@ pub struct PickupLocation
 pub struct DoorLocation
 {
     pub door_location: ScriptObjectLocation,
+    pub door_rotation: [f32;3],
     pub door_force_location: ScriptObjectLocation,
     pub door_shield_location: Option<ScriptObjectLocation>,
     pub dock_number: Option<u32>,

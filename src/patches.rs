@@ -10517,9 +10517,29 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
                     // Scale the height down a little so you can transition the dock without teleporting from OoB
                     let position = door_location.dock_position.clone().unwrap();
-                    let position: [f32;3] = [position[0], position[1], position[2] - 0.9];
-                    let scale = door_location.dock_scale.clone().unwrap();
-                    let scale: [f32;3] = [scale[0]*0.75, scale[1]*0.75, scale[2] - 1.8];
+                    let mut position: [f32;3] = [position[0], position[1], position[2] - 0.9];
+                    let mut scale: [f32;3] = door_location.dock_scale.clone().unwrap().into();
+                    if scale[2] > 4.0 { // if normal door
+                        scale = [scale[0]*0.75, scale[1]*0.75, scale[2] - 1.8];
+                    }
+
+                    let rotation = door_location.door_rotation.clone();
+                    const TRIGGER_OFFSET: f32 = 0.5;
+
+                    // Move teleport triggers slightly more into their respective rooms so that adjacent teleport triggers leading to the same room do not overlap
+                    if rotation[2] >= 45.0 && rotation[2] < 135.0 {
+                        // North
+                        position[1] -= TRIGGER_OFFSET;
+                    } else if (rotation[2] >= 135.0 && rotation[2] < 225.0) || (rotation[2] < -135.0 && rotation[2] > -225.0) {
+                        // East
+                        position[0] += TRIGGER_OFFSET;
+                    } else if rotation[2] >= -135.0 && rotation[2] < -45.0 {
+                        // South
+                        position[1] += TRIGGER_OFFSET;
+                    } else if rotation[2] >= -45.0 && rotation[2] < 45.0 {
+                        // West
+                        position[0] -= TRIGGER_OFFSET;
+                    }
 
                     patcher.add_scly_patch(
                         (pak_name.as_bytes(), destination_room.mrea),

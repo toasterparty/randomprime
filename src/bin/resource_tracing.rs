@@ -36,6 +36,7 @@ pub struct DoorLocation
     door_location: ScriptObjectLocation,
     door_force_location: ScriptObjectLocation,
     door_shield_location: Option<ScriptObjectLocation>,
+    door_rotation: [f32;3],
     dock_number: Option<u32>,
     dock_position: Option<[f32;3]>,
     dock_scale: Option<[f32;3]>,
@@ -433,7 +434,8 @@ fn extract_pickup_data<'r>(
 fn extract_door_location<'r>(
     scly: &structs::Scly<'r>,
     obj: &structs::SclyObject<'r>,
-    obj_location: ScriptObjectLocation
+    obj_location: ScriptObjectLocation,
+    door_rotation: [f32;3],
 ) -> (Option<DoorLocation>,Option<DoorLocation>)
 {
 
@@ -519,6 +521,7 @@ fn extract_door_location<'r>(
 
     let key_door_location = if !key_shield_loc.is_none() && !key_force_loc.is_none() {
         Some(DoorLocation {
+            door_rotation,
             door_location: obj_location,
             door_force_location: key_force_loc.unwrap(),
             door_shield_location: key_shield_loc,
@@ -531,6 +534,7 @@ fn extract_door_location<'r>(
     };
 
     (Some(DoorLocation {
+        door_rotation,
         door_location: obj_location,
         door_force_location: unlock_force_loc,
         door_shield_location: unlock_shield_loc,
@@ -1158,7 +1162,7 @@ fn main()
                         layer: layer_num as u32,
                     };
                     
-                    let (unlock_door_loc,key_door_loc) = extract_door_location(&scly,&obj,obj_loc);
+                    let (unlock_door_loc,key_door_loc) = extract_door_location(&scly,&obj,obj_loc,door.rotation.into());
                     door_locations.push(unlock_door_loc.unwrap());
                     match key_door_loc {
                         Some(key_door_loc) => door_locations.push(key_door_loc),
@@ -1333,6 +1337,7 @@ fn main()
             for door in room_info.doors {
                 println!("                DoorLocation {{");
                 println!("                    door_location: {:?},", door.door_location);
+                println!("                    door_rotation: {:?},", door.door_rotation);
                 println!("                    door_force_location: {:?},", door.door_force_location);
                 println!("                    door_shield_location: {:?},", door.door_shield_location);
                 println!("                    dock_number: {:?},", door.dock_number);
