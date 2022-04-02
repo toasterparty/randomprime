@@ -1,5 +1,6 @@
 0x80003100 __check_pad3
 0x80003140 __start
+0x80003278 __init_registers
 0x80003294 __init_data
 0x80003354 __init_hardware
 0x80003374 __flush_cache
@@ -7010,3 +7011,6 @@
 0x805a9cd8 g_Main
 0x805a9ce0 g_GameState
 0x805ab8ec g_EtankCapacity
+0x805afc40 sda_register
+0x805b2de0 toc_register
+0x805c11c0 OSArenaHi

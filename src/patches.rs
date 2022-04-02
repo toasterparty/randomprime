@@ -1297,7 +1297,7 @@ fn is_area_damage_special_function<'r>(obj: &structs::SclyObject<'r>)
 -> bool
 {
     let special_function = obj.property_data.as_special_function();
-    
+
     if special_function.is_none() {
         false
     }
@@ -1318,7 +1318,7 @@ fn patch_deheat_room<'r>(
         let layer = &mut scly.layers.as_mut_vec()[i];
         layer.objects.as_mut_vec().retain(|obj| !is_area_damage_special_function(obj));
     }
-    
+
     Ok(())
 }
 
@@ -1413,8 +1413,8 @@ impl WaterType
     }
 
     fn dependencies(&self)
-    -> Vec<(u32, FourCC)> 
-    {   
+    -> Vec<(u32, FourCC)>
+    {
         let water_obj = self.to_obj();
         let water = water_obj.property_data.as_water().unwrap();
 
@@ -1538,7 +1538,7 @@ impl WaterType
                         unknown54: 4294967295,
                         unknown55: 4294967295,
                         crash_the_game: 0
-                    })         
+                    })
                 ),
             },
             WaterType::Poision => structs::SclyObject {
@@ -1753,7 +1753,7 @@ fn collect_liquid_resources<'r>(gc_disc: &structs::GcDisc<'r>)
     let mut looking_for: HashSet<_> = WaterType::iter()
         .flat_map(|pt| pt.dependencies().into_iter())
         .collect();
-    
+
     // Dependencies read from paks and custom assets will go here //
     let mut found = HashMap::with_capacity(looking_for.len());
 
@@ -1803,10 +1803,10 @@ fn patch_submerge_room<'r>(
         });
 
     area.add_dependencies(resources, 0, deps_iter);
-    
+
     let mut water_obj = water_type.to_obj();
     let water = water_obj.property_data.as_water_mut().unwrap();
-    
+
 
     let room_origin = {
         let area_transform = area.mlvl_area.area_transform;
@@ -1882,7 +1882,7 @@ fn patch_add_liquid<'r>(
         });
 
     area.add_dependencies(resources, 0, deps_iter);
-    
+
     let mut water_obj = water_type.to_obj();
     let water = water_obj.property_data.as_water_mut().unwrap();
     water.position[0] = water_config.position[0];
@@ -4838,7 +4838,7 @@ fn patch_remove_cutscenes(
             }
 
             // remove every connection to a spawn point, effectively removing all repositions
-            obj.connections.as_mut_vec().retain(|conn| 
+            obj.connections.as_mut_vec().retain(|conn|
                 !spawn_point_ids.contains(&(conn.target_object_id & 0x00FFFFFF)) ||
                 conn.target_object_id&0xFF000000 == 0xDE000000 // keep objects that were added via this program
             );
@@ -5104,7 +5104,7 @@ fn patch_remove_cutscenes(
 }
 
 /**
- * Patch is actually for QAA 
+ * Patch is actually for QAA
  *
  */
 fn patch_fix_central_dynamo_crash(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
@@ -5797,6 +5797,12 @@ fn patch_dol<'r>(
         }
     }
 
+    // new text section for code caves or rel loader
+    // skip 0x103c0 bytes after toc register
+    let new_text_section_start = symbol_addr!("OSArenaHi", version);
+    let mut new_text_section_end = new_text_section_start;
+    let mut new_text_section = vec![];
+
     let reader = match *file {
         structs::FstEntryFile::Unknown(ref reader) => reader.clone(),
         _ => panic!(),
@@ -5926,14 +5932,14 @@ fn patch_dol<'r>(
             });
             dol_patcher.ppcasm_patch(&default_visor_patch)?;
         }
-    
+
         let visor_item = match config.starting_visor {
             Visor::Combat  => 17,
             Visor::Scan    => 5,
             Visor::Thermal => 9,
             Visor::XRay    => 13,
         };
-    
+
         // If scan visor or no visor
         if config.starting_visor == Visor::Scan || no_starting_visor
         {
@@ -5951,7 +5957,7 @@ fn patch_dol<'r>(
             //     });
             //     dol_patcher.ppcasm_patch(&default_visor_patch)?;
             // }
-    
+
             // spawn with weapon holstered instead of drawn
             let patch_offset = if version == Version::Pal || version == Version::NtscJ {
                 0x3bc
@@ -5977,7 +5983,7 @@ fn patch_dol<'r>(
                     nop;
             });
             dol_patcher.ppcasm_patch(&default_visor_patch)?;
-    
+
             // stop gun from being drawn after unmorphing
             let (patch_offset, patch_offset2) = if version == Version::Pal || version == Version::NtscJ {
                 (0x14c, 0x158)
@@ -5992,7 +5998,7 @@ fn patch_dol<'r>(
                     nop;
             });
             dol_patcher.ppcasm_patch(&default_visor_patch)?;
-            
+
             // do not change visors after unmorphing
             let patch_offset = if version == Version::Pal || version == Version::NtscJ {
                 0xb0
@@ -6011,7 +6017,7 @@ fn patch_dol<'r>(
             } else {
                 (0xe8, 0xfc)
             };
-    
+
             // When pressing a or y in in scan visor, check for and switch to default visor instead of combat
             let default_visor_patch = ppcasm!(symbol_addr!("UpdateVisorState__7CPlayerFRC11CFinalInputfR13CStateManager", version) + patch_offset, {
                     li r4, visor_item;
@@ -6021,20 +6027,20 @@ fn patch_dol<'r>(
                     li r4, visor;
             });
             dol_patcher.ppcasm_patch(&default_visor_patch)?;
-    
+
             let patch_offset = if version == Version::Pal || version == Version::NtscJ {
                 0xb0
             } else {
                 0x108
             };
-            
+
             let default_visor_patch = ppcasm!(symbol_addr!("EnterMorphBallState__7CPlayerFR13CStateManager", version) + patch_offset, {
                     nop;
                     nop;
                     nop;
             });
             dol_patcher.ppcasm_patch(&default_visor_patch)?;
-        }    
+        }
     }
 
     let beam = config.starting_beam as u16;
@@ -6413,220 +6419,6 @@ fn patch_dol<'r>(
         dol_patcher.patch(symbol_addr!("UpdateHintState__13CStateManagerFf", version), Cow::from(update_hint_state_replacement.clone()))?;
     }
 
-    if config.warp_to_start
-    {
-        let handle_no_to_save_msg_patch = ppcasm!(symbol_addr!("ThinkSaveStation__22CScriptSpecialFunctionFfR13CStateManager", version) + 0x54, {
-                b         0x80002200;
-        });
-        dol_patcher.ppcasm_patch(&handle_no_to_save_msg_patch)?;
-
-        let warp_to_start_patch = ppcasm!(0x80002200, {
-                lis       r14, {symbol_addr!("g_Main", version)}@h;
-                addi      r14, r14, {symbol_addr!("g_Main", version)}@l;
-                lwz       r14, 0x0(r14);
-                lwz       r14, 0x164(r14);
-                lwz       r14, 0x34(r14);
-                lbz       r0, 0x86(r14);
-                cmpwi     r0, 0;
-                beq       0x80002234;
-                lbz       r0, 0x89(r14);
-                cmpwi     r0, 0;
-                beq       0x80002234;
-                li        r4, 12;
-                b         0x80002238;
-                li        r4, 9;
-                andi      r14, r14, 0;
-                b         { symbol_addr!("ThinkSaveStation__22CScriptSpecialFunctionFfR13CStateManager", version) + 0x58 };
-        });
-        dol_patcher.add_text_segment(0x80002200, Cow::Owned(warp_to_start_patch.encoded_bytes()))?;
-    }
-
-    if config.spring_ball {
-        // call compute spring ball movement
-        let call_compute_spring_ball_movement_patch = ppcasm!(symbol_addr!("ComputeBallMovement__10CMorphBallFRC11CFinalInputR13CStateManagerf", version) + 0x2c, {
-                bl         0x80002400;
-        });
-        dol_patcher.ppcasm_patch(&call_compute_spring_ball_movement_patch)?;
-
-        let velocity_offset = match version {
-            Version::NtscU0_00 => 0x138,
-            Version::NtscU0_01 => 0x138,
-            Version::NtscU0_02 => 0x148,
-            Version::NtscK => 0x138,
-            Version::NtscJ => 0x148,
-            Version::Pal => 0x148,
-            _ => unreachable!(),
-        };
-
-        let movement_state_offset = match version {
-            Version::NtscU0_00 => 0x258,
-            Version::NtscU0_01 => 0x258,
-            Version::NtscU0_02 => 0x268,
-            Version::NtscK => 0x258,
-            Version::NtscJ => 0x268,
-            Version::Pal => 0x268,
-            _ => unreachable!(),
-        };
-
-        let attached_actor_offset = match version {
-            Version::NtscU0_00 => 0x26c,
-            Version::NtscU0_01 => 0x26c,
-            Version::NtscU0_02 => 0x27c,
-            Version::NtscK => 0x26c,
-            Version::NtscJ => 0x27c,
-            Version::Pal => 0x27c,
-            _ => unreachable!(),
-        };
-
-        let energy_drain_offset = match version {
-            Version::NtscU0_00 => 0x274,
-            Version::NtscU0_01 => 0x274,
-            Version::NtscU0_02 => 0x284,
-            Version::NtscK => 0x274,
-            Version::NtscJ => 0x284,
-            Version::Pal => 0x284,
-            _ => unreachable!(),
-        };
-
-        let out_of_water_ticks_offset = match version {
-            Version::NtscU0_00 => 0x2b0,
-            Version::NtscU0_01 => 0x2b0,
-            Version::NtscU0_02 => 0x2c0,
-            Version::NtscK => 0x2b0,
-            Version::NtscJ => 0x2c0,
-            Version::Pal => 0x2c0,
-            _ => unreachable!(),
-        };
-
-        let surface_restraint_type_offset = match version {
-            Version::NtscU0_00 => 0x2ac,
-            Version::NtscU0_01 => 0x2ac,
-            Version::NtscU0_02 => 0x2bc,
-            Version::NtscK => 0x2ac,
-            Version::NtscJ => 0x2bc,
-            Version::Pal => 0x2bc,
-            _ => unreachable!(),
-        };
-
-        let spring_ball_patch = ppcasm!(0x80002400, {
-                // stack init
-                stwu      r1, -0x20(r1);
-                mflr      r0;
-                stw       r0, 0x20(r1);
-                fmr       f15, f1;
-                stw       r31, 0x1c(r1);
-                stw       r30, 0x18(r1);
-                mr        r30, r5;
-                stw       r29, 0x14(r1);
-                mr        r29, r4;
-                stw       r28, 0x10(r1);
-                mr        r28, r3;
-
-                // function body
-                lwz       r14, 0x84c(r30);
-                lwz       r15, 0x8b8(r30);
-                lis       r16, data@h;
-                addi      r16, r16, data@l;
-                lfs       f1, 0x40(r14);
-                stfs      f1, 0x00(r16);
-                lfs       f1, 0x50(r14);
-                stfs      f1, 0x04(r16);
-                lfs       f1, 0x60(r14);
-                stfs      f1, 0x08(r16);
-                lwz       r0, 0x0c(r16);
-                cmplwi    r0, 0;
-                bgt       0x8000252c;
-                lwz       r0, { movement_state_offset }(r14);
-                cmplwi    r0, 0;
-                beq       0x80002480;
-                b         0x8000252c;
-                cmplwi    r0, 4;
-                bne       0x8000252c;
-                lwz       r0, { out_of_water_ticks_offset }(r14);
-                cmplwi    r0, 2;
-                bne       0x8000248c;
-                lwz       r0, { surface_restraint_type_offset }(r14);
-                b         0x80002490;
-                li        r0, 4;
-                cmplwi    r0, 7;
-                beq       0x8000252c;
-                mr        r3, r28;
-                bl        { symbol_addr!("IsMovementAllowed__10CMorphBallCFv", version) };
-                cmplwi    r3, 0;
-                beq       0x8000252c;
-                lwz       r3, 0x0(r15);
-                li        r4, 6;
-                bl        { symbol_addr!("HasPowerUp__12CPlayerStateCFQ212CPlayerState9EItemType", version) };
-                cmplwi    r3, 0;
-                beq       0x8000252c;
-                lhz       r0, { attached_actor_offset }(r14);
-                cmplwi    r0, 65535;
-                bne       0x8000252c;
-                addi      r3, r14, { energy_drain_offset };
-                bl        { symbol_addr!("GetEnergyDrainIntensity__18CPlayerEnergyDrainCFv", version) };
-                fcmpu     cr0, f1, f14;
-                bgt       0x8000252c;
-                lwz       r0, 0x187c(r28);
-                cmplwi    r0, 0;
-                bne       0x8000252c;
-                lfs       f1, 0x14(r29);
-                fcmpu     cr0, f1, f14;
-                ble       0x8000252c;
-                lfs       f16, { velocity_offset }(r14);
-                lfs       f17, { velocity_offset + 4 }(r14);
-                mr        r3, r14;
-                mr        r4, r16;
-                mr        r5, r30;
-                bl        { symbol_addr!("BombJump__7CPlayerFRC9CVector3fR13CStateManager", version) };
-                stfs      f16, { velocity_offset }(r14);
-                stfs      f17, { velocity_offset + 4 }(r14);
-                mr        r3, r14;
-                li        r4, 4;
-                mr        r5, r29;
-                bl        { symbol_addr!("SetMoveState__7CPlayerFQ27NPlayer20EPlayerMovementStateR13CStateManager", version) };
-                li        r3, 40;
-                stw       r3, 0x0c(r16);
-                b         0x80002540;
-                lwz       r3, 0x0c(r16);
-                cmplwi    r3, 0;
-                beq       0x80002540;
-                addi      r3, r3, -1;
-                stw       r3, 0x0c(r16);
-
-                // call compute boost ball movement
-                mr        r3, r28;
-                mr        r4, r29;
-                mr        r5, r30;
-                fmr       f1, f15;
-                bl        { symbol_addr!("ComputeBoostBallMovement__10CMorphBallFRC11CFinalInputRC13CStateManagerf", version) };
-
-                // stack deinit
-                lwz       r0, 0x20(r1);
-                fmr       f1, f15;
-                fmr       f15, f14;
-                fmr       f16, f14;
-                fmr       f17, f14;
-                lwz       r31, 0x1c(r1);
-                lwz       r30, 0x18(r1);
-                lwz       r29, 0x14(r1);
-                lwz       r28, 0x10(r1);
-                mtlr      r0;
-                addi      r1, r1, 0x20;
-                blr;
-                
-                // align bytes to 32 bytes
-                nop;
-                nop;
-                nop;
-            data:
-                .float 0.0;
-                .float 0.0;
-                .float 0.0;
-                .long 0;
-        });
-        dol_patcher.add_text_segment(0x80002400, Cow::Owned(spring_ball_patch.encoded_bytes()))?;
-    }
-
     // Add rel loader to the binary
     let (rel_loader_bytes, rel_loader_map_str) = match version {
         Version::NtscU0_00 => {
@@ -6665,22 +6457,200 @@ fn patch_dol<'r>(
     };
 
     let mut rel_loader = rel_loader_bytes.to_vec();
+    let rel_loader_padding_size = ((rel_loader.len() + 3) & !3) - rel_loader.len();
+    rel_loader.extend([0; 4][..rel_loader_padding_size].iter().copied());
 
     let rel_loader_map = dol_linker::parse_symbol_table(
         "extra_assets/rel_loader_1.0?.bin.map".as_ref(),
         rel_loader_map_str.lines().map(|l| Ok(l.to_owned())),
     ).map_err(|e| e.to_string())?;
 
+    let rel_loader_size = rel_loader.len() as u32;
+    new_text_section.extend(rel_loader);
 
-    let bytes_needed = ((rel_loader.len() + 31) & !31) - rel_loader.len();
-    rel_loader.extend([0; 32][..bytes_needed].iter().copied());
-
-    dol_patcher.add_text_segment(0x80002000, Cow::Owned(rel_loader))?;
-
-    dol_patcher.ppcasm_patch(&ppcasm!(symbol_addr!("PPCSetFpIEEEMode", version) + 4, {
+    dol_patcher.ppcasm_patch(&ppcasm!(symbol_addr!("PPCSetFpIEEEMode", version), {
         b      { rel_loader_map["rel_loader_hook"] };
     }))?;
 
+    new_text_section_end = new_text_section_end + rel_loader_size;
+
+    if config.warp_to_start
+    {
+        let handle_no_to_save_msg_patch = ppcasm!(symbol_addr!("ThinkSaveStation__22CScriptSpecialFunctionFfR13CStateManager", version) + 0x54, {
+                b         { new_text_section_end };
+        });
+        dol_patcher.ppcasm_patch(&handle_no_to_save_msg_patch)?;
+
+        let warp_to_start_patch = ppcasm!(new_text_section_end, {
+                lis       r14, {symbol_addr!("g_Main", version)}@h;
+                addi      r14, r14, {symbol_addr!("g_Main", version)}@l;
+                lwz       r14, 0x0(r14);
+                lwz       r14, 0x164(r14);
+                lwz       r14, 0x34(r14);
+                lbz       r0, 0x86(r14);
+                cmpwi     r0, 0;
+                beq       { new_text_section_end + 0x34 };
+                lbz       r0, 0x89(r14);
+                cmpwi     r0, 0;
+                beq       { new_text_section_end + 0x34 };
+                li        r4, 12;
+                b         { new_text_section_end + 0x38 };
+                li        r4, 9;
+                andi      r14, r14, 0;
+                b         { symbol_addr!("ThinkSaveStation__22CScriptSpecialFunctionFfR13CStateManager", version) + 0x58 };
+        });
+
+        new_text_section_end = new_text_section_end + warp_to_start_patch.encoded_bytes().len() as u32;
+        new_text_section.extend(warp_to_start_patch.encoded_bytes());
+    }
+
+    // TO-DO :
+    // Disable spring ball on Trilogy if config.spring_ball is set to false
+    if config.spring_ball {
+        // call compute spring ball movement
+        let call_compute_spring_ball_movement_patch = ppcasm!(symbol_addr!("ComputeBallMovement__10CMorphBallFRC11CFinalInputR13CStateManagerf", version) + 0x2c, {
+                bl         { new_text_section_end };
+        });
+        dol_patcher.ppcasm_patch(&call_compute_spring_ball_movement_patch)?;
+
+        // rewrote as tuple to make it cleaner
+        let (velocity_offset, movement_state_offset, attached_actor_offset, energy_drain_offset, out_of_water_ticks_offset, surface_restraint_type_offset) = if version == Version::NtscU0_00 || version == Version::NtscU0_01 || version == Version::NtscK
+        {
+            (0x138, 0x258, 0x26c, 0x274, 0x2b0, 0x2ac)
+        }
+        else
+        {
+            (0x148, 0x268, 0x27c, 0x284, 0x2c0, 0x2bc)
+        };
+
+        let spring_ball_patch = ppcasm!(new_text_section_end, {
+                // stack init
+                stwu      r1, -0x20(r1);
+                mflr      r0;
+                stw       r0, 0x20(r1);
+                fmr       f15, f1;
+                stw       r31, 0x1c(r1);
+                stw       r30, 0x18(r1);
+                mr        r30, r5;
+                stw       r29, 0x14(r1);
+                mr        r29, r4;
+                stw       r28, 0x10(r1);
+                mr        r28, r3;
+
+                // function body
+                lwz       r14, 0x84c(r30);
+                lwz       r15, 0x8b8(r30);
+                lis       r16, data@h;
+                addi      r16, r16, data@l;
+                lfs       f1, 0x40(r14);
+                stfs      f1, 0x00(r16);
+                lfs       f1, 0x50(r14);
+                stfs      f1, 0x04(r16);
+                lfs       f1, 0x60(r14);
+                stfs      f1, 0x08(r16);
+                lwz       r0, 0x0c(r16);
+                cmplwi    r0, 0;
+                bgt       { new_text_section_end + 0x12c };
+                lwz       r0, { movement_state_offset }(r14);
+                cmplwi    r0, 0;
+                beq       { new_text_section_end + 0x80 };
+                b         { new_text_section_end + 0x12c };
+                cmplwi    r0, 4;
+                bne       { new_text_section_end + 0x12c };
+                lwz       r0, { out_of_water_ticks_offset }(r14);
+                cmplwi    r0, 2;
+                bne       { new_text_section_end + 0x8c };
+                lwz       r0, { surface_restraint_type_offset }(r14);
+                b         { new_text_section_end + 0x90 };
+                li        r0, 4;
+                cmplwi    r0, 7;
+                beq       { new_text_section_end + 0x12c };
+                mr        r3, r28;
+                bl        { symbol_addr!("IsMovementAllowed__10CMorphBallCFv", version) };
+                cmplwi    r3, 0;
+                beq       { new_text_section_end + 0x12c };
+                lwz       r3, 0x0(r15);
+                li        r4, 6;
+                bl        { symbol_addr!("HasPowerUp__12CPlayerStateCFQ212CPlayerState9EItemType", version) };
+                cmplwi    r3, 0;
+                beq       { new_text_section_end + 0x12c };
+                lhz       r0, { attached_actor_offset }(r14);
+                cmplwi    r0, 65535;
+                bne       { new_text_section_end + 0x12c };
+                addi      r3, r14, { energy_drain_offset };
+                bl        { symbol_addr!("GetEnergyDrainIntensity__18CPlayerEnergyDrainCFv", version) };
+                fcmpu     cr0, f1, f14;
+                bgt       { new_text_section_end + 0x12c };
+                lwz       r0, 0x187c(r28);
+                cmplwi    r0, 0;
+                bne       { new_text_section_end + 0x12c };
+                lfs       f1, 0x14(r29);
+                fcmpu     cr0, f1, f14;
+                ble       { new_text_section_end + 0x12c };
+                lfs       f16, { velocity_offset }(r14);
+                lfs       f17, { velocity_offset + 4 }(r14);
+                mr        r3, r14;
+                mr        r4, r16;
+                mr        r5, r30;
+                bl        { symbol_addr!("BombJump__7CPlayerFRC9CVector3fR13CStateManager", version) };
+                stfs      f16, { velocity_offset }(r14);
+                stfs      f17, { velocity_offset + 4 }(r14);
+                mr        r3, r14;
+                li        r4, 4;
+                mr        r5, r29;
+                bl        { symbol_addr!("SetMoveState__7CPlayerFQ27NPlayer20EPlayerMovementStateR13CStateManager", version) };
+                li        r3, 40;
+                stw       r3, 0x0c(r16);
+                b         { new_text_section_end + 0x140 };
+                lwz       r3, 0x0c(r16);
+                cmplwi    r3, 0;
+                beq       { new_text_section_end + 0x140 };
+                addi      r3, r3, -1;
+                stw       r3, 0x0c(r16);
+
+                // call compute boost ball movement
+                mr        r3, r28;
+                mr        r4, r29;
+                mr        r5, r30;
+                fmr       f1, f15;
+                bl        { symbol_addr!("ComputeBoostBallMovement__10CMorphBallFRC11CFinalInputRC13CStateManagerf", version) };
+
+                // stack deinit
+                lwz       r0, 0x20(r1);
+                fmr       f1, f15;
+                fmr       f15, f14;
+                fmr       f16, f14;
+                fmr       f17, f14;
+                lwz       r31, 0x1c(r1);
+                lwz       r30, 0x18(r1);
+                lwz       r29, 0x14(r1);
+                lwz       r28, 0x10(r1);
+                mtlr      r0;
+                addi      r1, r1, 0x20;
+                blr;
+            data:
+                .float 0.0;
+                .float 0.0;
+                .float 0.0;
+                .long 0;
+        });
+
+        new_text_section_end = new_text_section_end + spring_ball_patch.encoded_bytes().len() as u32;
+        new_text_section.extend(spring_ball_patch.encoded_bytes());
+    }
+
+    let bytes_needed = ((new_text_section.len() + 31) & !31) - new_text_section.len();
+    new_text_section.extend([0; 32][..bytes_needed].iter().copied());
+    dol_patcher.add_text_segment(new_text_section_start, Cow::Owned(new_text_section))?;
+
+    // move the ram after the newly added sections (if there are any)
+    dol_patcher.ppcasm_patch(&ppcasm!(symbol_addr!("OSInit", version) + 0xe0, {
+            lis        r3, { new_text_section_end + 0x10000 }@h;
+        }))?;
+
+    dol_patcher.ppcasm_patch(&ppcasm!(symbol_addr!("OSInit", version) + 0x118, {
+            lis        r3, { new_text_section_end + 0x10000 }@h;
+        }))?;
 
     *file = structs::FstEntryFile::ExternalFile(Box::new(dol_patcher));
     Ok(())
@@ -8113,14 +8083,14 @@ fn patch_modify_dock<'r>(
                 if !is_the_trigger {
                     continue;
                 }
-                
+
                 let trigger = obj.property_data.as_trigger_mut().unwrap();
                 trigger_pos = trigger.position.into();
                 trigger_scale = trigger.scale.into();
 
                 break;
             }
-            
+
             assert_ne!(trigger_pos, trigger_scale);
 
             // unload everything upon touching
@@ -8166,7 +8136,7 @@ fn patch_modify_dock<'r>(
                     }.into(),
                     connections: connections.into(),
                 }
-            );   
+            );
         }
     }
 
@@ -9489,7 +9459,7 @@ fn patch_incinerator_drone_timer<'r>(area: &mut mlvl_wrapper::MlvlArea<'r, '_, '
                 if random_add.is_some() {
                     timer_obj.max_random_add = random_add.unwrap();
                 }
-            }            
+            }
         }
     }
     Ok(())
@@ -9505,13 +9475,13 @@ fn patch_arboretum_sandstone<'a>(patcher: &mut PrimePatcher<'_, 'a>)
             if obj.property_data
                 .as_damageable_trigger()
                 .map(|dt| dt.name == b"DamageableTrigger-component\0".as_cstr())
-                .unwrap_or(false) {                  
+                .unwrap_or(false) {
                 obj.property_data.as_damageable_trigger_mut().unwrap().damage_vulnerability.power_bomb = 1;
             }
-        } 
-        
+        }
+
         Ok(())
-    });    
+    });
 }
 
 pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
@@ -9658,7 +9628,7 @@ fn export_logbook(gc_disc: &mut structs::GcDisc, config: &PatchConfig, _version:
                 }
             }
             if exists {continue;}
-            
+
             let mut strings = Vec::<String>::new();
             for string in string_table.iter_mut() {
                 strings.push(string.clone().into_string().replace("\u{0}", ""));
@@ -9697,42 +9667,42 @@ fn export_assets(_gc_disc: &mut structs::GcDisc, config: &PatchConfig)
         .map_err(|e| format!("Failed to create asset file: {}", e))?;
     file.write_all(bytes)
         .map_err(|e| format!("Failed to write asset file: {}", e))?;
-    
+
     let bytes = include_bytes!("../extra_assets/phazon_suit_texure_2.txtr");
     let filename = "phazon_suit_texure_2.txtr";
     let mut file = File::create(format!("{}/{}", asset_dir, filename))
         .map_err(|e| format!("Failed to create asset file: {}", e))?;
     file.write_all(bytes)
         .map_err(|e| format!("Failed to write asset file: {}", e))?;
-    
+
     let bytes = include_bytes!("../extra_assets/nothing_texture.txtr"     );
     let filename = "nothing_texture.txtr";
     let mut file = File::create(format!("{}/{}", asset_dir, filename))
         .map_err(|e| format!("Failed to create asset file: {}", e))?;
     file.write_all(bytes)
         .map_err(|e| format!("Failed to write asset file: {}", e))?;
-    
+
     let bytes = include_bytes!("../extra_assets/shiny-missile0.txtr"      );
     let filename = "shiny-missile0.txtr";
     let mut file = File::create(format!("{}/{}", asset_dir, filename))
         .map_err(|e| format!("Failed to create asset file: {}", e))?;
     file.write_all(bytes)
         .map_err(|e| format!("Failed to write asset file: {}", e))?;
-    
+
     let bytes = include_bytes!("../extra_assets/shiny-missile1.txtr"      );
     let filename = "shiny-missile1.txtr";
     let mut file = File::create(format!("{}/{}", asset_dir, filename))
         .map_err(|e| format!("Failed to create asset file: {}", e))?;
     file.write_all(bytes)
         .map_err(|e| format!("Failed to write asset file: {}", e))?;
-    
+
     let bytes = include_bytes!("../extra_assets/shiny-missile2.txtr"      );
     let filename = "shiny-missile2.txtr";
     let mut file = File::create(format!("{}/{}", asset_dir, filename))
         .map_err(|e| format!("Failed to create asset file: {}", e))?;
     file.write_all(bytes)
         .map_err(|e| format!("Failed to write asset file: {}", e))?;
-    
+
     Ok(())
 }
 
@@ -9915,7 +9885,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     let pickup_hudmemos = &pickup_hudmemos;
     let pickup_scans = &pickup_scans;
     let extra_scans = &extra_scans;
-    
+
     let savw_scans_to_add = &savw_scans_to_add;
     let local_savw_scans_to_add = &local_savw_scans_to_add;
 
@@ -10203,7 +10173,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                 );
                             }
                         }
-                        
+
                         let submerge = room.submerge.clone().unwrap_or(false);
                         if room.remove_water.clone().unwrap_or(false) || submerge {
                             patcher.add_scly_patch(
@@ -10218,7 +10188,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                 move |_ps, area| patch_submerge_room(_ps, area, liquid_resources),
                             );
                         }
-                        
+
                         if room.liquids.is_some() {
                             for liquid in room.liquids.as_ref().unwrap().iter() {
                                 patcher.add_scly_patch(
@@ -10717,7 +10687,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
     if config.incinerator_drone_config.is_some() {
         let incinerator_drone_config = config.incinerator_drone_config.clone().unwrap();
-        
+
         let reset_contraption_minimum_time = incinerator_drone_config.contraption_start_delay_minimum_time.clone();
         let reset_contraption_random_time = incinerator_drone_config.contraption_start_delay_random_time.clone();
         let eye_stay_up_minimum_time = incinerator_drone_config.eye_stay_up_minimum_time.clone();
@@ -10729,50 +10699,50 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
         patcher.add_scly_patch(
             resource_info!("03_monkey_lower.MREA").into(),
-            move |_ps, area| 
-            patch_incinerator_drone_timer(area, 
-                CString::new("Time Contraption Start Delay").unwrap(), 
-                incinerator_drone_config.contraption_start_delay_minimum_time, 
+            move |_ps, area|
+            patch_incinerator_drone_timer(area,
+                CString::new("Time Contraption Start Delay").unwrap(),
+                incinerator_drone_config.contraption_start_delay_minimum_time,
                 incinerator_drone_config.contraption_start_delay_random_time,
             )
         );
 
         patcher.add_scly_patch(
             resource_info!("03_monkey_lower.MREA").into(),
-            move |_ps, area| 
-            patch_incinerator_drone_timer(area, 
-                CString::new("Timer Reset Contraption").unwrap(), 
-                reset_contraption_minimum_time, 
+            move |_ps, area|
+            patch_incinerator_drone_timer(area,
+                CString::new("Timer Reset Contraption").unwrap(),
+                reset_contraption_minimum_time,
                 reset_contraption_random_time,
             )
         );
 
         patcher.add_scly_patch(
             resource_info!("03_monkey_lower.MREA").into(),
-            move |_ps, area| 
-            patch_incinerator_drone_timer(area, 
-                CString::new("Timer Eye Stay Up Time").unwrap(), 
-                eye_stay_up_minimum_time, 
+            move |_ps, area|
+            patch_incinerator_drone_timer(area,
+                CString::new("Timer Eye Stay Up Time").unwrap(),
+                eye_stay_up_minimum_time,
                 eye_stay_up_random_time,
             )
         );
 
         patcher.add_scly_patch(
             resource_info!("03_monkey_lower.MREA").into(),
-            move |_ps, area| 
-            patch_incinerator_drone_timer(area, 
-                CString::new("Timer Eye Wait (Initial)").unwrap(), 
-                eye_wait_initial_minimum_time, 
+            move |_ps, area|
+            patch_incinerator_drone_timer(area,
+                CString::new("Timer Eye Wait (Initial)").unwrap(),
+                eye_wait_initial_minimum_time,
                 eye_wait_initial_random_time,
             )
         );
 
         patcher.add_scly_patch(
             resource_info!("03_monkey_lower.MREA").into(),
-            move |_ps, area| 
-            patch_incinerator_drone_timer(area, 
-                CString::new("Timer Eye Wait").unwrap(), 
-                eye_wait_minimum_time, 
+            move |_ps, area|
+            patch_incinerator_drone_timer(area,
+                CString::new("Timer Eye Wait").unwrap(),
+                eye_wait_minimum_time,
                 eye_wait_random_time,
             )
         );
@@ -11427,7 +11397,7 @@ fn patch_maze_seeds(res: &mut structs::Resource, seeds: Vec<u32>) -> Result<(), 
         let mut seeds = seeds.into_iter().cycle();
         for i in 0..300 {
             res.data[i] = seeds.next().unwrap();
-        }     
+        }
     }
 
     Ok(())

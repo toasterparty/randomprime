@@ -14341,3 +14341,6 @@
 0x805a8c38 g_Main
 0x805a8c40 g_GameState
 0x805aa82c g_EtankCapacity
+0x805aebc0 sda_register
+0x805b1d20 toc_register
+0x805c20e0 OSArenaHi

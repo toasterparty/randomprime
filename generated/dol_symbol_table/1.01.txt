@@ -1,3 +1,4 @@
+0x80003278 __init_registers
 0x80003490 memcpy
 0x80015a6c wstring_l__4rstlFPCw
 0x800185ac UpdateVisorState__7CPlayerFRC11CFinalInputfR13CStateManager
@@ -67,6 +68,7 @@
 0x80371860 DVDOpen
 0x80371928 DVDClose
 0x80371b70 DVDReadAsyncPrio
+0x8037da84 OSInit
 0x8038236c OSLink
 0x8038deb8 sprintf
 0x8038e08c printf
@@ -87,3 +89,6 @@
 0x805a8e18 g_Main
 0x805a8e20 g_GameState
 0x805aaa0c g_EtankCapacity
+0x805aeda0 sda_register
+0x805b1f00 toc_register
+0x805c02c0 OSArenaHi

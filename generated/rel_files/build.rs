@@ -65,11 +65,12 @@ fn main()
         let sym_table_path = symbol_table_dir.join(format!("{}.txt", version));
         eprintln!("{:?}", root_dir.join("..").join(&sym_table_path));
         let mut symbol_table = read_symbol_table(root_dir.join(sym_table_path)).unwrap();
+        let os_arena_hi = symbol_table.get("OSArenaHi").unwrap();
 
         let bin_path = out_dir.join(format!("rel_loader_{}.bin", version));
         let symbols_map = link_obj_files_to_bin(
             [target_dir.join("librel_loader.a")].iter(),
-            0x80002000,
+            *os_arena_hi,
             &symbol_table,
             &bin_path,
         ).unwrap();

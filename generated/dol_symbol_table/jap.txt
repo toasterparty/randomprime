@@ -1,3 +1,4 @@
+0x80003278 __init_registers
 0x80003490 memcpy
 0x80008ad4 __nw__FUlPCcPCc
 0x8001660c wstring_l__4rstlFPCw
@@ -68,6 +69,7 @@
 0x8035d4a4 DVDOpen
 0x8035d56c DVDClose
 0x8035d7b4 DVDReadAsyncPrio
+0x80369468 OSInit
 0x8036e02c OSLink
 0x80379ab8 sprintf
 0x80379c8c printf
@@ -87,3 +89,6 @@
 0x80591cd8 g_Main
 0x80591ce0 g_GameState
 0x805939f4 g_EtankCapacity
+0x80597c20 sda_register
+0x8059ae00 toc_register
+0x805ab440 OSArenaHi
