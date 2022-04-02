@@ -6073,10 +6073,6 @@ fn patch_dol<'r>(
                 nop;
         });
         dol_patcher.ppcasm_patch(&better_teleport_patch)?;
-        let better_teleport_patch = ppcasm!(symbol_addr!("AcceptScriptMsg__17CScriptSpawnPointF20EScriptObjectMessage9TUniqueIdR13CStateManager", version) + 0x1ec, {
-                nop;
-        });
-        dol_patcher.ppcasm_patch(&better_teleport_patch)?;
     }
 
     if config.automatic_crash_screen {
