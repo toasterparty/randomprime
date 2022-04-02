@@ -2799,6 +2799,6 @@
 0x8046ad3c g_Main
 0x8046ad44 g_GameState
 0x8046c99c g_EtankCapacity
-0x80473e60 sda_register
-0x80470c60 toc_register
+0x80470c60 sda_register
+0x80473e60 toc_register
 0x80484360 OSArenaHi
