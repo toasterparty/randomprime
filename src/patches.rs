@@ -2093,7 +2093,7 @@ fn modify_pickups_in_mrea<'r>(
     let mut rng = StdRng::seed_from_u64(seed);
 
     let mut position_override: Option<[f32;3]> = None;
-    if shuffle_position && mrea_id != 0xFEA372E2 { // skip central dynamo
+    if shuffle_position {
         position_override = Some(get_shuffled_position(area, &mut rng));
     }
 
@@ -2395,7 +2395,7 @@ fn modify_pickups_in_mrea<'r>(
         });
     }
 
-    if shuffle_position {
+    if position_override.is_some() {
         let poi_id = ps.fresh_instance_id_range.next().unwrap();
         layers[new_layer_idx].objects.as_mut_vec().push(
             structs::SclyObject {
@@ -6075,10 +6075,10 @@ fn patch_dol<'r>(
         dol_patcher.ppcasm_patch(&better_teleport_patch)?;
 
         // Do not force morph/unmorph
-        let better_teleport_patch = ppcasm!(symbol_addr!("AcceptScriptMsg__17CScriptSpawnPointF20EScriptObjectMessage9TUniqueIdR13CStateManager", version) + 0x188, {
-                nop;
-        });
-        dol_patcher.ppcasm_patch(&better_teleport_patch)?;
+        // let better_teleport_patch = ppcasm!(symbol_addr!("AcceptScriptMsg__17CScriptSpawnPointF20EScriptObjectMessage9TUniqueIdR13CStateManager", version) + 0x188, {
+        //         nop;
+        // });
+        // dol_patcher.ppcasm_patch(&better_teleport_patch)?;
     }
 
     if config.automatic_crash_screen {
