@@ -2093,7 +2093,7 @@ fn modify_pickups_in_mrea<'r>(
     let mut rng = StdRng::seed_from_u64(seed);
 
     let mut position_override: Option<[f32;3]> = None;
-    if shuffle_position {
+    if shuffle_position && mrea_id != 0xFEA372E2 { // skip central dynamo
         position_override = Some(get_shuffled_position(area, &mut rng));
     }
 
