@@ -1,3 +1,4 @@
+0x80003278 __init_registers
 0x80003100 __check_pad3
 0x80003354 __init_hardware
 0x80003374 __flush_cache
@@ -2532,6 +2533,7 @@
 0x803674fc sub_8037e490
 0x80367538 sub_8037e4cc
 0x80367584 OSGetConsoleType
+0x80367710 OSInit
 0x80367d08 __OSDBIntegrator
 0x80367d30 __OSSetExceptionHandler
 0x80367d4c __OSGetExceptionHandler
@@ -2797,3 +2799,6 @@
 0x8046ad3c g_Main
 0x8046ad44 g_GameState
 0x8046c99c g_EtankCapacity
+0x80470c60 sda_register
+0x80473e60 toc_register
+0x80484360 OSArenaHi
