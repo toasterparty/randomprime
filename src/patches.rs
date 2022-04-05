@@ -1325,6 +1325,7 @@ fn patch_deheat_room<'r>(
 fn patch_superheated_room<'r>(
     ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    heat_damage_per_sec: f32,
 )
 -> Result<(), String>
 {
@@ -1341,7 +1342,7 @@ fn patch_superheated_room<'r>(
                 rotation: [0., 0., 0.].into(),
                 type_: 18,
                 unknown0: b"\0".as_cstr(),
-                unknown1: 10.0,
+                unknown1: heat_damage_per_sec,
                 unknown2: 0.0,
                 unknown3: 0.0,
                 layer_change_room_id: 4294967295,
@@ -10204,7 +10205,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             if room.superheated.clone().unwrap() {
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                    move |_ps, area| patch_superheated_room(_ps, area),
+                                    move |_ps, area| patch_superheated_room(_ps, area, config.heat_damage_per_sec),
                                 );
                             }
                         }
