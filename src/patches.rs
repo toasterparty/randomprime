@@ -8195,11 +8195,46 @@ fn patch_omega_pirate_scale<'r>(
     let scly = area.mrea().scly_section_mut();
     for layer in scly.layers.as_mut_vec().iter_mut() {
         for obj in layer.objects.as_mut_vec().iter_mut() {
-            if !obj.property_data.is_omega_pirate() { continue; }
-            let boss = obj.property_data.as_omega_pirate_mut().unwrap();
-            boss.scale[0] *= scale;
-            boss.scale[1] *= scale;
-            boss.scale[2] *= scale;
+            if obj.property_data.is_omega_pirate() {
+                let boss = obj.property_data.as_omega_pirate_mut().unwrap();
+                boss.scale[0] *= scale;
+                boss.scale[1] *= scale;
+                boss.scale[2] *= scale;
+                continue;
+            }
+
+            if obj.property_data.is_platform() {
+                let boss = obj.property_data.as_platform_mut().unwrap();
+                if !boss.name.to_str().ok().unwrap().to_string().to_lowercase().contains("armor") {
+                    continue;
+                }
+                boss.scale[0] *= scale;
+                boss.scale[1] *= scale;
+                boss.scale[2] *= scale;
+                continue;
+            }
+
+            if obj.property_data.is_actor() {
+                let boss = obj.property_data.as_actor_mut().unwrap();
+                if !boss.name.to_str().ok().unwrap().to_string().to_lowercase().contains("omega") {
+                    continue;
+                }
+                boss.scale[0] *= scale;
+                boss.scale[1] *= scale;
+                boss.scale[2] *= scale;
+                continue;
+            }
+
+            if obj.property_data.is_effect() {
+                let boss = obj.property_data.as_effect_mut().unwrap();
+                if !boss.name.to_str().ok().unwrap().to_string().to_lowercase().contains("armor") {
+                    continue;
+                }
+                boss.scale[0] *= scale;
+                boss.scale[1] *= scale;
+                boss.scale[2] *= scale;
+                continue;
+            }
         }
     }
 
