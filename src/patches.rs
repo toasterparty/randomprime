@@ -6068,7 +6068,7 @@ fn patch_dol<'r>(
     // });
     // dol_patcher.ppcasm_patch(&bouncy_beam_patch)?;
 
-    if smoother_teleports {
+    if smoother_teleports && version == Version::NtscU0_00 {
         // Do not holster arm cannon
         let better_teleport_patch = ppcasm!(symbol_addr!("Teleport__7CPlayerFRC12CTransform4fR13CStateManagerb", version) + 0x31C, {
                 nop;
