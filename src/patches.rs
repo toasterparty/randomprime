@@ -7810,8 +7810,10 @@ fn patch_add_dock_teleport<'r>(
     let mut is_frigate_door = false;
     let mut is_ceiling_door = false;
     let mut is_floor_door = false;
+    let mut door_id: u32 = 0;
 
     let mut door_rotation: GenericArray<f32, U3> = [0.0, 0.0, 0.0].into();
+    let mut disable_ids: Vec<u32> = vec![];
     for obj in layer.objects.as_mut_vec() {
         if !obj.property_data.is_door() {
             continue;
@@ -7822,6 +7824,13 @@ fn patch_add_dock_teleport<'r>(
             f32::abs(door.position[1] - dock_position[1]) > 5.0 ||
             f32::abs(door.position[2] - dock_position[2]) > 5.0 {
             continue;
+        }
+
+        door_id = obj.instance_id;
+        for conn in obj.connections.as_mut_vec().iter() {
+            if conn.state == structs::ConnectionState::MAX_REACHED && conn.message == structs::ConnectionMsg::DEACTIVATE {
+                disable_ids.push(conn.target_object_id);
+            }
         }
 
         door_rotation = door.rotation.clone();
@@ -7924,17 +7933,31 @@ fn patch_add_dock_teleport<'r>(
     let mut source_scale = source_scale.clone();
     source_scale[thinnest] = 0.1;
 
+    let timer_id = ps.fresh_instance_id_range.next().unwrap();
+
     // Insert a trigger at the previous room which sends the player to the freshly created spawn point
+    let mut connections: Vec::<structs::Connection> = Vec::new();
+    if door_id != 0 {
+        connections.push(
+            structs::Connection {
+                state: structs::ConnectionState::ENTERED,
+                message: structs::ConnectionMsg::RESET_AND_START,
+                target_object_id: timer_id,
+            }
+        );
+    }
+    connections.push(
+        structs::Connection {
+            state: structs::ConnectionState::ENTERED,
+            message: structs::ConnectionMsg::SET_TO_ZERO,
+            target_object_id: spawn_point_id as u32,
+        }
+    );
+
     layer.objects.as_mut_vec().push(
         structs::SclyObject {
             instance_id: ps.fresh_instance_id_range.next().unwrap(),
-            connections: vec![
-                structs::Connection {
-                    state: structs::ConnectionState::ENTERED,
-                    message: structs::ConnectionMsg::SET_TO_ZERO,
-                    target_object_id: spawn_point_id as u32,
-                },
-            ].into(),
+            connections: connections.into(),
             property_data: structs::SclyProperty::Trigger(
                 Box::new(structs::Trigger {
                     name: b"dockteleporttrigger\0".as_cstr(),
@@ -7955,6 +7978,36 @@ fn patch_add_dock_teleport<'r>(
             ),
         }
     );
+
+    // Open the door when arriving into the room
+    let mut connections: Vec::<structs::Connection> = vec![
+        structs::Connection {
+            state: structs::ConnectionState::ZERO,
+            message: structs::ConnectionMsg::OPEN,
+            target_object_id: door_id,
+        },
+    ];
+    for id in disable_ids.iter() {
+        connections.push(
+            structs::Connection {
+                state: structs::ConnectionState::ZERO,
+                message: structs::ConnectionMsg::DEACTIVATE,
+                target_object_id: *id,
+            }
+        );
+    }
+    layer.objects.as_mut_vec().push(structs::SclyObject {
+        instance_id: timer_id,
+        property_data: structs::Timer {
+            name: b"open-door-timer\0".as_cstr(),
+            start_time: 0.1,
+            max_random_add: 0.0,
+            reset_to_zero: 0,
+            start_immediately: 0,
+            active: 1,
+        }.into(),
+        connections: connections.into(),
+    });
 
     Ok(())
 }
