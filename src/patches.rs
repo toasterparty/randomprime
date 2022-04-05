@@ -6074,12 +6074,27 @@ fn patch_dol<'r>(
                 nop;
         });
         dol_patcher.ppcasm_patch(&better_teleport_patch)?;
-
-        // Do not force morph/unmorph
-        // let better_teleport_patch = ppcasm!(symbol_addr!("AcceptScriptMsg__17CScriptSpawnPointF20EScriptObjectMessage9TUniqueIdR13CStateManager", version) + 0x188, {
-        //         nop;
+        let better_teleport_patch = ppcasm!(symbol_addr!("SetSpawnedMorphBallState__7CPlayerFQ27CPlayer21EPlayerMorphBallStateR13CStateManager", version) + (0x80017690 - 0x8001766c), {
+                nop; // SetCameraState
+        });
+        dol_patcher.ppcasm_patch(&better_teleport_patch)?;
+        let better_teleport_patch = ppcasm!(symbol_addr!("SetSpawnedMorphBallState__7CPlayerFQ27CPlayer21EPlayerMorphBallStateR13CStateManager", version) + (0x80017770 - 0x8001766c), {
+                nop; // ForceGunOrientation
+        });
+        dol_patcher.ppcasm_patch(&better_teleport_patch)?;
+        let better_teleport_patch = ppcasm!(symbol_addr!("SetSpawnedMorphBallState__7CPlayerFQ27CPlayer21EPlayerMorphBallStateR13CStateManager", version) + (0x80017764 - 0x8001766c), {
+                nop; // DrawGun
+        });
+        dol_patcher.ppcasm_patch(&better_teleport_patch)?;
+        // let better_teleport_patch = ppcasm!(symbol_addr!("LeaveMorphBallState__7CPlayerFR13CStateManager", version) + (0x80282ec0 - 0x80282d1c), {
+        //         nop; // ForceGunOrientation
         // });
         // dol_patcher.ppcasm_patch(&better_teleport_patch)?;
+        // let better_teleport_patch = ppcasm!(symbol_addr!("LeaveMorphBallState__7CPlayerFR13CStateManager", version) + (0x80282ecc - 0x80282d1c), {
+        //         nop; // DrawGun
+        // });
+        // dol_patcher.ppcasm_patch(&better_teleport_patch)?;
+
     }
 
     if config.automatic_crash_screen {
