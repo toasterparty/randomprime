@@ -6094,7 +6094,6 @@ fn patch_dol<'r>(
         //         nop; // DrawGun
         // });
         // dol_patcher.ppcasm_patch(&better_teleport_patch)?;
-
     }
 
     if config.automatic_crash_screen {
@@ -7770,17 +7769,8 @@ fn patch_add_dock_teleport<'r>(
     let attached_areas: &mut reader_writer::LazyArray<'r, u16> = &mut area.mlvl_area.attached_areas;
     if mrea_idx.is_some() {
         let idx = mrea_idx.unwrap() as u16;
-        let mut missing = true;
-        for i in 0..attached_areas.as_mut_vec().len() {
-            if attached_areas.as_mut_vec()[i] == idx {
-                missing = false;
-                break;
-            }
-        }
-        if missing {
-            attached_areas.as_mut_vec().push(idx);
-            area.mlvl_area.attached_area_count += 1;
-        }
+        attached_areas.as_mut_vec().push(idx);
+        area.mlvl_area.attached_area_count += 1;
     }
 
     let layer = &mut area.mrea().scly_section_mut().layers.as_mut_vec()[0];
@@ -8047,7 +8037,6 @@ fn patch_modify_dock<'r>(
     let frme_dep: structs::Dependency = frme_id.into();
     area.add_dependencies(game_resources, 0, iter::once(frme_dep));
 
-    // let mut replaced = false;
     let mrea_id = area.mlvl_area.mrea.to_u32();
     let attached_areas: &mut reader_writer::LazyArray<'r, u16> = &mut area.mlvl_area.attached_areas;
     let docks: &mut reader_writer::LazyArray<'r, structs::mlvl::Dock<'r>> = &mut area.mlvl_area.docks;
@@ -8063,7 +8052,8 @@ fn patch_modify_dock<'r>(
     }
 
     docks.as_mut_vec()[dock_num as usize].connecting_docks.as_mut_vec()[0].array_index = new_mrea_idx;
-    attached_areas.as_mut_vec()[dock_num as usize] = new_mrea_idx as u16;
+    attached_areas.as_mut_vec().push(new_mrea_idx as u16);
+    area.mlvl_area.attached_area_count += 1;
 
     let layer = &mut area.mrea().scly_section_mut().layers.as_mut_vec()[0];
 
