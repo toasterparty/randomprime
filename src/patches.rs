@@ -8363,6 +8363,7 @@ fn patch_flaahgra_scale<'r>(
             boss.scale[0] *= scale;
             boss.scale[1] *= scale;
             boss.scale[2] *= scale;
+            boss.dont_care[1] *= scale;
         }
     }
 
@@ -11203,7 +11204,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 move |_ps, area| patch_idrone_scale(_ps, area, scale)
             );
         }
-        else if boss_name == "flaahgra" // doesn't work
+        else if boss_name == "flaahgra"
         {
             patcher.add_scly_patch(
                 resource_info!("22_Flaahgra.MREA").into(),
