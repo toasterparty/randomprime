@@ -6068,21 +6068,24 @@ fn patch_dol<'r>(
     // });
     // dol_patcher.ppcasm_patch(&bouncy_beam_patch)?;
 
-    if smoother_teleports && version == Version::NtscU0_00 {
+    if smoother_teleports {
         // Do not holster arm cannon
         let better_teleport_patch = ppcasm!(symbol_addr!("Teleport__7CPlayerFRC12CTransform4fR13CStateManagerb", version) + 0x31C, {
                 nop;
         });
         dol_patcher.ppcasm_patch(&better_teleport_patch)?;
-        let better_teleport_patch = ppcasm!(symbol_addr!("SetSpawnedMorphBallState__7CPlayerFQ27CPlayer21EPlayerMorphBallStateR13CStateManager", version) + (0x80017690 - 0x8001766c), {
+        // NTSC-U 0-00 (0x80017690 - 0x8001766c)
+        let better_teleport_patch = ppcasm!(symbol_addr!("SetSpawnedMorphBallState__7CPlayerFQ27CPlayer21EPlayerMorphBallStateR13CStateManager", version) + 0x24, {
                 nop; // SetCameraState
         });
         dol_patcher.ppcasm_patch(&better_teleport_patch)?;
-        let better_teleport_patch = ppcasm!(symbol_addr!("SetSpawnedMorphBallState__7CPlayerFQ27CPlayer21EPlayerMorphBallStateR13CStateManager", version) + (0x80017770 - 0x8001766c), {
+        // NTSC-U 0-00 (0x80017770 - 0x8001766c)
+        let better_teleport_patch = ppcasm!(symbol_addr!("SetSpawnedMorphBallState__7CPlayerFQ27CPlayer21EPlayerMorphBallStateR13CStateManager", version) + 0x104, {
                 nop; // ForceGunOrientation
         });
         dol_patcher.ppcasm_patch(&better_teleport_patch)?;
-        let better_teleport_patch = ppcasm!(symbol_addr!("SetSpawnedMorphBallState__7CPlayerFQ27CPlayer21EPlayerMorphBallStateR13CStateManager", version) + (0x80017764 - 0x8001766c), {
+        // NTSC-U 0-00 (0x80017764 - 0x8001766c)
+        let better_teleport_patch = ppcasm!(symbol_addr!("SetSpawnedMorphBallState__7CPlayerFQ27CPlayer21EPlayerMorphBallStateR13CStateManager", version) + 0xf8, {
                 nop; // DrawGun
         });
         dol_patcher.ppcasm_patch(&better_teleport_patch)?;
