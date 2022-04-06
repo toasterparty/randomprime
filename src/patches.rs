@@ -5819,6 +5819,13 @@ fn patch_dol<'r>(
             .patch(symbol_addr!("aMetroidprimeB", version), b"randomprime B\0"[..].into())?;
     }
 
+    if version == Version::NtscU0_00 {    
+        let normal_is_default_patch = ppcasm!(symbol_addr!("ActivateNewGamePopup__19SNewFileSelectFrameFv", version) + 0x3C, {
+                li      r4, 2;
+        });
+        dol_patcher.ppcasm_patch(&normal_is_default_patch)?;
+    }
+
     if remove_ball_color {
         let colors = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00".to_vec();
         dol_patcher.patch(symbol_addr!("skBallInnerGlowColors"  , version), colors.clone().into())?;
