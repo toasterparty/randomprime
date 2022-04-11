@@ -2396,6 +2396,68 @@ fn modify_pickups_in_mrea<'r>(
         });
     }
 
+    // Fix chapel IS
+    if mrea_id == 0x40C548E9 {
+        let trigger_id = ps.fresh_instance_id_range.next().unwrap();
+        additional_connections.push(
+            structs::Connection {
+                state: structs::ConnectionState::ARRIVED,
+                message: structs::ConnectionMsg::SET_TO_ZERO,
+                target_object_id: 0x000E023A,
+            }
+        );
+
+        additional_connections.push(
+            structs::Connection {
+                state: structs::ConnectionState::ARRIVED,
+                message: structs::ConnectionMsg::DEACTIVATE,
+                target_object_id: trigger_id,
+            }
+        );
+
+        layers[0].objects.as_mut_vec().push(
+            structs::SclyObject {
+                instance_id: trigger_id,
+                property_data: structs::Trigger {
+                    name: b"Trigger\0".as_cstr(),
+                    position: [-369.901093, -169.402206, 60.743099].into(),
+                    scale: [20.0, 20.0, 5.0].into(),
+                    damage_info: structs::scly_structs::DamageInfo {
+                        weapon_type: 0,
+                        damage: 0.0,
+                        radius: 0.0,
+                        knockback_power: 0.0
+                    },
+                    force: [0.0, 0.0, 0.0].into(),
+                    flags: 0x1001, // detect morphed+player
+                    active: 1,
+                    deactivate_on_enter: 0,
+                    deactivate_on_exit: 0
+                }.into(),
+                connections: vec![
+                    structs::Connection {
+                        state: structs::ConnectionState::INSIDE,
+                        message: structs::ConnectionMsg::SET_TO_ZERO,
+                        target_object_id: 0x000E023A,
+                    }
+                ].into()
+            }
+        );
+    }
+
+    let position: [f32; 3];
+    let scan_id_out: ResId<res_id::SCAN>;
+    {
+        let pickup_obj = layers[pickup_location.location.layer as usize].objects.iter_mut()
+        .find(|obj| obj.instance_id == pickup_location.location.instance_id)
+        .unwrap();
+        (position, scan_id_out) = update_pickup(pickup_obj, pickup_type, pickup_model_data, pickup_config, scan_id, position_override);
+
+        if additional_connections.len() > 0 {
+            pickup_obj.connections.as_mut_vec().extend_from_slice(&additional_connections);
+        }
+    }
+
     if shuffle_position || *pickup_config.jumbo_scan.as_ref().unwrap_or(&false) {
         let poi_id = ps.fresh_instance_id_range.next().unwrap();
         layers[new_layer_idx].objects.as_mut_vec().push(
@@ -2405,7 +2467,7 @@ fn modify_pickups_in_mrea<'r>(
                 property_data: structs::SclyProperty::PointOfInterest(
                     Box::new(structs::PointOfInterest {
                         name: b"mypoi\0".as_cstr(),
-                        position: position_override.clone().unwrap().into(),
+                        position: position.clone().into(),
                         rotation: [0.0, 0.0, 0.0].into(),
                         active: 1,
                         scan_param: structs::scly_structs::ScannableParameters {
@@ -2468,64 +2530,6 @@ fn modify_pickups_in_mrea<'r>(
     }
 
     layers[new_layer_idx].objects.as_mut_vec().push(relay);
-
-    // Fix chapel IS
-    if mrea_id == 0x40C548E9 {
-        let trigger_id = ps.fresh_instance_id_range.next().unwrap();
-        additional_connections.push(
-            structs::Connection {
-                state: structs::ConnectionState::ARRIVED,
-                message: structs::ConnectionMsg::SET_TO_ZERO,
-                target_object_id: 0x000E023A,
-            }
-        );
-
-        additional_connections.push(
-            structs::Connection {
-                state: structs::ConnectionState::ARRIVED,
-                message: structs::ConnectionMsg::DEACTIVATE,
-                target_object_id: trigger_id,
-            }
-        );
-
-        layers[0].objects.as_mut_vec().push(
-            structs::SclyObject {
-                instance_id: trigger_id,
-                property_data: structs::Trigger {
-                    name: b"Trigger\0".as_cstr(),
-                    position: [-369.901093, -169.402206, 60.743099].into(),
-                    scale: [20.0, 20.0, 5.0].into(),
-                    damage_info: structs::scly_structs::DamageInfo {
-                        weapon_type: 0,
-                        damage: 0.0,
-                        radius: 0.0,
-                        knockback_power: 0.0
-                    },
-                    force: [0.0, 0.0, 0.0].into(),
-                    flags: 0x1001, // detect morphed+player
-                    active: 1,
-                    deactivate_on_enter: 0,
-                    deactivate_on_exit: 0
-                }.into(),
-                connections: vec![
-                    structs::Connection {
-                        state: structs::ConnectionState::INSIDE,
-                        message: structs::ConnectionMsg::SET_TO_ZERO,
-                        target_object_id: 0x000E023A,
-                    }
-                ].into()
-            }
-        );
-    }
-
-    let pickup_obj = layers[pickup_location.location.layer as usize].objects.iter_mut()
-        .find(|obj| obj.instance_id == pickup_location.location.instance_id)
-        .unwrap();
-    let (position, scan_id_out) = update_pickup(pickup_obj, pickup_type, pickup_model_data, pickup_config, scan_id, position_override);
-
-    if additional_connections.len() > 0 {
-        pickup_obj.connections.as_mut_vec().extend_from_slice(&additional_connections);
-    }
 
     // find any overlapping POI that give "helpful" hints to the player and replace their scan text with the items //
     if qol_pickup_scans {
