@@ -1193,7 +1193,7 @@ fn patch_add_item<'r>(
     let scly = area.mrea().scly_section_mut();
     let layers = scly.layers.as_mut_vec();
 
-    if shuffle_position {
+    if shuffle_position || *pickup_config.jumbo_scan.as_ref().unwrap_or(&false) {
         let poi_id = ps.fresh_instance_id_range.next().unwrap();
         layers[new_layer_idx].objects.as_mut_vec().push(
             structs::SclyObject {
@@ -2396,7 +2396,7 @@ fn modify_pickups_in_mrea<'r>(
         });
     }
 
-    if position_override.is_some() {
+    if shuffle_position || *pickup_config.jumbo_scan.as_ref().unwrap_or(&false) {
         let poi_id = ps.fresh_instance_id_range.next().unwrap();
         layers[new_layer_idx].objects.as_mut_vec().push(
             structs::SclyObject {
@@ -9935,6 +9935,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                 respawn: None,
                                 position: None,
                                 modal_hudmemo: None,
+                                jumbo_scan: None,
                             }
                         ]
                     );
@@ -10180,7 +10181,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         let world = World::from_pak(pak_name).unwrap();
 
         for room_info in rooms.iter() {
-            if remove_control_disabler {
+            if remove_control_disabler
+            {
                 patcher.add_scly_patch(
                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
                     patch_remove_control_disabler,
@@ -10321,6 +10323,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             model: None,
                             respawn: None,
                             modal_hudmemo: None,
+                            jumbo_scan: None,
                         }
                     } else {
                         pickups[idx].clone() // TODO: cloning is suboptimal
