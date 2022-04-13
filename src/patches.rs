@@ -8086,7 +8086,22 @@ fn patch_modify_dock<'r>(
         for conn in obj.connections.as_mut_vec() {
             if docks.contains(&(conn.target_object_id&0x000FFFFF)) && conn.message == structs::ConnectionMsg::INCREMENT {
                 door_id = obj.instance_id;
+
                 let door = obj.property_data.as_door_mut().unwrap();
+                let is_ceiling_door = door.ancs.file_id == 0xf57dd484 && door.rotation[0] > -90.0 && door.rotation[0] < 90.0;
+                let is_floor_door = door.ancs.file_id == 0xf57dd484 && door.rotation[0] < -90.0 && door.rotation[0] > -270.0;
+
+                if is_ceiling_door {
+                    door.scan_offset[0] = 0.0;
+                    door.scan_offset[1] = 0.0;
+                    door.scan_offset[2] = -2.5;
+                }
+                else if is_floor_door {
+                    door.scan_offset[0] = 0.0;
+                    door.scan_offset[1] = 0.0;
+                    door.scan_offset[2] = 2.5;
+                }
+
                 door.actor_params.scan_params.scan = scan_id;
                 break;
             }
@@ -10440,6 +10455,25 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
             // Edit doors
             for (dock_num, door_config) in doors {
+                let is_vertical_dock = vec![
+                    (0x11BD63B7, 0), // Tower Chamber
+                    (0x0D72F1F7, 1), // Tower of Light
+                    (0xFB54A0CB, 4), // Hall of the Elders
+                    (0xE1981EFC, 0), // Elder Chamber
+                    (0x43E4CC25, 1), // Research Lab Hydra
+                    (0x37BBB33C, 1), // Observatory Access
+                    (0xD8E905DD, 1), // Research Core Access
+                    (0x21B4BFF6, 1), // Research Lab Aether
+                    (0x3F375ECC, 2), // Omega Research
+                    (0xF517A1EA, 1), // Dynamo Access (Careful of Chozo room w/ same name)
+                    (0x8A97BB54, 1), // Elite Research
+                    (0xA20201D4, 0), // Security Access B (both doors)
+                    (0xA20201D4, 1), // Security Access B (both doors)
+                    (0x956F1552, 1), // Mine Security Station
+                    (0xC50AF17A, 2), // Elite Control
+                    (0x90709AAC, 1), // Ventilation Shaft
+                ].contains(&(room_info.room_id.to_u32(), dock_num));
+
                 // Find the corresponding traced info for this dock
                 let mut maybe_door_location: Option<DoorLocation> = None;
                 for dl in room_info.door_locations {
@@ -10451,25 +10485,6 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                         {
                             break;
                         }
-
-                        let is_vertical_dock = vec![
-                            (0x11BD63B7, 0), // Tower Chamber
-                            (0x0D72F1F7, 1), // Tower of Light
-                            (0xFB54A0CB, 4), // Hall of the Elders
-                            (0xE1981EFC, 0), // Elder Chamber
-                            (0x43E4CC25, 1), // Research Lab Hydra
-                            (0x37BBB33C, 1), // Observatory Access
-                            (0xD8E905DD, 1), // Research Core Access
-                            (0x21B4BFF6, 1), // Research Lab Aether
-                            (0x3F375ECC, 2), // Omega Research
-                            (0xF517A1EA, 1), // Dynamo Access (Careful of Chozo room w/ same name)
-                            (0x8A97BB54, 1), // Elite Research
-                            (0xA20201D4, 0), // Security Access B (both doors)
-                            (0xA20201D4, 1), // Security Access B (both doors)
-                            (0x956F1552, 1), // Mine Security Station
-                            (0xC50AF17A, 2), // Elite Control
-                            (0x90709AAC, 1), // Ventilation Shaft
-                        ].contains(&(room_info.room_id.to_u32(), dock_num));
 
                         let mut door_type: Option<DoorType> = None;
                         if door_config.shield_type.is_some() {
@@ -10585,29 +10600,36 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     // Patch the destination room to "catch" the player with a teleporter at the same location as this room's dock
 
                     // Scale the height down a little so you can transition the dock without teleporting from OoB
-                    let position = door_location.dock_position.clone().unwrap();
-                    let mut position: [f32;3] = [position[0], position[1], position[2] - 0.9];
+                    let mut position: [f32;3] = door_location.dock_position.clone().unwrap().into();
                     let mut scale: [f32;3] = door_location.dock_scale.clone().unwrap().into();
-                    if scale[2] > 4.0 { // if normal door
-                        scale = [scale[0]*0.75, scale[1]*0.75, scale[2] - 1.8];
+
+                    if is_vertical_dock {
+                        scale = [scale[0], scale[1], 0.01];
                     }
+                    else {
+                        position[2] -= 0.9;
 
-                    let rotation = door_location.door_rotation.clone();
-                    const TRIGGER_OFFSET: f32 = 0.5;
+                        if scale[2] > 4.0 { // if normal door
+                            scale = [scale[0]*0.75, scale[1]*0.75, scale[2] - 1.8];
+                        }
 
-                    // Move teleport triggers slightly more into their respective rooms so that adjacent teleport triggers leading to the same room do not overlap
-                    if rotation[2] >= 45.0 && rotation[2] < 135.0 {
-                        // North
-                        position[1] -= TRIGGER_OFFSET;
-                    } else if (rotation[2] >= 135.0 && rotation[2] < 225.0) || (rotation[2] < -135.0 && rotation[2] > -225.0) {
-                        // East
-                        position[0] += TRIGGER_OFFSET;
-                    } else if rotation[2] >= -135.0 && rotation[2] < -45.0 {
-                        // South
-                        position[1] += TRIGGER_OFFSET;
-                    } else if rotation[2] >= -45.0 && rotation[2] < 45.0 {
-                        // West
-                        position[0] -= TRIGGER_OFFSET;
+                        let rotation = door_location.door_rotation.clone();
+                        const TRIGGER_OFFSET: f32 = 0.5;
+
+                        // Move teleport triggers slightly more into their respective rooms so that adjacent teleport triggers leading to the same room do not overlap
+                        if rotation[2] >= 45.0 && rotation[2] < 135.0 {
+                            // North
+                            position[1] -= TRIGGER_OFFSET;
+                        } else if (rotation[2] >= 135.0 && rotation[2] < 225.0) || (rotation[2] < -135.0 && rotation[2] > -225.0) {
+                            // East
+                            position[0] += TRIGGER_OFFSET;
+                        } else if rotation[2] >= -135.0 && rotation[2] < -45.0 {
+                            // South
+                            position[1] += TRIGGER_OFFSET;
+                        } else if rotation[2] >= -45.0 && rotation[2] < 45.0 {
+                            // West
+                            position[0] -= TRIGGER_OFFSET;
+                        }
                     }
 
                     patcher.add_scly_patch(
