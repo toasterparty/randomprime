@@ -80,8 +80,6 @@ pub mod custom_asset_ids {
         SHINY_MISSILE_ANIM: ANIM,
         SHORELINES_POI_SCAN: SCAN,
         SHORELINES_POI_STRG: STRG,
-        MQA_POI_SCAN: SCAN,
-        MQA_POI_STRG: STRG,
         CFLDG_POI_SCAN: SCAN,
         CFLDG_POI_STRG: STRG,
         TOURNEY_WINNERS_SCAN: SCAN,
@@ -344,12 +342,6 @@ pub fn custom_assets<'r>(
         "task failed successfully\0".to_string(),
     ));
     local_savw_scans_to_add[World::PhendranaDrifts as usize].push(custom_asset_ids::SHORELINES_POI_SCAN);
-    assets.extend_from_slice(&create_item_scan_strg_pair(
-        custom_asset_ids::MQA_POI_SCAN,
-        custom_asset_ids::MQA_POI_STRG,
-        "Scan Visor is a Movement System.\0".to_string(),
-    ));
-    local_savw_scans_to_add[World::PhazonMines as usize].push(custom_asset_ids::MQA_POI_SCAN);
     assets.extend_from_slice(&create_item_scan_strg_pair_2(
         custom_asset_ids::CFLDG_POI_SCAN,
         custom_asset_ids::CFLDG_POI_STRG,
@@ -522,12 +514,11 @@ pub fn custom_assets<'r>(
 
             if room.pickups.is_none() { continue };
             for pickup in room.pickups.as_ref().unwrap().iter() {
-
-                let hudmemo_text = pickup.hudmemo_text.as_ref().unwrap();
-
                 // custom hudmemo string
                 if pickup.hudmemo_text.is_some()
                 {
+                    let hudmemo_text = pickup.hudmemo_text.as_ref().unwrap();
+
                     // Get next ID //
                     let strg_id = ResId::<res_id::STRG>::new(custom_asset_ids::EXTRA_IDS_START.to_u32() + custom_asset_offset);
                     custom_asset_offset = custom_asset_offset + 1;

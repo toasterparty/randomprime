@@ -2538,7 +2538,6 @@ fn modify_pickups_in_mrea<'r>(
             0x00190584, 0x0019039C, // research lab hydra
             0x001F025C, // mqb tank
             0x000D03D9, // Phazon Elite
-            custom_asset_ids::MQA_POI_SCAN.to_u32(),
         ];
         for layer in layers.iter_mut() {
             if mrea_id == 0x2398E906 {
@@ -10141,16 +10140,6 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 custom_asset_ids::SHORELINES_POI_SCAN,
                 custom_asset_ids::SHORELINES_POI_STRG,
                 [-98.0624, -162.3933, 28.5371],
-            ),
-        );
-        patcher.add_scly_patch(
-            resource_info!("08_mines.MREA").into(), // MQA - Always scan dash from item
-            move |ps, area| patch_add_poi(
-                ps, area,
-                game_resources,
-                custom_asset_ids::MQA_POI_SCAN,
-                custom_asset_ids::MQA_POI_STRG,
-                [224.9169, 255.7093, -67.2823],
             ),
         );
     }

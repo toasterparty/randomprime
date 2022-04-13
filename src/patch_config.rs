@@ -22,7 +22,7 @@ use crate::{
 /*** Parsed Config (fn patch_iso) ***/
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub enum RunMode
 {
     CreateIso,
@@ -31,7 +31,7 @@ pub enum RunMode
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub enum IsoFormat
 {
     Iso,
@@ -40,7 +40,7 @@ pub enum IsoFormat
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub enum ArtifactHintBehavior
 {
     Default,
@@ -49,7 +49,7 @@ pub enum ArtifactHintBehavior
 }
 
 #[derive(Serialize, PartialEq, Debug, Deserialize, Copy, Clone)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub enum MapState
 {
     Default,
@@ -64,7 +64,7 @@ impl fmt::Display for MapState {
 }
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Copy, Clone)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub enum CutsceneMode
 {
     Original,
@@ -74,7 +74,7 @@ pub enum CutsceneMode
 }
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Copy, Clone)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub enum Visor
 {
     Combat,
@@ -84,7 +84,7 @@ pub enum Visor
 }
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Copy, Clone)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub enum Beam
 {
     Power,
@@ -94,7 +94,7 @@ pub enum Beam
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameBanner
 {
     pub game_name: Option<String>,
@@ -105,7 +105,7 @@ pub struct GameBanner
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PickupConfig
 {
     #[serde(alias  = "type")]
@@ -132,7 +132,7 @@ pub struct ScanConfig
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct DoorDestination
 {
     pub room_name: String,
@@ -140,7 +140,7 @@ pub struct DoorDestination
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct DoorConfig
 {
     #[serde(alias  = "type")]
@@ -150,7 +150,7 @@ pub struct DoorConfig
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SuitColors
 {
     pub power_deg: Option<i16>,
@@ -160,7 +160,7 @@ pub struct SuitColors
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct DefaultGameOptions
 {
     pub screen_brightness: Option<u32>,
@@ -179,7 +179,7 @@ pub struct DefaultGameOptions
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct WaterConfig
 {
     #[serde(alias = "type")]
