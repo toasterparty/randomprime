@@ -414,10 +414,15 @@ fn patch_map_door_icon(
     map_object_type: u32,
 ) -> Result<(), String>
 {
+    if door.door_location.is_none() {
+        println!("Warning, no door location to patch map for");
+        return Ok(());
+    }
+
     let mapa = res.kind.as_mapa_mut().unwrap();
 
     let door_icon = mapa.objects.iter_mut()
-        .find(|obj| obj.editor_id == door.door_location.instance_id)
+        .find(|obj| obj.editor_id == door.door_location.as_ref().unwrap().instance_id)
         .unwrap();
     door_icon.type_ = map_object_type;
 
@@ -10558,8 +10563,9 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
                 // If specified, patch this door's connection
                 if door_config.destination.is_some() {
-                    // TODO: allow shuffling of morph ball tunnels
-                    // TODO: allow destinations outside this pak
+                    if door_location.door_location.is_none() {
+                        panic!("Tried to shuffle door destination in {} on a dock which does not have a door", room_info.name);
+                    }
 
                     // Get the resource info for premade scan point with destination info
                     let key = PickupHashKey {
@@ -10611,28 +10617,30 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                         scale = [scale[0], scale[1], 0.01];
                     }
                     else {
+                        let mut rotation = door_location.door_rotation.clone().unwrap();
                         position[2] -= 0.9;
+                        let mut trigger_offset: f32 = 0.5;
 
-                        if scale[2] > 4.0 { // if normal door
+                        if scale[2] > 4.0 && scale[2] < 8.0 { // if normal door
                             scale = [scale[0]*0.75, scale[1]*0.75, scale[2] - 1.8];
+                        } else if scale[2] > 9.0 { // square frigate door
+                            rotation[2] += 90.0;
+                            trigger_offset = 0.58;
                         }
-
-                        let rotation = door_location.door_rotation.clone();
-                        const TRIGGER_OFFSET: f32 = 0.5;
 
                         // Move teleport triggers slightly more into their respective rooms so that adjacent teleport triggers leading to the same room do not overlap
                         if rotation[2] >= 45.0 && rotation[2] < 135.0 {
                             // North
-                            position[1] -= TRIGGER_OFFSET;
+                            position[1] -= trigger_offset;
                         } else if (rotation[2] >= 135.0 && rotation[2] < 225.0) || (rotation[2] < -135.0 && rotation[2] > -225.0) {
                             // East
-                            position[0] += TRIGGER_OFFSET;
+                            position[0] += trigger_offset;
                         } else if rotation[2] >= -135.0 && rotation[2] < -45.0 {
                             // South
-                            position[1] += TRIGGER_OFFSET;
+                            position[1] += trigger_offset;
                         } else if rotation[2] >= -45.0 && rotation[2] < 45.0 {
                             // West
-                            position[0] -= TRIGGER_OFFSET;
+                            position[0] -= trigger_offset;
                         }
                     }
 

@@ -33,10 +33,10 @@ pub struct PickupLocation
 #[derive(Clone, Debug)]
 pub struct DoorLocation
 {
-    door_location: ScriptObjectLocation,
+    door_location: Option<ScriptObjectLocation>,
+    door_rotation: Option<[f32;3]>,
     door_force_locations: Vec<ScriptObjectLocation>,
     door_shield_locations: Vec<ScriptObjectLocation>,
-    door_rotation: [f32;3],
     dock_number: u32,
     dock_position: [f32;3],
     dock_scale: [f32;3],
@@ -429,137 +429,6 @@ fn extract_pickup_data<'r>(
         deps,
         attainment_audio_file_name,
     }
-}
-
-fn extract_door_location<'r>(
-    scly: &structs::Scly<'r>,
-    obj: &structs::SclyObject<'r>,
-    obj_location: ScriptObjectLocation,
-    door_rotation: [f32;3],
-) -> Option<DoorLocation>
-{
-    let scly_db = build_scly_db(scly);
-
-    let shield = search_for_scly_object(&obj.connections, &scly_db,
-        |obj| obj.property_data.as_actor()
-            .map(|sh| sh.name.to_str().unwrap().starts_with("Actor_DoorShield") &&
-                !sh.name.to_str().unwrap().contains("Key"))
-            .unwrap_or(false),
-        );
-    let unlock_shield_loc = match shield {
-        Some(shield) => Some(ScriptObjectLocation {
-            layer: scly_db[&shield.instance_id].0 as u32,
-            instance_id: shield.instance_id,
-        }),
-        None => None,
-    };
-
-    let forceunlock = search_for_scly_object(&obj.connections, &scly_db,
-        |obj| obj.property_data.as_damageable_trigger()
-            .map(|sh| sh.name.to_str().unwrap().contains("DoorUnlock"))
-            .unwrap_or(false),
-        );
-    
-    let mut forceunlock_instance_id: u32 = 0;
-    if forceunlock.is_some() {
-        forceunlock_instance_id = forceunlock.clone().unwrap().instance_id;
-    }
-
-    let unlock_force_loc = match forceunlock {
-        Some(forceunlock) => Some(ScriptObjectLocation {
-            layer: scly_db[&forceunlock.instance_id].0 as u32,
-            instance_id: forceunlock.instance_id,
-        }),
-        None => None,
-    };
-
-    let key_shield = search_for_scly_object(&obj.connections, &scly_db,
-        |obj| obj.property_data.as_actor()
-            .map(|sh| sh.name.to_str().unwrap().starts_with("Actor_DoorShield_Key"))
-            .unwrap_or(false),
-        );
-    let key_shield_loc = if forceunlock_instance_id != 0 {
-        match key_shield {
-            Some(key_shield) => Some(ScriptObjectLocation {
-                layer: scly_db[&forceunlock_instance_id].0 as u32,
-                instance_id: key_shield.instance_id,
-            }),
-            None => None,
-        }
-    } else {
-        None
-    };
-
-    let forcekey = search_for_scly_object(&obj.connections, &scly_db,
-        |obj| obj.property_data.as_damageable_trigger()
-            .map(|sh| sh.name.to_str().unwrap().contains("DoorKey"))
-            .unwrap_or(false),
-        );
-    let key_force_loc = match forcekey {
-        Some(forcekey) => Some(ScriptObjectLocation {
-            layer: scly_db[&forcekey.instance_id].0 as u32,
-            instance_id: forcekey.instance_id,
-        }),
-        None => None,
-    };
-
-    let dock = search_for_scly_object(&obj.connections, &scly_db,
-        |obj| obj.property_data.is_dock());
-
-    // Handle dock_number exception (Main Ventillation Shaft B) //
-    let dock_number = match dock {
-        Some(dock) => Some(dock.property_data.as_dock().unwrap().dock_index),
-        None if obj_location.instance_id == 0x150062 => Some(3),
-        None if obj_location.instance_id == 0x150066 => Some(2),
-        None => None,
-    };
-
-    if dock_number.is_none() {
-        return None;
-    }
-    let dock_number = dock_number.unwrap();
-
-    let dock = search_for_scly_object(&obj.connections, &scly_db,
-        |obj| obj.property_data.as_dock()
-            .map(|dk| dk.dock_index == dock_number)
-            .unwrap_or(false),
-        );
-    
-    if dock.is_none() {
-        return None;
-    }
-
-    let dock = dock.unwrap();
-    let dock = dock.property_data.as_dock().unwrap();
-    let dock_position: [f32; 3] = dock.position.into();
-    let dock_scale: [f32; 3] = dock.scale.into();
-
-    let mut door_force_locations: Vec<ScriptObjectLocation> = Vec::new();
-    let mut door_shield_locations: Vec<ScriptObjectLocation> = Vec::new();
-    if key_force_loc.is_some() {
-        door_force_locations.push(key_force_loc.unwrap());
-    }
-    if key_shield_loc.is_some() {
-        door_shield_locations.push(key_shield_loc.unwrap());
-    }
-    if unlock_force_loc.is_some() {
-        door_force_locations.push(unlock_force_loc.unwrap());
-    }
-    if unlock_shield_loc.is_some() {
-        door_shield_locations.push(unlock_shield_loc.unwrap());
-    }
-
-    Some(
-        DoorLocation {
-            door_rotation,
-            door_location: obj_location,
-            door_force_locations,
-            door_shield_locations,
-            dock_number,
-            dock_position,
-            dock_scale,
-        }
-    )
 }
 
 fn extract_pickup_location<'r>(
@@ -1101,6 +970,7 @@ fn main()
                 .find(|res| res.fourcc() == b"MAPA".into() && res.file_id == target_mapa_id)
                 .unwrap().into_owned();
             let mapa_id = &ResId::<res_id::MAPA>::new(target_mapa.file_id);
+            let room_id = ResId::<res_id::MREA>::new(res.file_id);
 
             // println!("\n\n");
             // let mut layer_changers: Vec<(u32,u32,u32)> = Vec::new();
@@ -1141,21 +1011,106 @@ fn main()
                 // trace door resources //
                 for obj in scly_layer.objects.iter() {
                     let obj = obj.into_owned();
-                    let door = if let Some(door) = obj.property_data.as_door() {
-                        door
-                    } else {
-                        continue
-                    };
-
-                    let obj_loc = ScriptObjectLocation {
-                        instance_id: obj.instance_id,
-                        layer: layer_num as u32,
-                    };
-
-                    let door_location = extract_door_location(&scly, &obj, obj_loc,door.rotation.into());
-                    if door_location.is_some() {
-                        door_locations.push(door_location.unwrap());
+                    if !obj.property_data.is_dock() {
+                        continue;
                     }
+                    let dock = obj.property_data.as_dock().unwrap();
+
+                    let mut door_force_locations: Vec<ScriptObjectLocation> = Vec::new();
+                    let mut door_shield_locations: Vec<ScriptObjectLocation> = Vec::new();
+                    
+                    let mut door_loc: Option<ScriptObjectLocation> = None;
+                    let mut door_rotation: Option<[f32;3]> = None;
+
+                    for obj in scly_layer.objects.iter() {
+                        if obj.property_data.is_actor() {
+                            let actor = obj.property_data.as_actor().unwrap();
+                            
+                            if  f32::abs(actor.position[0] - dock.position[0]) > 3.0 ||
+                                f32::abs(actor.position[1] - dock.position[1]) > 3.0 ||
+                                f32::abs(actor.position[2] - dock.position[2]) > 3.0
+                            {
+                                continue; // not associated with dock number
+                            }
+
+                            let name = actor.name.to_str().unwrap();
+                            if name.starts_with("Actor_DoorShield") && !name.contains("Key") {
+                                // unlock_shield
+                                door_shield_locations.push(
+                                    ScriptObjectLocation {
+                                        layer: layer_num as u32,
+                                        instance_id: obj.instance_id,
+                                    }
+                                );
+                            } else if name.starts_with("Actor_DoorShield_Key") {
+                                // key_shield
+                                door_shield_locations.push(
+                                    ScriptObjectLocation {
+                                        layer: layer_num as u32,
+                                        instance_id: obj.instance_id,
+                                    }
+                                );
+                            }
+                        } else if obj.property_data.is_damageable_trigger() {
+                            let damageable_trigger = obj.property_data.as_damageable_trigger().unwrap();
+                            if  f32::abs(damageable_trigger.position[0] - dock.position[0]) > 3.0 ||
+                                f32::abs(damageable_trigger.position[1] - dock.position[1]) > 3.0 ||
+                                f32::abs(damageable_trigger.position[2] - dock.position[2]) > 3.0
+                            {
+                                continue; // not associated with dock number
+                            }
+
+                            let name = damageable_trigger.name.to_str().unwrap();
+                            if name.contains("DoorUnlock") {
+                                // forceunlock
+                                door_force_locations.push(
+                                    ScriptObjectLocation {
+                                        layer: layer_num as u32,
+                                        instance_id: obj.instance_id,
+                                    }
+                                );
+                            } else if name.contains("DoorKey") {
+                                // forcekey
+                                door_force_locations.push(
+                                    ScriptObjectLocation {
+                                        layer: layer_num as u32,
+                                        instance_id: obj.instance_id,
+                                    }
+                                );
+                            }
+                        } else if obj.property_data.is_door() {
+                            let door = obj.property_data.as_door().unwrap();
+                            if  f32::abs(door.position[0] - dock.position[0]) > 3.0 ||
+                                f32::abs(door.position[1] - dock.position[1]) > 3.0 ||
+                                f32::abs(door.position[2] - dock.position[2]) > 3.0
+                            {
+                                continue; // not associated with dock number
+                            }
+
+                            if door_loc.is_some() {
+                                panic!("multiple valid doors in 0x{:X}", room_id.to_u32());
+                            }
+
+                            door_loc = Some(
+                                ScriptObjectLocation {
+                                    layer: layer_num as u32,
+                                    instance_id: obj.instance_id,
+                                }
+                            );
+                            door_rotation = Some(door.rotation.into());
+                        }
+                    }
+
+                    door_locations.push(DoorLocation {
+                            door_location: door_loc,
+                            door_rotation: door_rotation,
+                            door_force_locations,
+                            door_shield_locations,
+                            dock_number: dock.dock_index,
+                            dock_position: dock.position.into(),
+                            dock_scale: dock.scale.into(),
+                        }
+                    );
                 }
 
                 // trace pickup resources //
@@ -1239,8 +1194,6 @@ fn main()
                     .string_tables.iter().next().unwrap()
                     .strings.iter().next().unwrap()
                     .into_owned().into_string();
-
-                let room_id = ResId::<res_id::MREA>::new(res.file_id);
 
                 if vec![
                     0x2398E906, // artifact temple
