@@ -485,11 +485,11 @@ pub struct DoorLocation
 {
     pub door_location: ScriptObjectLocation,
     pub door_rotation: [f32;3],
-    pub door_force_location: ScriptObjectLocation,
-    pub door_shield_location: Option<ScriptObjectLocation>,
-    pub dock_number: Option<u32>,
-    pub dock_position: Option<[f32;3]>,
-    pub dock_scale: Option<[f32;3]>,
+    pub door_force_locations: &'static [ScriptObjectLocation],
+    pub door_shield_locations: &'static [ScriptObjectLocation],
+    pub dock_number: u32,
+    pub dock_position: [f32;3],
+    pub dock_scale: [f32;3],
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
