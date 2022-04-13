@@ -5656,6 +5656,7 @@ fn patch_credits(
 }
 
 fn patch_starting_pickups<'r>(
+    ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     starting_items: &StartingItems,
     show_starting_memo: bool,
@@ -5673,17 +5674,9 @@ fn patch_starting_pickups<'r>(
 
     let scly = area.mrea().scly_section_mut();
 
-    let mut next_object_id = 0;
-
-    for obj in scly.layers.as_mut_vec()[0].objects.iter_mut() {
-        if next_object_id < obj.instance_id {
-            next_object_id = obj.instance_id;
-        }
-    }
-
-    let timer_starting_items_popup_id = next_object_id + 1;
-    let hud_memo_starting_items_popup_id = next_object_id + 2;
-    let special_function_starting_items_popup_id = next_object_id + 3;
+    let timer_starting_items_popup_id = ps.fresh_instance_id_range.next().unwrap();
+    let hud_memo_starting_items_popup_id = ps.fresh_instance_id_range.next().unwrap();
+    let special_function_starting_items_popup_id = ps.fresh_instance_id_range.next().unwrap();
 
     for layer in scly.layers.iter_mut() {
         for obj in layer.objects.iter_mut() {
@@ -10959,7 +10952,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
     patcher.add_scly_patch(
         (starting_room.pak_name.as_bytes(), starting_room.mrea),
-        move |_ps, area| patch_starting_pickups(
+        move |ps, area| patch_starting_pickups(
+            ps,
             area,
             &config.starting_items,
             show_starting_memo,
@@ -10970,7 +10964,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     if !skip_frigate {
         patcher.add_scly_patch(
             resource_info!("02_intro_elevator.MREA").into(),
-            move |_ps, area| patch_starting_pickups(
+            move |ps, area| patch_starting_pickups(
+                ps,
                 area,
                 &config.item_loss_items,
                 false,
