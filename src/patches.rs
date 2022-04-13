@@ -7834,6 +7834,7 @@ fn patch_add_dock_teleport<'r>(
     let mut is_frigate_door = false;
     let mut is_ceiling_door = false;
     let mut is_floor_door = false;
+    let mut is_square_frigate_door = false;
     let mut door_id: u32 = 0;
 
     let mut door_rotation: GenericArray<f32, U3> = [0.0, 0.0, 0.0].into();
@@ -7861,6 +7862,7 @@ fn patch_add_dock_teleport<'r>(
         is_frigate_door = door.ancs.file_id == 0xfafb5784;
         is_ceiling_door = door.ancs.file_id == 0xf57dd484 && door_rotation[0] > -90.0 && door_rotation[0] < 90.0;
         is_floor_door = door.ancs.file_id == 0xf57dd484 && door_rotation[0] < -90.0 && door_rotation[0] > -270.0;
+        is_square_frigate_door = door.ancs.file_id == 0x26CCCB48;
     }
 
     let mut spawn_point_position = dock_position.clone();
@@ -7878,6 +7880,8 @@ fn patch_add_dock_teleport<'r>(
     } else if is_floor_door {
         door_offset = 0.0;
         vertical_offset = 1.0;
+    } else if is_square_frigate_door {
+        spawn_point_rotation[2] += 90.0;
     }
 
     if door_rotation[2] >= 45.0 && door_rotation[2] < 135.0 {
@@ -10491,6 +10495,10 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     if door_config.shield_type.is_none() && door_config.blast_shield_type.is_none()
                     {
                         break;
+                    }
+
+                    if door_location.door_location.is_none() {
+                        panic!("Tried to modify shield of door in {} on a dock which does not have a door", room_info.name);
                     }
 
                     // Patch door color and blast shield //

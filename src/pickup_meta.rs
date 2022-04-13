@@ -483,8 +483,8 @@ pub struct PickupLocation
 #[derive(Clone, Copy, Debug)]
 pub struct DoorLocation
 {
-    pub door_location: ScriptObjectLocation,
-    pub door_rotation: [f32;3],
+    pub door_location: Option<ScriptObjectLocation>,
+    pub door_rotation: Option<[f32;3]>,
     pub door_force_locations: &'static [ScriptObjectLocation],
     pub door_shield_locations: &'static [ScriptObjectLocation],
     pub dock_number: u32,
