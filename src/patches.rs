@@ -7835,6 +7835,7 @@ fn patch_add_dock_teleport<'r>(
     let mut is_ceiling_door = false;
     let mut is_floor_door = false;
     let mut is_square_frigate_door = false;
+    let mut is_morphball_door = false;
     let mut door_id: u32 = 0;
 
     let mut door_rotation: GenericArray<f32, U3> = [0.0, 0.0, 0.0].into();
@@ -7863,6 +7864,7 @@ fn patch_add_dock_teleport<'r>(
         is_ceiling_door = door.ancs.file_id == 0xf57dd484 && door_rotation[0] > -90.0 && door_rotation[0] < 90.0;
         is_floor_door = door.ancs.file_id == 0xf57dd484 && door_rotation[0] < -90.0 && door_rotation[0] > -270.0;
         is_square_frigate_door = door.ancs.file_id == 0x26CCCB48;
+        is_morphball_door = door.is_morphball_door != 0;
     }
 
     let mut spawn_point_position = dock_position.clone();
@@ -7882,6 +7884,19 @@ fn patch_add_dock_teleport<'r>(
         vertical_offset = 1.0;
     } else if is_square_frigate_door {
         spawn_point_rotation[2] += 90.0;
+    } else if is_morphball_door {
+        vertical_offset = 0.0;
+    }
+
+    if mrea_id == 0xF5EF1862 && is_morphball_door { // fiery shores
+        vertical_offset = -5.0;
+        door_offset = 0.0;
+    }
+
+    if mrea_id == 0x89A6CB8D && is_morphball_door { // warrior shrine
+        vertical_offset = 3.0;
+        door_offset = 2.0;
+        is_morphball_door = false;
     }
 
     if door_rotation[2] >= 45.0 && door_rotation[2] < 135.0 {
@@ -7902,6 +7917,162 @@ fn patch_add_dock_teleport<'r>(
         spawn_point_rotation[2] += 90.0;
     }
     spawn_point_position[2] = spawn_point_position[2] + vertical_offset;
+
+    // Insert a camera hint trigger to prevent the camera from getting slammed into the wall of the departure room
+    if is_morphball_door {
+        let camear_hint_id = ps.fresh_instance_id_range.next().unwrap();
+        layer.objects.as_mut_vec().push(
+            structs::SclyObject {
+                instance_id: camear_hint_id,
+                connections: vec![].into(),
+                property_data: structs::SclyProperty::CameraHint(
+                    Box::new(structs::CameraHint {
+                        name: b"CameraHint\0".as_cstr(),
+                        position: spawn_point_position.into(),
+                        rotation: spawn_point_rotation.into(),
+                        active: 1,
+                        priority: 8,
+                        behavior: 2,
+                        camera_hint_params: structs::CameraHintParameters {
+                            calculate_cam_pos: 0,
+                            chase_allowed: 0,
+                            boost_allowed: 0,
+                            obscure_avoidance: 0,
+                            volume_collider: 0,
+                            apply_immediately: 1,
+                            look_at_ball: 0,
+                            hint_distance_selection: 0,
+                            hint_distance_self_pos: 0,
+                            control_interpolation: 1,
+                            sinusoidal_interpolation: 0,
+                            sinusoidal_interpolation_hintless: 0,
+                            clamp_velocity: 0,
+                            skip_cinematic: 0,
+                            no_elevation_interp: 0,
+                            direct_elevation: 0,
+                            override_look_dir: 0,
+                            no_elevation_vel_clamp: 0,
+                            calculate_transform_from_prev_cam: 0,
+                            no_spline: 0,
+                            unknown21: 0,
+                            unknown22: 0,
+                        },
+                        min_dist: structs::BoolFloat {
+                            active: 0,
+                            value: 6.0,
+                        },
+                        max_dist: structs::BoolFloat {
+                            active: 0,
+                            value: 6.0,
+                        },
+                        backwards_dist: structs::BoolFloat {
+                            active: 0,
+                            value: 6.0,
+                        },
+                        look_at_offset: structs::BoolVec3 {
+                            active: 0,
+                            value: [0.0, 1.0, 1.0].into(),
+                        },
+                        chase_look_at_offset: structs::BoolVec3 {
+                            active: 0,
+                            value: [0.0, 1.0, 1.0].into(),
+                        },
+                        ball_to_cam: [1.0, 1.0, 1.0].into(),
+                        fov: structs::BoolFloat {
+                            active: 0,
+                            value: 55.0,
+                        },
+                        attitude_range: structs::BoolFloat {
+                            active: 0,
+                            value: 90.0,
+                        },
+                        azimuth_range: structs::BoolFloat {
+                            active: 0,
+                            value: 90.0,
+                        },
+                        angle_per_second: structs::BoolFloat {
+                            active: 0,
+                            value: 120.0,
+                        },
+                        clamp_vel_range: 10.0,
+                        clamp_rot_range: 120.0,
+                        elevation: structs::BoolFloat {
+                            active: 0,
+                            value: 2.7,
+                        },
+                        interpolate_time: 1.0,
+                        clamp_vel_time: 1.0,
+                        control_interp_dur: 1.0,
+                    })
+                ),
+            }
+        );
+
+        layer.objects.as_mut_vec().push(
+            structs::SclyObject {
+                instance_id: ps.fresh_instance_id_range.next().unwrap(),
+                connections: vec![
+                    structs::Connection {
+                        state: structs::ConnectionState::ENTERED,
+                        message: structs::ConnectionMsg::INCREMENT,
+                        target_object_id: camear_hint_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::EXITED,
+                        message: structs::ConnectionMsg::DECREMENT,
+                        target_object_id: camear_hint_id,
+                    }
+                ].into(),
+                property_data: structs::SclyProperty::Trigger(
+                    Box::new(structs::Trigger {
+                        name: b"camerahinttrigger\0".as_cstr(),
+                        position: spawn_point_position.into(),
+                        scale: [4.0, 4.0, 3.0].into(),
+                        damage_info: structs::scly_structs::DamageInfo {
+                            weapon_type: 0,
+                            damage: 0.0,
+                            radius: 0.0,
+                            knockback_power: 0.0
+                        },
+                        force: [0.0, 0.0, 0.0].into(),
+                        flags: 1,
+                        active: 1,
+                        deactivate_on_enter: 0,
+                        deactivate_on_exit: 0,
+                    })
+                ),
+            }
+        );
+
+        // layer.objects.as_mut_vec().push(
+        //     structs::SclyObject {
+        //         instance_id: ps.fresh_instance_id_range.next().unwrap(),
+        //         connections: vec![
+        //             structs::Connection {
+        //                 state: structs::ConnectionState::INSIDE,
+        //                 message: structs::ConnectionMsg::INCREMENT,
+        //                 target_object_id: camear_hint_id,
+        //             },
+        //             structs::Connection {
+        //                 state: structs::ConnectionState::EXITED,
+        //                 message: structs::ConnectionMsg::DECREMENT,
+        //                 target_object_id: camear_hint_id,
+        //             }
+        //         ].into(),
+        //         property_data: structs::SclyProperty::CameraHintTrigger(
+        //             Box::new(structs::CameraHintTrigger {
+        //                 name: b"CameraHintTrigger\0".as_cstr(),
+        //                 position: spawn_point_position.into(),
+        //                 rotation: spawn_point_rotation.into(),
+        //                 scale: [10.0, 10.0, 10.0].into(),
+        //                 active: 1,
+        //                 deactivate_on_enter: 0,
+        //                 deactivate_on_exit: 0,
+        //             })
+        //         ),
+        //     }
+        // );
+    }
 
     // Insert a spawn point in-bounds
     layer.objects.as_mut_vec().push(
@@ -7944,7 +8115,7 @@ fn patch_add_dock_teleport<'r>(
                     wavebuster: 0,
                     default_spawn: 0,
                     active: 1,
-                    morphed: 0,
+                    morphed: is_morphball_door as u8,
                 })
             ),
         }
@@ -8188,7 +8359,10 @@ fn patch_modify_dock<'r>(
                 break;
             }
 
-            assert_ne!(trigger_pos, trigger_scale);
+            // If we couldn't find the door open trigger, then just give up and hope for the best (e.g. storage cave)
+            if trigger_pos == trigger_scale {
+                return Ok(());
+            }
 
             // unload everything upon touching
             let mut connections: Vec::<structs::Connection> = Vec::new();
