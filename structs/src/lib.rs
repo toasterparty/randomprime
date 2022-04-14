@@ -33,6 +33,8 @@ pub mod scly_props
     pub mod camera;
     pub mod camera_blur_keyframe;
     pub mod camera_filter_keyframe;
+    pub mod camera_hint_trigger;
+    pub mod camera_hint;
     pub mod damageable_trigger;
     pub mod dock;
     pub mod door;
@@ -75,6 +77,8 @@ pub mod scly_props
     pub use self::camera::*;
     pub use self::camera_blur_keyframe::*;
     pub use self::camera_filter_keyframe::*;
+    pub use self::camera_hint_trigger::*;
+    pub use self::camera_hint::*;
     pub use self::damageable_trigger::*;
     pub use self::dock::*;
     pub use self::door::*;
@@ -117,6 +121,8 @@ pub use scly_props::ball_trigger::*;
 pub use scly_props::camera::*;
 pub use scly_props::camera_blur_keyframe::*;
 pub use scly_props::camera_filter_keyframe::*;
+pub use scly_props::camera_hint_trigger::*;
+pub use scly_props::camera_hint::*;
 pub use scly_props::damageable_trigger::*;
 pub use scly_props::dock::*;
 pub use scly_props::door::*;
