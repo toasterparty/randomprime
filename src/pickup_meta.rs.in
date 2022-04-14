@@ -9334,8 +9334,8 @@ pub const ROOM_INFO: &[(&str, &[RoomInfo]); 7] = &[
                     dock_scale: [5.0, 2.0, 4.9989986],
                 },
                 DoorLocation {
-                    door_location: None,
-                    door_rotation: None,
+                    door_location: Some(ScriptObjectLocation { layer: 0, instance_id: 917927 }),
+                    door_rotation: Some([179.75356, -89.75354, 89.75354]),
                     door_force_locations: &[],
                     door_shield_locations: &[],
                     dock_number: 2,

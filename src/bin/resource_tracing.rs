@@ -1026,9 +1026,9 @@ fn main()
                         if obj.property_data.is_actor() {
                             let actor = obj.property_data.as_actor().unwrap();
                             
-                            if  f32::abs(actor.position[0] - dock.position[0]) > 3.0 ||
-                                f32::abs(actor.position[1] - dock.position[1]) > 3.0 ||
-                                f32::abs(actor.position[2] - dock.position[2]) > 3.0
+                            if  f32::abs(actor.position[0] - dock.position[0]) > 4.0 ||
+                                f32::abs(actor.position[1] - dock.position[1]) > 4.0 ||
+                                f32::abs(actor.position[2] - dock.position[2]) > 4.0
                             {
                                 continue; // not associated with dock number
                             }
@@ -1053,9 +1053,9 @@ fn main()
                             }
                         } else if obj.property_data.is_damageable_trigger() {
                             let damageable_trigger = obj.property_data.as_damageable_trigger().unwrap();
-                            if  f32::abs(damageable_trigger.position[0] - dock.position[0]) > 3.0 ||
-                                f32::abs(damageable_trigger.position[1] - dock.position[1]) > 3.0 ||
-                                f32::abs(damageable_trigger.position[2] - dock.position[2]) > 3.0
+                            if  f32::abs(damageable_trigger.position[0] - dock.position[0]) > 4.0 ||
+                                f32::abs(damageable_trigger.position[1] - dock.position[1]) > 4.0 ||
+                                f32::abs(damageable_trigger.position[2] - dock.position[2]) > 4.0
                             {
                                 continue; // not associated with dock number
                             }
@@ -1080,9 +1080,9 @@ fn main()
                             }
                         } else if obj.property_data.is_door() {
                             let door = obj.property_data.as_door().unwrap();
-                            if  f32::abs(door.position[0] - dock.position[0]) > 3.0 ||
-                                f32::abs(door.position[1] - dock.position[1]) > 3.0 ||
-                                f32::abs(door.position[2] - dock.position[2]) > 3.0
+                            if  f32::abs(door.position[0] - dock.position[0]) > 4.0 ||
+                                f32::abs(door.position[1] - dock.position[1]) > 4.0 ||
+                                f32::abs(door.position[2] - dock.position[2]) > 4.0
                             {
                                 continue; // not associated with dock number
                             }
