@@ -7867,6 +7867,10 @@ fn patch_add_dock_teleport<'r>(
         is_morphball_door = door.is_morphball_door != 0;
     }
 
+    if mrea_id == 0xC9D52BBC && destination_dock_num == 0 { // energy core
+        is_morphball_door = true; // it's technically not actually a morph ball door
+    }
+
     let mut spawn_point_position = dock_position.clone();
     let mut spawn_point_rotation = [0.0, 0.0, 0.0];
     let mut door_offset = 3.0;
@@ -7886,9 +7890,10 @@ fn patch_add_dock_teleport<'r>(
         spawn_point_rotation[2] += 90.0;
     } else if is_morphball_door {
         vertical_offset = 0.0;
+        door_offset = 4.0;
     }
 
-    if mrea_id == 0xF5EF1862 && is_morphball_door { // fiery shores
+    if mrea_id == 0xF5EF1862 && is_morphball_door { // fiery shores0 
         vertical_offset = -5.0;
         door_offset = 0.0;
     }
@@ -7897,6 +7902,19 @@ fn patch_add_dock_teleport<'r>(
         vertical_offset = 3.0;
         door_offset = 2.0;
         is_morphball_door = false;
+    }
+
+    if (mrea_id == 0xB4FBBEF5 || mrea_id == 0x86EB2E02) && is_morphball_door { // life grove + tunnel
+        vertical_offset = -1.5;
+    }
+
+    if mrea_id == 0x3F04F304 && is_morphball_door { // training chamber
+        door_offset = 2.0;
+    }
+
+    if mrea_id == 0x2B3F1CEE { // piston tunnel
+        door_offset = 2.0;
+        vertical_offset = -1.0;
     }
 
     if door_rotation[2] >= 45.0 && door_rotation[2] < 135.0 {
@@ -7919,7 +7937,8 @@ fn patch_add_dock_teleport<'r>(
     spawn_point_position[2] = spawn_point_position[2] + vertical_offset;
 
     // Insert a camera hint trigger to prevent the camera from getting slammed into the wall of the departure room
-    if is_morphball_door {
+    // except for LGT because it already has a trigger and training chamber because it's goofy
+    if is_morphball_door && mrea_id != 0xB4FBBEF5 && mrea_id != 0x3F04F304 {
         let camear_hint_id = ps.fresh_instance_id_range.next().unwrap();
         layer.objects.as_mut_vec().push(
             structs::SclyObject {
@@ -8279,6 +8298,7 @@ fn patch_modify_dock<'r>(
                 let door = obj.property_data.as_door_mut().unwrap();
                 let is_ceiling_door = door.ancs.file_id == 0xf57dd484 && door.rotation[0] > -90.0 && door.rotation[0] < 90.0;
                 let is_floor_door = door.ancs.file_id == 0xf57dd484 && door.rotation[0] < -90.0 && door.rotation[0] > -270.0;
+                let is_morphball_door = door.is_morphball_door != 0;
 
                 if is_ceiling_door {
                     door.scan_offset[0] = 0.0;
@@ -8289,6 +8309,10 @@ fn patch_modify_dock<'r>(
                     door.scan_offset[0] = 0.0;
                     door.scan_offset[1] = 0.0;
                     door.scan_offset[2] = 2.5;
+                } else if is_morphball_door {
+                    door.scan_offset[0] = 0.0;
+                    door.scan_offset[1] = 0.0;
+                    door.scan_offset[2] = 1.0;
                 }
 
                 door.actor_params.scan_params.scan = scan_id;
@@ -10808,6 +10832,10 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                         } else if scale[2] > 9.0 { // square frigate door
                             rotation[2] += 90.0;
                             trigger_offset = 0.58;
+                        } else if scale[2] < 3.0 { // morph ball door
+                            scale[0] = 0.5;
+                            scale[1] = 0.5;
+                            scale[2] = 0.1;
                         }
 
                         // Move teleport triggers slightly more into their respective rooms so that adjacent teleport triggers leading to the same room do not overlap
