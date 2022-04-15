@@ -8688,6 +8688,51 @@ fn patch_essence_scale<'r>(
     Ok(())
 }
 
+fn patch_drone_scale<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    scale: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    for layer in scly.layers.as_mut_vec().iter_mut() {
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+            if !obj.property_data.is_drone() { continue; }
+            let boss = obj.property_data.as_drone_mut().unwrap();
+            boss.scale[0] *= scale;
+            boss.scale[1] *= scale;
+            boss.scale[2] *= scale;
+        }
+    }
+
+    Ok(())
+}
+
+fn patch_garbeetle_scale<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    scale: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    for layer in scly.layers.as_mut_vec().iter_mut() {
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+            if !obj.property_data.is_beetle() { continue; }
+            let boss = obj.property_data.as_beetle_mut().unwrap();
+            if !boss.name.to_str().unwrap().to_lowercase().contains(&"garbeetle") {
+                continue;
+            }
+            boss.scale[0] *= scale;
+            boss.scale[1] *= scale;
+            boss.scale[2] *= scale;
+        }
+    }
+
+    Ok(())
+}
+
 fn patch_bnr(
     file: &mut structs::FstEntryFile,
     banner: &GameBanner,
@@ -11544,6 +11589,20 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             patcher.add_scly_patch(
                 resource_info!("03f_crater.MREA").into(),
                 move |_ps, area| patch_essence_scale(_ps, area, scale)
+            );
+        }
+        else if boss_name == "platedbeetle"
+        {
+            patcher.add_scly_patch(
+                resource_info!("1a_morphball_shrine.MREA").into(),
+                move |_ps, area| patch_garbeetle_scale(_ps, area, scale)
+            );
+        }
+        else if boss_name == "cloakeddrone"
+        {
+            patcher.add_scly_patch(
+                resource_info!("07_mines_electric.MREA").into(),
+                move |_ps, area| patch_drone_scale(_ps, area, scale)
             );
         }
         else

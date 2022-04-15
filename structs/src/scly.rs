@@ -250,6 +250,8 @@ build_scly_property!(
     WorldTransporter,     is_world_transporter,      as_world_transporter,      as_world_transporter_mut,
 
     // bosses
+    Beetle,               is_beetle,                 as_beetle,                 as_beetle_mut,
+    Drone,                is_drone,                  as_drone,                  as_drone_mut,
     NewIntroBoss,         is_new_intro_boss,         as_new_intro_boss,         as_new_intro_boss_mut,
     ActorContraption,     is_actor_contraption,      as_actor_contraption,      as_actor_contraption_mut,
     Flaahgra,             is_flaahgra,               as_flaahgra,               as_flaahgra_mut,

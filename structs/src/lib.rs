@@ -59,6 +59,8 @@ pub mod scly_props
     pub mod world_transporter;
 
     // bosses
+    pub mod beetle;
+    pub mod drone;
     pub mod new_intro_boss;
     pub mod actor_contraption;
     pub mod flaahgra;
@@ -103,6 +105,8 @@ pub mod scly_props
     pub use self::world_transporter::*;
 
     // bosses
+    pub use self::beetle::*;
+    pub use self::drone::*;
     pub use self::new_intro_boss::*;
     pub use self::actor_contraption::*;
     pub use self::flaahgra::*;
@@ -147,6 +151,8 @@ pub use scly_props::waypoint::*;
 pub use scly_props::world_transporter::*;
 
 // bosses
+pub use scly_props::beetle::*;
+pub use scly_props::drone::*;
 pub use scly_props::new_intro_boss::*;
 pub use scly_props::actor_contraption::*;
 pub use scly_props::flaahgra::*;
