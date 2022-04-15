@@ -8448,14 +8448,24 @@ fn patch_exo_scale<'r>(
     let scly = area.mrea().scly_section_mut();
     for layer in scly.layers.as_mut_vec().iter_mut() {
         for obj in layer.objects.as_mut_vec().iter_mut() {
-            if !obj.property_data.is_metroidprimestage1() { continue; }
-            let boss = obj.property_data.as_metroidprimestage1_mut().unwrap();
-            boss.scale[0] *= scale;
-            boss.scale[1] *= scale;
-            boss.scale[2] *= scale;
+            if obj.property_data.is_metroidprimestage1() {
+                let boss = obj.property_data.as_metroidprimestage1_mut().unwrap();
+                boss.scale[0] *= scale;
+                boss.scale[1] *= scale;
+                boss.scale[2] *= scale;
+            } else if obj.property_data.is_actor() && vec![
+                0x00050090,
+                0x00050002,
+                0x00050076,
+                0x0005008F,
+            ].contains(&(obj.instance_id & 0x00FFFFFF)) {
+                let boss = obj.property_data.as_actor_mut().unwrap();
+                boss.scale[0] *= scale;
+                boss.scale[1] *= scale;
+                boss.scale[2] *= scale;
+            }
         }
     }
-
     Ok(())
 }
 
@@ -8469,11 +8479,26 @@ fn patch_ridley_scale<'r>(
     let scly = area.mrea().scly_section_mut();
     for layer in scly.layers.as_mut_vec().iter_mut() {
         for obj in layer.objects.as_mut_vec().iter_mut() {
-            if !obj.property_data.is_ridley() { continue; }
-            let boss = obj.property_data.as_ridley_mut().unwrap();
-            boss.scale[0] *= scale;
-            boss.scale[1] *= scale;
-            boss.scale[2] *= scale;
+            if obj.property_data.is_ridley() {
+                let boss = obj.property_data.as_ridley_mut().unwrap();
+                boss.scale[0] *= scale;
+                boss.scale[1] *= scale;
+                boss.scale[2] *= scale;
+            } else if obj.property_data.is_actor() && vec![
+                0x00100218,
+                0x00100222,
+                0x001003D6,
+                0x0010028C,
+                0x00100472,
+                0x00100377,
+                0x001003C3,
+                0x001003E1,
+            ].contains(&(obj.instance_id & 0x00FFFFFF)) {
+                let boss = obj.property_data.as_actor_mut().unwrap();
+                boss.scale[0] *= scale;
+                boss.scale[1] *= scale;
+                boss.scale[2] *= scale;
+            }
         }
     }
 
@@ -8547,11 +8572,26 @@ fn patch_elite_pirate_scale<'r>(
     let scly = area.mrea().scly_section_mut();
     for layer in scly.layers.as_mut_vec().iter_mut() {
         for obj in layer.objects.as_mut_vec().iter_mut() {
-            if !obj.property_data.is_elite_pirate() { continue; }
-            let boss = obj.property_data.as_elite_pirate_mut().unwrap();
-            boss.scale[0] *= scale;
-            boss.scale[1] *= scale;
-            boss.scale[2] *= scale;
+            if obj.property_data.is_elite_pirate() {
+                let boss = obj.property_data.as_elite_pirate_mut().unwrap();
+                boss.scale[0] *= scale;
+                boss.scale[1] *= scale;
+                boss.scale[2] *= scale;
+            } else if obj.property_data.is_actor() && vec![
+                0x00180126,
+                0x001401C3,
+                0x001401C4,
+                0x00140385,
+                0x00100337,
+                0x000D03FA,
+                0x000D01A7,
+                0x0010036A,
+            ].contains(&(obj.instance_id & 0x00FFFFFF)) {
+                let boss = obj.property_data.as_actor_mut().unwrap();
+                boss.scale[0] *= scale;
+                boss.scale[1] *= scale;
+                boss.scale[2] *= scale;
+            }
         }
     }
 
@@ -8635,11 +8675,20 @@ fn patch_pq_scale<'r>(
     let scly = area.mrea().scly_section_mut();
     for layer in scly.layers.as_mut_vec().iter_mut() {
         for obj in layer.objects.as_mut_vec().iter_mut() {
-            if !obj.property_data.is_new_intro_boss() { continue; }
-            let boss = obj.property_data.as_new_intro_boss_mut().unwrap();
-            boss.scale[0] *= scale;
-            boss.scale[1] *= scale;
-            boss.scale[2] *= scale;
+            if obj.property_data.is_new_intro_boss() {
+                let boss = obj.property_data.as_new_intro_boss_mut().unwrap();
+                boss.scale[0] *= scale;
+                boss.scale[1] *= scale;
+                boss.scale[2] *= scale;
+            }
+            else if obj.property_data.is_actor() && vec![
+                0x0019006C,
+            ].contains(&(obj.instance_id & 0x00FFFFFF)) {
+                let boss = obj.property_data.as_actor_mut().unwrap();
+                boss.scale[0] *= scale;
+                boss.scale[1] *= scale;
+                boss.scale[2] *= scale;
+            }
         }
     }
 
@@ -8656,11 +8705,20 @@ fn patch_thardus_scale<'r>(
     let scly = area.mrea().scly_section_mut();
     for layer in scly.layers.as_mut_vec().iter_mut() {
         for obj in layer.objects.as_mut_vec().iter_mut() {
-            if !obj.property_data.is_thardus() { continue; }
-            let thardus = obj.property_data.as_thardus_mut().unwrap();
-            thardus.scale[0] *= scale;
-            thardus.scale[1] *= scale;
-            thardus.scale[2] *= scale;
+            if obj.property_data.is_thardus() {
+                let boss = obj.property_data.as_thardus_mut().unwrap();
+                boss.scale[0] *= scale;
+                boss.scale[1] *= scale;
+                boss.scale[2] *= scale;
+            }
+            else if obj.property_data.is_platform() && vec![
+                // 0x00180212, platform didn't scale right, so not doing this
+            ].contains(&(obj.instance_id & 0x00FFFFFF)) {
+                let boss = obj.property_data.as_platform_mut().unwrap();
+                boss.scale[0] *= scale;
+                boss.scale[1] *= scale;
+                boss.scale[2] *= scale;
+            }
         }
     }
 
@@ -8677,11 +8735,31 @@ fn patch_essence_scale<'r>(
     let scly = area.mrea().scly_section_mut();
     for layer in scly.layers.as_mut_vec().iter_mut() {
         for obj in layer.objects.as_mut_vec().iter_mut() {
-            if !obj.property_data.is_metroidprimestage2() { continue; }
-            let essence = obj.property_data.as_metroidprimestage2_mut().unwrap();
-            essence.scale[0] *= scale;
-            essence.scale[1] *= scale;
-            essence.scale[2] *= scale;
+            if obj.property_data.is_metroidprimestage2() {
+                let boss = obj.property_data.as_metroidprimestage2_mut().unwrap();
+                boss.scale[0] *= scale;
+                boss.scale[1] *= scale;
+                boss.scale[2] *= scale;
+            }
+            else if obj.property_data.is_actor() && vec![
+                0x000B00F4,
+                0x000B0101,
+                0x000B012B,
+                0x000B00EE,
+                0x000B00D2,
+                0x000B009F,
+                0x000B0121,
+                0x000B015D,
+                0x000B0162,
+                0x000B0163,
+                0x000B0168,
+                0x000B0195,
+            ].contains(&(obj.instance_id & 0x00FFFFFF)) {
+                let boss = obj.property_data.as_actor_mut().unwrap();
+                boss.scale[0] *= scale;
+                boss.scale[1] *= scale;
+                boss.scale[2] *= scale;
+            }
         }
     }
 
@@ -11560,6 +11638,10 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         }
         else if boss_name == "exo" || boss_name == "metroidprime" || boss_name == "metroidprimeexoskeleton"
         {
+            patcher.add_scly_patch(
+                resource_info!("03a_crater.MREA").into(),
+                move |_ps, area| patch_exo_scale(_ps, area, scale)
+            );
             if scale > 1.7 {
                 patcher.add_scly_patch(
                     resource_info!("03b_crater.MREA").into(),
