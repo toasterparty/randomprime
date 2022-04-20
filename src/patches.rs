@@ -1946,7 +1946,7 @@ fn patch_add_poi<'r>(
     strg_id: ResId<res_id::STRG>,
     position: [f32;3],
 ) -> Result<(), String>
-{
+{    
     let scly = area.mrea().scly_section_mut();
     let layers = scly.layers.as_mut_vec();
     layers[0].objects.as_mut_vec().push(
@@ -1978,6 +1978,118 @@ fn patch_add_poi<'r>(
 
     let frme_dep: structs::Dependency = frme_id.into();
     area.add_dependencies(game_resources, 0, iter::once(frme_dep));
+
+    Ok(())
+}
+
+fn patch_add_scan_actor<'r>(
+    ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+    position: [f32;3],
+    rotation: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    scly.layers.as_mut_vec()[0].objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            connections: vec![].into(),
+            property_data: structs::SclyProperty::Actor(
+                Box::new(structs::Actor {
+                    name: b"Scan Actor\0".as_cstr(),
+                    position: position.into(),
+                    rotation: [0.0, 90.0, rotation].into(),
+                    scale: [1.0, 1.0, 1.0].into(),
+                    hitbox: [0.0, 0.0, 0.0].into(),
+                    scan_offset: [0.0, 0.0, 0.0].into(),
+                    unknown1: 1.0, // mass
+                    unknown2: 0.0, // momentum
+                    health_info: structs::scly_structs::HealthInfo {
+                        health: 5.0,
+                        knockback_resistance: 1.0,
+                    },
+                    damage_vulnerability: DoorType::Disabled.vulnerability(),
+                    cmdl: ResId::invalid(),
+                    ancs: structs::scly_structs::AncsProp {
+                        file_id: ResId::<res_id::ANCS>::new(0x98dab29c), // Scanholo.ANCS
+                        node_index: 0,
+                        default_animation: 0,
+                    },
+                    actor_params: structs::scly_structs::ActorParameters {
+                        light_params: structs::scly_structs::LightParameters {
+                            unknown0: 0,
+                            unknown1: 1.0,
+                            shadow_tessellation: 0,
+                            unknown2: 1.0,
+                            unknown3: 20.0,
+                            color: [1.0, 1.0, 1.0, 1.0].into(), // RGBA
+                            unknown4: 0,
+                            world_lighting: 0,
+                            light_recalculation: 1,
+                            unknown5: [0.0, 0.0, 0.0].into(),
+                            unknown6: 4,
+                            unknown7: 4,
+                            unknown8: 0,
+                            light_layer_id: 0,
+                        },
+                        scan_params: structs::scly_structs::ScannableParameters {
+                            scan: ResId::invalid(),
+                        },
+                        xray_cmdl: ResId::invalid(),
+                        xray_cskr: ResId::invalid(),
+                        thermal_cmdl: ResId::invalid(),
+                        thermal_cskr: ResId::invalid(),
+                        unknown0: 1,
+                        unknown1: 1.0,
+                        unknown2: 1.0,
+                        visor_params: structs::scly_structs::VisorParameters {
+                            unknown0: 0,
+                            target_passthrough: 0,
+                            visor_mask: 15, // Visor Flags : Combat|Scan|Thermal|XRay
+                        },
+                        enable_thermal_heat: 1,
+                        unknown3: 0,
+                        unknown4: 0,
+                        unknown5: 1.0,
+                    },
+                    looping: 1,
+                    snow: 0, // immovable
+                    solid: 0,
+                    camera_passthrough: 0,
+                    active: 1,
+                    unknown8: 0,
+                    unknown9: 1.0,
+                    unknown10: 0,
+                    unknown11: 0,
+                    unknown12: 0,
+                    unknown13: 0,
+                })
+            ),
+        }
+    );
+
+    let dep: structs::Dependency = ResId::<res_id::ANCS>::new(0x98DAB29C).into();
+    area.add_dependencies(game_resources, 0, iter::once(dep));
+
+    let dep: structs::Dependency = ResId::<res_id::CMDL>::new(0x2A0FA4F9).into();
+    area.add_dependencies(game_resources, 0, iter::once(dep)); // AnimatedObjects/Introlevel/scenes/SP_blueHolograms/cooked/Scanholo_bound.CMDL
+
+    let dep: structs::Dependency = ResId::<res_id::TXTR>::new(0x336B78E8).into();
+    area.add_dependencies(game_resources, 0, iter::once(dep)); // Worlds/IntroLevel/common_textures/sp_holoanim1C.TXTR
+
+    let dep: structs::Dependency = ResId::<res_id::CSKR>::new(0x41200B2F).into();
+    area.add_dependencies(game_resources, 0, iter::once(dep)); // AnimatedObjects/Introlevel/scenes/SP_blueHolograms/cooked/Scanholo_bound.CSKR
+
+    let dep: structs::Dependency = ResId::<res_id::CINF>::new(0xE436418D).into();
+    area.add_dependencies(game_resources, 0, iter::once(dep)); // AnimatedObjects/Introlevel/scenes/SP_blueHolograms/cooked/Scanholo_bound.CINF
+
+    let dep: structs::Dependency = ResId::<res_id::ANIM>::new(0xA1ED00B6).into();
+    area.add_dependencies(game_resources, 0, iter::once(dep)); // AnimatedObjects/Introlevel/scenes/SP_blueHolograms/cooked/Scanholo_ready.ANIM
+
+    let dep: structs::Dependency = ResId::<res_id::EVNT>::new(0xA7DDBDC4).into();
+    area.add_dependencies(game_resources, 0, iter::once(dep)); // AnimatedObjects/Introlevel/scenes/SP_blueHolograms/cooked/Scanholo_ready.EVNT
 
     Ok(())
 }
@@ -10778,6 +10890,13 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
                     move |ps, area| patch_add_poi(ps, area, game_resources, scan_id.clone(), strg_id.clone(), scan.position),
                 );
+
+                if scan.combat_visible.unwrap_or(false) {
+                    patcher.add_scly_patch(
+                        (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                        move |ps, area| patch_add_scan_actor(ps, area, game_resources, scan.position, scan.rotation.unwrap_or(0.0)),
+                    );
+                }
 
                 idx = idx + 1;
             }

@@ -702,9 +702,17 @@ pub fn collect_game_resources<'r>(
     ];
     looking_for.extend(glow_ring);
 
-    let mut deps: Vec<(u32, FourCC)> = Vec::new();
-    deps.push((0xDCEC3E77,FourCC::from_bytes(b"FRME")));
-    looking_for.extend(deps);
+    let custom_scan_point_deps: Vec<(u32, FourCC)> = vec![
+        (0xDCEC3E77, FourCC::from_bytes(b"FRME")),
+        (0x98DAB29C, FourCC::from_bytes(b"ANCS")),
+        (0x2A0FA4F9, FourCC::from_bytes(b"CMDL")),
+        (0x336B78E8, FourCC::from_bytes(b"TXTR")),
+        (0x41200B2F, FourCC::from_bytes(b"CSKR")),
+        (0xE436418D, FourCC::from_bytes(b"CINF")),
+        (0xA1ED00B6, FourCC::from_bytes(b"ANIM")),
+        (0xA7DDBDC4, FourCC::from_bytes(b"EVNT")),
+    ];
+    looking_for.extend(custom_scan_point_deps);
 
     // Dependencies read from paks and custom assets will go here //
     let mut found = HashMap::with_capacity(looking_for.len());
