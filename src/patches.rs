@@ -391,13 +391,20 @@ fn patch_morphball_hud(res: &mut structs::Resource)
 fn patch_add_scans_to_savw(
     res: &mut structs::Resource,
     savw_scans_to_add: &Vec<ResId<res_id::SCAN>>,
-    savw_scan_logbook_category: &HashMap::<u32, u32>
+    savw_scan_logbook_category: &HashMap::<u32, u32>,
+    scan_ids_to_remove: &Vec<u32>,
 )
     -> Result<(), String>
 {
     let savw = res.kind.as_savw_mut().unwrap();
     savw.cinematic_skip_array.as_mut_vec().clear();
     let scan_array = savw.scan_array.as_mut_vec();
+
+    for entry in scan_array.iter_mut() {
+        if scan_ids_to_remove.contains(&entry.scan.to_u32()) {
+            entry.logbook_category = 0;
+        }
+    }
 
     for scan_id in savw_scans_to_add {
         scan_array.push(structs::ScannableObject {
@@ -10461,6 +10468,80 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     let local_savw_scans_to_add = &local_savw_scans_to_add;
     let savw_scan_logbook_category = &savw_scan_logbook_category;
 
+    
+    // Remove unused artifacts from logbook
+    let mut savw_to_remove_from_logbook: Vec<u32> = Vec::new();
+    for i in 0..12 {
+        let kind = i + 29;
+
+        let exists = {
+            let mut _exists = false;
+            for (_, level) in level_data.iter() {
+                if _exists {break;}
+                for (_, room) in level.rooms.iter() {
+                    if _exists {break;}
+                    if room.pickups.is_none() { continue };
+                    for pickup in room.pickups.as_ref().unwrap().iter() {
+                        let pickup = PickupType::from_str(&pickup.pickup_type);
+                        if pickup.kind() == kind {
+                            _exists = true; // this artifact is placed somewhere in this world
+                            break;
+                        }
+                    }
+                }
+            }
+
+            let artifact_temple_layer_overrides = config.artifact_temple_layer_overrides.clone().unwrap_or(HashMap::new());
+            for (key, value) in &artifact_temple_layer_overrides {
+                let artifact_name = match kind {
+                    33 => "lifegiver",
+                    32 => "wild",
+                    38 => "world",
+                    37 => "sun",
+                    31 => "elder",
+                    39 => "spirit",
+                    29 => "truth",
+                    35 => "chozo",
+                    34 => "warrior",
+                    40 => "newborn",
+                    36 => "nature",
+                    30 => "strength",
+                    _ => panic!("Unhandled artifact idx - '{}'", i),
+                };
+
+                if key.to_lowercase().contains(&artifact_name) {
+                    _exists = _exists || *value; // if value is true, override
+                    break;
+                }
+            }
+            _exists
+        };
+
+        if exists {
+            continue; // The artifact is in the game, or it's in another player's multiworld session
+        }
+
+        const ARTIFACT_TOTEM_SCAN_SCAN: &[ResourceInfo] = &[
+            resource_info!("07_Over_Stonehenge Totem 1.SCAN"), // Truth
+            resource_info!("07_Over_Stonehenge Totem 2.SCAN"), // Strength
+            resource_info!("07_Over_Stonehenge Totem 3.SCAN"), // Elder
+            resource_info!("07_Over_Stonehenge Totem 4.SCAN"), // Wild
+            resource_info!("07_Over_Stonehenge Totem 5.SCAN"), // Lifegiver
+            resource_info!("07_Over_Stonehenge Totem 6.SCAN"), // Warrior
+            resource_info!("07_Over_Stonehenge Totem 7.SCAN"), // Chozo
+            resource_info!("07_Over_Stonehenge Totem 8.SCAN"), // Nature
+            resource_info!("07_Over_Stonehenge Totem 9.SCAN"), // Sun
+            resource_info!("07_Over_Stonehenge Totem 10.SCAN"), // World
+            resource_info!("07_Over_Stonehenge Totem 11.SCAN"), // Spirit
+            resource_info!("07_Over_Stonehenge Totem 12.SCAN"), // Newborn
+        ];
+
+        savw_to_remove_from_logbook.push(
+            ARTIFACT_TOTEM_SCAN_SCAN[i as usize].res_id
+        );
+    }
+    let savw_to_remove_from_logbook = &savw_to_remove_from_logbook;
+
     let liquid_resources = collect_liquid_resources(gc_disc);
     let liquid_resources = &liquid_resources;
 
@@ -10834,10 +10915,6 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
                 idx = idx + 1;
                 seed = seed + 1;
-            }
-
-            if pickups_config_len == 0 {
-
             }
 
             // Patch extra item locations
@@ -11352,6 +11429,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             res,
             &savw_scans_to_add,
             &savw_scan_logbook_category,
+            &savw_to_remove_from_logbook,
         ),
     );
     patcher.add_resource_patch(
@@ -11360,6 +11438,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             res,
             &local_savw_scans_to_add[World::TallonOverworld as usize],
             &savw_scan_logbook_category,
+            &savw_to_remove_from_logbook,
         ),
     );
 
@@ -11369,6 +11448,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             res,
             &savw_scans_to_add,
             &savw_scan_logbook_category,
+            &savw_to_remove_from_logbook,
         ),
     );
     patcher.add_resource_patch(
@@ -11377,6 +11457,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             res,
             &local_savw_scans_to_add[World::ChozoRuins as usize],
             &savw_scan_logbook_category,
+            &savw_to_remove_from_logbook,
         ),
     );
 
@@ -11386,6 +11467,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             res,
             &savw_scans_to_add,
             &savw_scan_logbook_category,
+            &savw_to_remove_from_logbook,
         ),
     );
     patcher.add_resource_patch(
@@ -11394,6 +11476,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             res,
             &local_savw_scans_to_add[World::MagmoorCaverns as usize],
             &savw_scan_logbook_category,
+            &savw_to_remove_from_logbook,
         ),
     );
 
@@ -11403,6 +11486,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             res,
             &savw_scans_to_add,
             &savw_scan_logbook_category,
+            &savw_to_remove_from_logbook,
         ),
     );
     patcher.add_resource_patch(
@@ -11411,6 +11495,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             res,
             &local_savw_scans_to_add[World::PhendranaDrifts as usize],
             &savw_scan_logbook_category,
+            &savw_to_remove_from_logbook,
         ),
     );
 
@@ -11420,6 +11505,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             res,
             &savw_scans_to_add,
             &savw_scan_logbook_category,
+            &savw_to_remove_from_logbook,
         ),
     );
     patcher.add_resource_patch(
@@ -11428,6 +11514,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             res,
             &local_savw_scans_to_add[World::PhazonMines as usize],
             &savw_scan_logbook_category,
+            &savw_to_remove_from_logbook,
         ),
     );
 
@@ -11437,6 +11524,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             res,
             &savw_scans_to_add,
             &savw_scan_logbook_category,
+            &savw_to_remove_from_logbook,
         ),
     );
     patcher.add_resource_patch(
@@ -11445,6 +11533,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             res,
             &local_savw_scans_to_add[World::ImpactCrater as usize],
             &savw_scan_logbook_category,
+            &savw_to_remove_from_logbook,
         ),
     );
 
@@ -11477,6 +11566,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 res,
                 &savw_scans_to_add,
                 &savw_scan_logbook_category,
+                &savw_to_remove_from_logbook,
             ),
         );
         patcher.add_resource_patch(
@@ -11485,6 +11575,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 res,
                 &local_savw_scans_to_add[World::FrigateOrpheon as usize],
                 &savw_scan_logbook_category,
+                &savw_to_remove_from_logbook,
             ),
         );
 
