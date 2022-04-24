@@ -264,6 +264,7 @@ pub fn custom_assets<'r>(
         Vec<Resource<'r>>,
         Vec<ResId<res_id::SCAN>>,
         Vec<Vec<ResId<res_id::SCAN>>>,
+        HashMap::<u32, u32>,
         HashMap<String, ExternPickupModel>,
     ),
     String>
@@ -292,6 +293,9 @@ pub fn custom_assets<'r>(
        redundant usage of percious memory card space
     */
     let mut string_to_scan_strg: HashMap::<String, (ResId<res_id::SCAN>, ResId<res_id::STRG>)> = HashMap::new();
+
+    /* Mapping of SCAN id to logbook category for easier SAVW entry creation */
+    let mut savw_scan_logbook_category: HashMap::<u32, u32> = HashMap::new();
 
     // External assets
     let mut assets = extern_assets_compile_time();
@@ -351,6 +355,7 @@ pub fn custom_assets<'r>(
             "BajaBlood, hammergoboom, Firemetroid, Lokir, MeriKatt, Cosmonawt, Haldadrin\0".to_string(),
         ],
         1,
+        0,
     ));
     local_savw_scans_to_add[World::TallonOverworld as usize].push(custom_asset_ids::CFLDG_POI_SCAN);
     assets.extend_from_slice(&create_item_scan_strg_pair_2(
@@ -362,6 +367,7 @@ pub fn custom_assets<'r>(
             "As we have done for millennia, we Chozo work constantly on our speed. Our fastest are our sentinels; They are, and have always been, repositories for our most precious secrets and strongest powers. \n\n2021 - Dinopony\n2020 - Interslice\n2019 - TheWeakestLink64\0".to_string(),
         ],
         1,
+        0,
     ));
     local_savw_scans_to_add[World::TallonOverworld as usize].push(custom_asset_ids::TOURNEY_WINNERS_SCAN);
 
@@ -382,6 +388,7 @@ pub fn custom_assets<'r>(
             pt.scan_strg(),
             vec![format!("{}\0", name)],
             1,
+            0,
         ));
         global_savw_scans_to_add.push(pt.scan());
 
@@ -427,7 +434,7 @@ pub fn custom_assets<'r>(
                     custom_asset_offset = custom_asset_offset + 1;
 
                     let is_red = {
-                        if custom_scan.is_red {
+                        if *custom_scan.is_red.as_ref().unwrap_or(&false) {
                             1
                         } else {
                             0
@@ -437,21 +444,33 @@ pub fn custom_assets<'r>(
                     let mut strings: Vec<String> = vec![];
                     let contents = contents.to_string() + "\0";
                     if contents.len() > 92 {
-                        let string1:String = (contents.clone().to_string())[..92].to_string();
+                        let string1: String = (contents.clone().to_string())[..92].to_string();
                         let remainder = (contents.clone().to_string())[92..].to_string();
                         strings.push(string1 + "\0");
                         strings.push("\0".to_string());
                         strings.push(remainder);
                     } else {
                         strings.push(contents.clone().to_string());
+                        strings.push("\0".to_string());
                     }
 
-                    assets.extend_from_slice(&create_item_scan_strg_pair_2(
+                    if custom_scan.logbook_title.is_some() || custom_scan.logbook_category.is_some() {
+                        if !custom_scan.logbook_title.is_some() || !custom_scan.logbook_category.is_some() {
+                            panic!("Both logbook title and logbook category are required.");
+                        }
+                        strings[1] = custom_scan.logbook_title.clone().unwrap() + "\0";
+                        savw_scan_logbook_category.insert(scan_id.to_u32(), custom_scan.logbook_category.clone().unwrap());
+                    }
+
+                    assets.extend_from_slice(
+                        &create_item_scan_strg_pair_2(
                         scan_id,
                         strg_id,
                         strings,
                         is_red,
-                    ));
+                        *custom_scan.logbook_category.as_ref().unwrap_or(&0),
+                        )
+                    );
 
                     // Map for easy lookup when patching //
                     let key = PickupHashKey::from_location(level_name, room_name, extra_scans_idx);
@@ -575,6 +594,7 @@ pub fn custom_assets<'r>(
                                 strg_id,
                                 vec![format!("{}\0", scan_text)],
                                 1,
+                                0,
                             ));
                         }
                         else
@@ -644,6 +664,7 @@ pub fn custom_assets<'r>(
                     blast_shield.strg(),
                     blast_shield.scan_text(),
                     1,
+                    0,
                 ));
                 global_savw_scans_to_add.push(blast_shield.scan());
             }
@@ -658,7 +679,27 @@ pub fn custom_assets<'r>(
         }
     }
 
-    Ok((assets, global_savw_scans_to_add, local_savw_scans_to_add, extern_models))
+    /* Set 0 as the default logbook category */
+    for scan_id in global_savw_scans_to_add.iter() {
+        if savw_scan_logbook_category.contains_key(&scan_id.to_u32()) {
+            continue;
+        }
+        
+        savw_scan_logbook_category.insert(scan_id.to_u32(), 0);
+    }
+
+    for world_savws in local_savw_scans_to_add.iter() {
+        for scan_id in world_savws {
+            if savw_scan_logbook_category.contains_key(&scan_id.to_u32()) {
+                continue;
+            }
+            
+            savw_scan_logbook_category.insert(scan_id.to_u32(), 0);
+        }
+    }
+    
+
+    Ok((assets, global_savw_scans_to_add, local_savw_scans_to_add, savw_scan_logbook_category, extern_models))
 }
 
 // When modifying resources in an MREA, we need to give the room a copy of the resources/
@@ -677,6 +718,7 @@ pub fn collect_game_resources<'r>(
         HashMap<PickupHashKey, (ResId<res_id::SCAN>, ResId<res_id::STRG>)>,
         Vec<ResId<res_id::SCAN>>,
         Vec<Vec<ResId<res_id::SCAN>>>,
+        HashMap::<u32, u32>,
         HashMap<String, ExternPickupModel>,
     ),
     String>
@@ -744,7 +786,7 @@ pub fn collect_game_resources<'r>(
     // Remove extra assets from dependency search since they won't appear     //
     // in any pak. Instead add them to the output resource pool. These assets //
     // are provided as external files checked into the repository.            //
-    let (custom_assets, global_savw_scans_to_add, local_savw_scans_to_add, extern_models) = custom_assets(&found, starting_memo, &mut pickup_hudmemos, &mut pickup_scans, &mut extra_scans, config)?;
+    let (custom_assets, global_savw_scans_to_add, local_savw_scans_to_add, savw_scan_logbook_category, extern_models) = custom_assets(&found, starting_memo, &mut pickup_hudmemos, &mut pickup_scans, &mut extra_scans, config)?;
     for res in custom_assets {
         let key = (res.file_id, res.fourcc());
         looking_for.remove(&key);
@@ -755,7 +797,7 @@ pub fn collect_game_resources<'r>(
         panic!("error - still looking for {:?}", looking_for);
     }
 
-    Ok((found, pickup_hudmemos, pickup_scans, extra_scans, global_savw_scans_to_add, local_savw_scans_to_add, extern_models))
+    Ok((found, pickup_hudmemos, pickup_scans, extra_scans, global_savw_scans_to_add, local_savw_scans_to_add, savw_scan_logbook_category, extern_models))
 }
 
 fn create_custom_blast_shield_cmdl<'r>(
@@ -1068,7 +1110,7 @@ fn create_item_scan_strg_pair<'r>(
     contents: String,
 ) -> [structs::Resource<'r>; 2]
 {
-    create_item_scan_strg_pair_2(new_scan, new_strg, vec![contents], 0)
+    create_item_scan_strg_pair_2(new_scan, new_strg, vec![contents], 0, 0)
 }
 
 fn create_item_scan_strg_pair_2<'r>(
@@ -1076,6 +1118,7 @@ fn create_item_scan_strg_pair_2<'r>(
     new_strg: ResId<res_id::STRG>,
     contents: Vec<String>,
     is_important: u8,
+    logbook_category: u32,
 ) -> [structs::Resource<'r>; 2]
 {
     let scan = build_resource(
@@ -1084,7 +1127,7 @@ fn create_item_scan_strg_pair_2<'r>(
             frme: ResId::<res_id::FRME>::new(0xDCEC3E77),
             strg: new_strg,
             scan_speed: 0,
-            category: 0,
+            category: logbook_category,
             icon_flag: is_important,
             images: [
                 structs::ScanImage {

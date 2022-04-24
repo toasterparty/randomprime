@@ -129,8 +129,10 @@ pub struct ScanConfig
     pub position: [f32;3],
     pub combat_visible: Option<bool>,
     pub rotation: Option<f32>,
+    pub is_red: Option<bool>,
+    pub logbook_category: Option<u32>,
+    pub logbook_title: Option<String>,
     pub text: String,
-    pub is_red: bool,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]

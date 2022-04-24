@@ -388,7 +388,11 @@ fn patch_morphball_hud(res: &mut structs::Resource)
     Ok(())
 }
 
-fn patch_add_scans_to_savw(res: &mut structs::Resource, savw_scans_to_add: &Vec<ResId<res_id::SCAN>>)
+fn patch_add_scans_to_savw(
+    res: &mut structs::Resource,
+    savw_scans_to_add: &Vec<ResId<res_id::SCAN>>,
+    savw_scan_logbook_category: &HashMap::<u32, u32>
+)
     -> Result<(), String>
 {
     let savw = res.kind.as_savw_mut().unwrap();
@@ -398,7 +402,7 @@ fn patch_add_scans_to_savw(res: &mut structs::Resource, savw_scans_to_add: &Vec<
     for scan_id in savw_scans_to_add {
         scan_array.push(structs::ScannableObject {
             scan: ResId::<res_id::SCAN>::new(scan_id.to_u32()),
-            logbook_category: 0,
+            logbook_category: *savw_scan_logbook_category.get(&scan_id.to_u32()).unwrap(),
         });
     }
 
@@ -10444,7 +10448,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         }
     };
 
-    let (game_resources, pickup_hudmemos, pickup_scans, extra_scans, savw_scans_to_add, local_savw_scans_to_add, extern_models) =
+    let (game_resources, pickup_hudmemos, pickup_scans, extra_scans, savw_scans_to_add, local_savw_scans_to_add, savw_scan_logbook_category, extern_models) =
         collect_game_resources(gc_disc, starting_memo, &config)?;
 
     let extern_models = &extern_models;
@@ -10455,6 +10459,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
     let savw_scans_to_add = &savw_scans_to_add;
     let local_savw_scans_to_add = &local_savw_scans_to_add;
+    let savw_scan_logbook_category = &savw_scan_logbook_category;
 
     let liquid_resources = collect_liquid_resources(gc_disc);
     let liquid_resources = &liquid_resources;
@@ -11346,6 +11351,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         move |res| patch_add_scans_to_savw(
             res,
             &savw_scans_to_add,
+            &savw_scan_logbook_category,
         ),
     );
     patcher.add_resource_patch(
@@ -11353,6 +11359,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         move |res| patch_add_scans_to_savw(
             res,
             &local_savw_scans_to_add[World::TallonOverworld as usize],
+            &savw_scan_logbook_category,
         ),
     );
 
@@ -11361,6 +11368,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         move |res| patch_add_scans_to_savw(
             res,
             &savw_scans_to_add,
+            &savw_scan_logbook_category,
         ),
     );
     patcher.add_resource_patch(
@@ -11368,6 +11376,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         move |res| patch_add_scans_to_savw(
             res,
             &local_savw_scans_to_add[World::ChozoRuins as usize],
+            &savw_scan_logbook_category,
         ),
     );
 
@@ -11376,6 +11385,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         move |res| patch_add_scans_to_savw(
             res,
             &savw_scans_to_add,
+            &savw_scan_logbook_category,
         ),
     );
     patcher.add_resource_patch(
@@ -11383,6 +11393,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         move |res| patch_add_scans_to_savw(
             res,
             &local_savw_scans_to_add[World::MagmoorCaverns as usize],
+            &savw_scan_logbook_category,
         ),
     );
 
@@ -11391,6 +11402,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         move |res| patch_add_scans_to_savw(
             res,
             &savw_scans_to_add,
+            &savw_scan_logbook_category,
         ),
     );
     patcher.add_resource_patch(
@@ -11398,6 +11410,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         move |res| patch_add_scans_to_savw(
             res,
             &local_savw_scans_to_add[World::PhendranaDrifts as usize],
+            &savw_scan_logbook_category,
         ),
     );
 
@@ -11406,6 +11419,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         move |res| patch_add_scans_to_savw(
             res,
             &savw_scans_to_add,
+            &savw_scan_logbook_category,
         ),
     );
     patcher.add_resource_patch(
@@ -11413,6 +11427,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         move |res| patch_add_scans_to_savw(
             res,
             &local_savw_scans_to_add[World::PhazonMines as usize],
+            &savw_scan_logbook_category,
         ),
     );
 
@@ -11421,6 +11436,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         move |res| patch_add_scans_to_savw(
             res,
             &savw_scans_to_add,
+            &savw_scan_logbook_category,
         ),
     );
     patcher.add_resource_patch(
@@ -11428,6 +11444,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         move |res| patch_add_scans_to_savw(
             res,
             &local_savw_scans_to_add[World::ImpactCrater as usize],
+            &savw_scan_logbook_category,
         ),
     );
 
@@ -11459,6 +11476,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             move |res| patch_add_scans_to_savw(
                 res,
                 &savw_scans_to_add,
+                &savw_scan_logbook_category,
             ),
         );
         patcher.add_resource_patch(
@@ -11466,6 +11484,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             move |res| patch_add_scans_to_savw(
                 res,
                 &local_savw_scans_to_add[World::FrigateOrpheon as usize],
+                &savw_scan_logbook_category,
             ),
         );
 
