@@ -443,7 +443,17 @@ pub fn custom_assets<'r>(
 
                     let mut strings: Vec<String> = vec![];
                     let contents = contents.to_string() + "\0";
-                    if contents.len() > 92 {
+                    let mut content_len = contents.len();
+
+                    // "The &push;&main-color=#c300ff;Phazon Suit&pop; can be found in &push;&main-color=#89a1ff;Phazon Mines - Processing Center Access&pop;.",
+                    for x in contents.split("&") {
+                        let semicolon_index = x.find(";").unwrap_or(0);
+                        if semicolon_index != 0 {
+                            content_len -= semicolon_index + 2;
+                        }
+                    }
+
+                    if content_len > 92 {
                         let string1: String = (contents.clone().to_string())[..92].to_string();
                         let remainder = (contents.clone().to_string())[92..].to_string();
                         strings.push(string1 + "\0");
