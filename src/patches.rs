@@ -3537,6 +3537,77 @@ fn patch_teleporter_destination<'r>(
     Ok(())
 }
 
+fn patch_add_load_trigger<'r>(
+    ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    position: [f32;3],
+    scale: [f32;3],
+    dock_num: u32,
+)
+    -> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    
+    // Collect all docks in this room
+    let mut docks: HashMap<u32, u32> = HashMap::new(); // <dock num, instance id>
+    for obj in layer.objects.as_mut_vec() {
+        if !obj.property_data.is_dock() {
+            continue;
+        }
+
+        let dock = obj.property_data.as_dock().unwrap();
+        docks.insert(dock.dock_index, obj.instance_id);
+    }
+
+    let mut connections: Vec::<structs::Connection> = Vec::new();
+
+    for (dock, instance_id) in docks {
+        if dock == dock_num {
+            connections.push(
+                structs::Connection {
+                    state: structs::ConnectionState::ENTERED,
+                    message: structs::ConnectionMsg::SET_TO_MAX,
+                    target_object_id: instance_id,
+                }
+            );
+        } else {
+            connections.push(
+                structs::Connection {
+                    state: structs::ConnectionState::ENTERED,
+                    message: structs::ConnectionMsg::SET_TO_ZERO,
+                    target_object_id: instance_id,
+                }
+            );
+        }
+    }
+
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            property_data: structs::Trigger {
+                name: b"Trigger\0".as_cstr(),
+                position: position.into(),
+                scale: scale.into(),
+                damage_info: structs::scly_structs::DamageInfo {
+                    weapon_type: 0,
+                    damage: 0.0,
+                    radius: 0.0,
+                    knockback_power: 0.0
+                },
+                force: [0.0, 0.0, 0.0].into(),
+                flags: 1,
+                active: 1,
+                deactivate_on_enter: 0,
+                deactivate_on_exit: 0
+            }.into(),
+            connections: connections.into(),
+        }    
+    );
+
+    Ok(())
+}
+
 fn fix_artifact_of_truth_requirements(
     ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
@@ -11232,6 +11303,17 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             )
         );
 
+        // Quarantine Monitor doesn't have a load trigger
+        patcher.add_scly_patch(
+            resource_info!("pickup04.MREA").into(),
+            move |ps, area| patch_add_load_trigger(
+                ps,
+                area,
+                [304.0, -606.0, 69.0],
+                [5.0, 5.0, 5.0],
+                0,
+            ),
+        );
     } else {
         patcher.add_file_patch(
             b"default.dol",
