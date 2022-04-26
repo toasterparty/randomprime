@@ -8078,8 +8078,8 @@ fn patch_add_dock_teleport<'r>(
         door_offset = 0.0;
         vertical_offset = -5.0;
     } else if is_floor_door {
-        door_offset = 0.0;
-        vertical_offset = 1.0;
+        door_offset = 2.5;
+        vertical_offset = 1.5;
     } else if is_square_frigate_door {
         spawn_point_rotation[2] += 90.0;
     } else if is_morphball_door {
@@ -10819,13 +10819,6 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 );
             }
 
-            if config.no_doors {
-                patcher.add_scly_patch(
-                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                    move |ps, area| patch_remove_doors(ps, area)
-                );
-            }
-
             if config.force_vanilla_layout {continue;}
 
             // Remove objects patch
@@ -12001,6 +11994,19 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         else
         {
             panic!("Unexpected boss name {}", _boss_name);
+        }
+    }
+
+    // remove doors
+    if config.no_doors {
+        for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {
+            for room_info in rooms.iter() {
+                patcher.add_scly_patch(
+                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                    move |ps, area| patch_remove_doors(ps, area)
+                );
+            
+            }
         }
     }
 
