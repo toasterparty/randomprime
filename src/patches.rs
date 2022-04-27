@@ -5075,9 +5075,12 @@ fn patch_remove_cutscenes(
                     if timers_to_zero.contains(&obj_id) {
                         0.1
                     } else {
-                        if room_id == 0x2398E906 {
-                            obj.property_data.as_camera().unwrap().shot_duration
+                        let camera = obj.property_data.as_camera_mut();
+                        if camera.is_some() {
+                            camera.unwrap().shot_duration
                         } else {
+                            // this is when shit gets double patched
+                            // println!("object 0x{:X} in room 0x{:X} isn't actually a camera", room_id.to_u32(), obj_id);
                             0.1
                         }
                     }
@@ -5122,6 +5125,11 @@ fn patch_remove_cutscenes(
                 }
 
                 objs_to_add.push(relay);
+            }
+
+            if obj_id == 0x000B00ED { // first essence camera
+                let camera = obj.property_data.as_camera_mut().unwrap();
+                camera.shot_duration = 1.5;
             }
 
             if skip_ids.contains(&obj_id) {
@@ -9548,7 +9556,7 @@ fn patch_qol_competitive_cutscenes(patcher: &mut PrimePatcher, version: Version)
     );
     patcher.add_scly_patch(
         resource_info!("05_over_xray.MREA").into(), // life grove (competitive only - watch raise post cutscenes)
-        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![0x002A00C4, 0x002A01D0], false), // don't skip ghosts cutscene or ghosts will leave forever
+        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![0x002A01D0], true),
     );
     patcher.add_scly_patch(
         resource_info!("12_ice_research_b.MREA").into(),
@@ -9556,11 +9564,11 @@ fn patch_qol_competitive_cutscenes(patcher: &mut PrimePatcher, version: Version)
     );
     patcher.add_scly_patch(
         resource_info!("00j_over_hall.MREA").into(), // temple security station
-        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![], false),
+        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![], true),
     );
     patcher.add_scly_patch(
         resource_info!("15_ice_cave_a.MREA").into(), // frost cave
-        move |ps, area| patch_remove_cutscenes(ps, area, vec![0x0029006C, 0x0029006B], vec![], true),
+        move |ps, area| patch_remove_cutscenes(ps, area, vec![0x0029006C, 0x0029006B], vec![], false),
     );
     patcher.add_scly_patch(
         resource_info!("15_energycores.MREA").into(), // energy core
@@ -9603,7 +9611,7 @@ fn patch_qol_competitive_cutscenes(patcher: &mut PrimePatcher, version: Version)
     );
     patcher.add_scly_patch(
         resource_info!("07_ruinedroof.MREA").into(), // training chamber
-        move |ps, area| patch_remove_cutscenes(ps, area, vec![0x000C0153, 0x000C0154, 0x000C015B], vec![], true),
+        move |ps, area| patch_remove_cutscenes(ps, area, vec![0x000C0153, 0x000C0154, 0x000C015B, 0x000C0151, 0x000C013E], vec![], true),
     );
     patcher.add_scly_patch(
         resource_info!("11_wateryhall.MREA").into(), // watery hall
@@ -9642,11 +9650,11 @@ fn patch_qol_competitive_cutscenes(patcher: &mut PrimePatcher, version: Version)
     );
     patcher.add_scly_patch(
         resource_info!("03_mines.MREA").into(), // elite research (keep phazon elite cutscene)
-        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![0x000D04C8, 0x000D01CF], false),
+        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![0x000D04C8, 0x000D01CF], true),
     );
     patcher.add_scly_patch(
         resource_info!("02_mines_shotemup.MREA").into(), // mine security station
-        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![], true),
+        move |ps, area| patch_remove_cutscenes(ps, area, vec![0x00070513], vec![], true),
     );
 }
 
@@ -9669,11 +9677,11 @@ fn patch_qol_minor_cutscenes(patcher: &mut PrimePatcher, version: Version) {
     );
     patcher.add_scly_patch(
         resource_info!("00j_over_hall.MREA").into(), // temple security station
-        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![], false),
+        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![], true),
     );
     patcher.add_scly_patch(
         resource_info!("15_ice_cave_a.MREA").into(), // frost cave
-        move |ps, area| patch_remove_cutscenes(ps, area, vec![0x0029006C, 0x0029006B], vec![], true),
+        move |ps, area| patch_remove_cutscenes(ps, area, vec![0x0029006C, 0x0029006B], vec![], false),
     );
     patcher.add_scly_patch(
         resource_info!("15_energycores.MREA").into(), // energy core
@@ -9712,7 +9720,7 @@ fn patch_qol_minor_cutscenes(patcher: &mut PrimePatcher, version: Version) {
     );
     patcher.add_scly_patch(
         resource_info!("05_over_xray.MREA").into(), // life grove
-        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![0x002A00C4], false), // don't skip ghosts cutscene or ghosts will leave forever
+        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![], true),
     );
     patcher.add_scly_patch(
         resource_info!("01_mainplaza.MREA").into(), // main plaza
@@ -9740,7 +9748,7 @@ fn patch_qol_minor_cutscenes(patcher: &mut PrimePatcher, version: Version) {
     );
     patcher.add_scly_patch(
         resource_info!("07_ruinedroof.MREA").into(), // training chamber
-        move |ps, area| patch_remove_cutscenes(ps, area, vec![0x000C0153, 0x000C0154, 0x000C015B], vec![], true),
+        move |ps, area| patch_remove_cutscenes(ps, area, vec![0x000C0153, 0x000C0154, 0x000C015B, 0x000C0151, 0x000C013E], vec![], true),
     );
     patcher.add_scly_patch(
         resource_info!("11_wateryhall.MREA").into(), // watery hall
@@ -9807,7 +9815,7 @@ fn patch_qol_minor_cutscenes(patcher: &mut PrimePatcher, version: Version) {
     );
     patcher.add_scly_patch(
         resource_info!("03_mines.MREA").into(), // elite research (keep phazon elite cutscene)
-        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![0x000D04C8, 0x000D01CF], false),
+        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![0x000D04C8, 0x000D01CF], true),
     );
     patcher.add_scly_patch(
         resource_info!("06_mines_elitebustout.MREA").into(), // omega reserach
@@ -9823,7 +9831,7 @@ fn patch_qol_minor_cutscenes(patcher: &mut PrimePatcher, version: Version) {
     );
     patcher.add_scly_patch(
         resource_info!("02_mines_shotemup.MREA").into(), // mine security station
-        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![], true),
+        move |ps, area| patch_remove_cutscenes(ps, area, vec![0x00070513], vec![], true),
     );
     patcher.add_scly_patch(
         resource_info!("01_ice_plaza.MREA").into(), // phendrana shorelines
@@ -9885,7 +9893,7 @@ pub fn patch_qol_major_cutscenes(patcher: &mut PrimePatcher) {
     );
     patcher.add_scly_patch(
         resource_info!("03_monkey_lower.MREA").into(), // burn dome
-        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![], true),
+        move |ps, area| patch_remove_cutscenes(ps, area, vec![0x0030017B], vec![], true),
     );
     patcher.add_scly_patch(
         resource_info!("22_Flaahgra.MREA").into(), // sunchamber
@@ -9981,10 +9989,14 @@ pub fn patch_qol_major_cutscenes(patcher: &mut PrimePatcher) {
         resource_info!("03f_crater.MREA").into(), // metroid prime lair
         move |ps, area| patch_remove_cutscenes(
             ps, area, vec![],
-            vec![ // play the first cutscene so it can be skipped normally
+            vec![
+                // play the first cutscene so it can be skipped normally
                 0x000B019D, 0x000B008B, 0x000B008D, 0x000B0093, 0x000B0094, 0x000B00A7,
                 0x000B00AF, 0x000B00E1, 0x000B00DF, 0x000B00B0, 0x000B00D3, 0x000B00E3,
                 0x000B00E6, 0x000B0095, 0x000B00E4,
+
+                // play the first camera of the death cutcsene so races have a clean finish
+                0x000B00ED,
             ],
             true,
         ),
