@@ -738,6 +738,7 @@ pub fn collect_game_resources<'r>(
     looking_for.extend(PickupModel::iter().flat_map(|x| x.dependencies().iter().cloned()));
     looking_for.extend(DoorType::iter().flat_map(|x| x.dependencies()));
     looking_for.extend(BlastShieldType::iter().flat_map(|x| x.dependencies()));
+    
     let platform_deps: Vec<(u32,FourCC)> = vec![
         (0x48DF38A3, FourCC::from_bytes(b"CMDL")),
         (0xB2D50628, FourCC::from_bytes(b"DCLN")),
@@ -748,16 +749,23 @@ pub fn collect_game_resources<'r>(
         (0xF1478D6A, FourCC::from_bytes(b"TXTR")),
     ];
     looking_for.extend(platform_deps);
+    
     let block_deps: Vec<(u32,FourCC)> = vec![
         (0x27D0663B, FourCC::from_bytes(b"CMDL")),
         (0xFF6F41A6, FourCC::from_bytes(b"TXTR")),
     ];
     looking_for.extend(block_deps);
+    
     let glow_ring: Vec<(u32,FourCC)> = vec![ // mapstation_beams.CMDL
         (0x12771AF0, FourCC::from_bytes(b"CMDL")),
         (0xA6114429, FourCC::from_bytes(b"TXTR")),
     ];
     looking_for.extend(glow_ring);
+    
+    let orange_light: Vec<(u32,FourCC)> = vec![
+        (0xB4A658C3, FourCC::from_bytes(b"PART")),
+    ];
+    looking_for.extend(orange_light);
 
     let custom_scan_point_deps: Vec<(u32, FourCC)> = vec![
         (0xDCEC3E77, FourCC::from_bytes(b"FRME")),

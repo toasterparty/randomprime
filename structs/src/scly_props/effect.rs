@@ -8,7 +8,6 @@ use crate::{ResId, SclyPropertyData};
 use crate::scly_props::structs::LightParameters;
 use crate::res_id::*;
 
-
 #[auto_struct(Readable, Writable)]
 #[derive(Debug, Clone)]
 pub struct Effect<'r>

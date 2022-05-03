@@ -225,6 +225,7 @@ pub struct RoomConfig
     pub bounding_box_scale: Option<[f32;3]>,
     pub platforms: Option<Vec<PlatformConfig>>,
     pub blocks: Option<Vec<BlockConfig>>,
+    pub ambient_lighting_scale: Option<f32>, // 1.0 is default lighting
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]

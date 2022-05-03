@@ -3464,7 +3464,7 @@ fn patch_add_block<'r>(
                         color: [1.0, 1.0, 1.0, 1.0].into(),
                         unknown4: 1,
                         world_lighting: 1,
-                        light_recalculation: 2,
+                        light_recalculation: 1,
                         unknown5: [0.0, 0.0, 0.0].into(),
                         unknown6: 4,
                         unknown7: 4,
@@ -3511,6 +3511,96 @@ fn patch_add_block<'r>(
 
     Ok(())
 }
+
+fn patch_ambient_lighting<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    scale: f32,
+) -> Result<(), String>
+{
+    let lights: &mut structs::Lights = area.mrea().lights_section_mut();
+    for light in lights.light_layers.as_mut_vec() {
+        if light.light_type != 0x0 { // local ambient
+            continue;
+        }
+
+        light.brightness *= scale;
+    }
+
+    Ok(())
+}
+
+// fn patch_add_orange_light<'r>(
+//     ps: &mut PatcherState,
+//     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+//     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+//     position: [f32;3],
+//     scale: [f32;3],
+// ) -> Result<(), String>
+// {
+//     let deps = vec![
+//         (0xB4A658C3, b"PART"),
+//     ];
+//     let deps_iter = deps.iter()
+//         .map(|&(file_id, fourcc)| structs::Dependency {
+//             asset_id: file_id,
+//             asset_type: FourCC::from_bytes(fourcc),
+//         }
+//     );
+//     area.add_dependencies(game_resources,0,deps_iter);
+
+//     let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
+//     layers[0].objects.as_mut_vec().push(
+//         structs::SclyObject {
+//             instance_id: ps.fresh_instance_id_range.next().unwrap(),
+//             property_data: structs::scly_props::Effect {
+//                 name: b"my effect\0".as_cstr(),
+
+//                 position: position.into(),
+//                 rotation: [0.0, 0.0, 0.0].into(),
+//                 scale: scale.into(),
+//                 part: resource_info!("B4A658C3.PART").try_into().unwrap(),
+//                 elsc: ResId::invalid(),
+//                 hot_in_thermal: 0,
+//                 no_timer_unless_area_occluded: 0,
+//                 rebuild_systems_on_active: 0,
+//                 active: 1,
+//                 use_rate_inverse_cam_dist: 0,
+//                 rate_inverse_cam_dist: 5.0,
+//                 rate_inverse_cam_dist_rate: 0.5,
+//                 duration: 0.2,
+//                 dureation_reset_while_visible: 0.1,
+//                 use_rate_cam_dist_range: 0,
+//                 rate_cam_dist_range_min: 20.0,
+//                 rate_cam_dist_range_max: 30.0,
+//                 rate_cam_dist_range_far_rate: 0.0,
+//                 combat_visor_visible: 1,
+//                 thermal_visor_visible: 1,
+//                 xray_visor_visible: 1,
+//                 die_when_systems_done: 0,
+//                 light_params: structs::scly_structs::LightParameters {
+//                     unknown0: 1,
+//                     unknown1: 1.0,
+//                     shadow_tessellation: 0,
+//                     unknown2: 1.0,
+//                     unknown3: 20.0,
+//                     color: [1.0, 1.0, 1.0, 1.0].into(),
+//                     unknown4: 0,
+//                     world_lighting: 1,
+//                     light_recalculation: 1,
+//                     unknown5: [0.0, 0.0, 0.0].into(),
+//                     unknown6: 4,
+//                     unknown7: 4,
+//                     unknown8: 0,
+//                     light_layer_id: 0
+//                 },
+//             }.into(),
+//             connections: vec![].into()
+//         },
+//     );
+
+//     Ok(())
+// }
 
 fn patch_disable_item_loss(
     _ps: &mut PatcherState,
@@ -10610,6 +10700,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             bounding_box_scale: None,
                             platforms: None,
                             blocks: None,
+                            ambient_lighting_scale: None,
                         }
                     );
                 }
@@ -11063,6 +11154,13 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                     move |ps, area| patch_add_block(ps, area, game_resources, block.position, block.scale),
                                 );
                             }
+                        }
+
+                        if room.ambient_lighting_scale.is_some() {
+                            patcher.add_scly_patch(
+                                (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                move |_ps, area| patch_ambient_lighting(_ps, area, room.ambient_lighting_scale.unwrap()),
+                            );
                         }
 
                         let submerge = room.submerge.clone().unwrap_or(false);
