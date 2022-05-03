@@ -3409,6 +3409,109 @@ fn patch_add_circle_platform<'r>(
     Ok(())
 }
 
+fn patch_add_block<'r>(
+    ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+    position: [f32;3],
+    scale: [f32;3],
+    // rotation: [f32;3],
+) -> Result<(), String>
+{
+    let deps = vec![
+        (0x27D0663B, b"CMDL"),
+        (0xFF6F41A6, b"TXTR"),
+    ];
+    let deps_iter = deps.iter()
+        .map(|&(file_id, fourcc)| structs::Dependency {
+            asset_id: file_id,
+            asset_type: FourCC::from_bytes(fourcc),
+        }
+    );
+    area.add_dependencies(game_resources,0,deps_iter);
+
+    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
+    layers[0].objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            property_data: structs::Actor {
+                name: b"myactor\0".as_cstr(),
+                position: position.into(),
+                rotation: [180.0, 0.0, 0.0].into(),
+                scale: scale.into(),
+                hitbox: [0.0, 0.0, 0.0].into(),
+                scan_offset: [0.0, 0.0, 0.0].into(),
+                unknown1: 1.0,
+                unknown2: 0.0,
+                health_info: structs::scly_structs::HealthInfo {
+                    health: 5.0,
+                    knockback_resistance: 1.0
+                },
+                damage_vulnerability: DoorType::Disabled.vulnerability(),
+                cmdl: resource_info!("27D0663B.CMDL").try_into().unwrap(),
+                ancs: structs::scly_structs::AncsProp {
+                    file_id: ResId::invalid(), // None
+                    node_index: 0,
+                    default_animation: 0xFFFFFFFF, // -1
+                },
+                actor_params: structs::scly_structs::ActorParameters {
+                    light_params: structs::scly_structs::LightParameters {
+                        unknown0: 1,
+                        unknown1: 1.0,
+                        shadow_tessellation: 0,
+                        unknown2: 1.0,
+                        unknown3: 20.0,
+                        color: [1.0, 1.0, 1.0, 1.0].into(),
+                        unknown4: 1,
+                        world_lighting: 1,
+                        light_recalculation: 2,
+                        unknown5: [0.0, 0.0, 0.0].into(),
+                        unknown6: 4,
+                        unknown7: 4,
+                        unknown8: 0,
+                        light_layer_id: 0
+                    },
+                    scan_params: structs::scly_structs::ScannableParameters {
+                        scan: ResId::invalid(), // None
+                    },
+                    xray_cmdl: ResId::invalid(), // None
+                    xray_cskr: ResId::invalid(), // None
+                    thermal_cmdl: ResId::invalid(), // None
+                    thermal_cskr: ResId::invalid(), // None
+
+                    unknown0: 1,
+                    unknown1: 1.0,
+                    unknown2: 1.0,
+
+                    visor_params: structs::scly_structs::VisorParameters {
+                        unknown0: 0,
+                        target_passthrough: 0,
+                        visor_mask: 15 // Combat|Scan|Thermal|XRay
+                    },
+                    enable_thermal_heat: 1,
+                    unknown3: 0,
+                    unknown4: 0,
+                    unknown5: 1.0
+                },
+                looping: 1,
+                snow: 1,
+                solid: 1,
+                camera_passthrough: 0,
+                active: 1,
+                unknown8: 0,
+                unknown9: 1.0,
+                unknown10: 1,
+                unknown11: 0,
+                unknown12: 0,
+                unknown13: 0
+            }.into(),
+            connections: vec![].into()
+        },
+    );
+
+    Ok(())
+}
+
 fn patch_disable_item_loss(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
@@ -10506,6 +10609,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             bounding_box_offset: None,
                             bounding_box_scale: None,
                             platforms: None,
+                            blocks: None,
                         }
                     );
                 }
@@ -10948,6 +11052,15 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
                                     move |ps, area| patch_add_circle_platform(ps, area, game_resources, platform.position),
+                                );
+                            }
+                        }
+
+                        if room.blocks.is_some() {
+                            for block in room.blocks.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_block(ps, area, game_resources, block.position, block.scale),
                                 );
                             }
                         }

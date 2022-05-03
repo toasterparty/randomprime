@@ -748,6 +748,11 @@ pub fn collect_game_resources<'r>(
         (0xF1478D6A, FourCC::from_bytes(b"TXTR")),
     ];
     looking_for.extend(platform_deps);
+    let block_deps: Vec<(u32,FourCC)> = vec![
+        (0x27D0663B, FourCC::from_bytes(b"CMDL")),
+        (0xFF6F41A6, FourCC::from_bytes(b"TXTR")),
+    ];
+    looking_for.extend(block_deps);
     let glow_ring: Vec<(u32,FourCC)> = vec![ // mapstation_beams.CMDL
         (0x12771AF0, FourCC::from_bytes(b"CMDL")),
         (0xA6114429, FourCC::from_bytes(b"TXTR")),
