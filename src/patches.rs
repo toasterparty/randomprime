@@ -4581,6 +4581,10 @@ fn patch_spawn_point_position<'r>(
             if obj.instance_id & 0xFF000000 == 0xDE000000 { continue; } // don't move spawn points placed by this program
 
             let spawn_point = obj.property_data.as_spawn_point_mut().unwrap();
+            if spawn_point.default_spawn == 0 && !force_default {
+                continue;
+            }
+
             if relative_position {
                 spawn_point.position[0] = spawn_point.position[0] + new_position[0];
                 spawn_point.position[1] = spawn_point.position[1] + new_position[1];
@@ -4592,6 +4596,8 @@ fn patch_spawn_point_position<'r>(
             if force_default {
                 spawn_point.default_spawn = 1;
             }
+
+            break; // only patch one spawn point
         }
     }
 
@@ -10463,7 +10469,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             for room_info in rooms.iter() {
                 let key = room_info.name.trim();
                 if level.rooms.get(key).is_none() {
-                    level.rooms.insert(key.to_string(), RoomConfig{
+                    level.rooms.insert(key.to_string(), RoomConfig {
                             pickups: Some(vec![]),
                             extra_scans: None,
                             doors: None,
@@ -10471,6 +10477,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             remove_water: None,
                             submerge: None,
                             liquids: None,
+                            spawn_position_override: None,
                         }
                     );
                 }
@@ -10867,7 +10874,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 if level.is_some() {
                     let room = level.unwrap().rooms.get(room_info.name.trim());
                     if room.is_some() {
-                        let room = room.as_ref().unwrap();
+                        let room = room.clone().unwrap();
                         if room.pickups.is_some() {
                             _pickups = room.pickups.clone().unwrap();
                         }
@@ -10892,6 +10899,13 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                     move |_ps, area| patch_superheated_room(_ps, area, config.heat_damage_per_sec),
                                 );
                             }
+                        }
+                        
+                        if room.spawn_position_override.is_some() {
+                            patcher.add_scly_patch(
+                                (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                move |_ps, area| patch_spawn_point_position(_ps, area, room.spawn_position_override.unwrap(), false, false),
+                            );
                         }
 
                         let submerge = room.submerge.clone().unwrap_or(false);

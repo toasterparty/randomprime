@@ -203,6 +203,7 @@ pub struct RoomConfig
     pub pickups: Option<Vec<PickupConfig>>,
     pub extra_scans: Option<Vec<ScanConfig>>,
     pub doors: Option<HashMap<u32, DoorConfig>>,
+    pub spawn_position_override: Option<[f32;3]>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
