@@ -204,6 +204,8 @@ pub struct RoomConfig
     pub extra_scans: Option<Vec<ScanConfig>>,
     pub doors: Option<HashMap<u32, DoorConfig>>,
     pub spawn_position_override: Option<[f32;3]>,
+    pub bounding_box_offset: Option<[f32;3]>,
+    pub bounding_box_scale: Option<[f32;3]>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]

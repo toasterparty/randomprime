@@ -4562,6 +4562,31 @@ fn patch_remove_doors<'r>
     Ok(())
 }
 
+fn patch_transform_bounding_box<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    offset: [f32;3],
+    scale: [f32;3],
+)
+-> Result<(), String>
+{
+    let bb = area.mlvl_area.area_bounding_box;
+    let size: [f32;3] = [
+        (bb[3] - bb[0]).abs(),
+        (bb[4] - bb[1]).abs(),
+        (bb[5] - bb[2]).abs(),
+    ];
+
+    area.mlvl_area.area_bounding_box[0] = bb[0] + offset[0] + (size[0]*0.5 - (size[0]*0.5)*scale[0]);
+    area.mlvl_area.area_bounding_box[1] = bb[1] + offset[1] + (size[1]*0.5 - (size[1]*0.5)*scale[1]);
+    area.mlvl_area.area_bounding_box[2] = bb[2] + offset[2] + (size[2]*0.5 - (size[2]*0.5)*scale[2]);
+    area.mlvl_area.area_bounding_box[3] = bb[3] + offset[0] - (size[0]*0.5 - (size[0]*0.5)*scale[0]);
+    area.mlvl_area.area_bounding_box[4] = bb[4] + offset[1] - (size[1]*0.5 - (size[1]*0.5)*scale[1]);
+    area.mlvl_area.area_bounding_box[5] = bb[5] + offset[2] - (size[2]*0.5 - (size[2]*0.5)*scale[2]);
+
+    Ok(())
+}
+
 fn patch_spawn_point_position<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -10478,6 +10503,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             submerge: None,
                             liquids: None,
                             spawn_position_override: None,
+                            bounding_box_offset: None,
+                            bounding_box_scale: None,
                         }
                     );
                 }
@@ -10905,6 +10932,13 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             patcher.add_scly_patch(
                                 (pak_name.as_bytes(), room_info.room_id.to_u32()),
                                 move |_ps, area| patch_spawn_point_position(_ps, area, room.spawn_position_override.unwrap(), false, false),
+                            );
+                        }
+
+                        if room.bounding_box_offset.is_some() || room.bounding_box_scale.is_some() {
+                            patcher.add_scly_patch(
+                                (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                move |_ps, area| patch_transform_bounding_box(_ps, area, room.bounding_box_offset.unwrap_or([0.0, 0.0, 0.0]), room.bounding_box_scale.unwrap_or([1.0, 1.0, 1.0])),
                             );
                         }
 
