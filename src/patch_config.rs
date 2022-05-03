@@ -192,6 +192,14 @@ pub struct WaterConfig
     pub scale: [f32;3],
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PlatformConfig
+{
+    pub position: [f32;3],
+    // pub scale: [f32;3],
+}
+
 #[derive(Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RoomConfig
@@ -206,6 +214,7 @@ pub struct RoomConfig
     pub spawn_position_override: Option<[f32;3]>,
     pub bounding_box_offset: Option<[f32;3]>,
     pub bounding_box_scale: Option<[f32;3]>,
+    pub platforms: Option<Vec<PlatformConfig>>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]

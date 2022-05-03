@@ -20,7 +20,7 @@ pub struct Platform<'r>
     pub position: GenericArray<f32, U3>,
     pub rotation: GenericArray<f32, U3>,
     pub scale: GenericArray<f32, U3>,
-    pub unknown0: GenericArray<f32, U3>,// hitbox?
+    pub extent: GenericArray<f32, U3>,// hitbox?
     pub scan_offset: GenericArray<f32, U3>,
 
     pub cmdl: ResId<CMDL>,
@@ -35,7 +35,7 @@ pub struct Platform<'r>
     pub health_info: HealthInfo,
     pub damage_vulnerability: DamageVulnerability,
 
-    pub unknown3: u8,
+    pub detect_collision: u8,
     pub unknown4: f32,
     pub unknown5: u8,
     pub unknown6: u32,

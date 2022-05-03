@@ -3336,7 +3336,7 @@ fn patch_add_circle_platform<'r>(
                 position: position.into(),
                 rotation: [0.0, 0.0, -90.0].into(),
                 scale: [1.0, 1.0, 1.0].into(),
-                unknown0: [0.0, 0.0, 0.0].into(), // extent
+                extent: [0.0, 0.0, 0.0].into(),
                 scan_offset: [0.0, 0.0, 0.0].into(),
 
                 cmdl: ResId::<res_id::CMDL>::new(0x48DF38A3),
@@ -3354,12 +3354,12 @@ fn patch_add_circle_platform<'r>(
                         unknown3: 20.0,
                         color: [1.0, 1.0, 1.0, 1.0].into(),
                         unknown4: 1,
-                        world_lighting: 1,
+                        world_lighting: 3,
                         light_recalculation: 1,
                         unknown5: [0.0, 0.0, 0.0].into(),
                         unknown6: 4,
                         unknown7: 4,
-                        unknown8: 0,
+                        unknown8: 1,
                         light_layer_id: 0
                     },
                     scan_params: structs::scly_structs::ScannableParameters {
@@ -3381,7 +3381,7 @@ fn patch_add_circle_platform<'r>(
                     },
                     enable_thermal_heat: 1,
                     unknown3: 0,
-                    unknown4: 1,
+                    unknown4: 0,
                     unknown5: 1.0
                 },
 
@@ -3396,7 +3396,7 @@ fn patch_add_circle_platform<'r>(
                 },
                 damage_vulnerability: DoorType::Disabled.vulnerability(),
 
-                unknown3: 0,
+                detect_collision: 1,
                 unknown4: 1.0,
                 unknown5: 0,
                 unknown6: 200,
@@ -10505,6 +10505,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             spawn_position_override: None,
                             bounding_box_offset: None,
                             bounding_box_scale: None,
+                            platforms: None,
                         }
                     );
                 }
@@ -10940,6 +10941,15 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                 (pak_name.as_bytes(), room_info.room_id.to_u32()),
                                 move |_ps, area| patch_transform_bounding_box(_ps, area, room.bounding_box_offset.unwrap_or([0.0, 0.0, 0.0]), room.bounding_box_scale.unwrap_or([1.0, 1.0, 1.0])),
                             );
+                        }
+
+                        if room.platforms.is_some() {
+                            for platform in room.platforms.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_circle_platform(ps, area, game_resources, platform.position),
+                                );
+                            }
                         }
 
                         let submerge = room.submerge.clone().unwrap_or(false);
