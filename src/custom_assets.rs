@@ -767,6 +767,13 @@ pub fn collect_game_resources<'r>(
     ];
     looking_for.extend(orange_light);
 
+    let ghost_ball: Vec<(u32,FourCC)> = vec![ // used for lock on point model
+        (0xBFE4DAA0, FourCC::from_bytes(b"CMDL")),
+        (0x57C7107D, FourCC::from_bytes(b"TXTR")),
+        (0xE580D665, FourCC::from_bytes(b"TXTR")),
+    ];
+    looking_for.extend(ghost_ball);
+
     let custom_scan_point_deps: Vec<(u32, FourCC)> = vec![
         (0xDCEC3E77, FourCC::from_bytes(b"FRME")),
         (0x98DAB29C, FourCC::from_bytes(b"ANCS")),

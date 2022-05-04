@@ -209,6 +209,13 @@ pub struct BlockConfig
     // pub rotation: [f32;3],
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct LockOnPoint
+{
+    pub position: [f32;3],
+}
+
 #[derive(Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RoomConfig
@@ -225,6 +232,7 @@ pub struct RoomConfig
     pub bounding_box_scale: Option<[f32;3]>,
     pub platforms: Option<Vec<PlatformConfig>>,
     pub blocks: Option<Vec<BlockConfig>>,
+    pub lock_on_points: Option<Vec<LockOnPoint>>,
     pub ambient_lighting_scale: Option<f32>, // 1.0 is default lighting
 }
 

@@ -3512,6 +3512,137 @@ fn patch_add_block<'r>(
     Ok(())
 }
 
+fn patch_lock_on_point<'r>(
+    ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+    position: [f32;3],
+) -> Result<(), String>
+{
+    let deps = vec![
+        (0xBFE4DAA0, b"CMDL"),
+        (0x57C7107D, b"TXTR"),
+        (0xE580D665, b"TXTR"),
+    ];
+    let deps_iter = deps.iter()
+        .map(|&(file_id, fourcc)| structs::Dependency {
+            asset_id: file_id,
+            asset_type: FourCC::from_bytes(fourcc),
+        }
+    );
+    area.add_dependencies(game_resources,0,deps_iter);
+
+    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
+    layers[0].objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            property_data: structs::Platform {
+                name: b"myplatform\0".as_cstr(),
+
+                position: position.into(),
+                rotation: [0.0, 0.0, 0.0].into(),
+                scale: [8.0, 8.0, 8.0].into(),
+                extent: [0.0, 0.0, 0.0].into(),
+                scan_offset: [0.0, 0.0, 0.0].into(),
+
+                cmdl: ResId::<res_id::CMDL>::new(0xBFE4DAA0),
+                ancs: structs::scly_structs::AncsProp {
+                    file_id: ResId::invalid(),
+                    node_index: 0,
+                    default_animation: 0xFFFFFFFF,
+                },
+                actor_params: structs::scly_structs::ActorParameters {
+                    light_params: structs::scly_structs::LightParameters {
+                        unknown0: 1,
+                        unknown1: 1.0,
+                        shadow_tessellation: 0,
+                        unknown2: 1.0,
+                        unknown3: 20.0,
+                        color: [1.0, 1.0, 1.0, 1.0].into(),
+                        unknown4: 1,
+                        world_lighting: 1,
+                        light_recalculation: 1,
+                        unknown5: [0.0, 0.0, 0.0].into(),
+                        unknown6: 4,
+                        unknown7: 4,
+                        unknown8: 0,
+                        light_layer_id: 0
+                    },
+                    scan_params: structs::scly_structs::ScannableParameters {
+                        scan: ResId::invalid(), // None
+                    },
+                    xray_cmdl: ResId::invalid(), // None
+                    xray_cskr: ResId::invalid(), // None
+                    thermal_cmdl: ResId::invalid(), // None
+                    thermal_cskr: ResId::invalid(), // None
+
+                    unknown0: 1,
+                    unknown1: 1.0,
+                    unknown2: 1.0,
+
+                    visor_params: structs::scly_structs::VisorParameters {
+                        unknown0: 0,
+                        target_passthrough: 1,
+                        visor_mask: 15 // Combat|Scan|Thermal|XRay
+                    },
+                    enable_thermal_heat: 1,
+                    unknown3: 0,
+                    unknown4: 0,
+                    unknown5: 1.0
+                },
+
+                unknown1: 1.0,
+                active: 1,
+
+                dcln: ResId::invalid(),
+
+                health_info: structs::scly_structs::HealthInfo {
+                    health: 1.0,
+                    knockback_resistance: 1.0,
+                },
+                damage_vulnerability: DoorType::Disabled.vulnerability(),
+
+                detect_collision: 0,
+                unknown4: 1.0,
+                unknown5: 0,
+                unknown6: 200,
+                unknown7: 20,
+            }.into(),
+            connections: vec![].into(),
+        }
+    );
+
+    layers[0].objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            property_data: structs::DamageableTrigger {
+                name: b"my dtrigger\0".as_cstr(),
+                position: position.into(),
+                scale: [0.001, 0.001, 0.001].into(),
+                health_info: structs::scly_structs::HealthInfo {
+                    health: 9999999999.0,
+                    knockback_resistance: 1.0
+                },
+                damage_vulnerability: DoorType::Blue.vulnerability(),
+                unknown0: 0,
+                pattern_txtr0: ResId::invalid(),
+                pattern_txtr1: ResId::invalid(),
+                color_txtr: ResId::invalid(),
+                lock_on: 1,
+                active: 1,
+                visor_params: structs::scly_structs::VisorParameters {
+                    unknown0: 0,
+                    target_passthrough: 0,
+                    visor_mask: 15 // Combat|Scan|Thermal|XRay
+                }
+            }.into(),
+            connections: vec![].into(),
+        },
+    );
+
+    Ok(())
+}
+
 fn patch_ambient_lighting<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -10701,6 +10832,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             platforms: None,
                             blocks: None,
                             ambient_lighting_scale: None,
+                            lock_on_points: None,
                         }
                     );
                 }
@@ -11152,6 +11284,15 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
                                     move |ps, area| patch_add_block(ps, area, game_resources, block.position, block.scale),
+                                );
+                            }
+                        }
+
+                        if room.lock_on_points.is_some() {
+                            for lock_on in room.lock_on_points.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_lock_on_point(ps, area, game_resources, lock_on.position),
                                 );
                             }
                         }
