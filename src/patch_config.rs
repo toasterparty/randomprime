@@ -119,7 +119,7 @@ pub struct PickupConfig
     pub position: Option<[f32;3]>,
     pub modal_hudmemo: Option<bool>,
     pub jumbo_scan: Option<bool>,
-    // pub desination: Option<String>,
+    pub destination: Option<String>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]

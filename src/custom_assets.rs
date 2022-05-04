@@ -88,8 +88,9 @@ pub mod custom_asset_ids {
         // Starting items memo
         STARTING_ITEMS_HUDMEMO_STRG: STRG,
         
-        // Warping to start transition message
+        // Warping
         WARPING_TO_START_STRG: STRG,
+        GENERIC_WARP_STRG: STRG,
         WARPING_TO_START_DELAY_STRG: STRG,
         WARPING_TO_OTHER_STRG: STRG,
 
@@ -636,6 +637,13 @@ pub fn custom_assets<'r>(
         custom_asset_ids::WARPING_TO_START_STRG,
         structs::ResourceKind::Strg(structs::Strg::from_strings(vec![
             "&just=center;Returning to starting room...\0".to_string().to_owned(),
+        ])),
+    ));
+
+    assets.push(build_resource(
+        custom_asset_ids::GENERIC_WARP_STRG,
+        structs::ResourceKind::Strg(structs::Strg::from_strings(vec![
+            "&just=center;Warping...\0".to_string().to_owned(),
         ])),
     ));
 

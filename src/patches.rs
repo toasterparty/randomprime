@@ -823,6 +823,7 @@ fn patch_add_item<'r>(
     shuffle_position: bool,
     seed: u64,
     _no_starting_visor: bool,
+    version: Version,
 ) -> Result<(), String>
 {
     let mut rng = StdRng::seed_from_u64(seed);
@@ -944,6 +945,17 @@ fn patch_add_item<'r>(
             pickup_type.scan()
         }
     };
+
+    if pickup_config.destination.is_some() {    
+        area.add_dependencies(
+            &game_resources, 0,
+            iter::once(custom_asset_ids::GENERIC_WARP_STRG.into())
+        );
+        area.add_dependencies(
+            &game_resources, 0,
+            iter::once(custom_asset_ids::WARPING_TO_START_DELAY_STRG.into())
+        );
+    }
 
     let curr_increase = {
         if pickup_type == PickupType::Nothing {
@@ -1305,6 +1317,17 @@ fn patch_add_item<'r>(
         layers[new_layer_idx].objects.as_mut_vec().push(special_function);
     }
 
+    if pickup_config.destination.is_some() {
+        pickup_obj.connections.as_mut_vec().extend_from_slice(
+            &add_world_teleporter(
+                layers[new_layer_idx].objects.as_mut_vec(),
+                ps,
+                &pickup_config.destination.clone().unwrap(),
+                version,
+            )
+        );
+    }
+
     layers[new_layer_idx].objects.as_mut_vec().push(hudmemo);
     layers[new_layer_idx].objects.as_mut_vec().push(attainment_audio);
     layers[new_layer_idx].objects.as_mut_vec().push(pickup_obj);
@@ -1317,6 +1340,133 @@ fn patch_add_item<'r>(
     // }
 
     Ok(())
+}
+
+fn add_world_teleporter<'r>(
+    objects: &mut Vec<structs::SclyObject<'r>>, 
+    ps: &mut PatcherState,
+    destination: &str,
+    version: Version,
+) -> Vec<structs::Connection>
+{
+    let destination = SpawnRoomData::from_str(&destination);
+
+    let world_transporter_id = ps.fresh_instance_id_range.next().unwrap();
+    let timer_id = ps.fresh_instance_id_range.next().unwrap();
+    let hudmemo_id = ps.fresh_instance_id_range.next().unwrap();
+    let player_hint_id = ps.fresh_instance_id_range.next().unwrap();
+
+    // Teleporter
+    objects.push(
+        structs::SclyObject {
+            instance_id: world_transporter_id,
+            property_data: structs::WorldTransporter::warp(
+                destination.mlvl,
+                destination.mrea,
+                "Warp",
+                resource_info!("Deface14B_O.FONT").try_into().unwrap(),
+                ResId::new(custom_asset_ids::GENERIC_WARP_STRG.to_u32()),
+                version == Version::Pal
+            ).into(),
+            connections: vec![].into(),
+        }
+    );
+
+    // Add timer to delay warp (can crash if player warps too quickly)
+    objects.push(
+        structs::SclyObject {
+            instance_id: timer_id,
+            property_data: structs::Timer {
+                name: b"Warp to start delay\0".as_cstr(),
+
+                start_time: 3.0,
+                max_random_add: 0.0,
+                reset_to_zero: 0,
+                start_immediately: 0,
+                active: 1,
+            }.into(),
+            connections: vec![
+                structs::Connection {
+                    target_object_id: world_transporter_id,
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::SET_TO_ZERO,
+                },
+            ].into(),
+        }
+    );
+
+    // Inform the player that they are about to be warped
+    objects.push(
+        structs::SclyObject {
+           instance_id: hudmemo_id,
+           property_data: structs::HudMemo {
+                name: b"Warping hudmemo\0".as_cstr(),
+
+                first_message_timer: 3.0,
+                unknown: 1,
+                memo_type: 0,
+                strg: custom_asset_ids::WARPING_TO_START_DELAY_STRG,
+                active: 1,
+            }.into(),
+           connections: vec![].into(),
+       }
+    );
+
+    // Stop the player from moving
+    objects.push(
+        structs::SclyObject {
+           instance_id: player_hint_id,
+           property_data: structs::PlayerHint {
+
+            name: b"Warping playerhint\0".as_cstr(),
+
+            position: [0.0, 0.0, 0.0].into(),
+            rotation: [0.0, 0.0, 0.0].into(),
+
+            unknown0: 1, // active
+
+            inner_struct: structs::PlayerHintStruct {
+                unknowns: [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1, // disable
+                    1, // disable
+                    1, // disable
+                    1, // disable
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                ].into(),
+            }.into(),
+            unknown1: 10, // priority
+           }.into(),
+           connections: vec![].into(),
+        }
+    );
+
+    vec![
+        structs::Connection {
+            target_object_id: timer_id,
+            state: structs::ConnectionState::ARRIVED,
+            message: structs::ConnectionMsg::RESET_AND_START,
+        },
+        structs::Connection {
+            target_object_id: hudmemo_id,
+            state: structs::ConnectionState::ARRIVED,
+            message: structs::ConnectionMsg::SET_TO_ZERO,
+        },
+        structs::Connection {
+            target_object_id: player_hint_id,
+            state: structs::ConnectionState::ARRIVED,
+            message: structs::ConnectionMsg::INCREMENT,
+        }
+    ]
 }
 
 fn is_area_damage_special_function<'r>(obj: &structs::SclyObject<'r>)
@@ -2225,6 +2375,7 @@ fn modify_pickups_in_mrea<'r>(
     shuffle_position: bool,
     seed: u64,
     _no_starting_visor: bool,
+    version: Version,
 )
 -> Result<(), String>
 {
@@ -2356,6 +2507,17 @@ fn modify_pickups_in_mrea<'r>(
             pickup_type.scan()
         }
     };
+
+    if pickup_config.destination.is_some() {    
+        area.add_dependencies(
+            &game_resources, 0,
+            iter::once(custom_asset_ids::GENERIC_WARP_STRG.into())
+        );
+        area.add_dependencies(
+            &game_resources, 0,
+            iter::once(custom_asset_ids::WARPING_TO_START_DELAY_STRG.into())
+        );
+    }
 
     let room_id = area.mlvl_area.internal_id;
     let scly = area.mrea().scly_section_mut();
@@ -2586,9 +2748,21 @@ fn modify_pickups_in_mrea<'r>(
     let position: [f32; 3];
     let scan_id_out: ResId<res_id::SCAN>;
     {
+        if pickup_config.destination.is_some() {
+            additional_connections.extend_from_slice(
+                &add_world_teleporter(
+                    layers[new_layer_idx].objects.as_mut_vec(),
+                    ps,
+                    &pickup_config.destination.clone().unwrap(),
+                    version,
+                )
+            );
+        }
+
         let pickup_obj = layers[pickup_location.location.layer as usize].objects.iter_mut()
         .find(|obj| obj.instance_id == pickup_location.location.instance_id)
         .unwrap();
+
         (position, scan_id_out) = update_pickup(pickup_obj, pickup_type, pickup_model_data, pickup_config, scan_id, position_override);
 
         if additional_connections.len() > 0 {
@@ -10855,6 +11029,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                 position: None,
                                 modal_hudmemo: None,
                                 jumbo_scan: None,
+                                destination: None,
                             }
                         ]
                     );
@@ -11349,6 +11524,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             respawn: None,
                             modal_hudmemo: None,
                             jumbo_scan: None,
+                            destination: None,
                         }
                     } else {
                         pickups[idx].clone() // TODO: cloning is suboptimal
@@ -11396,6 +11572,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             config.shuffle_pickup_position,
                             config.seed + seed,
                             !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray,
+                            version,
                     )
                 );
 
@@ -11436,6 +11613,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                         config.shuffle_pickup_pos_all_rooms,
                         config.seed,
                         !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray,
+                        version,
                     ),
                 );
 
