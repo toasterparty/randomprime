@@ -3481,6 +3481,7 @@ fn patch_add_circle_platform<'r>(
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     position: [f32;3],
+    // rotation: [f32;3],
 ) -> Result<(), String>
 {
     let deps = vec![
@@ -3508,6 +3509,7 @@ fn patch_add_circle_platform<'r>(
                 name: b"myplatform\0".as_cstr(),
 
                 position: position.into(),
+                // rotation: rotation.into(),
                 rotation: [0.0, 0.0, -90.0].into(),
                 scale: [1.0, 1.0, 1.0].into(),
                 extent: [0.0, 0.0, 0.0].into(),
@@ -3589,12 +3591,22 @@ fn patch_add_block<'r>(
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     position: [f32;3],
     scale: [f32;3],
+    alt_color: bool,
     // rotation: [f32;3],
 ) -> Result<(), String>
 {
+    let cmdl_id = {
+        if alt_color {
+            custom_asset_ids::BLOCK_ALT_COLOR_CMDL
+        } else {
+            ResId::<res_id::CMDL>::new(0x27D0663B)
+        }
+    };
+
     let deps = vec![
-        (0x27D0663B, b"CMDL"),
+        (cmdl_id.to_u32(), b"CMDL"),
         (0xFF6F41A6, b"TXTR"),
+        (0x19C17D5C, b"TXTR"),
     ];
     let deps_iter = deps.iter()
         .map(|&(file_id, fourcc)| structs::Dependency {
@@ -3602,7 +3614,7 @@ fn patch_add_block<'r>(
             asset_type: FourCC::from_bytes(fourcc),
         }
     );
-    area.add_dependencies(game_resources,0,deps_iter);
+    area.add_dependencies(game_resources, 0, deps_iter);
 
     let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
     layers[0].objects.as_mut_vec().push(
@@ -3622,7 +3634,7 @@ fn patch_add_block<'r>(
                     knockback_resistance: 1.0
                 },
                 damage_vulnerability: DoorType::Disabled.vulnerability(),
-                cmdl: resource_info!("27D0663B.CMDL").try_into().unwrap(),
+                cmdl: cmdl_id,
                 ancs: structs::scly_structs::AncsProp {
                     file_id: ResId::invalid(), // None
                     node_index: 0,
@@ -11458,7 +11470,14 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             for block in room.blocks.as_ref().unwrap() {
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                    move |ps, area| patch_add_block(ps, area, game_resources, block.position, block.scale),
+                                    move |ps, area| patch_add_block(
+                                        ps,
+                                        area,
+                                        game_resources,
+                                        block.position,
+                                        block.scale,
+                                        block.alt_color.unwrap_or(false)
+                                    ),
                                 );
                             }
                         }
@@ -12294,6 +12313,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     res,
                     game_resources,
                     [43.0, -194.0, -44.0],
+                    // [0.0, 0.0, 0.0],
                 ),
             );
             patcher.add_scly_patch(
@@ -12303,6 +12323,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     res,
                     game_resources,
                     [39.0, -186.0, -41.0],
+                    // [0.0, 0.0, 0.0],
                 ),
             );
             patcher.add_scly_patch(
@@ -12312,6 +12333,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     res,
                     game_resources,
                     [36.0, -181.0, -39.0],
+                    // [0.0, 0.0, 0.0],
                 ),
             );
             patcher.add_scly_patch(
@@ -12321,6 +12343,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     res,
                     game_resources,
                     [36.0, -192.0, -39.0],
+                    // [0.0, 0.0, 0.0],
                 ),
             );
         }

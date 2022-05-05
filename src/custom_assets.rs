@@ -94,6 +94,9 @@ pub mod custom_asset_ids {
         WARPING_TO_START_DELAY_STRG: STRG,
         WARPING_TO_OTHER_STRG: STRG,
 
+        // Blocks
+        BLOCK_ALT_COLOR_CMDL: CMDL,
+
         // Door Assets //
         MORPH_BALL_BOMB_DOOR_CMDL: CMDL,
         POWER_BOMB_DOOR_CMDL: CMDL,
@@ -664,6 +667,16 @@ pub fn custom_assets<'r>(
         ])),
     ));
 
+    // Custom block asset
+    assets.push(
+        create_custom_block_cmdl(
+            resources,
+            ResId::<res_id::TXTR>::new(0x19C17D5C),
+            custom_asset_ids::BLOCK_ALT_COLOR_CMDL,
+        )
+    );
+
+
     // Custom door assets
     for door_type in DoorType::iter() {
         if door_type.shield_cmdl().to_u32() >= 0xDEAF0000 && door_type.shield_cmdl().to_u32() <= custom_asset_ids::EXTRA_IDS_START.to_u32() + 50 { // only if it doesn't exist in-game already
@@ -836,6 +849,37 @@ pub fn collect_game_resources<'r>(
     }
 
     Ok((found, pickup_hudmemos, pickup_scans, extra_scans, global_savw_scans_to_add, local_savw_scans_to_add, savw_scan_logbook_category, extern_models))
+}
+
+fn create_custom_block_cmdl<'r>(
+    resources: &HashMap<(u32, FourCC),
+    structs::Resource<'r>>,
+    txtr_id: ResId::<res_id::TXTR>,
+    new_cmdl_id: ResId::<res_id::CMDL>,
+) -> structs::Resource<'r>
+{
+    // Find and read the vanilla block cmdl
+    let old_cmdl = ResourceData::new(&resources[&resource_info!("27D0663B.CMDL").into()]);
+
+    // Create a copy 
+    let old_cmdl_bytes = old_cmdl.decompress().into_owned();
+    let mut new_cmdl = Reader::new(&old_cmdl_bytes[..]).read::<structs::Cmdl>(());
+
+    // Modify the new CMDL to use custom textures
+    new_cmdl.material_sets.as_mut_vec()[0].texture_ids.as_mut_vec()[0] = txtr_id;
+
+    // Re-serialize the CMDL
+    let mut new_cmdl_bytes = vec![];
+    new_cmdl.write_to(&mut new_cmdl_bytes).unwrap();
+
+    // Pad length to multiple of 32 bytes
+    new_cmdl_bytes.extend(reader_writer::pad_bytes(32, new_cmdl_bytes.len()).iter());
+
+    // Return resource
+    build_resource(
+        new_cmdl_id,
+        structs::ResourceKind::External(new_cmdl_bytes, b"CMDL".into())
+    )
 }
 
 fn create_custom_blast_shield_cmdl<'r>(
