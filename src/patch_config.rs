@@ -197,7 +197,8 @@ pub struct WaterConfig
 pub struct PlatformConfig
 {
     pub position: [f32;3],
-    // pub rotation: Option<[f32;3]>,
+    pub rotation: Option<[f32;3]>,
+    pub alt_platform: Option<bool>,
     // pub scale: [f32;3],
 }
 
@@ -206,7 +207,7 @@ pub struct PlatformConfig
 pub struct BlockConfig
 {
     pub position: [f32;3],
-    pub scale: [f32;3],
+    pub scale: Option<[f32;3]>,
     pub alt_color: Option<bool>,
     // pub rotation: [f32;3],
 }

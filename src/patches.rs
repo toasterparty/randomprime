@@ -3476,7 +3476,7 @@ fn patch_post_pq_frigate(
     Ok(())
 }
 
-fn patch_add_circle_platform<'r>(
+fn patch_add_platform<'r>(
     ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
@@ -3623,7 +3623,7 @@ fn patch_add_block<'r>(
             property_data: structs::Actor {
                 name: b"myactor\0".as_cstr(),
                 position: position.into(),
-                rotation: [180.0, 0.0, 0.0].into(),
+                rotation: [0.0, 0.0, 0.0].into(),
                 scale: scale.into(),
                 hitbox: [0.0, 0.0, 0.0].into(),
                 scan_offset: [0.0, 0.0, 0.0].into(),
@@ -6826,6 +6826,11 @@ fn patch_dol<'r>(
     //         nop;
     // });
     // dol_patcher.ppcasm_patch(&bouncy_beam_patch)?;
+
+    // let disable_platform_ride_patch = ppcasm!(symbol_addr!("AcceptScriptMsg__15CScriptPlatformF20EScriptObjectMessage9TUniqueIdR13CStateManager", version) + (0x800b2258 - 0x800b21f4), {
+    //         nop;
+    // });
+    // dol_patcher.ppcasm_patch(&disable_platform_ride_patch)?;
 
     if smoother_teleports {
         // Do not holster arm cannon
@@ -11461,7 +11466,14 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             for platform in room.platforms.as_ref().unwrap() {
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                    move |ps, area| patch_add_circle_platform(ps, area, game_resources, platform.position),
+                                    move |ps, area| patch_add_platform(
+                                        ps,
+                                        area,
+                                        game_resources,
+                                        platform.position,
+                                        platform.rotation.unwrap_or([0.0, 0.0, 0.0]),
+                                        platform.alt_platform.unwrap_or(false),
+                                    ),
                                 );
                             }
                         }
@@ -11475,7 +11487,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                         area,
                                         game_resources,
                                         block.position,
-                                        block.scale,
+                                        block.scale.unwrap_or([1.0, 1.0, 1.0]),
                                         block.alt_color.unwrap_or(false)
                                     ),
                                 );
@@ -12308,42 +12320,46 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             );
             patcher.add_scly_patch(
                 resource_info!("04_intro_specimen_chamber.MREA").into(),
-                move |ps, res| patch_add_circle_platform(
+                move |ps, res| patch_add_platform(
                     ps,
                     res,
                     game_resources,
                     [43.0, -194.0, -44.0],
-                    // [0.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0],
+                    false,
                 ),
             );
             patcher.add_scly_patch(
                 resource_info!("04_intro_specimen_chamber.MREA").into(),
-                move |ps, res| patch_add_circle_platform(
+                move |ps, res| patch_add_platform(
                     ps,
                     res,
                     game_resources,
                     [39.0, -186.0, -41.0],
-                    // [0.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0],
+                    false,
                 ),
             );
             patcher.add_scly_patch(
                 resource_info!("04_intro_specimen_chamber.MREA").into(),
-                move |ps, res| patch_add_circle_platform(
+                move |ps, res| patch_add_platform(
                     ps,
                     res,
                     game_resources,
                     [36.0, -181.0, -39.0],
-                    // [0.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0],
+                    false,
                 ),
             );
             patcher.add_scly_patch(
                 resource_info!("04_intro_specimen_chamber.MREA").into(),
-                move |ps, res| patch_add_circle_platform(
+                move |ps, res| patch_add_platform(
                     ps,
                     res,
                     game_resources,
                     [36.0, -192.0, -39.0],
-                    // [0.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0],
+                    false,
                 ),
             );
         }
