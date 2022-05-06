@@ -771,6 +771,15 @@ pub fn collect_game_resources<'r>(
     ];
     looking_for.extend(platform_deps);
     
+    let platform_deps: Vec<(u32,FourCC)> = vec![
+        (0xDCDFD386, FourCC::from_bytes(b"CMDL")),
+        (0x6D412D11, FourCC::from_bytes(b"DCLN")),
+        (0xEED972E7, FourCC::from_bytes(b"TXTR")),
+        (0xF1478D6A, FourCC::from_bytes(b"TXTR")),
+        (0xF89D34EF, FourCC::from_bytes(b"TXTR")),
+    ];
+    looking_for.extend(platform_deps);
+
     let block_deps: Vec<(u32,FourCC)> = vec![
         (0x27D0663B, FourCC::from_bytes(b"CMDL")),
         (0xFF6F41A6, FourCC::from_bytes(b"TXTR")),

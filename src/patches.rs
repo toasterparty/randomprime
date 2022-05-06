@@ -3481,10 +3481,26 @@ fn patch_add_platform<'r>(
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     position: [f32;3],
-    // rotation: [f32;3],
+    rotation: [f32;3],
+    alt_platform: bool,
 ) -> Result<(), String>
 {
-    let deps = vec![
+    let (deps, cmdl, dcln) = {
+        if alt_platform {
+            (
+                vec![
+                    (0xDCDFD386, b"CMDL"),
+                    (0x6D412D11, b"DCLN"),
+                    (0xEED972E7, b"TXTR"),
+                    (0xF1478D6A, b"TXTR"),
+                    (0xF89D34EF, b"TXTR"),
+                ],
+                ResId::<res_id::CMDL>::new(0xDCDFD386),
+                ResId::<res_id::DCLN>::new(0x6D412D11),
+            )
+        } else {
+            (
+                vec![
         (0x48DF38A3, b"CMDL"),
         (0xB2D50628, b"DCLN"),
         (0x19C17D5C, b"TXTR"),
@@ -3492,7 +3508,13 @@ fn patch_add_platform<'r>(
         (0x71190250, b"TXTR"),
         (0xD0BA0FA8, b"TXTR"),
         (0xF1478D6A, b"TXTR"),
-    ];
+                ],
+                ResId::<res_id::CMDL>::new(0x48DF38A3),
+                ResId::<res_id::DCLN>::new(0xB2D50628),
+            )
+        }
+    };
+
     let deps_iter = deps.iter()
         .map(|&(file_id, fourcc)| structs::Dependency {
             asset_id: file_id,
@@ -3509,13 +3531,12 @@ fn patch_add_platform<'r>(
                 name: b"myplatform\0".as_cstr(),
 
                 position: position.into(),
-                // rotation: rotation.into(),
-                rotation: [0.0, 0.0, -90.0].into(),
+                rotation: rotation.into(),
                 scale: [1.0, 1.0, 1.0].into(),
                 extent: [0.0, 0.0, 0.0].into(),
                 scan_offset: [0.0, 0.0, 0.0].into(),
 
-                cmdl: ResId::<res_id::CMDL>::new(0x48DF38A3),
+                cmdl: cmdl,
                 ancs: structs::scly_structs::AncsProp {
                     file_id: ResId::invalid(),
                     node_index: 0,
@@ -3530,12 +3551,12 @@ fn patch_add_platform<'r>(
                         unknown3: 20.0,
                         color: [1.0, 1.0, 1.0, 1.0].into(),
                         unknown4: 1,
-                        world_lighting: 3,
+                        world_lighting: 1,
                         light_recalculation: 1,
                         unknown5: [0.0, 0.0, 0.0].into(),
                         unknown6: 4,
                         unknown7: 4,
-                        unknown8: 1,
+                        unknown8: 0,
                         light_layer_id: 0
                     },
                     scan_params: structs::scly_structs::ScannableParameters {
@@ -3564,7 +3585,7 @@ fn patch_add_platform<'r>(
                 unknown1: 5.0,
                 active: 1,
 
-                dcln: ResId::<res_id::DCLN>::new(0xB2D50628),
+                dcln: dcln,
 
                 health_info: structs::scly_structs::HealthInfo {
                     health: 1.0,
