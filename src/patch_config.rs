@@ -361,6 +361,22 @@ pub struct IncineratorDroneConfig {
     pub reset_contraption_random_time: Option<f32>,
 }
 
+#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, Eq, PartialEq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HallOfTheEldersBombSlotCoversConfig {
+    pub wave: Option<BombSlotCover>,
+    pub ice: Option<BombSlotCover>,
+    pub plasma: Option<BombSlotCover>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub enum BombSlotCover {
+    Wave,
+    Ice,
+    Plasma,
+}
+
 #[derive(Debug, Serialize)]
 pub struct PatchConfig
 {
@@ -395,6 +411,7 @@ pub struct PatchConfig
     pub power_bomb_arboretum_sandstone: bool,
 
     pub incinerator_drone_config: Option<IncineratorDroneConfig>,
+    pub hall_of_the_elders_bomb_slot_covers: Option<HallOfTheEldersBombSlotCoversConfig>,
     pub maze_seeds: Option<Vec<u32>>,
 
     #[serde(skip_serializing)] // stop racers from peeking at locations
@@ -519,6 +536,7 @@ struct GameConfig
 
     incinerator_drone_config: Option<IncineratorDroneConfig>,
     maze_seeds: Option<Vec<u32>>,
+    hall_of_the_elders_bomb_slot_covers: Option<HallOfTheEldersBombSlotCoversConfig>,
 
     game_banner: Option<GameBanner>,
     comment: Option<String>,
@@ -982,6 +1000,10 @@ impl PatchConfigPrivate
 
             incinerator_drone_config: self.game_config.incinerator_drone_config.clone(),
             maze_seeds: self.game_config.maze_seeds.clone(),
+            hall_of_the_elders_bomb_slot_covers: self
+                .game_config
+                .hall_of_the_elders_bomb_slot_covers
+                .clone(),
 
             automatic_crash_screen: self.preferences.automatic_crash_screen.unwrap_or(true),
             artifact_hint_behavior,

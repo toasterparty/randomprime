@@ -26,6 +26,8 @@ use crate::patch_config::{
     CutsceneMode,
     DoorConfig,
     WaterConfig,
+    HallOfTheEldersBombSlotCoversConfig,
+    BombSlotCover,
 };
 
 use std::{fs::{self, File}, io::{Read}, path::Path};
@@ -71,7 +73,7 @@ use reader_writer::{
     // Readable,
     Writable,
 };
-use structs::{res_id, ResId};
+use structs::{res_id, scly_structs::TypeVulnerability, ResId};
 
 use std::{
     borrow::Cow,
@@ -12143,6 +12145,10 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         patch_arboretum_sandstone(&mut patcher);
     }
 
+    if let Some(bomb_slot_covers) = config.hall_of_the_elders_bomb_slot_covers {
+        patch_hall_of_the_elders_bomb_slot_covers(&mut patcher, bomb_slot_covers)
+    }
+
     if config.incinerator_drone_config.is_some() {
         let incinerator_drone_config = config.incinerator_drone_config.clone().unwrap();
 
@@ -12915,6 +12921,100 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     println!("Created patches in {:?}", time.elapsed());
 
     Ok(())
+}
+
+fn patch_hall_of_the_elders_bomb_slot_covers(
+    patcher: &mut PrimePatcher,
+    bomb_slot_covers: HallOfTheEldersBombSlotCoversConfig,
+) {
+    const WAVE_ACTOR_NAME: &'static str = "Actor -membrane Slot1 Purple\0";
+    const ICE_ACTOR_NAME: &'static str = "Actor -membrane Slot2 White\0";
+    const PLASMA_ACTOR_NAME: &'static str = "Actor -membrane Slot3 Orange\0";
+
+    if let Some(cover) = bomb_slot_covers.wave {
+        patch_slot_cover(patcher, WAVE_ACTOR_NAME, cover);
+    }
+
+    if let Some(cover) = bomb_slot_covers.ice {
+        patch_slot_cover(patcher, ICE_ACTOR_NAME, cover);
+    }
+
+    if let Some(cover) = bomb_slot_covers.plasma {
+        patch_slot_cover(patcher, PLASMA_ACTOR_NAME, cover);
+    }
+}
+
+fn patch_slot_cover<'a>(
+    patcher: &mut PrimePatcher<'_, 'a>,
+    actor_name: &'a str,
+    cover: BombSlotCover,
+) {
+    const WAVE_CMDL_ID: u32 = 0x896a6BD3;
+    const ICE_CMDL_ID: u32 = 0x675822C5;
+    const PLASMA_CMDL_ID: u32 = 0xA8C349F0;
+
+    patcher.add_scly_patch(
+        resource_info!("17_chozo_bowling.MREA").into(),
+        move |_ps, area| {
+            // hall of the elders
+            let scly = area.mrea().scly_section_mut();
+
+            let layer = &mut scly.layers.as_mut_vec()[0]; // Default
+
+            for obj in layer.objects.iter_mut() {
+                if let Some(actor) = obj.property_data.as_actor_mut() {
+                    if actor.name == actor_name.clone().as_bytes().as_cstr() {
+                        actor.damage_vulnerability.wave = TypeVulnerability::Reflect as u32;
+                        actor.damage_vulnerability.ice = TypeVulnerability::Reflect as u32;
+                        actor.damage_vulnerability.plasma = TypeVulnerability::Reflect as u32;
+                        actor.damage_vulnerability.charged_beams.wave =
+                            TypeVulnerability::Reflect as u32;
+                        actor.damage_vulnerability.charged_beams.ice =
+                            TypeVulnerability::Reflect as u32;
+                        actor.damage_vulnerability.charged_beams.plasma =
+                            TypeVulnerability::Reflect as u32;
+                        actor.damage_vulnerability.beam_combos.wave =
+                            TypeVulnerability::Reflect as u32;
+                        actor.damage_vulnerability.beam_combos.ice =
+                            TypeVulnerability::Reflect as u32;
+                        actor.damage_vulnerability.beam_combos.plasma =
+                            TypeVulnerability::Reflect as u32;
+                        match cover {
+                            BombSlotCover::Wave => {
+                                actor.cmdl = ResId::<res_id::CMDL>::new(WAVE_CMDL_ID);
+                                actor.damage_vulnerability.wave =
+                                    TypeVulnerability::DirectNormal as u32;
+                                actor.damage_vulnerability.charged_beams.wave =
+                                    TypeVulnerability::DirectNormal as u32;
+                                actor.damage_vulnerability.beam_combos.wave =
+                                    TypeVulnerability::DirectNormal as u32;
+                            }
+                            BombSlotCover::Ice => {
+                                actor.cmdl = ResId::<res_id::CMDL>::new(ICE_CMDL_ID);
+                                actor.damage_vulnerability.ice =
+                                    TypeVulnerability::DirectNormal as u32;
+                                actor.damage_vulnerability.charged_beams.ice =
+                                    TypeVulnerability::DirectNormal as u32;
+                                actor.damage_vulnerability.beam_combos.ice =
+                                    TypeVulnerability::DirectNormal as u32;
+                            }
+                            BombSlotCover::Plasma => {
+                                actor.cmdl = ResId::<res_id::CMDL>::new(PLASMA_CMDL_ID);
+                                actor.damage_vulnerability.plasma =
+                                    TypeVulnerability::DirectNormal as u32;
+                                actor.damage_vulnerability.charged_beams.plasma =
+                                    TypeVulnerability::DirectNormal as u32;
+                                actor.damage_vulnerability.beam_combos.plasma =
+                                    TypeVulnerability::DirectNormal as u32;
+                            }
+                        };
+                    }
+                }
+            }
+
+            Ok(())
+        },
+    );
 }
 
 fn patch_maze_seeds(res: &mut structs::Resource, seeds: Vec<u32>) -> Result<(), String> {
