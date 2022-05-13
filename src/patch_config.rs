@@ -214,6 +214,17 @@ pub struct BlockConfig
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct EscapeSequenceConfig
+{
+    pub time_s: f32,
+    pub start_trigger_pos: [f32;3],
+    pub start_trigger_scale: [f32;3],
+    pub stop_trigger_pos: [f32;3],
+    pub stop_trigger_scale: [f32;3],
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CameraHintConfig
 {
     pub trigger_pos: [f32;3],
@@ -263,6 +274,7 @@ pub struct RoomConfig
     pub blocks: Option<Vec<BlockConfig>>,
     pub lock_on_points: Option<Vec<LockOnPoint>>,
     pub ambient_lighting_scale: Option<f32>, // 1.0 is default lighting
+    pub escape_sequences: Option<Vec<EscapeSequenceConfig>>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]

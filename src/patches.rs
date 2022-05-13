@@ -3719,6 +3719,138 @@ fn patch_add_block<'r>(
     Ok(())
 }
 
+fn patch_add_escape_sequence<'r>(
+    ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    time_s: f32,
+    start_trigger_pos: [f32;3],
+    start_trigger_scale: [f32;3],
+    // stop_trigger_pos: [f32;3],
+    // stop_trigger_scale: [f32;3],
+) -> Result<(), String>
+{
+    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
+    let objects = layers[0].objects.as_mut_vec();
+
+    let special_function_id = ps.fresh_instance_id_range.next().unwrap();
+
+    objects.push(
+        structs::SclyObject {
+            instance_id: special_function_id,
+            connections: vec![].into(),
+            property_data: structs::SclyProperty::SpecialFunction(
+                Box::new(structs::SpecialFunction {
+                    name: b"escape sequence\0".as_cstr(),
+                    position: [0.0, 0.0, 0.0].into(),
+                    rotation: [0.0, 0.0, 0.0].into(),
+                    type_: 11, // escape sequence
+                    unknown0: b"\0".as_cstr(),
+                    unknown1: time_s,
+                    unknown2: 0.0,
+                    unknown3: 0.0,
+                    layer_change_room_id: 0,
+                    layer_change_layer_id: 0,
+                    item_id: 0,
+                    unknown4: 1, // active
+                    unknown5: 0.0,
+                    unknown6: 0xFFFFFFFF,
+                    unknown7: 0xFFFFFFFF,
+                    unknown8: 0xFFFFFFFF,
+                })
+            ),
+        }
+    );
+
+    objects.push(
+        structs::SclyObject {
+            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            property_data: structs::Trigger {
+                name: b"Start Sequence Trigger\0".as_cstr(),
+                position: start_trigger_pos.into(),
+                scale: start_trigger_scale.into(),
+                damage_info: structs::scly_structs::DamageInfo {
+                    weapon_type: 0,
+                    damage: 0.0,
+                    radius: 0.0,
+                    knockback_power: 0.0
+                },
+                force: [0.0, 0.0, 0.0].into(),
+                flags: 1,
+                active: 1,
+                deactivate_on_enter: 0,
+                deactivate_on_exit: 0
+            }.into(),
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ENTERED,
+                    message: structs::ConnectionMsg::ACTION,
+                    target_object_id: special_function_id,
+                },
+            ].into(),
+        }
+    );
+
+    // let special_function_id = ps.fresh_instance_id_range.next().unwrap();
+
+    // objects.push(
+    //     structs::SclyObject {
+    //         instance_id: special_function_id,
+    //         connections: vec![].into(),
+    //         property_data: structs::SclyProperty::SpecialFunction(
+    //             Box::new(structs::SpecialFunction {
+    //                 name: b"escape sequence\0".as_cstr(),
+    //                 position: [0.0, 0.0, 0.0].into(),
+    //                 rotation: [0.0, 0.0, 0.0].into(),
+    //                 type_: 11, // escape sequence
+    //                 unknown0: b"\0".as_cstr(),
+    //                 unknown1: time_s,
+    //                 unknown2: 0.0,
+    //                 unknown3: 0.0,
+    //                 layer_change_room_id: 0,
+    //                 layer_change_layer_id: 0,
+    //                 item_id: 0,
+    //                 unknown4: 1, // active
+    //                 unknown5: 0.0,
+    //                 unknown6: 0xFFFFFFFF,
+    //                 unknown7: 0xFFFFFFFF,
+    //                 unknown8: 0xFFFFFFFF,
+    //             })
+    //         ),
+    //     }
+    // );
+
+    // objects.push(
+    //     structs::SclyObject {
+    //         instance_id: ps.fresh_instance_id_range.next().unwrap(),
+    //         property_data: structs::Trigger {
+    //             name: b"Stop Sequence Trigger\0".as_cstr(),
+    //             position: stop_trigger_pos.into(),
+    //             scale: stop_trigger_scale.into(),
+    //             damage_info: structs::scly_structs::DamageInfo {
+    //                 weapon_type: 0,
+    //                 damage: 0.0,
+    //                 radius: 0.0,
+    //                 knockback_power: 0.0
+    //             },
+    //             force: [0.0, 0.0, 0.0].into(),
+    //             flags: 1,
+    //             active: 1,
+    //             deactivate_on_enter: 0,
+    //             deactivate_on_exit: 0
+    //         }.into(),
+    //         connections: vec![
+    //             structs::Connection {
+    //                 state: structs::ConnectionState::ENTERED,
+    //                 message: structs::ConnectionMsg::DEACTIVATE,
+    //                 target_object_id: special_function_id,
+    //             },
+    //         ].into(),
+    //     }
+    // );
+
+    Ok(())
+}
+
 fn patch_lock_on_point<'r>(
     ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -11093,6 +11225,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             blocks: None,
                             ambient_lighting_scale: None,
                             lock_on_points: None,
+                            escape_sequences: None,
                         }
                     );
                 }
@@ -11575,6 +11708,23 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                         block.position,
                                         block.scale.unwrap_or([1.0, 1.0, 1.0]),
                                         block.alt_color.unwrap_or(false)
+                                    ),
+                                );
+                            }
+                        }
+
+                        if room.escape_sequences.is_some() {
+                            for es in room.escape_sequences.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_escape_sequence(
+                                        ps,
+                                        area,
+                                        es.time_s,
+                                        es.start_trigger_pos,
+                                        es.start_trigger_scale,
+                                        es.stop_trigger_pos,
+                                        es.stop_trigger_scale,                                     
                                     ),
                                 );
                             }
