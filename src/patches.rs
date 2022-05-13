@@ -2715,7 +2715,7 @@ fn modify_pickups_in_mrea<'r>(
             }
         );
 
-        layers[0].objects.as_mut_vec().push(
+        layers[new_layer_idx].objects.as_mut_vec().push(
             structs::SclyObject {
                 instance_id: trigger_id,
                 property_data: structs::Trigger {
@@ -2741,6 +2741,27 @@ fn modify_pickups_in_mrea<'r>(
                         target_object_id: 0x000E023A,
                     }
                 ].into()
+            }
+        );
+
+        let special_fn_id = ps.fresh_instance_id_range.next().unwrap();
+        layers[new_layer_idx].objects.as_mut_vec().push(
+            structs::SclyObject {
+                instance_id: special_fn_id,
+                property_data: structs::SpecialFunction::layer_change_fn(
+                    b"SpecialFunction\0".as_cstr(),
+                    room_id,
+                    new_layer_idx as u32,
+                ).into(),
+                connections: vec![].into(),
+            }
+        );
+
+        additional_connections.push(
+            structs::Connection {
+                state: structs::ConnectionState::ARRIVED,
+                message: structs::ConnectionMsg::DECREMENT,
+                target_object_id: special_fn_id,
             }
         );
     }
@@ -3725,8 +3746,8 @@ fn patch_add_escape_sequence<'r>(
     time_s: f32,
     start_trigger_pos: [f32;3],
     start_trigger_scale: [f32;3],
-    // stop_trigger_pos: [f32;3],
-    // stop_trigger_scale: [f32;3],
+    stop_trigger_pos: [f32;3],
+    stop_trigger_scale: [f32;3],
 ) -> Result<(), String>
 {
     let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
