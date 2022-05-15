@@ -5317,6 +5317,13 @@ fn patch_spawn_point_position<'r>(
         scly.layers.as_mut_vec()[3].objects.as_mut_vec().retain(|obj| !obj.property_data.is_spawn_point());
         // write the copied spawn point to the default layer //
         scly.layers.as_mut_vec()[0].objects.as_mut_vec().push(spawn_point);
+    } else if room_id == 0x3953c353 {
+        // find/copy the spawn point //
+        let spawn_point = scly.layers.as_mut_vec()[1].objects.as_mut_vec().iter_mut().find(|obj| obj.property_data.is_spawn_point()).unwrap().clone();
+        // delete the original in the shitty layer //
+        scly.layers.as_mut_vec()[1].objects.as_mut_vec().retain(|obj| obj.instance_id != spawn_point.instance_id);
+        // write the copied spawn point to the default layer //
+        scly.layers.as_mut_vec()[0].objects.as_mut_vec().push(spawn_point);
     }
 
     Ok(())
@@ -12722,6 +12729,10 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     // not only is this game-breaking, but it's nonsensical and counterintuitive, always fix //
     patcher.add_scly_patch(
         resource_info!("00i_mines_connect.MREA").into(), // Dynamo Access (Mines)
+        move |ps, area| patch_spawn_point_position(ps, area, [0.0, 0.0, 0.0], true, false)
+    );
+    patcher.add_scly_patch(
+        resource_info!("12_mines_eliteboss.MREA").into(), // Elite Quarters
         move |ps, area| patch_spawn_point_position(ps, area, [0.0, 0.0, 0.0], true, false)
     );
 
