@@ -3743,13 +3743,16 @@ fn patch_add_block<'r>(
 fn patch_add_escape_sequence<'r>(
     ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
-    time_s: f32,
+    mut time_s: f32,
     start_trigger_pos: [f32;3],
     start_trigger_scale: [f32;3],
     stop_trigger_pos: [f32;3],
     stop_trigger_scale: [f32;3],
 ) -> Result<(), String>
 {
+    if time_s < 1.0/60.0 {
+        time_s = 1.0/60.0;
+    }
     let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
     let objects = layers[0].objects.as_mut_vec();
 
@@ -6774,6 +6777,17 @@ fn patch_dol<'r>(
             li      r4, 2;
     });
     dol_patcher.ppcasm_patch(&normal_is_default_patch)?;
+
+    // Escape Sequence timers should count up
+    let instruction = vec![0xec, 0x42, 0x08, 0x2A];
+    dol_patcher.patch(
+        symbol_addr!("UpdateEscapeSequenceTimer__13CStateManagerFf"  , version) + (0x80044f24 - 0x80044ef4),
+        instruction.clone().into()
+    )?;
+    let remove_escape_sequence_rumble_patch = ppcasm!(symbol_addr!("UpdateEscapeSequenceTimer__13CStateManagerFf", version) + (0x80044fa8 - 0x80044ef4), {
+        b       { symbol_addr!("UpdateEscapeSequenceTimer__13CStateManagerFf", version) + (0x80045058 - 0x80044ef4) };
+    });
+    dol_patcher.ppcasm_patch(&remove_escape_sequence_rumble_patch)?;
 
     if remove_ball_color {
         let colors = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00".to_vec();
