@@ -17,7 +17,12 @@ use serde::{Serialize, Deserialize};
 use crate::{
     starting_items::StartingItems,
     pickup_meta::PickupType,
+    custom_assets::custom_asset_ids,
 };
+
+use reader_writer::{FourCC};
+
+use structs::{res_id, ResId};
 
 /*** Parsed Config (fn patch_iso) ***/
 
@@ -202,13 +207,69 @@ pub struct PlatformConfig
     // pub scale: [f32;3],
 }
 
+#[derive(PartialEq, Debug, Serialize, Deserialize, Copy, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub enum GenericTexture
+{
+    Grass,     // TXTR_BE288047
+    Crater,    // TXTR_8E899523
+    Mine,      // TXTR_7D77CEE0
+    Snow,      // TXTR_2E6E5FC1
+    Sandstone, // TXTR_AA452C33
+}
+
+impl GenericTexture
+{
+    pub fn txtr(self) -> ResId::<res_id::TXTR> {
+        let id = match self {
+            GenericTexture::Grass     => 0xBE288047,
+            GenericTexture::Crater    => 0x8E899523,
+            GenericTexture::Mine      => 0x7D77CEE0,
+            GenericTexture::Snow      => 0x2E6E5FC1,
+            GenericTexture::Sandstone => 0xAA452C33,
+        };
+
+        ResId::new(id)
+    }
+
+    pub fn cmdl(self) -> ResId::<res_id::CMDL> {
+        let id = match self {
+            GenericTexture::Grass     => custom_asset_ids::BLOCK_COLOR_0,
+            GenericTexture::Crater    => custom_asset_ids::BLOCK_COLOR_1,
+            GenericTexture::Mine      => custom_asset_ids::BLOCK_COLOR_2,
+            GenericTexture::Snow      => custom_asset_ids::BLOCK_COLOR_3,
+            GenericTexture::Sandstone => custom_asset_ids::BLOCK_COLOR_4,
+        };
+
+        id
+    }
+
+    pub fn dependencies(self) -> Vec<(u32, FourCC)> {
+        vec![
+            (self.cmdl().to_u32(), FourCC::from_bytes(b"CMDL")),
+            (self.txtr().to_u32(), FourCC::from_bytes(b"TXTR")),
+        ]
+    }
+
+    pub fn iter() -> impl Iterator<Item = GenericTexture>
+    {
+        [
+            GenericTexture::Grass,
+            GenericTexture::Crater,
+            GenericTexture::Mine,
+            GenericTexture::Snow,
+            GenericTexture::Sandstone,
+        ].iter().map(|i| *i)
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct BlockConfig
 {
     pub position: [f32;3],
     pub scale: Option<[f32;3]>,
-    pub alt_color: Option<bool>,
+    pub texture: Option<GenericTexture>,
     // pub rotation: [f32;3],
 }
 
