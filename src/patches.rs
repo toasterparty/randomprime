@@ -3899,15 +3899,20 @@ fn patch_lock_on_point<'r>(
     layers[0].objects.as_mut_vec().push(
         structs::SclyObject {
             instance_id: ps.fresh_instance_id_range.next().unwrap(),
-            property_data: structs::Platform {
-                name: b"myplatform\0".as_cstr(),
-
+            property_data: structs::Actor {
+                name: b"myactor\0".as_cstr(),
                 position: position.into(),
                 rotation: [0.0, 0.0, 0.0].into(),
                 scale: [8.0, 8.0, 8.0].into(),
-                extent: [0.0, 0.0, 0.0].into(),
+                hitbox: [0.0, 0.0, 0.0].into(),
                 scan_offset: [0.0, 0.0, 0.0].into(),
-
+                unknown1: 1.0,
+                unknown2: 0.0,
+                health_info: structs::scly_structs::HealthInfo {
+                    health: 5.0,
+                    knockback_resistance: 1.0
+                },
+                damage_vulnerability: DoorType::Disabled.vulnerability(),
                 cmdl: ResId::<res_id::CMDL>::new(0xBFE4DAA0),
                 ancs: structs::scly_structs::AncsProp {
                     file_id: ResId::invalid(),
@@ -3953,26 +3958,20 @@ fn patch_lock_on_point<'r>(
                     unknown4: 0,
                     unknown5: 1.0
                 },
-
-                unknown1: 1.0,
+                looping: 1,
+                snow: 1,
+                solid: 0,
+                camera_passthrough: 1,
                 active: 1,
-
-                dcln: ResId::invalid(),
-
-                health_info: structs::scly_structs::HealthInfo {
-                    health: 1.0,
-                    knockback_resistance: 1.0,
-                },
-                damage_vulnerability: DoorType::Disabled.vulnerability(),
-
-                detect_collision: 0,
-                unknown4: 1.0,
-                unknown5: 0,
-                unknown6: 200,
-                unknown7: 20,
+                unknown8: 0,
+                unknown9: 1.0,
+                unknown10: 1,
+                unknown11: 0,
+                unknown12: 0,
+                unknown13: 0
             }.into(),
-            connections: vec![].into(),
-        }
+            connections: vec![].into()
+        },
     );
 
     layers[0].objects.as_mut_vec().push(
