@@ -3743,33 +3743,31 @@ fn patch_add_block<'r>(
 fn patch_add_escape_sequence<'r>(
     ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
-    mut time_s: f32,
+    // mut time_s: f32,
     start_trigger_pos: [f32;3],
     start_trigger_scale: [f32;3],
     stop_trigger_pos: [f32;3],
     stop_trigger_scale: [f32;3],
 ) -> Result<(), String>
 {
-    if time_s < 1.0/60.0 {
-        time_s = 1.0/60.0;
-    }
     let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
     let objects = layers[0].objects.as_mut_vec();
 
-    let special_function_id = ps.fresh_instance_id_range.next().unwrap();
+    let start_special_function_id = ps.fresh_instance_id_range.next().unwrap();
+    let stop_special_function_id = ps.fresh_instance_id_range.next().unwrap();
 
     objects.push(
         structs::SclyObject {
-            instance_id: special_function_id,
+            instance_id: start_special_function_id,
             connections: vec![].into(),
             property_data: structs::SclyProperty::SpecialFunction(
                 Box::new(structs::SpecialFunction {
-                    name: b"escape sequence\0".as_cstr(),
+                    name: b"start escape sequence\0".as_cstr(),
                     position: [0.0, 0.0, 0.0].into(),
                     rotation: [0.0, 0.0, 0.0].into(),
                     type_: 11, // escape sequence
                     unknown0: b"\0".as_cstr(),
-                    unknown1: time_s,
+                    unknown1: 1.0/60.0,
                     unknown2: 0.0,
                     unknown3: 0.0,
                     layer_change_room_id: 0,
@@ -3808,7 +3806,63 @@ fn patch_add_escape_sequence<'r>(
                 structs::Connection {
                     state: structs::ConnectionState::ENTERED,
                     message: structs::ConnectionMsg::ACTION,
-                    target_object_id: special_function_id,
+                    target_object_id: start_special_function_id,
+                },
+            ].into(),
+        }
+    );
+
+    objects.push(
+        structs::SclyObject {
+            instance_id: stop_special_function_id,
+            connections: vec![].into(),
+            property_data: structs::SclyProperty::SpecialFunction(
+                Box::new(structs::SpecialFunction {
+                    name: b"stop escape sequence\0".as_cstr(),
+                    position: [0.0, 0.0, 0.0].into(),
+                    rotation: [0.0, 0.0, 0.0].into(),
+                    type_: 11, // escape sequence
+                    unknown0: b"\0".as_cstr(),
+                    unknown1: 0.0, // Set the timer to 0.0, so it stops counting
+                    unknown2: 0.0,
+                    unknown3: 0.0,
+                    layer_change_room_id: 0,
+                    layer_change_layer_id: 0,
+                    item_id: 0,
+                    unknown4: 1, // active
+                    unknown5: 0.0,
+                    unknown6: 0xFFFFFFFF,
+                    unknown7: 0xFFFFFFFF,
+                    unknown8: 0xFFFFFFFF,
+                })
+            ),
+        }
+    );
+
+    objects.push(
+        structs::SclyObject {
+            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            property_data: structs::Trigger {
+                name: b"stop Sequence Trigger\0".as_cstr(),
+                position: stop_trigger_pos.into(),
+                scale: stop_trigger_scale.into(),
+                damage_info: structs::scly_structs::DamageInfo {
+                    weapon_type: 0,
+                    damage: 0.0,
+                    radius: 0.0,
+                    knockback_power: 0.0
+                },
+                force: [0.0, 0.0, 0.0].into(),
+                flags: 1,
+                active: 1,
+                deactivate_on_enter: 0,
+                deactivate_on_exit: 0
+            }.into(),
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ENTERED,
+                    message: structs::ConnectionMsg::ACTION,
+                    target_object_id: stop_special_function_id,
                 },
             ].into(),
         }
@@ -6783,8 +6837,16 @@ fn patch_dol<'r>(
         symbol_addr!("UpdateEscapeSequenceTimer__13CStateManagerFf"  , version) + (0x80044f24 - 0x80044ef4),
         instruction.clone().into()
     )?;
+
+    // Escape Sequences don't check for rumbling
     let remove_escape_sequence_rumble_patch = ppcasm!(symbol_addr!("UpdateEscapeSequenceTimer__13CStateManagerFf", version) + (0x80044fa8 - 0x80044ef4), {
-        b       { symbol_addr!("UpdateEscapeSequenceTimer__13CStateManagerFf", version) + (0x80045058 - 0x80044ef4) };
+            b       { symbol_addr!("UpdateEscapeSequenceTimer__13CStateManagerFf", version) + (0x80045058 - 0x80044ef4) };
+    });
+    dol_patcher.ppcasm_patch(&remove_escape_sequence_rumble_patch)?;
+
+    // Never hide the escape sequence timer
+    let remove_escape_sequence_rumble_patch = ppcasm!(symbol_addr!("Update__9CSamusHudFfRC13CStateManagerUibb", version) + (0x80066e78 - 0x80066380), {
+            nop
     });
     dol_patcher.ppcasm_patch(&remove_escape_sequence_rumble_patch)?;
 
@@ -11777,7 +11839,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                     move |ps, area| patch_add_escape_sequence(
                                         ps,
                                         area,
-                                        es.time_s,
+                                        // es.time_s,
                                         es.start_trigger_pos,
                                         es.start_trigger_scale,
                                         es.stop_trigger_pos,

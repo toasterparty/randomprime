@@ -216,7 +216,7 @@ pub struct BlockConfig
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct EscapeSequenceConfig
 {
-    pub time_s: f32,
+    // pub time_s: f32,
     pub start_trigger_pos: [f32;3],
     pub start_trigger_scale: [f32;3],
     pub stop_trigger_pos: [f32;3],
