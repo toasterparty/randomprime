@@ -457,6 +457,7 @@ pub struct PatchConfig
     pub main_menu_message: String,
 
     pub credits_string: Option<String>,
+    pub results_string: Option<String>,
     pub artifact_hints: Option<HashMap<String,String>>, // e.g. "Strength":"This item can be found in Ruined Fountain"
     pub artifact_temple_layer_overrides: Option<HashMap<String,bool>>,
     pub no_doors: bool,
@@ -537,6 +538,7 @@ struct GameConfig
     main_menu_message: Option<String>,
 
     credits_string: Option<String>,
+    results_string: Option<String>,
     artifact_hints: Option<HashMap<String,String>>, // e.g. "Strength":"This item can be found in Ruined Fountain"
     artifact_temple_layer_overrides: Option<HashMap<String,bool>>,
     no_doors: Option<bool>, // Remove every door from the game
@@ -961,6 +963,14 @@ impl PatchConfigPrivate
             }
         };
 
+        let results_string = {
+            if force_vanilla_layout {
+                Some("".to_string())
+            } else {
+                self.game_config.results_string.clone()
+            }
+        };
+
         Ok(PatchConfig {
             run_mode,
             logbook_filename: self.logbook_filename.clone(),
@@ -1041,6 +1051,7 @@ impl PatchConfigPrivate
             main_menu_message,
 
             credits_string,
+            results_string,
             artifact_hints: self.game_config.artifact_hints.clone(),
 
             ctwk_config: self.tweaks.clone(),

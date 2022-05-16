@@ -6593,6 +6593,22 @@ fn patch_credits(
     Ok(())
 }
 
+fn patch_completion_screen(
+    res: &mut structs::Resource,
+    mut results_string: String,
+)
+    -> Result<(), String>
+{
+    results_string += "\nPercentage Complete\0";
+
+    let strg = res.kind.as_strg_mut().unwrap();
+    for st in strg.string_tables.as_mut_vec().iter_mut() {
+        let strings = st.strings.as_mut_vec();
+        strings[1] = results_string.to_owned().into();
+    }
+    Ok(())
+}
+
 fn patch_starting_pickups<'r>(
     ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -12288,6 +12304,14 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         resource_info!("STRG_Credits.STRG").into(),
         |res| patch_credits(res, version, config, &level_data)
     );
+    
+    if config.results_string.is_some() {
+        patcher.add_resource_patch(
+            resource_info!("STRG_CompletionScreen.STRG").into(),
+            |res| patch_completion_screen(res, config.results_string.clone().unwrap())
+        );
+    }
+
     patcher.add_scly_patch(
         resource_info!("07_stonehenge.MREA").into(),
         |ps, area| fix_artifact_of_truth_requirements(ps, area, config)
