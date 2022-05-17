@@ -8922,6 +8922,7 @@ fn patch_add_dock_teleport<'r>(
     source_scale: [f32;3],
     destination_dock_num: u32,
     dest_position: Option<[f32;3]>,
+    spawn_rotation: Option<f32>,
     mrea_idx: Option<u32>,
 )
 -> Result<(), String>
@@ -9079,6 +9080,10 @@ fn patch_add_dock_teleport<'r>(
         spawn_point_rotation[2] += 90.0;
     }
     spawn_point_position[2] = spawn_point_position[2] + vertical_offset;
+
+    if spawn_rotation.is_some() {
+        spawn_point_rotation[2] = spawn_rotation.unwrap();
+    }
 
     // Insert a camera hint trigger to prevent the camera from getting slammed into the wall of the departure room
     // except for LGT because it already has a trigger and training chamber because it's goofy
@@ -11279,6 +11284,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             ambient_lighting_scale: None,
                             lock_on_points: None,
                             escape_sequences: None,
+                            repositions: None,
                         }
                     );
                 }
@@ -11760,7 +11766,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                         game_resources,
                                         block.position,
                                         block.scale.unwrap_or([1.0, 1.0, 1.0]),
-                                        block.texture.unwrap_or(GenericTexture::Sandstone),
+                                        block.texture.unwrap_or(GenericTexture::Grass),
                                     ),
                                 );
                             }
@@ -11778,6 +11784,24 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                         es.start_trigger_scale,
                                         es.stop_trigger_pos,
                                         es.stop_trigger_scale,                                     
+                                    ),
+                                );
+                            }
+                        }
+
+                        if room.repositions.is_some() {
+                            for repo in room.repositions.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_dock_teleport(
+                                        ps,
+                                        area,
+                                        repo.trigger_position,                                
+                                        repo.trigger_scale,
+                                        0, // dock num (unused)                               
+                                        Some(repo.destination_position),                                
+                                        Some(repo.destination_rotation),
+                                        None,
                                     ),
                                 );
                             }
@@ -12170,6 +12194,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             scale,
                             destination.dock_num,
                             None, // If Some, override destination spawn point
+                            None,
                             Some(source_room.mrea_idx),
                         ),
                     );
@@ -12753,6 +12778,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     [75.0, 75.0, 50.0], // source scale
                     0, // destination dock #
                     Some([41.5365,-287.8581,-284.6025]),
+                    None,
                     None,
                 )
             );

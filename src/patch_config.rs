@@ -316,6 +316,16 @@ pub struct LockOnPoint
     pub position: [f32;3],
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RepositionConfig
+{
+    pub trigger_position: [f32;3],
+    pub trigger_scale: [f32;3],
+    pub destination_position: [f32;3],
+    pub destination_rotation: f32,
+}
+
 #[derive(Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RoomConfig
@@ -336,6 +346,7 @@ pub struct RoomConfig
     pub lock_on_points: Option<Vec<LockOnPoint>>,
     pub ambient_lighting_scale: Option<f32>, // 1.0 is default lighting
     pub escape_sequences: Option<Vec<EscapeSequenceConfig>>,
+    pub repositions: Option<Vec<RepositionConfig>>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
