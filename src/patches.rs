@@ -3209,9 +3209,9 @@ fn make_elevators_patch<'a>(
     let mut skip_ending_cinematic = false;
     for (_, level) in level_data.iter() {
         for (elevator_name, destination_name) in level.transports.iter() {
-
             // special cases, handled elsewhere
-            if vec!["Frigate Escape Cutscene", "Essence Dead Cutscene"].contains(&(elevator_name.as_str())) {
+            if vec!["frigate escape cutscene", "essence dead cutscene"].contains(&(elevator_name.as_str().to_lowercase().as_str())) {
+                skip_frigate = false;
                 continue;
             }
 
@@ -12211,6 +12211,9 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         config.force_vanilla_layout,
     );
     let skip_frigate = skip_frigate && starting_room.mlvl != World::FrigateOrpheon.mlvl();
+    if skip_frigate {
+        println!("Skipping Frigate");
+    }
 
     let mut smoother_teleports = false;
     for (_, level) in level_data.iter() {
