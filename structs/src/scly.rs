@@ -158,9 +158,9 @@ macro_rules! build_scly_property {
                         return None
                     }
                     *self = SclyProperty::$name(data.read(()));
-                    
+
                     // println!("type=0x{:X} is {} bytes big", object_type, self.size());
-                    
+
                     match *self {
                         SclyProperty::$name(ref mut inst) => return Some(inst),
                         _ => panic!(),
@@ -259,7 +259,8 @@ build_scly_property!(
     Thardus,              is_thardus,                as_thardus,                as_thardus_mut,
     ElitePirate,          is_elite_pirate,           as_elite_pirate,           as_elite_pirate_mut,
     OmegaPirate,          is_omega_pirate,           as_omega_pirate,           as_omega_pirate_mut,
-    Ridley,               is_ridley,                 as_ridley,                 as_ridley_mut,
+    RidleyV1,             is_ridley_v1,              as_ridley_v1,              as_ridley_v1_mut,
+    RidleyV2,             is_ridley_v2,              as_ridley_v2,              as_ridley_v2_mut,
     MetroidPrimeStage1,   is_metroidprimestage1,     as_metroidprimestage1,     as_metroidprimestage1_mut,
     MetroidPrimeStage2,   is_metroidprimestage2,     as_metroidprimestage2,     as_metroidprimestage2_mut,
 );

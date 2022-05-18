@@ -68,7 +68,8 @@ pub mod scly_props
     pub mod thardus;
     pub mod elite_pirate;
     pub mod omega_pirate;
-    pub mod ridley;
+    pub mod ridley_v1;
+    pub mod ridley_v2;
     pub mod metroidprimestage1;
     pub mod metroidprimestage2;
 
@@ -114,7 +115,8 @@ pub mod scly_props
     pub use self::thardus::*;
     pub use self::elite_pirate::*;
     pub use self::omega_pirate::*;
-    pub use self::ridley::*;
+    pub use self::ridley_v1::*;
+    pub use self::ridley_v2::*;
     pub use self::metroidprimestage1::*;
     pub use self::metroidprimestage2::*;
 }
@@ -160,7 +162,8 @@ pub use scly_props::ice_sheegoth::*;
 pub use scly_props::thardus::*;
 pub use scly_props::elite_pirate::*;
 pub use scly_props::omega_pirate::*;
-pub use scly_props::ridley::*;
+pub use scly_props::ridley_v1::*;
+pub use scly_props::ridley_v2::*;
 pub use scly_props::metroidprimestage1::*;
 pub use scly_props::metroidprimestage2::*;
 

@@ -980,7 +980,7 @@ fn build_rel_sections<'a>(
         .map(|v| v.into_boxed_slice().into())
         .collect::<Vec<Rc<[_]>>>();
 
-    let mut curr_offsets = EnumMap::new();
+    let mut curr_offsets = EnumMap::default();
     for &(sec_type, of_i, sec_i, sec) in grouped_sections.iter() {
         Rc::get_mut(&mut object_file_section_types[of_i]).unwrap()[sec_i] = Some(sec_type);
 
@@ -1149,10 +1149,10 @@ pub fn link_obj_files_to_rel<'a>(
     let local_sym_table = build_local_symbol_table(&rel_sections, &mut section_boundary_symbol_names)?;
 
     // Build the lists of relocations that will be included in the REL
-    let mut dol_relocations = EnumMap::<_, Vec<_>>::new();
-    let mut dol_curr_offsets = EnumMap::new();
-    let mut self_relocations = EnumMap::new();
-    let mut self_curr_offsets = EnumMap::new();
+    let mut dol_relocations = EnumMap::<_, Vec<_>>::default();
+    let mut dol_curr_offsets = EnumMap::default();
+    let mut self_relocations = EnumMap::default();
+    let mut self_curr_offsets = EnumMap::default();
     for (sec_type, rs)in rel_sections.iter() {
         for loc_sec in rs.sections.iter() {
             for reloc in loc_sec.relocations.iter() {
@@ -1298,7 +1298,7 @@ pub fn link_obj_files_to_rel<'a>(
 
     let mut sections_table = Vec::with_capacity(section_count as usize);
     sections_table.push(RelSectionInfo { offset: 0, size: 0, is_executable: false });
-    let mut rel_section_locations = EnumMap::new();
+    let mut rel_section_locations = EnumMap::default();
     for (sec_type, rs) in rel_sections.iter() {
         if rs.size == 0 {
             continue
@@ -1397,7 +1397,7 @@ pub fn link_obj_files_to_bin<'a>(
     }
 
     let mut curr_addr = load_addr;
-    let mut rel_section_locations = EnumMap::new();
+    let mut rel_section_locations = EnumMap::default();
     for (sec_type, rs) in rel_sections.iter() {
         curr_addr = align_to(curr_addr, rs.alignment);
         rel_section_locations[sec_type] = Some(curr_addr);

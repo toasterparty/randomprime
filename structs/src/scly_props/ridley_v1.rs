@@ -7,7 +7,7 @@ use crate::{SclyPropertyData};
 
 #[auto_struct(Readable, Writable)]
 #[derive(Debug, Clone)]
-pub struct Ridley<'r>
+pub struct RidleyV1<'r>
 {
     #[auto_struct(expect = 48)]
     pub prop_count: u32,
@@ -21,7 +21,7 @@ pub struct Ridley<'r>
     pub dont_care: GenericArray<u8, U917>,
 }
 
-impl<'r> SclyPropertyData for Ridley<'r>
+impl<'r> SclyPropertyData for RidleyV1<'r>
 {
     const OBJECT_TYPE: u8 = 0x7B;
 }
