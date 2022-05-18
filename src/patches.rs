@@ -4005,7 +4005,7 @@ fn patch_ambient_lighting<'r>(
             continue;
         }
 
-        light.brightness *= scale;
+        light.brightness = scale;
     }
 
     Ok(())
