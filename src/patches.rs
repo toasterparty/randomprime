@@ -4259,61 +4259,45 @@ fn patch_disable_item_loss(
 }
 
 fn patch_landing_site_cutscene_triggers(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
 ) -> Result<(), String>
 {
-    // XXX I'd like to do this some other way than inserting a timer to trigger
-    //     the memory relay, but I couldn't figure out how to make the memory
-    //     relay default to on/enabled.
-    let layer = area.mrea().scly_section_mut().layers.iter_mut().next().unwrap();
-    let timer_id = ps.fresh_instance_id_range.next().unwrap();
-    for obj in layer.objects.iter_mut() {
-        if obj.instance_id == 427 {
-            obj.connections.as_mut_vec().push(structs::Connection {
-                state: structs::ConnectionState::ACTIVE,
-                message: structs::ConnectionMsg::DEACTIVATE,
-                target_object_id: timer_id,
-            });
-        }
-        if obj.instance_id == 221 {
-            obj.property_data.as_trigger_mut().unwrap().active = 0;
+    // make memory relays active by default
+    for mem_relay in area.memory_relay_conns.iter_mut() {
+        if mem_relay.sender_id & 0x0000FFFF == 0x143 {
+            mem_relay.active = 1;
         }
     }
-    layer.objects.as_mut_vec().push(structs::SclyObject {
-        instance_id: timer_id,
-        property_data: structs::Timer {
-            name: b"Cutscene fixup timer\0".as_cstr(),
 
-            start_time: 0.001,
-            max_random_add: 0f32,
-            reset_to_zero: 0,
-            start_immediately: 1,
-            active: 1,
-        }.into(),
-        connections: vec![
-            structs::Connection {
-                state: structs::ConnectionState::ZERO,
-                message: structs::ConnectionMsg::ACTIVATE,
-                target_object_id: 323,// "Memory Relay Set For Load"
-            },
-            structs::Connection {
-                state: structs::ConnectionState::ZERO,
-                message: structs::ConnectionMsg::ACTIVATE,
-                target_object_id: 427,// "Memory Relay Ship"
-            },
-            structs::Connection {
-                state: structs::ConnectionState::ZERO,
-                message: structs::ConnectionMsg::ACTIVATE,
-                target_object_id: 484,// "Effect_BaseLights"
-            },
-            structs::Connection {
-                state: structs::ConnectionState::ZERO,
-                message: structs::ConnectionMsg::ACTIVATE,
-                target_object_id: 463,// "Actor Save Station Beam"
-            },
-        ].into(),
-    });
+    let layer = area.mrea().scly_section_mut().layers.iter_mut().next().unwrap();
+
+    // remove the intro cutscene trigger
+    layer.objects.as_mut_vec().retain(|obj|
+        obj.instance_id & 0x0000FFFF != 0xdd
+    );
+
+    // activate the ship
+    layer.objects.iter_mut()
+         .find(|obj| obj.instance_id & 0x0000FFFF == 0x141)
+         .and_then(|obj| obj.property_data.as_platform_mut())
+         .unwrap()
+         .active = 1;
+
+    // activate ship effects
+    layer.objects.iter_mut()
+         .find(|obj| obj.instance_id & 0x0000FFFF == 0x1e4)
+         .and_then(|obj| obj.property_data.as_effect_mut())
+         .unwrap()
+         .active = 1;
+
+    // activate ship save station
+    layer.objects.iter_mut()
+         .find(|obj| obj.instance_id & 0x0000FFFF == 0x1cf)
+         .and_then(|obj| obj.property_data.as_actor_mut())
+         .unwrap()
+         .active = 1;
+
     Ok(())
 }
 
