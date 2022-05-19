@@ -230,6 +230,7 @@ build_scly_property!(
     Dock,                 is_dock,                   as_dock,                   as_dock_mut,
     Door,                 is_door,                   as_door,                   as_door_mut,
     Effect,               is_effect,                 as_effect,                 as_effect_mut,
+    GrapplePoint,         is_grapple_point,          as_grapple_point,          as_grapple_point_mut,
     HudMemo,              is_hud_memo,               as_hud_memo,               as_hud_memo_mut,
     MemoryRelay,          is_memory_relay,           as_memory_relay,           as_memory_relay_mut,
     Pickup,               is_pickup,                 as_pickup,                 as_pickup_mut,
