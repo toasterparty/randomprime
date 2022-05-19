@@ -314,6 +314,7 @@ pub struct CameraHintConfig
 pub struct LockOnPoint
 {
     pub position: [f32;3],
+    pub is_grapple: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

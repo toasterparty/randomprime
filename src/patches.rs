@@ -3868,6 +3868,7 @@ fn patch_lock_on_point<'r>(
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     position: [f32;3],
+    is_grapple: bool,
 ) -> Result<(), String>
 {
     let deps = vec![
@@ -3881,7 +3882,29 @@ fn patch_lock_on_point<'r>(
             asset_type: FourCC::from_bytes(fourcc),
         }
     );
-    area.add_dependencies(game_resources,0,deps_iter);
+    area.add_dependencies(game_resources, 0, deps_iter);
+
+    if is_grapple {
+        let deps = vec![
+            (0x3abe45a6, b"SCAN"),
+            (0x191a6881, b"STRG"),
+            (0x748c37a5, b"SCAN"),
+            (0x50ac3b9a, b"STRG"),
+            (0xA482DBD1, b"TXTR"),
+            (0xC9A36445, b"TXTR"),
+            (0x2702E5E0, b"TXTR"),
+            (0x34E79314, b"TXTR"),
+            (0x46434ED3, b"TXTR"),
+            (0x4F944876, b"TXTR"),
+        ];
+        let deps_iter = deps.iter()
+            .map(|&(file_id, fourcc)| structs::Dependency {
+                asset_id: file_id,
+                asset_type: FourCC::from_bytes(fourcc),
+            }
+        );
+        area.add_dependencies(game_resources, 0, deps_iter);
+    }
 
     let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
     layers[0].objects.as_mut_vec().push(
@@ -3962,33 +3985,168 @@ fn patch_lock_on_point<'r>(
         },
     );
 
-    layers[0].objects.as_mut_vec().push(
-        structs::SclyObject {
-            instance_id: ps.fresh_instance_id_range.next().unwrap(),
-            property_data: structs::DamageableTrigger {
-                name: b"my dtrigger\0".as_cstr(),
-                position: position.into(),
-                scale: [0.001, 0.001, 0.001].into(),
-                health_info: structs::scly_structs::HealthInfo {
-                    health: 9999999999.0,
-                    knockback_resistance: 1.0
-                },
-                damage_vulnerability: DoorType::Blue.vulnerability(),
-                unknown0: 0,
-                pattern_txtr0: ResId::invalid(),
-                pattern_txtr1: ResId::invalid(),
-                color_txtr: ResId::invalid(),
-                lock_on: 1,
-                active: 1,
-                visor_params: structs::scly_structs::VisorParameters {
-                    unknown0: 0,
-                    target_passthrough: 0,
-                    visor_mask: 15 // Combat|Scan|Thermal|XRay
+    if is_grapple {
+        let special_function_id = ps.fresh_instance_id_range.next().unwrap();
+        let timer_id = ps.fresh_instance_id_range.next().unwrap();
+        let poi_pre_id = ps.fresh_instance_id_range.next().unwrap();
+        let poi_post_id = ps.fresh_instance_id_range.next().unwrap();
+
+        layers[0].objects.as_mut_vec().push(
+            structs::SclyObject {
+                instance_id: ps.fresh_instance_id_range.next().unwrap(),
+                property_data: structs::GrapplePoint {
+                    name: b"my grapple point\0".as_cstr(),
+                    position: [position[0], position[1], position[2] - 0.5].into(),
+                    rotation: [0.0, -0.0, 0.0].into(),
+                    active: 1,
+                    grapple_params: structs::GrappleParams {
+                        unknown1: 10.0,
+                        unknown2: 10.0,
+                        unknown3: 1.0,
+                        unknown4: 1.0,
+                        unknown5: 1.0,
+                        unknown6: 1.0,
+                        unknown7: 1.0,
+                        unknown8: 45.0,
+                        unknown9: 90.0,
+                        unknown10: 0.0,
+                        unknown11: 0.0,
+
+                        disable_turning: 0,
+                    },
+                }.into(),
+                connections: vec![].into(),
+            },
+        );
+
+        let add_scan_point = true; // We don't actually need the scan points, just their assets. Could save on objects by making this false via config
+        if add_scan_point {
+            layers[0].objects.as_mut_vec().push(
+                structs::SclyObject {
+                    instance_id: special_function_id,
+                    connections: vec![
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: poi_pre_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::ACTIVATE,
+                            target_object_id: poi_post_id,
+                        },
+                    ].into(),
+                    property_data: structs::SclyProperty::SpecialFunction(
+                        Box::new(structs::SpecialFunction {
+                            name: b"myspecialfun\0".as_cstr(),
+                            position: position.into(),
+                            rotation: [0.0, 0.0, 0.0].into(),
+                            type_: 5, // inventory activator
+                            unknown0: b"\0".as_cstr(),
+                            unknown1: 0.0,
+                            unknown2: 0.0,
+                            unknown3: 0.0,
+                            layer_change_room_id: 0xFFFFFFFF,
+                            layer_change_layer_id: 0xFFFFFFFF,
+                            item_id: 12, // grapple beam
+                            unknown4: 1, // active
+                            unknown5: 0.0,
+                            unknown6: 0xFFFFFFFF,
+                            unknown7: 0xFFFFFFFF,
+                            unknown8: 0xFFFFFFFF,
+                        })
+                    ),
                 }
-            }.into(),
-            connections: vec![].into(),
-        },
-    );
+            );
+
+            layers[0].objects.as_mut_vec().push(
+                structs::SclyObject {
+                    instance_id: timer_id,
+                    connections: vec![
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::ACTION,
+                            target_object_id: special_function_id,
+                        },
+                    ].into(),
+                    property_data: structs::Timer {
+                        name: b"grapple timer\0".as_cstr(),
+                        start_time: 0.02,
+                        max_random_add: 0.0,
+                        reset_to_zero: 0,
+                        start_immediately: 1,
+                        active: 1,
+                    }.into(),
+                }
+            );
+
+            layers[0].objects.as_mut_vec().push(
+                structs::SclyObject {
+                    instance_id: poi_pre_id,
+                    connections: vec![].into(),
+                    property_data: structs::SclyProperty::PointOfInterest(
+                        Box::new(structs::PointOfInterest {
+                            name: b"mypoi\0".as_cstr(),
+                            position: [position[0], position[1], position[2] - 0.5].into(),
+                            rotation: [0.0, 0.0, 0.0].into(),
+                            active: 1,
+                            scan_param: structs::scly_structs::ScannableParameters {
+                                scan: resource_info!("Grapple Point pre.SCAN").try_into().unwrap(),
+                            },
+                            point_size: 0.0,
+                        })
+                    ),
+                }
+            );
+
+            layers[0].objects.as_mut_vec().push(
+                structs::SclyObject {
+                    instance_id: poi_post_id,
+                    connections: vec![].into(),
+                    property_data: structs::SclyProperty::PointOfInterest(
+                        Box::new(structs::PointOfInterest {
+                            name: b"mypoi\0".as_cstr(),
+                            position: [position[0], position[1], position[2] - 0.5].into(),
+                            rotation: [0.0, 0.0, 0.0].into(),
+                            active: 0,
+                            scan_param: structs::scly_structs::ScannableParameters {
+                                scan: resource_info!("Grapple Point.SCAN").try_into().unwrap(),
+                            },
+                            point_size: 0.0,
+                        })
+                    ),
+                }
+            );
+        }
+    } else {
+        layers[0].objects.as_mut_vec().push(
+            structs::SclyObject {
+                instance_id: ps.fresh_instance_id_range.next().unwrap(),
+                property_data: structs::DamageableTrigger {
+                    name: b"my dtrigger\0".as_cstr(),
+                    position: position.into(),
+                    scale: [0.001, 0.001, 0.001].into(),
+                    health_info: structs::scly_structs::HealthInfo {
+                        health: 9999999999.0,
+                        knockback_resistance: 1.0
+                    },
+                    damage_vulnerability: DoorType::Blue.vulnerability(),
+                    unknown0: 0,
+                    pattern_txtr0: ResId::invalid(),
+                    pattern_txtr1: ResId::invalid(),
+                    color_txtr: ResId::invalid(),
+                    lock_on: 1,
+                    active: 1,
+                    visor_params: structs::scly_structs::VisorParameters {
+                        unknown0: 0,
+                        target_passthrough: 0,
+                        visor_mask: 15 // Combat|Scan|Thermal|XRay
+                    }
+                }.into(),
+                connections: vec![].into(),
+            },
+        );
+    }
 
     Ok(())
 }
@@ -11811,7 +11969,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             for lock_on in room.lock_on_points.as_ref().unwrap() {
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                    move |ps, area| patch_lock_on_point(ps, area, game_resources, lock_on.position),
+                                    move |ps, area| patch_lock_on_point(ps, area, game_resources, lock_on.position, lock_on.is_grapple.unwrap_or(false)),
                                 );
                             }
                         }

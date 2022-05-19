@@ -814,6 +814,17 @@ pub fn collect_game_resources<'r>(
         (0xE436418D, FourCC::from_bytes(b"CINF")),
         (0xA1ED00B6, FourCC::from_bytes(b"ANIM")),
         (0xA7DDBDC4, FourCC::from_bytes(b"EVNT")),
+
+        (0x3abe45a6, FourCC::from_bytes(b"SCAN")),
+        (0x191a6881, FourCC::from_bytes(b"STRG")),
+        (0x748c37a5, FourCC::from_bytes(b"SCAN")),
+        (0x50ac3b9a, FourCC::from_bytes(b"STRG")),
+        (0xA482DBD1, FourCC::from_bytes(b"TXTR")),
+        (0xC9A36445, FourCC::from_bytes(b"TXTR")),
+        (0x2702E5E0, FourCC::from_bytes(b"TXTR")),
+        (0x34E79314, FourCC::from_bytes(b"TXTR")),
+        (0x46434ED3, FourCC::from_bytes(b"TXTR")),
+        (0x4F944876, FourCC::from_bytes(b"TXTR")),
     ];
     looking_for.extend(custom_scan_point_deps);
 
