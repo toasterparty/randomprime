@@ -947,7 +947,7 @@ fn patch_add_item<'r>(
         }
     };
 
-    if pickup_config.destination.is_some() {    
+    if pickup_config.destination.is_some() {
         area.add_dependencies(
             &game_resources, 0,
             iter::once(custom_asset_ids::GENERIC_WARP_STRG.into())
@@ -1344,7 +1344,7 @@ fn patch_add_item<'r>(
 }
 
 fn add_world_teleporter<'r>(
-    objects: &mut Vec<structs::SclyObject<'r>>, 
+    objects: &mut Vec<structs::SclyObject<'r>>,
     ps: &mut PatcherState,
     destination: &str,
     version: Version,
@@ -2108,7 +2108,7 @@ fn patch_add_poi<'r>(
     strg_id: ResId<res_id::STRG>,
     position: [f32;3],
 ) -> Result<(), String>
-{    
+{
     let scly = area.mrea().scly_section_mut();
     let layers = scly.layers.as_mut_vec();
     layers[0].objects.as_mut_vec().push(
@@ -2509,7 +2509,7 @@ fn modify_pickups_in_mrea<'r>(
         }
     };
 
-    if pickup_config.destination.is_some() {    
+    if pickup_config.destination.is_some() {
         area.add_dependencies(
             &game_resources, 0,
             iter::once(custom_asset_ids::GENERIC_WARP_STRG.into())
@@ -4380,7 +4380,7 @@ fn patch_add_load_trigger<'r>(
 {
     let scly = area.mrea().scly_section_mut();
     let layer = &mut scly.layers.as_mut_vec()[0];
-    
+
     // Collect all docks in this room
     let mut docks: HashMap<u32, u32> = HashMap::new(); // <dock num, instance id>
     for obj in layer.objects.as_mut_vec() {
@@ -4434,7 +4434,7 @@ fn patch_add_load_trigger<'r>(
                 deactivate_on_exit: 0
             }.into(),
             connections: connections.into(),
-        }    
+        }
     );
 
     Ok(())
@@ -6924,20 +6924,27 @@ fn patch_dol<'r>(
     dol_patcher.ppcasm_patch(&normal_is_default_patch)?;
 
     // Escape Sequence timers should count up
-    let instruction = vec![0xec, 0x42, 0x08, 0x2A];
-    dol_patcher.patch(
-        symbol_addr!("UpdateEscapeSequenceTimer__13CStateManagerFf"  , version) + (0x80044f24 - 0x80044ef4),
-        instruction.clone().into()
-    )?;
+    // NTSC-U (0x80044f24 - 0x80044ef4)
+    let escape_seq_timer_count_up_patch = ppcasm!(symbol_addr!("UpdateEscapeSequenceTimer__13CStateManagerFf", version) + 0x30, {
+            fadds   f2, f2, f1;
+    });
+    dol_patcher.ppcasm_patch(&escape_seq_timer_count_up_patch)?;
 
     // Escape Sequences don't check for rumbling
-    let remove_escape_sequence_rumble_patch = ppcasm!(symbol_addr!("UpdateEscapeSequenceTimer__13CStateManagerFf", version) + (0x80044fa8 - 0x80044ef4), {
-            b       { symbol_addr!("UpdateEscapeSequenceTimer__13CStateManagerFf", version) + (0x80045058 - 0x80044ef4) };
+    // NTSC-U (0x80044fa8 - 0x80044ef4) => b (0x80045058 - 0x80044ef4)
+    let remove_escape_sequence_rumble_patch = ppcasm!(symbol_addr!("UpdateEscapeSequenceTimer__13CStateManagerFf", version) + 0xb4, {
+            b       { symbol_addr!("UpdateEscapeSequenceTimer__13CStateManagerFf", version) + 0x164 };
     });
     dol_patcher.ppcasm_patch(&remove_escape_sequence_rumble_patch)?;
 
     // Never hide the escape sequence timer
-    let remove_escape_sequence_rumble_patch = ppcasm!(symbol_addr!("Update__9CSamusHudFfRC13CStateManagerUibb", version) + (0x80066e78 - 0x80066380), {
+    // NTSC-U (0x80066e78 - 0x80066380)
+    let patch_offset = if version == Version::Pal || version == Version::NtscJ {
+        0xb84
+    } else {
+        0xaf8
+    };
+    let remove_escape_sequence_rumble_patch = ppcasm!(symbol_addr!("Update__9CSamusHudFfRC13CStateManagerUibb", version) + patch_offset, {
             nop
     });
     dol_patcher.ppcasm_patch(&remove_escape_sequence_rumble_patch)?;
@@ -8911,7 +8918,7 @@ fn patch_add_camera_hint<'r>(
 
 fn add_camera_hint<'r>(
     ps: &mut PatcherState,
-    objects: &mut Vec<structs::SclyObject<'r>>, 
+    objects: &mut Vec<structs::SclyObject<'r>>,
     trigger_pos: [f32;3],
     trigger_scale: [f32;3],
     camera_pos: [f32;3],
@@ -9196,7 +9203,7 @@ fn patch_add_dock_teleport<'r>(
         door_offset = 4.0;
     }
 
-    if mrea_id == 0xF5EF1862 && is_morphball_door { // fiery shores0 
+    if mrea_id == 0xF5EF1862 && is_morphball_door { // fiery shores0
         vertical_offset = -5.0;
         door_offset = 0.0;
     }
@@ -9636,6 +9643,7 @@ fn patch_exo_scale<'r>(
 fn patch_ridley_scale<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    version: Version,
     scale: f32,
 )
 -> Result<(), String>
@@ -9643,11 +9651,18 @@ fn patch_ridley_scale<'r>(
     let scly = area.mrea().scly_section_mut();
     for layer in scly.layers.as_mut_vec().iter_mut() {
         for obj in layer.objects.as_mut_vec().iter_mut() {
-            if obj.property_data.is_ridley() {
-                let boss = obj.property_data.as_ridley_mut().unwrap();
-                boss.scale[0] *= scale;
-                boss.scale[1] *= scale;
-                boss.scale[2] *= scale;
+            if obj.property_data.is_ridley_v1() || obj.property_data.is_ridley_v2() {
+                if version == Version::Pal || version == Version::NtscJ || version == Version::PalTrilogy || version == Version::NtscUTrilogy || version == Version::NtscJTrilogy {
+                    let boss = obj.property_data.as_ridley_v2_mut().unwrap();
+                    boss.scale[0] *= scale;
+                    boss.scale[1] *= scale;
+                    boss.scale[2] *= scale;
+                } else {
+                    let boss = obj.property_data.as_ridley_v1_mut().unwrap();
+                    boss.scale[0] *= scale;
+                    boss.scale[1] *= scale;
+                    boss.scale[2] *= scale;
+                }
             } else if obj.property_data.is_actor() && vec![
                 0x00100218,
                 0x00100222,
@@ -11524,7 +11539,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     let local_savw_scans_to_add = &local_savw_scans_to_add;
     let savw_scan_logbook_category = &savw_scan_logbook_category;
 
-    
+
     // Remove unused artifacts from logbook
     let mut savw_to_remove_from_logbook: Vec<u32> = Vec::new();
     for i in 0..12 {
@@ -11866,7 +11881,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                 );
                             }
                         }
-                        
+
                         if room.spawn_position_override.is_some() {
                             patcher.add_scly_patch(
                                 (pak_name.as_bytes(), room_info.room_id.to_u32()),
@@ -11941,7 +11956,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                         es.start_trigger_pos,
                                         es.start_trigger_scale,
                                         es.stop_trigger_pos,
-                                        es.stop_trigger_scale,                                     
+                                        es.stop_trigger_scale,
                                     ),
                                 );
                             }
@@ -11954,10 +11969,10 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                     move |ps, area| patch_add_dock_teleport(
                                         ps,
                                         area,
-                                        repo.trigger_position,                                
+                                        repo.trigger_position,
                                         repo.trigger_scale,
-                                        0, // dock num (unused)                               
-                                        Some(repo.destination_position),                                
+                                        0, // dock num (unused)
+                                        Some(repo.destination_position),
                                         Some(repo.destination_rotation),
                                         None,
                                     ),
@@ -12499,7 +12514,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         resource_info!("STRG_Credits.STRG").into(),
         |res| patch_credits(res, version, config, &level_data)
     );
-    
+
     if config.results_string.is_some() {
         patcher.add_resource_patch(
             resource_info!("STRG_CompletionScreen.STRG").into(),
@@ -13064,7 +13079,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         {
             patcher.add_scly_patch(
                 resource_info!("07_stonehenge.MREA").into(),
-                move |_ps, area| patch_ridley_scale(_ps, area, scale)
+                move |_ps, area| patch_ridley_scale(_ps, area, version, scale)
             );
         }
         else if boss_name == "exo" || boss_name == "metroidprime" || boss_name == "metroidprimeexoskeleton"
@@ -13132,7 +13147,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
                     move |ps, area| patch_remove_doors(ps, area)
                 );
-            
+
             }
         }
     }
