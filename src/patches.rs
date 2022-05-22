@@ -6949,6 +6949,13 @@ fn patch_dol<'r>(
     });
     dol_patcher.ppcasm_patch(&remove_escape_sequence_rumble_patch)?;
 
+    if config.force_fusion {
+        let force_fusion_patch = ppcasm!(0x800914c8, {
+                li  r0, 1;
+        });
+        dol_patcher.ppcasm_patch(&force_fusion_patch)?;
+    }
+
     if remove_ball_color {
         let colors = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00".to_vec();
         dol_patcher.patch(symbol_addr!("skBallInnerGlowColors"  , version), colors.clone().into())?;
