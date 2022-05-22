@@ -6935,6 +6935,8 @@ fn patch_dol<'r>(
     });
     dol_patcher.ppcasm_patch(&remove_escape_sequence_rumble_patch)?;
 
+    // byte pattern to find GetIsFusionEnabled__12CPlayerStateFv
+    // 88030000 5403dffe 7c0300d0
     if config.force_fusion {
         let force_fusion_patch = ppcasm!(symbol_addr!("GetIsFusionEnabled__12CPlayerStateFv", version) + 4, {
                 li  r0, 1;
