@@ -17,7 +17,12 @@ use serde::{Serialize, Deserialize};
 use crate::{
     starting_items::StartingItems,
     pickup_meta::PickupType,
+    custom_assets::custom_asset_ids,
 };
+
+use reader_writer::{FourCC};
+
+use structs::{res_id, ResId};
 
 /*** Parsed Config (fn patch_iso) ***/
 
@@ -202,14 +207,81 @@ pub struct PlatformConfig
     // pub scale: [f32;3],
 }
 
+#[derive(PartialEq, Debug, Serialize, Deserialize, Copy, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub enum GenericTexture
+{
+    Grass,     // TXTR_BE288047
+    Crater,    // TXTR_8E899523
+    Mine,      // TXTR_7D77CEE0
+    Snow,      // TXTR_2E6E5FC1
+    Sandstone, // TXTR_AA452C33
+}
+
+impl GenericTexture
+{
+    pub fn txtr(self) -> ResId::<res_id::TXTR> {
+        let id = match self {
+            GenericTexture::Grass     => 0xBE288047,
+            GenericTexture::Crater    => 0x8E899523,
+            GenericTexture::Mine      => 0x7D77CEE0,
+            GenericTexture::Snow      => 0x2E6E5FC1,
+            GenericTexture::Sandstone => 0xAA452C33,
+        };
+
+        ResId::new(id)
+    }
+
+    pub fn cmdl(self) -> ResId::<res_id::CMDL> {
+        let id = match self {
+            GenericTexture::Grass     => custom_asset_ids::BLOCK_COLOR_0,
+            GenericTexture::Crater    => custom_asset_ids::BLOCK_COLOR_1,
+            GenericTexture::Mine      => custom_asset_ids::BLOCK_COLOR_2,
+            GenericTexture::Snow      => custom_asset_ids::BLOCK_COLOR_3,
+            GenericTexture::Sandstone => custom_asset_ids::BLOCK_COLOR_4,
+        };
+
+        id
+    }
+
+    pub fn dependencies(self) -> Vec<(u32, FourCC)> {
+        vec![
+            (self.cmdl().to_u32(), FourCC::from_bytes(b"CMDL")),
+            (self.txtr().to_u32(), FourCC::from_bytes(b"TXTR")),
+        ]
+    }
+
+    pub fn iter() -> impl Iterator<Item = GenericTexture>
+    {
+        [
+            GenericTexture::Grass,
+            GenericTexture::Crater,
+            GenericTexture::Mine,
+            GenericTexture::Snow,
+            GenericTexture::Sandstone,
+        ].iter().map(|i| *i)
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct BlockConfig
 {
     pub position: [f32;3],
     pub scale: Option<[f32;3]>,
-    pub alt_color: Option<bool>,
+    pub texture: Option<GenericTexture>,
     // pub rotation: [f32;3],
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct EscapeSequenceConfig
+{
+    // pub time_s: f32,
+    pub start_trigger_pos: [f32;3],
+    pub start_trigger_scale: [f32;3],
+    pub stop_trigger_pos: [f32;3],
+    pub stop_trigger_scale: [f32;3],
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -242,6 +314,17 @@ pub struct CameraHintConfig
 pub struct LockOnPoint
 {
     pub position: [f32;3],
+    pub is_grapple: Option<bool>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RepositionConfig
+{
+    pub trigger_position: [f32;3],
+    pub trigger_scale: [f32;3],
+    pub destination_position: [f32;3],
+    pub destination_rotation: f32,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
@@ -263,6 +346,8 @@ pub struct RoomConfig
     pub blocks: Option<Vec<BlockConfig>>,
     pub lock_on_points: Option<Vec<LockOnPoint>>,
     pub ambient_lighting_scale: Option<f32>, // 1.0 is default lighting
+    pub escape_sequences: Option<Vec<EscapeSequenceConfig>>,
+    pub repositions: Option<Vec<RepositionConfig>>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
@@ -452,6 +537,7 @@ pub struct PatchConfig
     pub skip_splash_screens: bool,
     pub default_game_options: Option<DefaultGameOptions>,
     pub suit_colors: Option<SuitColors>,
+    pub force_fusion: bool,
     pub cache_dir: String,
 
     pub quickplay: bool,
@@ -462,6 +548,7 @@ pub struct PatchConfig
     pub main_menu_message: String,
 
     pub credits_string: Option<String>,
+    pub results_string: Option<String>,
     pub artifact_hints: Option<HashMap<String,String>>, // e.g. "Strength":"This item can be found in Ruined Fountain"
     pub artifact_temple_layer_overrides: Option<HashMap<String,bool>>,
     pub no_doors: bool,
@@ -478,6 +565,7 @@ struct Preferences
     skip_splash_screens: Option<bool>,
     default_game_options: Option<DefaultGameOptions>,
     suit_colors: Option<SuitColors>,
+    force_fusion: Option<bool>,
     cache_dir: Option<String>,
 
     qol_game_breaking: Option<bool>,
@@ -543,6 +631,7 @@ struct GameConfig
     main_menu_message: Option<String>,
 
     credits_string: Option<String>,
+    results_string: Option<String>,
     artifact_hints: Option<HashMap<String,String>>, // e.g. "Strength":"This item can be found in Ruined Fountain"
     artifact_temple_layer_overrides: Option<HashMap<String,bool>>,
     no_doors: Option<bool>, // Remove every door from the game
@@ -967,6 +1056,14 @@ impl PatchConfigPrivate
             }
         };
 
+        let results_string = {
+            if force_vanilla_layout {
+                Some("".to_string())
+            } else {
+                self.game_config.results_string.clone()
+            }
+        };
+
         Ok(PatchConfig {
             run_mode,
             logbook_filename: self.logbook_filename.clone(),
@@ -1009,6 +1106,7 @@ impl PatchConfigPrivate
             artifact_hint_behavior,
             flaahgra_music_files,
             suit_colors: self.preferences.suit_colors.clone(),
+            force_fusion: self.preferences.force_fusion.clone().unwrap_or(false),
             cache_dir: self.preferences.cache_dir.clone().unwrap_or("cache".to_string()),
             skip_splash_screens: self.preferences.skip_splash_screens.unwrap_or(false),
             default_game_options: self.preferences.default_game_options.clone(),
@@ -1051,6 +1149,7 @@ impl PatchConfigPrivate
             main_menu_message,
 
             credits_string,
+            results_string,
             artifact_hints: self.game_config.artifact_hints.clone(),
 
             ctwk_config: self.tweaks.clone(),

@@ -39,6 +39,7 @@ pub mod scly_props
     pub mod dock;
     pub mod door;
     pub mod effect;
+    pub mod grapple_point;
     pub mod hud_memo;
     pub mod memory_relay;
     pub mod pickup;
@@ -68,7 +69,8 @@ pub mod scly_props
     pub mod thardus;
     pub mod elite_pirate;
     pub mod omega_pirate;
-    pub mod ridley;
+    pub mod ridley_v1;
+    pub mod ridley_v2;
     pub mod metroidprimestage1;
     pub mod metroidprimestage2;
 
@@ -85,6 +87,7 @@ pub mod scly_props
     pub use self::dock::*;
     pub use self::door::*;
     pub use self::effect::*;
+    pub use self::grapple_point::*;
     pub use self::hud_memo::*;
     pub use self::memory_relay::*;
     pub use self::pickup::*;
@@ -114,7 +117,8 @@ pub mod scly_props
     pub use self::thardus::*;
     pub use self::elite_pirate::*;
     pub use self::omega_pirate::*;
-    pub use self::ridley::*;
+    pub use self::ridley_v1::*;
+    pub use self::ridley_v2::*;
     pub use self::metroidprimestage1::*;
     pub use self::metroidprimestage2::*;
 }
@@ -131,6 +135,7 @@ pub use scly_props::damageable_trigger::*;
 pub use scly_props::dock::*;
 pub use scly_props::door::*;
 pub use scly_props::effect::*;
+pub use scly_props::grapple_point::*;
 pub use scly_props::hud_memo::*;
 pub use scly_props::memory_relay::*;
 pub use scly_props::pickup::*;
@@ -160,7 +165,8 @@ pub use scly_props::ice_sheegoth::*;
 pub use scly_props::thardus::*;
 pub use scly_props::elite_pirate::*;
 pub use scly_props::omega_pirate::*;
-pub use scly_props::ridley::*;
+pub use scly_props::ridley_v1::*;
+pub use scly_props::ridley_v2::*;
 pub use scly_props::metroidprimestage1::*;
 pub use scly_props::metroidprimestage2::*;
 
