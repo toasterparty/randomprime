@@ -137,6 +137,14 @@ pub struct DamageVulnerability
 
 }
 
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub enum TypeVulnerability {
+    Normal = 0x1,
+    Reflect = 0x2,
+    Immune = 0x3,
+    DirectNormal = 0x5,
+}
+
 #[auto_struct(Readable, Writable, FixedSize)]
 #[derive(Debug, Clone)]
 pub struct ChargedBeams

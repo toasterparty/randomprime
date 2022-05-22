@@ -3,15 +3,8 @@ use crate::{
     structs::scly_props::structs::{DamageVulnerability, BeamCombos, ChargedBeams},
 };
 
-use structs::{res_id, ResId};
+use structs::{res_id, ResId, scly_structs::TypeVulnerability};
 use reader_writer::{FourCC};
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
-enum TypeVulnerability {
-    Normal = 0x1,
-    Reflect = 0x2,
-    Immune = 0x3,
-}
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum DoorType {
