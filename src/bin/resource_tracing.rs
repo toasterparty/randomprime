@@ -1357,6 +1357,7 @@ fn main()
         let filename = stdstr::from_utf8(&pickup_table[&pm].attainment_audio_file_name).unwrap();
         println!("            PickupType::{:?} => {:?},", pt, filename);
     }
+    println!("            PickupType::FloatyJump => \"/audio/itm_x_short_02.dsp\\0\", // This is a hard-coded hack, there isn't an FJ item in-game");
     println!("        }}");
     println!("    }}");
 

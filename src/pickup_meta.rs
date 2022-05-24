@@ -56,6 +56,9 @@ pub enum PickupType
     ArtifactOfSpirit,
     ArtifactOfNewborn,
     Nothing,
+
+    #[serde(skip)]
+    FloatyJump = -1,
 }
 
 impl PickupType
@@ -105,6 +108,7 @@ impl PickupType
             PickupType::ArtifactOfSpirit    => "Artifact Of Spirit"   ,
             PickupType::ArtifactOfNewborn   => "Artifact Of Newborn"  ,
             PickupType::Nothing             => "Nothing"              ,
+            PickupType::FloatyJump          => "Floaty Jump"          ,
         }
     }
 
@@ -153,11 +157,16 @@ impl PickupType
             PickupType::ArtifactOfSpirit,
             PickupType::ArtifactOfNewborn,
             PickupType::Nothing,
+            PickupType::FloatyJump,
         ].iter().map(|i| *i)
     }
 
     pub fn kind(&self) -> u32
     {
+        if *self == PickupType::FloatyJump {
+            return PickupType::Nothing.kind();
+        }
+
         *self as u32
     }
 
@@ -451,6 +460,7 @@ impl PickupModel
             PickupType::ArtifactOfSpirit    => PickupModel::ArtifactOfSpirit,
             PickupType::ArtifactOfNewborn   => PickupModel::ArtifactOfNewborn,
             PickupType::Nothing             => PickupModel::Nothing,
+            PickupType::FloatyJump             => PickupModel::Nothing,
         }
     }
 }

@@ -1234,6 +1234,26 @@ fn patch_add_item<'r>(
     let scly = area.mrea().scly_section_mut();
     let layers = scly.layers.as_mut_vec();
 
+    if pickup_type == PickupType::FloatyJump {
+        let floaty_contraption_id = ps.fresh_instance_id_range.next().unwrap();
+        place_floaty_contraption(
+            layers[0].objects.as_mut_vec(),
+            floaty_contraption_id,
+            ps.fresh_instance_id_range.next().unwrap(),
+            ps.fresh_instance_id_range.next().unwrap(),
+            ps.fresh_instance_id_range.next().unwrap(),
+            pickup_position.into(),
+        );
+
+        pickup_obj.connections.as_mut_vec().push(
+            structs::Connection {
+                state: structs::ConnectionState::ARRIVED,
+                message: structs::ConnectionMsg::RESET_AND_START,
+                target_object_id: floaty_contraption_id,
+            }
+        );
+    }
+
     if shuffle_position || *pickup_config.jumbo_scan.as_ref().unwrap_or(&false) {
         let poi_id = ps.fresh_instance_id_range.next().unwrap();
         layers[new_layer_idx].objects.as_mut_vec().push(
@@ -2769,6 +2789,18 @@ fn modify_pickups_in_mrea<'r>(
         );
     }
 
+    let floaty_contraption_id = ps.fresh_instance_id_range.next().unwrap();
+
+    if pickup_type == PickupType::FloatyJump {
+        additional_connections.push(
+            structs::Connection {
+                state: structs::ConnectionState::ARRIVED,
+                message: structs::ConnectionMsg::RESET_AND_START,
+                target_object_id: floaty_contraption_id,
+            }
+        );
+    }
+
     let position: [f32; 3];
     let scan_id_out: ResId<res_id::SCAN>;
     {
@@ -2793,6 +2825,15 @@ fn modify_pickups_in_mrea<'r>(
             pickup_obj.connections.as_mut_vec().extend_from_slice(&additional_connections);
         }
     }
+
+    place_floaty_contraption(
+        layers[pickup_location.location.layer as usize].objects.as_mut_vec(),
+        floaty_contraption_id,
+        ps.fresh_instance_id_range.next().unwrap(),
+        ps.fresh_instance_id_range.next().unwrap(),
+        ps.fresh_instance_id_range.next().unwrap(),
+        position.clone().into(),
+    );
 
     if shuffle_position || *pickup_config.jumbo_scan.as_ref().unwrap_or(&false) {
         let poi_id = ps.fresh_instance_id_range.next().unwrap();
@@ -2922,7 +2963,109 @@ fn modify_pickups_in_mrea<'r>(
         .find(|obj| obj.instance_id ==  location.instance_id)
         .unwrap();
     update_attainment_audio(attainment_audio, pickup_type);
+
     Ok(())
+}
+
+fn place_floaty_contraption<'r>(
+    objects: &mut Vec<structs::SclyObject<'r>>,
+    timer1_id: u32, // send RESET_AND_START to this ID to give floaty 
+    timer2_id: u32,
+    water_id: u32,
+    camera_id: u32,
+    position: [f32;3],
+)
+{
+    let mut water_obj = WaterType::Normal.to_obj();
+    water_obj.instance_id = water_id;
+
+    let water = water_obj.property_data.as_water_mut().unwrap();
+    water.position = position.into();
+    water.scale = [5.0, 5.0, 5.0].into();
+    water.active = 0;
+
+    objects.push(water_obj);
+
+    objects.push(
+        structs::SclyObject {
+            instance_id: timer1_id,
+            property_data: structs::Timer {
+                name: b"floaty timer1\0".as_cstr(),
+
+                start_time: 1.0/60.0,
+                max_random_add: 0.0,
+                reset_to_zero: 0,
+                start_immediately: 0,
+                active: 1,
+            }.into(),
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::ACTIVATE,
+                    target_object_id: water_id,
+                },
+                structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::RESET_AND_START,
+                    target_object_id: timer2_id,
+                },
+                structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::ACTIVATE,
+                    target_object_id: camera_id,
+                },
+            ].into(),
+        }
+    );
+
+    objects.push(
+        structs::SclyObject {
+            instance_id: timer2_id,
+            property_data: structs::Timer {
+                name: b"floaty timer2\0".as_cstr(),
+
+                start_time: 1.0/60.0,
+                max_random_add: 0.0,
+                reset_to_zero: 0,
+                start_immediately: 0,
+                active: 1,
+            }.into(),
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: water_id,
+                },
+            ].into(),
+        }
+    );
+
+    objects.push(
+        structs::SclyObject {
+            instance_id: camera_id,
+            property_data: structs::Camera {
+                name: b"floaty camera\0".as_cstr(),
+
+                position: [position[0], position[1], position[2] + 10.0].into(),
+                rotation: [0.0, 0.0, 0.0].into(),
+                active: 0,
+                shot_duration: 2.0/60.0,
+                unknowns: [
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
+                    0,
+                ].into(),
+                unknown1: 140.0,
+                unknown2: 1,
+                unknown3: 0,
+            }.into(),
+            connections: vec![].into(),
+        }
+    );
 }
 
 fn update_pickup(
