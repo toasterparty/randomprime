@@ -78,7 +78,7 @@ use structs::{res_id, scly_structs::TypeVulnerability, ResId};
 
 use std::{
     borrow::Cow,
-    collections::{HashMap, HashSet},
+    collections::HashMap,
     convert::TryInto,
     ffi::CString,
     fmt,
@@ -834,6 +834,17 @@ fn patch_add_item<'r>(
 
     // Pickup to use for game functionality //
     let pickup_type = PickupType::from_str(&pickup_config.pickup_type);
+
+    if pickup_type == PickupType::FloatyJump {
+        let deps = WaterType::Normal.dependencies();
+        let deps_iter = deps.iter()
+            .map(|&(file_id, fourcc)| structs::Dependency {
+                    asset_id: file_id,
+                    asset_type: fourcc,
+            });
+
+        area.add_dependencies(game_resources, 0, deps_iter);
+    }
 
     let extern_model = if pickup_config.model.is_some() {
         extern_models.get(pickup_config.model.as_ref().unwrap())
@@ -1612,8 +1623,7 @@ impl WaterType
         ].iter().map(|i| *i)
     }
 
-    fn dependencies(&self)
-    -> Vec<(u32, FourCC)>
+    pub fn dependencies(&self) -> Vec<(u32, FourCC)>
     {
         let water_obj = self.to_obj();
         let water = water_obj.property_data.as_water().unwrap();
@@ -1945,44 +1955,6 @@ impl WaterType
             }))},
         }
     }
-}
-
-fn collect_liquid_resources<'r>(gc_disc: &structs::GcDisc<'r>)
--> HashMap<(u32, FourCC), structs::Resource<'r>>{
-    // Get list of all dependencies needed by liquids //
-    let mut looking_for: HashSet<_> = WaterType::iter()
-        .flat_map(|pt| pt.dependencies().into_iter())
-        .collect();
-
-    // Dependencies read from paks and custom assets will go here //
-    let mut found = HashMap::with_capacity(looking_for.len());
-
-    // Iterate through all paks and add add any dependencies to the resource pool //
-    for pak_name in pickup_meta::ROOM_INFO.iter().map(|(name, _)| name) { // for all paks
-
-        // get the pak //
-        let file_entry = gc_disc.find_file(pak_name).unwrap();
-        let pak = match *file_entry.file().unwrap() {
-            structs::FstEntryFile::Pak(ref pak) => Cow::Borrowed(pak),
-            structs::FstEntryFile::Unknown(ref reader) => Cow::Owned(reader.clone().read(())),
-            _ => panic!(),
-        };
-
-        // Iterate through all resources in the pak //
-        for res in pak.resources.iter() {
-            let key = (res.file_id, res.fourcc());
-            if looking_for.remove(&key) { // If it's one of our dependencies
-                assert!(found.insert(key, res.into_owned()).is_none()); // collect it
-            }
-        }
-    }
-
-    if !looking_for.is_empty()
-    {
-        println!("error - still looking for {:?}", looking_for);
-    }
-    assert!(looking_for.is_empty());
-    found
 }
 
 fn patch_submerge_room<'r>(
@@ -2412,6 +2384,17 @@ fn modify_pickups_in_mrea<'r>(
 
     // Pickup to use for game functionality //
     let pickup_type = PickupType::from_str(&pickup_config.pickup_type);
+
+    if pickup_type == PickupType::FloatyJump {
+        let deps = WaterType::Normal.dependencies();
+        let deps_iter = deps.iter()
+            .map(|&(file_id, fourcc)| structs::Dependency {
+                    asset_id: file_id,
+                    asset_type: fourcc,
+            });
+
+        area.add_dependencies(game_resources, 0, deps_iter);
+    }
 
     let extern_model = if pickup_config.model.is_some() {
         extern_models.get(pickup_config.model.as_ref().unwrap())
@@ -3046,7 +3029,7 @@ fn place_floaty_contraption<'r>(
             property_data: structs::Camera {
                 name: b"floaty camera\0".as_cstr(),
 
-                position: [position[0], position[1], position[2] + 10.0].into(),
+                position: [position[0], position[1], position[2] + 5.0].into(),
                 rotation: [0.0, 0.0, 0.0].into(),
                 active: 0,
                 shot_duration: 2.0/60.0,
@@ -11751,9 +11734,6 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     }
     let savw_to_remove_from_logbook = &savw_to_remove_from_logbook;
 
-    let liquid_resources = collect_liquid_resources(gc_disc);
-    let liquid_resources = &liquid_resources;
-
     // XXX These values need to out live the patcher
     let select_game_fmv_suffix = "A";
     let n = format!("Video/02_start_fileselect_{}.thp", select_game_fmv_suffix);
@@ -12145,7 +12125,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                         if submerge {
                             patcher.add_scly_patch(
                                 (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                move |_ps, area| patch_submerge_room(_ps, area, liquid_resources),
+                                move |_ps, area| patch_submerge_room(_ps, area, game_resources),
                             );
                         }
 
@@ -12153,7 +12133,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             for liquid in room.liquids.as_ref().unwrap().iter() {
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                    move |ps, area| patch_add_liquid(ps, area, liquid, liquid_resources),
+                                    move |ps, area| patch_add_liquid(ps, area, liquid, game_resources),
                                 );
                             }
                         }

@@ -14,6 +14,7 @@ use crate::{
     ResourceData,
     GcDiscLookupExtensions,
     extern_assets::ExternPickupModel,
+    patches::WaterType,
 };
 
 use std::{
@@ -765,6 +766,7 @@ pub fn collect_game_resources<'r>(
     looking_for.extend(DoorType::iter().flat_map(|x| x.dependencies()));
     looking_for.extend(BlastShieldType::iter().flat_map(|x| x.dependencies()));
     looking_for.extend(GenericTexture::iter().flat_map(|x| x.dependencies()));
+    looking_for.extend(WaterType::iter().flat_map(|x| x.dependencies()));
     
     let platform_deps: Vec<(u32,FourCC)> = vec![
         (0x48DF38A3, FourCC::from_bytes(b"CMDL")),
