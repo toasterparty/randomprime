@@ -43,6 +43,7 @@ pub mod scly_props
     pub mod hud_memo;
     pub mod memory_relay;
     pub mod pickup;
+    pub mod pickup_generator;
     pub mod platorm;
     pub mod point_of_interest;
     pub mod player_actor;
@@ -91,6 +92,7 @@ pub mod scly_props
     pub use self::hud_memo::*;
     pub use self::memory_relay::*;
     pub use self::pickup::*;
+    pub use self::pickup_generator::*;
     pub use self::platorm::*;
     pub use self::point_of_interest::*;
     pub use self::player_actor::*;
@@ -138,6 +140,7 @@ pub use scly_props::effect::*;
 pub use scly_props::grapple_point::*;
 pub use scly_props::hud_memo::*;
 pub use scly_props::memory_relay::*;
+pub use scly_props::pickup_generator::*;
 pub use scly_props::pickup::*;
 pub use scly_props::platorm::*;
 pub use scly_props::point_of_interest::*;
