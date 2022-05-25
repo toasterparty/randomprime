@@ -1413,7 +1413,7 @@ fn add_world_teleporter<'r>(
             property_data: structs::Timer {
                 name: b"Warp to start delay\0".as_cstr(),
 
-                start_time: 3.0,
+                start_time: 1.0,
                 max_random_add: 0.0,
                 reset_to_zero: 0,
                 start_immediately: 0,
@@ -1439,7 +1439,7 @@ fn add_world_teleporter<'r>(
                 first_message_timer: 3.0,
                 unknown: 1,
                 memo_type: 0,
-                strg: custom_asset_ids::WARPING_TO_START_DELAY_STRG,
+                strg: custom_asset_ids::GENERIC_WARP_STRG,
                 active: 1,
             }.into(),
            connections: vec![].into(),
