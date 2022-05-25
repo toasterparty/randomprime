@@ -3997,6 +3997,7 @@ fn patch_lock_on_point<'r>(
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     position: [f32;3],
     is_grapple: bool,
+    no_lock: bool,
 ) -> Result<(), String>
 {
     let deps = vec![
@@ -4246,7 +4247,7 @@ fn patch_lock_on_point<'r>(
                 }
             );
         }
-    } else {
+    } else if !no_lock {
         layers[0].objects.as_mut_vec().push(
             structs::SclyObject {
                 instance_id: ps.fresh_instance_id_range.next().unwrap(),
@@ -12102,7 +12103,14 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             for lock_on in room.lock_on_points.as_ref().unwrap() {
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                    move |ps, area| patch_lock_on_point(ps, area, game_resources, lock_on.position, lock_on.is_grapple.unwrap_or(false)),
+                                    move |ps, area| patch_lock_on_point(
+                                        ps,
+                                        area,
+                                        game_resources,
+                                        lock_on.position,
+                                        lock_on.is_grapple.unwrap_or(false),
+                                        lock_on.no_lock.unwrap_or(false),
+                                    ),
                                 );
                             }
                         }

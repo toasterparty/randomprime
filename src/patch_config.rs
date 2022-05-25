@@ -315,6 +315,7 @@ pub struct LockOnPoint
 {
     pub position: [f32;3],
     pub is_grapple: Option<bool>,
+    pub no_lock: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
