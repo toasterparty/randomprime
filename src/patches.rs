@@ -2809,14 +2809,16 @@ fn modify_pickups_in_mrea<'r>(
         }
     }
 
-    place_floaty_contraption(
-        layers[pickup_location.location.layer as usize].objects.as_mut_vec(),
-        floaty_contraption_id,
-        ps.fresh_instance_id_range.next().unwrap(),
-        ps.fresh_instance_id_range.next().unwrap(),
-        ps.fresh_instance_id_range.next().unwrap(),
-        position.clone().into(),
-    );
+    if pickup_type == PickupType::FloatyJump {
+        place_floaty_contraption(
+            layers[pickup_location.location.layer as usize].objects.as_mut_vec(),
+            floaty_contraption_id,
+            ps.fresh_instance_id_range.next().unwrap(),
+            ps.fresh_instance_id_range.next().unwrap(),
+            ps.fresh_instance_id_range.next().unwrap(),
+            position.clone().into(),
+        );
+    }
 
     if shuffle_position || *pickup_config.jumbo_scan.as_ref().unwrap_or(&false) {
         let poi_id = ps.fresh_instance_id_range.next().unwrap();
