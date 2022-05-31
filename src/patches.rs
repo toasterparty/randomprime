@@ -1979,7 +1979,6 @@ fn patch_submerge_room<'r>(
     let mut water_obj = water_type.to_obj();
     let water = water_obj.property_data.as_water_mut().unwrap();
 
-
     let room_origin = {
         let area_transform = area.mlvl_area.area_transform;
 
@@ -3758,30 +3757,16 @@ fn patch_add_platform<'r>(
     Ok(())
 }
 
-fn patch_add_block<'r>(
+fn add_block<'r>(
     ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
-    game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+    objects: &mut Vec<structs::SclyObject<'r>>,
     position: [f32;3],
     scale: [f32;3],
     texture: GenericTexture,
-    // rotation: [f32;3],
-) -> Result<(), String>
+    is_tangible: u8,
+)
 {
-    let deps = vec![
-        (texture.cmdl().to_u32(), b"CMDL"),
-        (texture.txtr().to_u32(), b"TXTR"),
-    ];
-    let deps_iter = deps.iter()
-        .map(|&(file_id, fourcc)| structs::Dependency {
-            asset_id: file_id,
-            asset_type: FourCC::from_bytes(fourcc),
-        }
-    );
-    area.add_dependencies(game_resources, 0, deps_iter);
-
-    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
-    layers[0].objects.as_mut_vec().push(
+    objects.push(
         structs::SclyObject {
             instance_id: ps.fresh_instance_id_range.next().unwrap(),
             property_data: structs::Actor {
@@ -3845,7 +3830,7 @@ fn patch_add_block<'r>(
                 },
                 looping: 1,
                 snow: 1,
-                solid: 1,
+                solid: is_tangible,
                 camera_passthrough: 0,
                 active: 1,
                 unknown8: 0,
@@ -3858,6 +3843,165 @@ fn patch_add_block<'r>(
             connections: vec![].into()
         },
     );
+}
+
+fn patch_add_block<'r>(
+    ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+    position: [f32;3],
+    scale: [f32;3],
+    texture: GenericTexture,
+    // rotation: [f32;3],
+) -> Result<(), String>
+{
+    let deps = vec![
+        (texture.cmdl().to_u32(), b"CMDL"),
+        (texture.txtr().to_u32(), b"TXTR"),
+    ];
+    let deps_iter = deps.iter()
+        .map(|&(file_id, fourcc)| structs::Dependency {
+            asset_id: file_id,
+            asset_type: FourCC::from_bytes(fourcc),
+        }
+    );
+    area.add_dependencies(game_resources, 0, deps_iter);
+
+    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
+    let objects = layers[0].objects.as_mut_vec();
+
+    add_block(
+        ps,
+        objects,
+        position,
+        scale,
+        texture,
+        1,
+    );
+
+    Ok(())
+}
+
+fn local_to_global_tranform(
+    tranformation_matrix: [f32;12],
+    coordinates: [f32;3],
+) -> [f32;3]
+{
+    [
+        coordinates[0]*tranformation_matrix[0] + coordinates[1]*tranformation_matrix[1] + coordinates[2]*tranformation_matrix[2]  + tranformation_matrix[3],
+        coordinates[0]*tranformation_matrix[4] + coordinates[1]*tranformation_matrix[5] + coordinates[2]*tranformation_matrix[6]  + tranformation_matrix[7],
+        coordinates[0]*tranformation_matrix[8] + coordinates[1]*tranformation_matrix[9] + coordinates[2]*tranformation_matrix[10] + tranformation_matrix[11],
+    ]
+}
+
+fn derrive_bounding_box_measurements<'r>(
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+) -> ([f32;3], [f32;3], [f32;3], [f32;3])
+{
+    let area_transform: [f32;12] = area.mlvl_area.area_transform.into();
+    let bounding_box_untransformed: [f32;6] = area.mlvl_area.area_bounding_box.into();
+
+    let bounding_box_min = local_to_global_tranform(area_transform, [bounding_box_untransformed[0], bounding_box_untransformed[1], bounding_box_untransformed[2]]);
+    let bounding_box_max = local_to_global_tranform(area_transform, [bounding_box_untransformed[3], bounding_box_untransformed[4], bounding_box_untransformed[5]]);
+
+    let bounding_box_extent = [
+        (bounding_box_max[0] - bounding_box_min[0]) / 2.0,
+        (bounding_box_max[1] - bounding_box_min[1]) / 2.0,
+        (bounding_box_max[2] - bounding_box_min[2]) / 2.0,
+    ];
+
+    let room_origin = [
+        bounding_box_min[0] + bounding_box_extent[0],
+        bounding_box_min[1] + bounding_box_extent[1],
+        bounding_box_min[2] + bounding_box_extent[2],
+    ];
+
+    (bounding_box_min, bounding_box_max, bounding_box_extent, room_origin)
+}
+
+fn patch_visible_aether_boundaries<'r>(
+    ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+)
+-> Result<(), String>
+{
+    const AETHER_BOUNDARY_TEXTURE: GenericTexture = GenericTexture::Snow;
+
+    let deps = vec![
+        (AETHER_BOUNDARY_TEXTURE.cmdl().to_u32(), b"CMDL"),
+        (AETHER_BOUNDARY_TEXTURE.txtr().to_u32(), b"TXTR"),
+    ];
+    let deps_iter = deps.iter()
+        .map(|&(file_id, fourcc)| structs::Dependency {
+            asset_id: file_id,
+            asset_type: FourCC::from_bytes(fourcc),
+        }
+    );
+    area.add_dependencies(game_resources, 0, deps_iter);
+
+    // Derrive bounding box
+    let (bounding_box_min, bounding_box_max, _, _) = derrive_bounding_box_measurements(area);
+
+    // Adjust the size of the aether box to show how it "feels"
+    let bounding_box_min = [
+        bounding_box_min[0] - 0.5,
+        bounding_box_min[1] - 0.5,
+        bounding_box_min[2] - 2.5,
+    ];
+    let bounding_box_max = [
+        bounding_box_max[0] + 0.5,
+        bounding_box_max[1] + 0.5,
+        bounding_box_max[2],
+    ];
+    let bounding_box_extent = [
+        (bounding_box_max[0] - bounding_box_min[0]) / 2.0,
+        (bounding_box_max[1] - bounding_box_min[1]) / 2.0,
+        (bounding_box_max[2] - bounding_box_min[2]) / 2.0,
+    ];
+    let room_origin = [
+        bounding_box_min[0] + bounding_box_extent[0],
+        bounding_box_min[1] + bounding_box_extent[1],
+        bounding_box_min[2] + bounding_box_extent[2],
+    ];
+
+    if bounding_box_extent[0] > 300.0 {
+        return Ok(());
+    }
+
+    let scly = area.mrea().scly_section_mut();
+    let layers = &mut scly.layers.as_mut_vec();
+    let objects = layers[0].objects.as_mut_vec();
+
+    const X_SCALE_FACTOR: f32 = 1.18;
+    const Y_SCALE_FACTOR: f32 = 1.18;
+    const Z_SCALE_FACTOR: f32 = 1.18;
+
+    for (position, scale) in vec![
+        ([room_origin[0], bounding_box_min[1], bounding_box_min[2]], [bounding_box_extent[0] * X_SCALE_FACTOR, 0.1, 0.1]),
+        ([room_origin[0], bounding_box_min[1], bounding_box_max[2]], [bounding_box_extent[0] * X_SCALE_FACTOR, 0.1, 0.1]),
+        ([room_origin[0], bounding_box_max[1], bounding_box_min[2]], [bounding_box_extent[0] * X_SCALE_FACTOR, 0.1, 0.1]),
+        ([room_origin[0], bounding_box_max[1], bounding_box_max[2]], [bounding_box_extent[0] * X_SCALE_FACTOR, 0.1, 0.1]),
+
+        ([bounding_box_min[0], room_origin[1], bounding_box_min[2]], [0.1, bounding_box_extent[1] * Y_SCALE_FACTOR, 0.1]),
+        ([bounding_box_min[0], room_origin[1], bounding_box_max[2]], [0.1, bounding_box_extent[1] * Y_SCALE_FACTOR, 0.1]),
+        ([bounding_box_max[0], room_origin[1], bounding_box_min[2]], [0.1, bounding_box_extent[1] * Y_SCALE_FACTOR, 0.1]),
+        ([bounding_box_max[0], room_origin[1], bounding_box_max[2]], [0.1, bounding_box_extent[1] * Y_SCALE_FACTOR, 0.1]),
+
+        ([bounding_box_min[0], bounding_box_min[1], room_origin[2]], [0.1, 0.1, bounding_box_extent[2] * Z_SCALE_FACTOR]),
+        ([bounding_box_min[0], bounding_box_max[1], room_origin[2]], [0.1, 0.1, bounding_box_extent[2] * Z_SCALE_FACTOR]),
+        ([bounding_box_max[0], bounding_box_min[1], room_origin[2]], [0.1, 0.1, bounding_box_extent[2] * Z_SCALE_FACTOR]),
+        ([bounding_box_max[0], bounding_box_max[1], room_origin[2]], [0.1, 0.1, bounding_box_extent[2] * Z_SCALE_FACTOR]),
+    ] {
+        add_block(
+            ps,
+            objects,
+            position,
+            scale,
+            AETHER_BOUNDARY_TEXTURE,
+            0,
+        );
+    }
 
     Ok(())
 }
@@ -12501,6 +12645,17 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     );
                 }
             }
+
+            if config.visible_bounding_box {
+                patcher.add_scly_patch(
+                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                    move |ps, area| patch_visible_aether_boundaries(
+                        ps,
+                        area,
+                        game_resources,
+                    ),
+                );
+            }
         }
     }
 
@@ -12512,9 +12667,6 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         config.force_vanilla_layout,
     );
     let skip_frigate = skip_frigate && starting_room.mlvl != World::FrigateOrpheon.mlvl();
-    if skip_frigate {
-        println!("Skipping Frigate");
-    }
 
     let mut smoother_teleports = false;
     for (_, level) in level_data.iter() {
