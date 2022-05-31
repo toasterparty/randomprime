@@ -2250,15 +2250,13 @@ where R: Rng
     // xmax, ymax, zmax,
     let mut bounding_boxes: Vec<[f32; 6]> = Vec::new();
     {
-        let mut bounding_box = area.mlvl_area.area_bounding_box.clone();
-        let room_origin = {
-            let area_transform = area.mlvl_area.area_transform;
-            [area_transform[3], area_transform[7], area_transform[11]]
-        };
-        for i in 0..6 {
-            bounding_box[i] = bounding_box[i] + room_origin[i%3];
-        }
-        bounding_boxes.push(bounding_box.into());
+        let (bounding_box_min, bounding_box_max, _, _) = derrive_bounding_box_measurements(area);
+        bounding_boxes.push(
+            [
+                bounding_box_min[0], bounding_box_min[1], bounding_box_min[2],
+                bounding_box_max[0], bounding_box_max[1], bounding_box_max[2],
+            ]
+        );
     }
 
     if mrea_id == 0x2398E906 { // Artifact Temple
