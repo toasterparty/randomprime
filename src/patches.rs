@@ -1976,44 +1976,17 @@ fn patch_submerge_room<'r>(
 
     area.add_dependencies(resources, 0, deps_iter);
 
+    let (_, _, bounding_box_extent, room_origin) = derrive_bounding_box_measurements(area);
+
     let mut water_obj = water_type.to_obj();
     let water = water_obj.property_data.as_water_mut().unwrap();
 
-    let room_origin = {
-        let area_transform = area.mlvl_area.area_transform;
-
-        [
-            area_transform[3],
-            area_transform[7],
-            area_transform[11],
-        ]
-    };
-
-    let bounding_box_untransformed = area.mlvl_area.area_bounding_box;
-
-    // transform bounding box by origin offset provided in area transform   //
-    // note that we are assuming the area transformation matrix is identity //
-    // on the premise that every door in the game is axis-aligned           //
-    let bounding_box_min = [
-        room_origin[0] + bounding_box_untransformed[0],
-        room_origin[1] + bounding_box_untransformed[1],
-        room_origin[2] + bounding_box_untransformed[2],
-    ];
-    let bounding_box_max = [
-        room_origin[0] + bounding_box_untransformed[3],
-        room_origin[1] + bounding_box_untransformed[4],
-        room_origin[2] + bounding_box_untransformed[5],
-    ];
-
-    // The water's size is the difference in min/max //
-    water.scale[0] = (bounding_box_max[0] - bounding_box_min[0]).abs();
-    water.scale[1] = (bounding_box_max[1] - bounding_box_min[1]).abs();
-    water.scale[2] = (bounding_box_max[2] - bounding_box_min[2]).abs();
-
-    // The water is centered in the middle of the bounding box //
-    water.position[0] = bounding_box_min[0] + (water.scale[0] / 2.0);
-    water.position[1] = bounding_box_min[1] + (water.scale[1] / 2.0);
-    water.position[2] = bounding_box_min[2] + (water.scale[2] / 2.0);
+    water.scale = [
+        bounding_box_extent[0]*2.0, // half-extent into full-extent
+        bounding_box_extent[1]*2.0,
+        bounding_box_extent[2]*2.0,
+    ].into();
+    water.position = room_origin.into();
 
     // add water to area //
     let scly = area.mrea().scly_section_mut();
@@ -3901,8 +3874,17 @@ fn derrive_bounding_box_measurements<'r>(
     let area_transform: [f32;12] = area.mlvl_area.area_transform.into();
     let bounding_box_untransformed: [f32;6] = area.mlvl_area.area_bounding_box.into();
 
-    let bounding_box_min = local_to_global_tranform(area_transform, [bounding_box_untransformed[0], bounding_box_untransformed[1], bounding_box_untransformed[2]]);
-    let bounding_box_max = local_to_global_tranform(area_transform, [bounding_box_untransformed[3], bounding_box_untransformed[4], bounding_box_untransformed[5]]);
+    let mut bounding_box_min = local_to_global_tranform(area_transform, [bounding_box_untransformed[0], bounding_box_untransformed[1], bounding_box_untransformed[2]]);
+    let mut bounding_box_max = local_to_global_tranform(area_transform, [bounding_box_untransformed[3], bounding_box_untransformed[4], bounding_box_untransformed[5]]);
+
+    // min might not be min anymore after the transformation
+    for i in 0..3 {
+        if bounding_box_min[i] > bounding_box_max[i] {
+            let temp = bounding_box_min[i];
+            bounding_box_min[i] = bounding_box_max[i];
+            bounding_box_max[i] = temp;
+        }
+    }
 
     let bounding_box_extent = [
         (bounding_box_max[0] - bounding_box_min[0]) / 2.0,
