@@ -630,6 +630,56 @@ fn patch_door<'r>(
             ),
         };
 
+        // Find the door open trigger
+        let mut door_open_trigger_id = 0;
+        for obj in layers[0].objects.as_mut_vec() {
+            if !obj.property_data.is_trigger() {
+                continue;
+            }
+
+            let mut is_the_trigger = false;
+            for conn in obj.connections.as_mut_vec() {
+                if conn.target_object_id&0x00FFFFFF == door_loc.door_location.unwrap().instance_id&0x00FFFFFF {
+                    is_the_trigger = true;
+                    break;
+                }
+            }
+
+            if !is_the_trigger {
+                continue;
+            }
+
+            door_open_trigger_id = obj.instance_id;
+
+            break;
+        }
+
+        assert!(door_open_trigger_id != 0);
+
+        blast_shield.connections.as_mut_vec().push(
+            structs::Connection {
+                state: structs::ConnectionState::DEAD,
+                message: structs::ConnectionMsg::SET_TO_ZERO,
+                target_object_id: door_loc.door_location.unwrap().instance_id,
+            }
+        );
+        blast_shield.connections.as_mut_vec().push(
+            structs::Connection {
+                state: structs::ConnectionState::DEAD,
+                message: structs::ConnectionMsg::ACTIVATE,
+                target_object_id: door_open_trigger_id,
+            }
+        );
+        for loc in door_loc.door_shield_locations {
+            blast_shield.connections.as_mut_vec().push(
+                structs::Connection {
+                    state: structs::ConnectionState::DEAD,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: loc.instance_id,
+                }
+            );
+        }
+
         // Create Special Function to disable layer once shield is destroyed
         // This is needed because otherwise the shield would re-appear every
         // time the room is loaded
