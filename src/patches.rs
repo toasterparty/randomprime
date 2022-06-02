@@ -493,7 +493,7 @@ fn patch_door<'r>(
             .and_then(|obj| obj.property_data.as_actor_mut())
             .unwrap();
 
-        let is_vertical = DoorType::from_cmdl(&door_shield.cmdl.to_u32()).unwrap().is_vertical();
+        let is_vertical = DoorType::from_cmdl(&door_shield.cmdl.to_u32()).is_vertical();
 
         let special_function_id = ps.fresh_instance_id_range.next().unwrap();
         let blast_shield_instance_id = ps.fresh_instance_id_range.next().unwrap();

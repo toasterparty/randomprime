@@ -907,26 +907,17 @@ impl DoorType {
         }
     }
 
-    pub fn from_cmdl (cmdl: &u32) -> Option<Self> {
+    pub fn from_cmdl (cmdl: &u32) -> Self {
         match cmdl {
-            0x0734977A => Some(DoorType::Blue),
-            0x33188D1B => Some(DoorType::Purple),
-            0x59649E9D => Some(DoorType::White),
-            0xBBBA1EC7 => Some(DoorType::Red),
-            0x18D0AEE6 => Some(DoorType::VerticalBlue),
-            0x095B0B93 => Some(DoorType::VerticalPurple),
-            0xB7A8A4C9 => Some(DoorType::VerticalWhite),
-            _ => None,
-        }
-    }
-
-    pub fn from_txtr (txtr: &u32) -> Option<Self> {
-        match txtr {
-            0x8A7F3683 => Some(DoorType::Blue),
-            0xF68DF7F1 => Some(DoorType::Purple),
-            0xBE4CD99D => Some(DoorType::White),
-            0xFC095F6C => Some(DoorType::Red),
-            _ => None,
+            0x0734977A => DoorType::Blue,
+            0xD5D49F54 => DoorType::Blue,
+            0x33188D1B => DoorType::Purple,
+            0x59649E9D => DoorType::White,
+            0xBBBA1EC7 => DoorType::Red,
+            0x18D0AEE6 => DoorType::VerticalBlue,
+            0x095B0B93 => DoorType::VerticalPurple,
+            0xB7A8A4C9 => DoorType::VerticalWhite,
+            _ => panic!("Unhandled cmdl id when derriving door type: 0x{:X}", cmdl),
         }
     }
 }
