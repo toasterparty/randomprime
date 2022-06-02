@@ -910,10 +910,11 @@ impl DoorType {
     pub fn from_cmdl (cmdl: &u32) -> Self {
         match cmdl {
             0x0734977A => DoorType::Blue,
-            0xD5D49F54 => DoorType::Blue,
+            0xD5D49F54 => DoorType::Blue, // Tallon Cargo Freight Lift
             0x33188D1B => DoorType::Purple,
             0x59649E9D => DoorType::White,
             0xBBBA1EC7 => DoorType::Red,
+            0x1E6337B6 => DoorType::Red, // MQB (Save Station Door)
             0x18D0AEE6 => DoorType::VerticalBlue,
             0x095B0B93 => DoorType::VerticalPurple,
             0xB7A8A4C9 => DoorType::VerticalWhite,
