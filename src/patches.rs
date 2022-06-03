@@ -244,6 +244,52 @@ fn patch_artifact_totem_scan_strg(res: &mut structs::Resource, text: &str)
     Ok(())
 }
 
+fn build_lore_scan_strings<R>(
+    level_data: &HashMap<String, LevelConfig>,
+    rng: &mut R,
+    lore_hints: Option<HashMap<String,String>>,
+)
+    -> [String; 32]
+    where R: Rng
+{
+    let mut scan_text = [
+        String::new(), String::new(), String::new(), String::new(), 
+        String::new(), String::new(), String::new(), String::new(), 
+        String::new(), String::new(), String::new(), String::new(), 
+        String::new(), String::new(), String::new(), String::new(), 
+        String::new(), String::new(), String::new(), String::new(), 
+        String::new(), String::new(), String::new(), String::new(), 
+        String::new(), String::new(), String::new(), String::new(), 
+        String::new(), String::new(), String::new(), String::new(), 
+    ];
+
+    // for i in 0..scan_text.len() {
+    //     scan_text[i] = format!("Your hint is in another castle... {}\0", i);
+    // }
+
+    let mut i = 0;
+    if lore_hints.is_some() {
+        for (lore_name, hint) in lore_hints.unwrap() {
+            // scan_text[i] = format!("{} {}\0", lore_name, hint);
+            scan_text[i] = format!("{}\0", hint);
+            i += 1;
+        }
+    }
+
+    scan_text
+}
+
+fn patch_lore_scan_strg(res: &mut structs::Resource, text: &str)
+    -> Result<(), String>
+{
+    let strg = res.kind.as_strg_mut().unwrap();
+    for st in strg.string_tables.as_mut_vec().iter_mut() {
+        let strings = st.strings.as_mut_vec();
+        *strings.last_mut().unwrap() = text.to_owned().into();
+    }
+    Ok(())
+}
+
 fn patch_save_banner_txtr(res: &mut structs::Resource)
     -> Result<(), String>
 {
@@ -11814,6 +11860,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
     let artifact_totem_strings = build_artifact_temple_totem_scan_strings(&level_data, &mut rng, config.artifact_hints.clone());
 
+    let lore_strings = build_lore_scan_strings(&level_data, &mut rng, config.lore_hints.clone());
+
     let show_starting_memo = config.starting_memo.is_some();
 
     let starting_memo = {
@@ -12807,6 +12855,51 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 move |res| patch_artifact_totem_scan_strg(res, &strg_text),
             );
         }
+
+        const LORE_SCAN_STRGS: &[ResourceInfo] = &[
+            // Choze Lore
+            resource_info!("0q_connectChozo Lore 001.STRG"),    // Fountain
+            resource_info!("Chozo Lore 002.STRG"),              // Exodus
+            resource_info!("Chozo Lore 003.STRG"),              // Meteor Strike
+            resource_info!("Chozo Lore 004.STRG"),              // Contain
+            //resource_info!("Chozo Lore 006.STRG"),              // Newborn
+            resource_info!("Chozo Lore 007.STRG"),              // Cipher
+            resource_info!("Chozo Lore 008.STRG"),              // The Turned
+            resource_info!("Chozo Lore 009 scan.STRG"),         // Infestation
+            resource_info!("Chozo Lore 011 scan.STRG"),         // Worm
+            resource_info!("Chozo Lore 012.STRG"),              // Hope
+            resource_info!("Chozo Lore 012 scan.STRG"),         // Hatchling's Shell
+            resource_info!("Chozo Lore 013.STRG"),              // Binding
+            resource_info!("Chozo Lore 014.STRG"),              // Beginnings
+            resource_info!("Chozo Lore 015.STRG"),              // Statuary
+            //resource_info!("16_Furnances Chozo Lore.STRG"),     // Cradle
+            resource_info!("Chozo Lore 017.STRG"),              // Hatchling
+
+            // Pirate Logs
+            resource_info!("Pirate log 004.STRG"),   // Phazon Analysis
+            resource_info!("Pirate log 005.STRG"),   // Phazon Program
+            resource_info!("Pirate log 008.STRG"),   // Mining Status
+            resource_info!("Pirate log 010.STRG"),   // Security Breaches
+            resource_info!("Pirate log 011.STRG"),   // Meta Ridley
+            resource_info!("Pirate log 013.STRG"),   // The Hunter
+            resource_info!("Pirate log 014.STRG"),   // Phazon Infusion
+            resource_info!("Pirate log 015.STRG"),   // Metroid Prime
+            resource_info!("Pirate log 016.STRG"),   // Prime Breach
+            resource_info!("Pirate log 017.STRG"),   // Prime Mutations
+            // resource_info!("Pirate log 021.STRG"),   // Metroid Morphology
+            // resource_info!("Pirate log 022.STRG"),   // Metroid Forces
+            //resource_info!("Pirate log 024.STRG"),   // Hunter Weapons
+            //esource_info!("Pirate log 025.STRG"),   // Chozo Studies
+            //resource_info!("Pirate log 026.STRG"),   // Chozo Artifacts
+            //resource_info!("Pirate log 027.STRG"),   // Chozo Ghosts
+        ];
+        for (res_info, strg_text) in LORE_SCAN_STRGS.iter().zip(lore_strings.iter()) {
+            patcher.add_resource_patch(
+                (*res_info).into(),
+                move |res| patch_lore_scan_strg(res, &strg_text),
+            );
+        }
+
         patcher.add_scly_patch(
             resource_info!("07_stonehenge.MREA").into(),
             |_ps, area| patch_tournament_winners(_ps, area, game_resources)
