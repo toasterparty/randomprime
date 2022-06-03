@@ -553,6 +553,7 @@ pub struct PatchConfig
     pub results_string: Option<String>,
     pub artifact_hints: Option<HashMap<String,String>>, // e.g. "Strength":"This item can be found in Ruined Fountain"
     pub artifact_temple_layer_overrides: Option<HashMap<String,bool>>,
+    pub lore_hints: Option<HashMap<String,String>>,
     pub no_doors: bool,
     pub boss_sizes: HashMap<String,f32>,
     pub ctwk_config: CtwkConfig,
@@ -638,6 +639,7 @@ struct GameConfig
     results_string: Option<String>,
     artifact_hints: Option<HashMap<String,String>>, // e.g. "Strength":"This item can be found in Ruined Fountain"
     artifact_temple_layer_overrides: Option<HashMap<String,bool>>,
+    lore_hints: Option<HashMap<String,String>>,
     no_doors: Option<bool>, // Remove every door from the game
     boss_sizes: Option<HashMap<String,f32>>,
 }
@@ -1156,6 +1158,7 @@ impl PatchConfigPrivate
             credits_string,
             results_string,
             artifact_hints: self.game_config.artifact_hints.clone(),
+            lore_hints: self.game_config.lore_hints.clone(),
 
             ctwk_config: self.tweaks.clone(),
         })
