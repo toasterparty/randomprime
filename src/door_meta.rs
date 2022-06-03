@@ -1027,7 +1027,7 @@ impl BlastShieldType {
         match self {
             BlastShieldType::PowerBomb    => vec!["There is an Advanced Blast Shield on the door blocking access. Analysis indicates that the Blast Shield is reinforced\0".to_string(),
                                                   "\0".to_string(),
-                                                  "with &push;&main-color=#D91818;Bendenzium&pop;, rendering it invulnerable to most weapons.\0".to_string(),
+                                                  "with &push;&main-color=#D91818;Bendezium&pop;, rendering it invulnerable to most weapons.\0".to_string(),
                                                  ],
             BlastShieldType::Super        => vec!["There is an Advanced Blast Shield on the door blocking access. Analysis indicates that the Blast Shield is reinforced\0".to_string(),
                                                   "\0".to_string(),
