@@ -503,48 +503,67 @@ fn patch_door<'r>(
         // Calculate placement //
         let position: GenericArray<f32, U3>;
         let rotation: GenericArray<f32, U3>;
-        let scale: GenericArray<f32, U3> = [1.0, 1.5, 1.5].into();
+        let scale: GenericArray<f32, U3>;
         let hitbox: GenericArray<f32, U3>;
         let scan_offset: GenericArray<f32, U3>;
 
-        if door_shield.rotation[2] >= 45.0 && door_shield.rotation[2] < 135.0 {
-            // Leads North
-            position    = [door_shield.position[0], door_shield.position[1] + 0.2, door_shield.position[2] - 1.8017].into();
-            rotation    = [door_shield.rotation[0], door_shield.rotation[1], door_shield.rotation[2]].into();
-            hitbox      = [5.0, 0.5, 4.0].into();
-            scan_offset = [0.0, -1.0, 2.0].into();
-
-        } else if (door_shield.rotation[2] >= 135.0 && door_shield.rotation[2] < 225.0) || (door_shield.rotation[2] < -135.0 && door_shield.rotation[2] > -225.0) {
-            // Leads East
-            position    = [door_shield.position[0] + 0.2, door_shield.position[1], door_shield.position[2] - 1.8017].into();
-            rotation    = [door_shield.rotation[0], door_shield.rotation[1], 0.0].into();
-            hitbox      = [0.5, 5.0, 4.0].into();
-            scan_offset = [-1.0, 0.0, 2.0].into();
-
-        } else if door_shield.rotation[2] >= -135.0 && door_shield.rotation[2] < -45.0 {
-            // Leads South
-            position    = [door_shield.position[0], door_shield.position[1] - 0.2, door_shield.position[2] - 1.8017].into();
-            rotation    = [door_shield.rotation[0], door_shield.rotation[1], door_shield.rotation[2]].into();
-            hitbox      = [5.0, 0.5, 4.0].into();
-            scan_offset = [0.0, 1.0, 2.0].into();
-
-        } else if door_shield.rotation[2] >= -45.0 && door_shield.rotation[2] < 45.0 {
-            // Leads West
-            position    = [door_shield.position[0] - 0.2, door_shield.position[1], door_shield.position[2] - 1.8017].into();
-            rotation    = [door_shield.rotation[0], door_shield.rotation[1], -179.99].into();
-            hitbox      = [0.5, 5.0, 4.0].into();
-            scan_offset = [1.0, 0.0, 2.0].into();
-
-        } else {
-            assert!(false);
-            position    = [0.0, 0.0, 0.0].into();
-            rotation    = [0.0, 0.0, 0.0].into();
-            hitbox      = [0.0, 0.0, 0.0].into();
-            scan_offset = [0.0, 0.0, 0.0].into();
-        }
-
         if is_vertical {
-            panic!("Custom Blast Shields cannot be placed on vertical doors");
+            if door_loc.door_rotation.is_none() {
+                panic!("Vertical door in room {:X} didn't get position data dumped", mrea_id);
+            }
+
+            scale = [1.7, 1.7, 1.7].into();
+
+            let door_rotation = door_loc.door_rotation.unwrap();
+            if door_rotation[0] > -90.0 && door_rotation[0] < 90.0 {
+                // Ceiling door
+                position    = [door_shield.position[0] + 2.0, door_shield.position[1], door_shield.position[2] + 0.2].into();
+                rotation    = [0.0, -90.0, 0.0].into();
+                hitbox      = [5.0, 5.0, 0.8].into();
+                scan_offset = [-2.2, 0.0, -0.9].into();
+            } else if door_rotation[0] < -90.0 && door_rotation[0] > -270.0 {
+                // Floor door
+                position    = [door_shield.position[0] - 2.0, door_shield.position[1], door_shield.position[2] - 0.2].into();
+                rotation    = [0.0, 90.0, 0.0].into();
+                hitbox      = [5.0, 5.0, 0.8].into();
+                scan_offset = [2.2, 0.0, 0.9].into();
+            } else {
+                panic!("Unhandled door rotation on vertical door {:?} in room 0x{:X}", door_rotation, mrea_id);
+            }
+        } else {
+            scale = [1.0, 1.5, 1.5].into();
+
+            if door_shield.rotation[2] >= 45.0 && door_shield.rotation[2] < 135.0 {
+                // Leads North
+                position    = [door_shield.position[0], door_shield.position[1] + 0.2, door_shield.position[2] - 1.8017].into();
+                rotation    = [door_shield.rotation[0], door_shield.rotation[1], door_shield.rotation[2]].into();
+                hitbox      = [5.0, 0.5, 4.0].into();
+                scan_offset = [0.0, -1.0, 2.0].into();
+    
+            } else if (door_shield.rotation[2] >= 135.0 && door_shield.rotation[2] < 225.0) || (door_shield.rotation[2] < -135.0 && door_shield.rotation[2] > -225.0) {
+                // Leads East
+                position    = [door_shield.position[0] + 0.2, door_shield.position[1], door_shield.position[2] - 1.8017].into();
+                rotation    = [door_shield.rotation[0], door_shield.rotation[1], 0.0].into();
+                hitbox      = [0.5, 5.0, 4.0].into();
+                scan_offset = [-1.0, 0.0, 2.0].into();
+    
+            } else if door_shield.rotation[2] >= -135.0 && door_shield.rotation[2] < -45.0 {
+                // Leads South
+                position    = [door_shield.position[0], door_shield.position[1] - 0.2, door_shield.position[2] - 1.8017].into();
+                rotation    = [door_shield.rotation[0], door_shield.rotation[1], door_shield.rotation[2]].into();
+                hitbox      = [5.0, 0.5, 4.0].into();
+                scan_offset = [0.0, 1.0, 2.0].into();
+    
+            } else if door_shield.rotation[2] >= -45.0 && door_shield.rotation[2] < 45.0 {
+                // Leads West
+                position    = [door_shield.position[0] - 0.2, door_shield.position[1], door_shield.position[2] - 1.8017].into();
+                rotation    = [door_shield.rotation[0], door_shield.rotation[1], -179.99].into();
+                hitbox      = [0.5, 5.0, 4.0].into();
+                scan_offset = [1.0, 0.0, 2.0].into();
+    
+            } else {
+                panic!("Unhandled door rotation on horizontal door {:?} in room 0x{:X}", door_loc.door_rotation, mrea_id);
+            }
         }
 
         // Create new blast shield actor //
