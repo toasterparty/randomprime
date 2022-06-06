@@ -539,28 +539,28 @@ fn patch_door<'r>(
                 rotation    = [door_shield.rotation[0], door_shield.rotation[1], door_shield.rotation[2]].into();
                 hitbox      = [5.0, 0.5, 4.0].into();
                 scan_offset = [0.0, -1.0, 2.0].into();
-    
+
             } else if (door_shield.rotation[2] >= 135.0 && door_shield.rotation[2] < 225.0) || (door_shield.rotation[2] < -135.0 && door_shield.rotation[2] > -225.0) {
                 // Leads East
                 position    = [door_shield.position[0] + 0.2, door_shield.position[1], door_shield.position[2] - 1.8017].into();
                 rotation    = [door_shield.rotation[0], door_shield.rotation[1], 0.0].into();
                 hitbox      = [0.5, 5.0, 4.0].into();
                 scan_offset = [-1.0, 0.0, 2.0].into();
-    
+
             } else if door_shield.rotation[2] >= -135.0 && door_shield.rotation[2] < -45.0 {
                 // Leads South
                 position    = [door_shield.position[0], door_shield.position[1] - 0.2, door_shield.position[2] - 1.8017].into();
                 rotation    = [door_shield.rotation[0], door_shield.rotation[1], door_shield.rotation[2]].into();
                 hitbox      = [5.0, 0.5, 4.0].into();
                 scan_offset = [0.0, 1.0, 2.0].into();
-    
+
             } else if door_shield.rotation[2] >= -45.0 && door_shield.rotation[2] < 45.0 {
                 // Leads West
                 position    = [door_shield.position[0] - 0.2, door_shield.position[1], door_shield.position[2] - 1.8017].into();
                 rotation    = [door_shield.rotation[0], door_shield.rotation[1], -179.99].into();
                 hitbox      = [0.5, 5.0, 4.0].into();
                 scan_offset = [1.0, 0.0, 2.0].into();
-    
+
             } else {
                 panic!("Unhandled door rotation on horizontal door {:?} in room 0x{:X}", door_loc.door_rotation, mrea_id);
             }
@@ -2993,7 +2993,7 @@ fn modify_pickups_in_mrea<'r>(
 
 fn place_floaty_contraption<'r>(
     objects: &mut Vec<structs::SclyObject<'r>>,
-    timer1_id: u32, // send RESET_AND_START to this ID to give floaty 
+    timer1_id: u32, // send RESET_AND_START to this ID to give floaty
     timer2_id: u32,
     water_id: u32,
     camera_id: u32,
@@ -4588,11 +4588,7 @@ fn patch_landing_site_cutscene_triggers(
 ) -> Result<(), String>
 {
     // make memory relays active by default
-    for mem_relay in area.memory_relay_conns.iter_mut() {
-        if mem_relay.sender_id & 0x0000FFFF == 0x143 {
-            mem_relay.active = 1;
-        }
-    }
+    area.toggle_memory_relay(0x00000143, 1);
 
     let layer = area.mrea().scly_section_mut().layers.iter_mut().next().unwrap();
 

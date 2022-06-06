@@ -63,6 +63,29 @@ impl<'r, 'mlvl, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'cursor, 'list>
         x.kind.as_mrea_mut().unwrap()
     }
 
+    pub fn toggle_memory_relay(&mut self, mem_relay_id: u32, active: u8)
+    {
+        let layer_id = ((mem_relay_id >> 26) & 0x1f) as usize;
+
+        for mem_relay in self.memory_relay_conns.iter_mut() {
+            if mem_relay.sender_id == mem_relay_id {
+                mem_relay.active = active;
+            }
+        }
+
+        let layers = self.mrea()
+                         .scly_section_mut()
+                         .layers
+                         .as_mut_vec();
+
+        layers[layer_id].objects
+                        .iter_mut()
+                        .find(|obj| obj.instance_id == mem_relay_id)
+                        .and_then(|obj| obj.property_data.as_memory_relay_mut())
+                        .unwrap()
+                        .active = active;
+    }
+
     pub fn add_layer(&mut self, name: CStr<'r>)
     {
         // Mark this layer as active
