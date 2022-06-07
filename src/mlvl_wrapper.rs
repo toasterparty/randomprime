@@ -1,5 +1,5 @@
 use structs::{
-    Area, AreaLayerFlags, Dependency, MemoryRelayConn, Mlvl, Mrea, SclyLayer, Resource,
+    Area, AreaLayerFlags, Dependency, MemoryRelayConn, Mlvl, Mrea, SclyLayer, SclyObject, Resource,
     ResourceListCursor
 };
 use reader_writer::{CStr, FourCC, LazyArray};
@@ -63,14 +63,39 @@ impl<'r, 'mlvl, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'cursor, 'list>
         x.kind.as_mrea_mut().unwrap()
     }
 
-    pub fn toggle_memory_relay(&mut self, mem_relay_id: u32, active: u8)
+    pub fn set_memory_relay_active(&mut self, mem_relay_id: u32, active: u8)
     {
         let layer_id = ((mem_relay_id >> 26) & 0x1f) as usize;
+
+        let layers = self.mrea()
+                         .scly_section_mut()
+                         .layers
+                         .as_mut_vec();
+
+        if layers[layer_id].objects.iter_mut().find(|obj| obj.instance_id == mem_relay_id).is_none() {
+            panic!("[set_memory_relay_active] mem_relay doesn't exist! (ID : {:X})", mem_relay_id);
+        }
+
+        layers[layer_id].objects
+                        .iter_mut()
+                        .find(|obj| obj.instance_id == mem_relay_id)
+                        .and_then(|obj| obj.property_data.as_memory_relay_mut())
+                        .unwrap()
+                        .active = active;
 
         for mem_relay in self.memory_relay_conns.iter_mut() {
             if mem_relay.sender_id == mem_relay_id {
                 mem_relay.active = active;
             }
+        }
+    }
+
+    pub fn add_memory_relay(&mut self, mem_relay: SclyObject<'r>)
+    {
+        let layer_id = ((mem_relay.instance_id >> 26) & 0x1f) as usize;
+
+        if !mem_relay.property_data.is_memory_relay() {
+            panic!("[add_memory_relay] mem_relay is not a memory relay object! (ID : {:X})", mem_relay.instance_id);
         }
 
         let layers = self.mrea()
@@ -79,11 +104,19 @@ impl<'r, 'mlvl, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'cursor, 'list>
                          .as_mut_vec();
 
         layers[layer_id].objects
-                        .iter_mut()
-                        .find(|obj| obj.instance_id == mem_relay_id)
-                        .and_then(|obj| obj.property_data.as_memory_relay_mut())
-                        .unwrap()
-                        .active = active;
+                        .as_mut_vec()
+                        .push(mem_relay.clone());
+
+        for conn in mem_relay.connections.iter() {
+            self.memory_relay_conns
+                .as_mut_vec()
+                .push(MemoryRelayConn {
+                    sender_id: mem_relay.instance_id,
+                    target_id: conn.target_object_id,
+                    message: conn.message.0 as u16,
+                    active: 1
+                });
+        }
     }
 
     pub fn add_layer(&mut self, name: CStr<'r>)

@@ -4588,7 +4588,7 @@ fn patch_landing_site_cutscene_triggers(
 ) -> Result<(), String>
 {
     // make memory relays active by default
-    area.toggle_memory_relay(0x00000143, 1);
+    area.set_memory_relay_active(0x00000143, 1);
 
     let layer = area.mrea().scly_section_mut().layers.iter_mut().next().unwrap();
 
