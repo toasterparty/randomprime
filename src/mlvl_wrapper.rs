@@ -71,21 +71,15 @@ impl<'r, 'mlvl, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'cursor, 'list>
     {
         let layer_name_nul = format!("{}\0", layer_name);
         let c_layer_name = (*(&layer_name_nul[..])).as_bytes().as_cstr();
-        let mut i: i32 = 0;
-        let mut layer_id: i32 = -1;
-        for l_name in self.layer_names.iter_mut() {
-            if (*l_name).eq(&(c_layer_name.to_owned())) {
-                layer_id = i;
-                break;
-            }
-            i += 1;
-        }
+        let layer_id = self.layer_names
+                           .iter()
+                           .position(|x| x.eq(&(c_layer_name.to_owned())));
 
-        if layer_id < 0 {
+        if layer_id.is_none() {
             panic!("Layer {} doesn't exist", layer_name);
         }
 
-        layer_id as usize
+        layer_id.unwrap()
     }
 
     pub fn new_object_id_from_layer_name(&mut self, layer_name: &str) -> u32
