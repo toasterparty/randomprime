@@ -1679,7 +1679,8 @@ fn patch_remove_water<'r>(
 pub enum WaterType {
     Normal,
     Poision,
-    Lava
+    Lava,
+    Phazon,
 }
 
 impl WaterType
@@ -1689,7 +1690,23 @@ impl WaterType
             WaterType::Normal,
             WaterType::Poision,
             WaterType::Lava,
+            WaterType::Phazon,
         ].iter().map(|i| *i)
+    }
+
+    pub fn from_str(string: &str) -> Self {
+        let string = string.to_lowercase();
+        if string == "water" || string == "normal" {
+            WaterType::Normal
+        } else if string == "poison" || string == "acid" {
+            WaterType::Poision
+        } else if string == "lava" || string == "magma" {
+            WaterType::Lava
+        } else if string == "phazon" {
+            WaterType::Phazon
+        } else {
+            panic!("Unknown Liquid Type '{}'", string)
+        }
     }
 
     pub fn dependencies(&self) -> Vec<(u32, FourCC)>
@@ -2022,6 +2039,11 @@ impl WaterType
                 unknown55: 4294967295,
                 crash_the_game: 0
             }))},
+            WaterType::Phazon => {
+                let mut obj = WaterType::Normal.to_obj();
+                obj.property_data.as_water_mut().unwrap().fluid_type = 3;
+                obj
+            },
         }
     }
 }
@@ -2073,18 +2095,7 @@ fn patch_add_liquid<'r>(
 )
 -> Result<(), String>
 {
-    let water_type = {
-        let liquid_type = water_config.liquid_type.to_lowercase();
-        if liquid_type == "water" || liquid_type == "normal" {
-            WaterType::Normal
-        } else if liquid_type == "poison" || liquid_type == "acid" {
-            WaterType::Poision
-        } else if liquid_type == "lava" || liquid_type == "magma" {
-            WaterType::Lava
-        } else {
-            panic!("Unknown Liquid Type '{}'", liquid_type);
-        }
-    };
+    let water_type = WaterType::from_str(water_config.liquid_type.as_str());
 
     // add dependencies to area //
     let deps = water_type.dependencies();
