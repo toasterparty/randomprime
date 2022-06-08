@@ -7062,27 +7062,23 @@ fn patch_completion_screen(
 }
 
 fn patch_starting_pickups<'r>(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     starting_items: &StartingItems,
     show_starting_memo: bool,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
 ) -> Result<(), String>
 {
-    let room_id = area.mlvl_area.internal_id;
-    let layer_count = area.mrea().scly_section_mut().layers.as_mut_vec().len() as u32;
-
+    let mut timer_starting_items_popup_id = 0;
+    let mut hud_memo_starting_items_popup_id = 0;
+    let mut memory_relay_starting_items_popup_id = 0;
     if show_starting_memo {
-        // Turn on "Randomizer - Starting Items popup Layer"
-        area.layer_flags.flags |= 1 << layer_count;
-        area.add_layer(b"Randomizer - Starting Items popup Layer\0".as_cstr());
+        timer_starting_items_popup_id = area.new_object_id_from_layer_name("Default");
+        hud_memo_starting_items_popup_id = area.new_object_id_from_layer_name("Default");
+        memory_relay_starting_items_popup_id = area.new_object_id_from_layer_name("Default");
     }
 
     let scly = area.mrea().scly_section_mut();
-
-    let timer_starting_items_popup_id = ps.fresh_instance_id_range.next().unwrap();
-    let hud_memo_starting_items_popup_id = ps.fresh_instance_id_range.next().unwrap();
-    let special_function_starting_items_popup_id = ps.fresh_instance_id_range.next().unwrap();
 
     for layer in scly.layers.iter_mut() {
         for obj in layer.objects.iter_mut() {
@@ -7093,7 +7089,7 @@ fn patch_starting_pickups<'r>(
     }
 
     if show_starting_memo {
-        scly.layers.as_mut_vec()[layer_count as usize].objects.as_mut_vec().extend_from_slice(
+        scly.layers.as_mut_vec()[0].objects.as_mut_vec().extend_from_slice(
             &[
                 structs::SclyObject {
                     instance_id: timer_starting_items_popup_id,
@@ -7114,14 +7110,20 @@ fn patch_starting_pickups<'r>(
                         },
                         structs::Connection {
                             state: structs::ConnectionState::ZERO,
-                            message: structs::ConnectionMsg::DECREMENT,
-                            target_object_id: special_function_starting_items_popup_id,
+                            message: structs::ConnectionMsg::ACTIVATE,
+                            target_object_id: memory_relay_starting_items_popup_id,
                         },
                     ].into(),
                 },
                 structs::SclyObject {
                     instance_id: hud_memo_starting_items_popup_id,
-                    connections: vec![].into(),
+                    connections: vec![
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::SET_TO_ZERO,
+                            target_object_id: hud_memo_starting_items_popup_id,
+                        },
+                    ].into(),
                     property_data: structs::HudMemo {
                         name: b"Starting Items popup hudmemo\0".as_cstr(),
 
@@ -7132,17 +7134,24 @@ fn patch_starting_pickups<'r>(
                         active: 1,
                     }.into(),
                 },
-                structs::SclyObject {
-                    instance_id: special_function_starting_items_popup_id,
-                    connections: vec![].into(),
-                    property_data: structs::SpecialFunction::layer_change_fn(
-                        b"Disable Starting Items popup Layer\0".as_cstr(),
-                        room_id,
-                        layer_count,
-                    ).into(),
-                },
             ]
         );
+
+        area.add_memory_relay(structs::SclyObject {
+            instance_id: memory_relay_starting_items_popup_id,
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ACTIVE,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: timer_starting_items_popup_id,
+                },
+            ].into(),
+            property_data: structs::MemoryRelay {
+                name: b"Starting Items popup Memory Relay\0".as_cstr(),
+                unknown: 0,
+                active: 0,
+            }.into(),
+        });
 
         area.add_dependencies(
             &game_resources,
