@@ -2,7 +2,7 @@ use structs::{
     Area, AreaLayerFlags, Dependency, MemoryRelayConn, Mlvl, Mrea, SclyLayer, SclyObject, Resource,
     ResourceListCursor
 };
-use reader_writer::{CStr, FourCC, LazyArray};
+use reader_writer::{CStr, CStrConversionExtension, FourCC, LazyArray};
 
 
 use std::collections::HashMap;
@@ -14,11 +14,13 @@ pub struct MlvlEditor<'r>
 
 pub struct MlvlArea<'r, 'mlvl, 'cursor, 'list>
 {
+    pub mrea_index: usize,
     pub mrea_cursor: &'cursor mut ResourceListCursor<'r, 'list>,
     pub mlvl_area: &'mlvl mut Area<'r>,
     pub layer_flags: &'mlvl mut AreaLayerFlags,
     pub layer_names: &'mlvl mut Vec<CStr<'r>>,
     pub memory_relay_conns: &'mlvl mut LazyArray<'r, MemoryRelayConn>,
+    last_assigned_object_id: u32,
 }
 
 impl<'r> MlvlEditor<'r>
@@ -41,11 +43,13 @@ impl<'r> MlvlEditor<'r>
             .find(|&(_, ref a)| a.mrea == file_id)
             .unwrap();
         MlvlArea {
+            mrea_index: i,
             mrea_cursor,
             mlvl_area: area,
             layer_flags: self.mlvl.area_layer_flags.as_mut_vec().get_mut(i).unwrap(),
             layer_names: self.mlvl.area_layer_names.mut_names_for_area(i).unwrap(),
             memory_relay_conns: &mut self.mlvl.memory_relay_conns,
+            last_assigned_object_id: 0,
         }
     }
 }
@@ -61,6 +65,61 @@ impl<'r, 'mlvl, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'cursor, 'list>
     {
         let x = self.mrea_cursor.value().unwrap();
         x.kind.as_mrea_mut().unwrap()
+    }
+
+    pub fn get_layer_id_from_name(&mut self, layer_name: &str) -> usize
+    {
+        let layer_name_nul = format!("{}\0", layer_name);
+        let c_layer_name = (*(&layer_name_nul[..])).as_bytes().as_cstr();
+        let mut i: i32 = 0;
+        let mut layer_id: i32 = -1;
+        for l_name in self.layer_names.iter_mut() {
+            if (*l_name).eq(&(c_layer_name.to_owned())) {
+                layer_id = i;
+                break;
+            }
+            i += 1;
+        }
+
+        if layer_id < 0 {
+            panic!("Layer {} doesn't exist", layer_name);
+        }
+
+        layer_id as usize
+    }
+
+    pub fn new_object_id_from_layer_name(&mut self, layer_name: &str) -> u32
+    {
+        let layer_id = self.get_layer_id_from_name(layer_name) as u32;
+        return self.new_object_id_from_layer_id(layer_id);
+    }
+
+    pub fn new_object_id_from_layer_id(&mut self, layer_id: u32) -> u32
+    {
+        let mut new_obj_id: u32 = self.last_assigned_object_id;
+        if new_obj_id == 0 {
+            // search for the last object id
+            for layer in self.mrea().scly_section_mut().layers.iter_mut() {
+                for obj in layer.objects.iter_mut() {
+                    if obj.instance_id & 0xffff > new_obj_id {
+                        new_obj_id = obj.instance_id & 0xffff
+                    }
+                }
+            }
+        }
+
+        // add one to the last object id so it's using a free slot
+        new_obj_id += 1;
+
+        // add the area id to the object id
+        new_obj_id |= (self.mrea_index as u32) << 16;
+
+        // add the layer id to the object id
+        new_obj_id |= layer_id << 26;
+
+        self.last_assigned_object_id = new_obj_id & 0xffffff;
+
+        new_obj_id
     }
 
     pub fn set_memory_relay_active(&mut self, mem_relay_id: u32, active: u8)
@@ -93,6 +152,7 @@ impl<'r, 'mlvl, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'cursor, 'list>
     pub fn add_memory_relay(&mut self, mem_relay: SclyObject<'r>)
     {
         let layer_id = ((mem_relay.instance_id >> 26) & 0x1f) as usize;
+        let active = mem_relay.property_data.as_memory_relay().unwrap().active;
 
         if !mem_relay.property_data.is_memory_relay() {
             panic!("[add_memory_relay] mem_relay is not a memory relay object! (ID : {:X})", mem_relay.instance_id);
@@ -114,7 +174,7 @@ impl<'r, 'mlvl, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'cursor, 'list>
                     sender_id: mem_relay.instance_id,
                     target_id: conn.target_object_id,
                     message: conn.message.0 as u16,
-                    active: 1
+                    active: active
                 });
         }
     }
