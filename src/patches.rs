@@ -5674,18 +5674,23 @@ fn patch_cutscene_force_phazon_suit<'r>
     Ok(())
 }
 
+// for some reason this function is vitial to everything working
+// it must get called every time we patch
 fn patch_remove_otrs<'r>
 (
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     otrs: &'static [ObjectsToRemove],
+    remove: bool,
 )
 -> Result<(), String>
 {
     let scly = area.mrea().scly_section_mut();
     let layers = &mut scly.layers.as_mut_vec();
     for otr in otrs {
-        layers[otr.layer as usize].objects.as_mut_vec().retain(|i| !otr.instance_ids.contains(&i.instance_id));
+        if remove {
+            layers[otr.layer as usize].objects.as_mut_vec().retain(|i| !otr.instance_ids.contains(&i.instance_id));
+        }
     }
     Ok(())
 }
@@ -7666,36 +7671,36 @@ fn patch_dol<'r>(
         dol_patcher.ppcasm_patch(&unlockables_read_ctor_patch)?;
     };
 
-    if version != Version::Pal && version != Version::NtscJ {
-        let missile_hud_formating_patch = ppcasm!(symbol_addr!("SetNumMissiles__20CHudMissileInterfaceFiRC13CStateManager", version) + 0x14, {
-                b          skip;
-            fmt:
-                .asciiz b"%03d/%03d";
-
-            skip:
-                stw        r30, 40(r1);// var_8(r1);
-                mr         r30, r3;
-                stw        r4, 8(r1);// var_28(r1)
-
-                lwz        r6, 4(r30);
-
-                mr         r5, r4;
-
-                lis        r4, fmt@h;
-                addi       r4, r4, fmt@l;
-
-                addi       r3, r1, 12;// arg_C
-
-                nop; // crclr      cr6;
-                bl         { symbol_addr!("sprintf", version) };
-
-                addi       r3, r1, 20;// arg_14;
-                addi       r4, r1, 12;// arg_C
-        });
-        dol_patcher.ppcasm_patch(&missile_hud_formating_patch)?;
-    }
-
     if config.qol_cosmetic {
+        if version != Version::Pal && version != Version::NtscJ {
+            let missile_hud_formating_patch = ppcasm!(symbol_addr!("SetNumMissiles__20CHudMissileInterfaceFiRC13CStateManager", version) + 0x14, {
+                    b          skip;
+                fmt:
+                    .asciiz b"%03d/%03d";
+    
+                skip:
+                    stw        r30, 40(r1);// var_8(r1);
+                    mr         r30, r3;
+                    stw        r4, 8(r1);// var_28(r1)
+    
+                    lwz        r6, 4(r30);
+    
+                    mr         r5, r4;
+    
+                    lis        r4, fmt@h;
+                    addi       r4, r4, fmt@l;
+    
+                    addi       r3, r1, 12;// arg_C
+    
+                    nop; // crclr      cr6;
+                    bl         { symbol_addr!("sprintf", version) };
+    
+                    addi       r3, r1, 20;// arg_14;
+                    addi       r4, r1, 12;// arg_C
+            });
+            dol_patcher.ppcasm_patch(&missile_hud_formating_patch)?;
+        }
+
         let powerbomb_hud_formating_patch = ppcasm!(symbol_addr!("SetBombParams__17CHudBallInterfaceFiiibbb", version) + 0x2c, {
                 b skip;
             fmt:
@@ -12167,10 +12172,13 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             if config.force_vanilla_layout {continue;}
 
             // Remove objects patch
-            if config.qol_cosmetic && !(config.shuffle_pickup_position && room_info.room_id.to_u32() == 0x40C548E9) {
+            {
+                // this is a hack because something is getting messed up with the MREA objects if this patch never gets used
+                let remove_otrs = config.qol_cosmetic && !(config.shuffle_pickup_position && room_info.room_id.to_u32() == 0x40C548E9);
+
                 patcher.add_scly_patch(
                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                    move |_ps, area| patch_remove_otrs(_ps, area, room_info.objects_to_remove),
+                    move |_ps, area| patch_remove_otrs(_ps, area, room_info.objects_to_remove, remove_otrs),
                 );
             }
 
@@ -12379,7 +12387,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 let pickup = {
                     if idx >= pickups_config_len {
                         PickupConfig {
-                            pickup_type: "Nothing".to_string(), // TODO: Could figure out the vanilla item instead
+                            pickup_type: "Nothing".to_string(),
                             curr_increase: Some(0),
                             max_increase: Some(0),
                             position: None,

@@ -201,19 +201,29 @@ impl PickupType
         panic!("Unknown Pickup Type - {}", string);
     }
 
+    // This is kind of a hack, but we need to index FJ and Nothing seperately 
+    pub fn asset_index(&self) -> u32 {
+        let kind = self.kind();
+        if kind == PickupType::Nothing.kind() && self.name() == PickupType::FloatyJump.name() {
+            kind + 1
+        } else {
+            kind
+        }
+    }
+
     /**
      * asset IDs of default text (e.g. "Power Bombs Acquired")
      */
     pub fn scan_strg(&self) -> ResId<res_id::STRG> {
-        ResId::<res_id::STRG>::new(custom_asset_ids::DEFAULT_PICKUP_SCAN_STRGS.to_u32() + self.kind())
+        ResId::<res_id::STRG>::new(custom_asset_ids::DEFAULT_PICKUP_SCAN_STRGS.to_u32() + self.asset_index())
     }
 
     pub fn scan(&self) -> ResId<res_id::SCAN> {
-        ResId::<res_id::SCAN>::new(custom_asset_ids::DEFAULT_PICKUP_SCANS.to_u32() + self.kind())
+        ResId::<res_id::SCAN>::new(custom_asset_ids::DEFAULT_PICKUP_SCANS.to_u32() + self.asset_index())
     }
 
     pub fn hudmemo_strg(&self) -> ResId<res_id::STRG> {
-        ResId::<res_id::STRG>::new(custom_asset_ids::DEFAULT_PICKUP_HUDMEMO_STRGS.to_u32() + self.kind())
+        ResId::<res_id::STRG>::new(custom_asset_ids::DEFAULT_PICKUP_HUDMEMO_STRGS.to_u32() + self.asset_index())
     }
 }
 
