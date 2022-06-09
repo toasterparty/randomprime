@@ -13714,9 +13714,11 @@ fn patch_required_artifact_count(patcher: &mut PrimePatcher, artifact_count: u32
     patcher.add_scly_patch(
         resource_info!("07_stonehenge.MREA").into(),
         move |_patcher, area| {
-            let scly = area.mrea().scly_section_mut();
+            let layer_index = area.get_layer_id_from_name("Monoliths and Ridley");
+            
+            let scly = area.mrea().scly_section_mut();            
 
-            let layer = &mut scly.layers.as_mut_vec()[1]; // Monoliths and Ridley
+            let layer = &mut scly.layers.as_mut_vec()[layer_index];
 
             if artifact_count == 0 {
                 for obj in layer.objects.iter_mut() {
