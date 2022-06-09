@@ -5,7 +5,6 @@ use crate::mlvl_wrapper::{MlvlArea, MlvlEditor};
 
 use std::{
     collections::{HashMap, HashSet},
-    ops::RangeFrom,
 };
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, Debug)]
@@ -32,9 +31,11 @@ pub struct PrimePatcher<'r, 's>
     scly_patches: Vec<(MreaKey<'s>, Vec<Box<SclyPatch<'r, 's>>>)>,
 }
 
+#[derive(Default)]
 pub struct PatcherState
 {
-    pub fresh_instance_id_range: RangeFrom<u32>,
+    #[deprecated(note = "Please use mlvl_wrapper.MlvlArea.new_object_id_from_layer_id/name instead!")]
+    pub fresh_instance_id_range: (),
 }
 
 impl<'r, 's> PrimePatcher<'r, 's>
@@ -84,9 +85,7 @@ impl<'r, 's> PrimePatcher<'r, 's>
 
     pub fn run(&mut self, gc_disc: &mut GcDisc<'r>) -> Result<(), String>
     {
-        let mut patcher_state = PatcherState {
-            fresh_instance_id_range: 0xDEADBABE..
-        };
+        let mut patcher_state = PatcherState::default();
 
         let files_to_patch = self.file_patches.keys()
             .map(|k| *k)

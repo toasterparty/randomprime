@@ -444,7 +444,7 @@ fn patch_map_door_icon(
 }
 
 fn patch_door<'r>(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     door_loc: DoorLocation,
     door_type: Option<DoorType>,
@@ -463,12 +463,7 @@ fn patch_door<'r>(
         deps.extend_from_slice(&door_type.as_ref().unwrap().dependencies());
     }
 
-    let mut blast_shield_layer_idx = 0;
     if blast_shield_type.is_some() {
-        // Create new layer to store the new blast shield //
-        area.add_layer(b"Custom Shield Layer\0".as_cstr());
-        blast_shield_layer_idx = area.layer_flags.layer_count as usize - 1;
-
         // Add dependencies
         deps.extend_from_slice(&blast_shield_type.as_ref().unwrap().dependencies());
     }
@@ -481,11 +476,42 @@ fn patch_door<'r>(
 
     area.add_dependencies(&door_resources, 0, deps_iter);
 
-    let area_internal_id = area.mlvl_area.internal_id;
+    // Add blast shield
+    let mut memory_relay_id = 0;
+    let mut blast_shield_instance_id = 0;
+    let mut sound_id = 0;
+    let mut streamed_audio_id = 0;
+
+    if blast_shield_type.is_some() {
+        memory_relay_id = area.new_object_id_from_layer_name("Default");
+        blast_shield_instance_id = area.new_object_id_from_layer_name("Default");
+        sound_id = area.new_object_id_from_layer_name("Default");
+        streamed_audio_id = area.new_object_id_from_layer_name("Default");
+
+        let memory_relay = structs::SclyObject {
+            instance_id: memory_relay_id,
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ACTIVE,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: blast_shield_instance_id,
+                }
+            ].into(),
+            property_data: structs::SclyProperty::MemoryRelay(
+                Box::new(structs::MemoryRelay {
+                    name: b"mymemoryrelay\0".as_cstr(),
+                    unknown: 0,
+                    active: 0,
+                })
+            ),
+        };
+
+        area.add_memory_relay(memory_relay);
+    }
+
     let scly = area.mrea().scly_section_mut();
     let layers = &mut scly.layers.as_mut_vec();
 
-    // Add blast shield
     if blast_shield_type.is_some() {
         let door_shield_location = door_loc.door_shield_locations[0];
         let door_shield = layers[door_shield_location.layer as usize].objects.iter_mut()
@@ -494,9 +520,6 @@ fn patch_door<'r>(
             .unwrap();
 
         let is_vertical = DoorType::from_cmdl(&door_shield.cmdl.to_u32()).is_vertical();
-
-        let special_function_id = ps.fresh_instance_id_range.next().unwrap();
-        let blast_shield_instance_id = ps.fresh_instance_id_range.next().unwrap();
 
         let blast_shield_type = blast_shield_type.as_ref().unwrap();
 
@@ -699,40 +722,16 @@ fn patch_door<'r>(
             );
         }
 
-        // Create Special Function to disable layer once shield is destroyed
+        // Create Memory Relay to disable shield once it is destroyed
         // This is needed because otherwise the shield would re-appear every
         // time the room is loaded
-        let special_function = structs::SclyObject {
-            instance_id: special_function_id,
-            connections: vec![].into(),
-            property_data: structs::SclyProperty::SpecialFunction(
-                Box::new(structs::SpecialFunction {
-                    name: b"myspecialfun\0".as_cstr(),
-                    position: [0., 0., 0.].into(),
-                    rotation: [0., 0., 0.].into(),
-                    type_: 16, // layer change
-                    unknown0: b"\0".as_cstr(),
-                    unknown1: 0.,
-                    unknown2: 0.,
-                    unknown3: 0.,
-                    layer_change_room_id: area_internal_id,
-                    layer_change_layer_id: blast_shield_layer_idx as u32,
-                    item_id: 0,
-                    unknown4: 1, // active
-                    unknown5: 0.,
-                    unknown6: 0xFFFFFFFF,
-                    unknown7: 0xFFFFFFFF,
-                    unknown8: 0xFFFFFFFF,
-                })
-            ),
-        };
 
         // Activate the layer change when blast shield is destroyed
         blast_shield.connections.as_mut_vec().push(
             structs::Connection {
                 state: structs::ConnectionState::DEAD,
-                message: structs::ConnectionMsg::DECREMENT,
-                target_object_id: special_function_id,
+                message: structs::ConnectionMsg::ACTIVATE,
+                target_object_id: memory_relay_id,
             }
         );
 
@@ -752,8 +751,8 @@ fn patch_door<'r>(
                             obj.connections.as_mut_vec().push(
                                 structs::Connection {
                                     state: structs::ConnectionState::MAX_REACHED,
-                                    message: structs::ConnectionMsg::DECREMENT,
-                                    target_object_id: special_function_id,
+                                    message: structs::ConnectionMsg::ACTIVATE,
+                                    target_object_id: memory_relay_id,
                                 }
                             );
 
@@ -781,7 +780,7 @@ fn patch_door<'r>(
 
         // Create explosion sfx //
         let sound = structs::SclyObject {
-            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            instance_id: sound_id,
             connections: vec![].into(),
             property_data: structs::SclyProperty::Sound(
                 Box::new(structs::Sound { // copied from main plaza half-pipe
@@ -824,7 +823,7 @@ fn patch_door<'r>(
 
         // Create "You did it" Jingle //
         let streamed_audio = structs::SclyObject {
-            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            instance_id: streamed_audio_id,
             connections: vec![].into(),
             property_data: structs::SclyProperty::StreamedAudio(
                 Box::new(structs::StreamedAudio {
@@ -851,10 +850,9 @@ fn patch_door<'r>(
         );
 
         // add new script objects to layer //
-        layers[0].objects.as_mut_vec().push(special_function);
-        layers[blast_shield_layer_idx].objects.as_mut_vec().push(streamed_audio);
-        layers[blast_shield_layer_idx].objects.as_mut_vec().push(sound);
-        layers[blast_shield_layer_idx].objects.as_mut_vec().push(blast_shield);
+        layers[0].objects.as_mut_vec().push(streamed_audio);
+        layers[0].objects.as_mut_vec().push(sound);
+        layers[0].objects.as_mut_vec().push(blast_shield);
     }
 
     // Patch door vulnerability
@@ -883,7 +881,7 @@ fn patch_door<'r>(
 
 // TODO: factor out shared code with modify_pickups_in_mrea
 fn patch_add_item<'r>(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     pickup_config: &PickupConfig,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
@@ -899,7 +897,6 @@ fn patch_add_item<'r>(
 ) -> Result<(), String>
 {
     let mut rng = StdRng::seed_from_u64(seed);
-    let room_id = area.mlvl_area.internal_id;
 
     // Pickup to use for game functionality //
     let pickup_type = PickupType::from_str(&pickup_config.pickup_type);
@@ -955,15 +952,6 @@ fn patch_add_item<'r>(
         pickup_model_data.actor_params.thermal_cskr = ResId::invalid();
     }
 
-    let new_layer_idx = if area.layer_flags.layer_count < 60 {
-        let name = CString::new(format!(
-            "Randomizer - Pickup ({:?})", pickup_model_data.name)).unwrap();
-        area.add_layer(Cow::Owned(name));
-        area.layer_flags.layer_count as usize - 1
-    } else {
-        0
-    };
-
     // Add hudmemo string as dependency to room //
     let hudmemo_strg: ResId<res_id::STRG> = {
         if pickup_config.hudmemo_text.is_some() {
@@ -974,7 +962,7 @@ fn patch_add_item<'r>(
     };
 
     let hudmemo_dep: structs::Dependency = hudmemo_strg.into();
-    area.add_dependencies(game_resources, new_layer_idx, iter::once(hudmemo_dep));
+    area.add_dependencies(game_resources, 0, iter::once(hudmemo_dep));
 
     /* Add Model Dependencies */
     // Dependencies are defined externally
@@ -986,7 +974,7 @@ fn patch_add_item<'r>(
                 asset_type: fourcc,
             }
         );
-        area.add_dependencies(game_resources, new_layer_idx, deps_iter);
+        area.add_dependencies(game_resources, 0, deps_iter);
     }
     // If we aren't using an external model, use the dependencies traced by resource_tracing
     else {
@@ -997,33 +985,33 @@ fn patch_add_item<'r>(
                 asset_type: fourcc,
                 }
             );
-        area.add_dependencies(game_resources, new_layer_idx, deps_iter);
+        area.add_dependencies(game_resources, 0, deps_iter);
     }
 
     {
         let frme = ResId::<res_id::FRME>::new(0xDCEC3E77);
         let frme_dep: structs::Dependency = frme.into();
-        area.add_dependencies(game_resources, new_layer_idx, iter::once(frme_dep));
+        area.add_dependencies(game_resources, 0, iter::once(frme_dep));
     }
     let scan_id = {
         if pickup_config.scan_text.is_some() {
             let (scan, strg) = *pickup_scans.get(&pickup_hash_key).unwrap();
 
             let scan_dep: structs::Dependency = scan.into();
-            area.add_dependencies(game_resources, new_layer_idx, iter::once(scan_dep));
+            area.add_dependencies(game_resources, 0, iter::once(scan_dep));
 
             let strg_dep: structs::Dependency = strg.into();
-            area.add_dependencies(game_resources, new_layer_idx, iter::once(strg_dep));
+            area.add_dependencies(game_resources, 0, iter::once(strg_dep));
 
             scan
         }
         else
         {
             let scan_dep: structs::Dependency = pickup_type.scan().into();
-            area.add_dependencies(game_resources, new_layer_idx, iter::once(scan_dep));
+            area.add_dependencies(game_resources, 0, iter::once(scan_dep));
 
             let strg_dep: structs::Dependency = pickup_type.scan_strg().into();
-            area.add_dependencies(game_resources, new_layer_idx, iter::once(strg_dep));
+            area.add_dependencies(game_resources, 0, iter::once(strg_dep));
 
             pickup_type.scan()
         }
@@ -1125,8 +1113,9 @@ fn patch_add_item<'r>(
     // set the scan file id //
     pickup.actor_params.scan_params.scan = scan_id;
 
+    let pickup_obj_id = area.new_object_id_from_layer_name("Default");
     let mut pickup_obj = structs::SclyObject {
-        instance_id: ps.fresh_instance_id_range.next().unwrap(),
+        instance_id: pickup_obj_id,
         connections: vec![].into(),
         property_data: structs::SclyProperty::Pickup(
             Box::new(pickup)
@@ -1134,7 +1123,7 @@ fn patch_add_item<'r>(
     };
 
     let hudmemo = structs::SclyObject {
-        instance_id: ps.fresh_instance_id_range.next().unwrap(),
+        instance_id: area.new_object_id_from_layer_name("Default"),
         connections: vec![].into(),
         property_data: structs::SclyProperty::HudMemo(
             Box::new(structs::HudMemo {
@@ -1171,7 +1160,7 @@ fn patch_add_item<'r>(
 
     // create attainment audio
     let attainment_audio = structs::SclyObject {
-        instance_id: ps.fresh_instance_id_range.next().unwrap(),
+        instance_id: area.new_object_id_from_layer_name("Default"),
         connections: vec![].into(),
         property_data: structs::SclyProperty::Sound(
             Box::new(structs::Sound { // copied from main plaza half-pipe
@@ -1210,7 +1199,7 @@ fn patch_add_item<'r>(
 
     // 2022-02-08 - I had to remove this because there's a bug in the vanilla engine where playerhint -> Scan Visor doesn't holster the weapon
     // // If scan visor, and starting visor is none, then switch to combat and back to scan when obtaining scan
-    // let player_hint_id = ps.fresh_instance_id_range.next().unwrap();
+    // let player_hint_id = area.new_object_id_from_layer_name("Default");
     // let player_hint = structs::SclyObject {
     //     instance_id: player_hint_id,
     //         property_data: structs::PlayerHint {
@@ -1250,7 +1239,7 @@ fn patch_add_item<'r>(
     //     }
     // );
 
-    // let player_hint_id_2 = ps.fresh_instance_id_range.next().unwrap();
+    // let player_hint_id_2 = area.new_object_id_from_layer_name("Default");
     // let player_hint_2 = structs::SclyObject {
     //     instance_id: player_hint_id_2,
     //         property_data: structs::PlayerHint {
@@ -1282,7 +1271,7 @@ fn patch_add_item<'r>(
     //         connections: vec![].into(),
     // };
 
-    // let timer_id = ps.fresh_instance_id_range.next().unwrap();
+    // let timer_id = area.new_object_id_from_layer_name("Default");
     // let timer = structs::SclyObject {
     //     instance_id: timer_id,
     //     property_data: structs::Timer {
@@ -1310,18 +1299,88 @@ fn patch_add_item<'r>(
     //     }
     // );
 
+    // generate object IDs before borrowing scly section as mutable
+    let mut floaty_contraption_id = [0, 0, 0, 0];
+    let mut poi_id = 0;
+    let mut special_fn_artifact_layer_change_id = 0;
+    let mut memory_relay_id = 0;
+    if pickup_type == PickupType::FloatyJump {
+        floaty_contraption_id = [
+            area.new_object_id_from_layer_name("Default"),
+            area.new_object_id_from_layer_name("Default"),
+            area.new_object_id_from_layer_name("Default"),
+            area.new_object_id_from_layer_name("Default"),
+        ];
+    }
+
+    if shuffle_position || *pickup_config.jumbo_scan.as_ref().unwrap_or(&false) {
+        poi_id = area.new_object_id_from_layer_name("Default");
+    }
+
+    let pickup_kind = pickup_type.kind();
+    if pickup_kind >= 29 && pickup_kind <= 40 {
+        special_fn_artifact_layer_change_id = area.new_object_id_from_layer_name("Default");
+    }
+
+    if !pickup_config.respawn.unwrap_or(false) {
+        memory_relay_id = area.new_object_id_from_layer_name("Default");
+    }
+
     // update MREA layer with new Objects
+    let additional_connections = if pickup_config.destination.is_some() {
+        add_world_teleporter(
+            area,
+            &pickup_config.destination.clone().unwrap(),
+            version,
+        )
+    } else {
+        Vec::new()
+    };
+
+    if !pickup_config.respawn.unwrap_or(false) {
+        // Create Special Function to disable layer once item is obtained
+        // This is needed because otherwise the item would re-appear every
+        // time the room is loaded
+        let memory_relay = structs::SclyObject {
+            instance_id: memory_relay_id,
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ACTIVE,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: pickup_obj.instance_id,
+                }
+            ].into(),
+            property_data: structs::SclyProperty::MemoryRelay(
+                Box::new(structs::MemoryRelay {
+                    name: b"mymemoryrelay\0".as_cstr(),
+                    unknown: 0,
+                    active: 0,
+                })
+            ),
+        };
+
+        area.add_memory_relay(memory_relay);
+
+        // Activate the layer change when item is picked up
+        pickup_obj.connections.as_mut_vec().push(
+            structs::Connection {
+                state: structs::ConnectionState::ARRIVED,
+                message: structs::ConnectionMsg::ACTIVATE,
+                target_object_id: memory_relay_id,
+            }
+        );
+    }
+
     let scly = area.mrea().scly_section_mut();
     let layers = scly.layers.as_mut_vec();
 
     if pickup_type == PickupType::FloatyJump {
-        let floaty_contraption_id = ps.fresh_instance_id_range.next().unwrap();
         place_floaty_contraption(
             layers[0].objects.as_mut_vec(),
-            floaty_contraption_id,
-            ps.fresh_instance_id_range.next().unwrap(),
-            ps.fresh_instance_id_range.next().unwrap(),
-            ps.fresh_instance_id_range.next().unwrap(),
+            floaty_contraption_id[0],
+            floaty_contraption_id[1],
+            floaty_contraption_id[2],
+            floaty_contraption_id[3],
             pickup_position.into(),
         );
 
@@ -1329,14 +1388,13 @@ fn patch_add_item<'r>(
             structs::Connection {
                 state: structs::ConnectionState::ARRIVED,
                 message: structs::ConnectionMsg::RESET_AND_START,
-                target_object_id: floaty_contraption_id,
+                target_object_id: floaty_contraption_id[0],
             }
         );
     }
 
     if shuffle_position || *pickup_config.jumbo_scan.as_ref().unwrap_or(&false) {
-        let poi_id = ps.fresh_instance_id_range.next().unwrap();
-        layers[new_layer_idx].objects.as_mut_vec().push(
+        layers[0].objects.as_mut_vec().push(
             structs::SclyObject {
                 instance_id: poi_id,
                 connections: vec![].into(),
@@ -1365,99 +1423,57 @@ fn patch_add_item<'r>(
     }
 
     // If this is an artifact, create and push change function
-    let pickup_kind = pickup_type.kind();
     if pickup_kind >= 29 && pickup_kind <= 40 {
-        let instance_id = ps.fresh_instance_id_range.next().unwrap();
-        let function = artifact_layer_change_template(instance_id, pickup_kind);
-        layers[new_layer_idx].objects.as_mut_vec().push(function);
+        let function = artifact_layer_change_template(special_fn_artifact_layer_change_id, pickup_kind);
+        layers[0].objects.as_mut_vec().push(function);
         pickup_obj.connections.as_mut_vec().push(
             structs::Connection {
                 state: structs::ConnectionState::ARRIVED,
                 message: structs::ConnectionMsg::INCREMENT,
-                target_object_id: instance_id,
+                target_object_id: special_fn_artifact_layer_change_id,
             }
         );
     }
 
-    if !pickup_config.respawn.unwrap_or(false) && new_layer_idx != 0 {
-        // Create Special Function to disable layer once item is obtained
-        // This is needed because otherwise the item would re-appear every
-        // time the room is loaded
-        let special_function = structs::SclyObject {
-            instance_id: ps.fresh_instance_id_range.next().unwrap(),
-            connections: vec![].into(),
-            property_data: structs::SclyProperty::SpecialFunction(
-                Box::new(structs::SpecialFunction {
-                    name: b"myspecialfun\0".as_cstr(),
-                    position: [0., 0., 0.].into(),
-                    rotation: [0., 0., 0.].into(),
-                    type_: 16, // layer change
-                    unknown0: b"\0".as_cstr(),
-                    unknown1: 0.,
-                    unknown2: 0.,
-                    unknown3: 0.,
-                    layer_change_room_id: room_id,
-                    layer_change_layer_id: new_layer_idx as u32,
-                    item_id: 0,
-                    unknown4: 1, // active
-                    unknown5: 0.,
-                    unknown6: 0xFFFFFFFF,
-                    unknown7: 0xFFFFFFFF,
-                    unknown8: 0xFFFFFFFF,
-                })
-            ),
-        };
-
-        // Activate the layer change when item is picked up
-        pickup_obj.connections.as_mut_vec().push(
-            structs::Connection {
-                state: structs::ConnectionState::ARRIVED,
-                message: structs::ConnectionMsg::DECREMENT,
-                target_object_id: special_function.instance_id,
-            }
-        );
-
-        layers[new_layer_idx].objects.as_mut_vec().push(special_function);
-    }
+    layers[0].objects.as_mut_vec().push(hudmemo);
+    layers[0].objects.as_mut_vec().push(attainment_audio);
+    layers[0].objects.as_mut_vec().push(pickup_obj);
 
     if pickup_config.destination.is_some() {
-        pickup_obj.connections.as_mut_vec().extend_from_slice(
-            &add_world_teleporter(
-                layers[new_layer_idx].objects.as_mut_vec(),
-                ps,
-                &pickup_config.destination.clone().unwrap(),
-                version,
-            )
+        layers[0].objects
+                 .iter_mut()
+                 .find(|obj| obj.instance_id == pickup_obj_id)
+                 .unwrap()
+                 .connections.as_mut_vec().extend_from_slice(
+            &additional_connections
         );
     }
-
-    layers[new_layer_idx].objects.as_mut_vec().push(hudmemo);
-    layers[new_layer_idx].objects.as_mut_vec().push(attainment_audio);
-    layers[new_layer_idx].objects.as_mut_vec().push(pickup_obj);
 
     // 2022-02-08 - I had to remove this because there's a bug in the vanilla engine where playerhint -> Scan Visor doesn't holster the weapon
     // if pickup_type == PickupType::ScanVisor && no_starting_visor{
-    //     layers[new_layer_idx].objects.as_mut_vec().push(player_hint);
-    //     layers[new_layer_idx].objects.as_mut_vec().push(player_hint_2);
-    //     layers[new_layer_idx].objects.as_mut_vec().push(timer);
+    //     layers[0].objects.as_mut_vec().push(player_hint);
+    //     layers[0].objects.as_mut_vec().push(player_hint_2);
+    //     layers[0].objects.as_mut_vec().push(timer);
     // }
 
     Ok(())
 }
 
 fn add_world_teleporter<'r>(
-    objects: &mut Vec<structs::SclyObject<'r>>,
-    ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     destination: &str,
     version: Version,
 ) -> Vec<structs::Connection>
 {
     let destination = SpawnRoomData::from_str(&destination);
 
-    let world_transporter_id = ps.fresh_instance_id_range.next().unwrap();
-    let timer_id = ps.fresh_instance_id_range.next().unwrap();
-    let hudmemo_id = ps.fresh_instance_id_range.next().unwrap();
-    let player_hint_id = ps.fresh_instance_id_range.next().unwrap();
+    let world_transporter_id = area.new_object_id_from_layer_name("Default");
+    let timer_id = area.new_object_id_from_layer_name("Default");
+    let hudmemo_id = area.new_object_id_from_layer_name("Default");
+    let player_hint_id = area.new_object_id_from_layer_name("Default");
+
+    let scly = area.mrea().scly_section_mut();
+    let objects = &mut scly.layers.as_mut_vec()[0].objects.as_mut_vec();
 
     // Teleporter
     objects.push(
@@ -1602,7 +1618,7 @@ fn patch_deheat_room<'r>(
 }
 
 fn patch_superheated_room<'r>(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     heat_damage_per_sec: f32,
 )
@@ -1610,7 +1626,7 @@ fn patch_superheated_room<'r>(
 {
     let area_damage_special_function = structs::SclyObject
     {
-        instance_id: ps.fresh_instance_id_range.next().unwrap(),
+        instance_id: area.new_object_id_from_layer_name("Default"),
         connections: vec![].into(),
         property_data: structs::SclyProperty::SpecialFunction(
             Box::new(
@@ -2147,7 +2163,7 @@ fn patch_remove_tangle_weed_scan_point<'r>(
 }
 
 fn patch_add_poi<'r>(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     scan_id: ResId<res_id::SCAN>,
@@ -2155,11 +2171,12 @@ fn patch_add_poi<'r>(
     position: [f32;3],
 ) -> Result<(), String>
 {
+    let poi_id = area.new_object_id_from_layer_name("Default");
     let scly = area.mrea().scly_section_mut();
     let layers = scly.layers.as_mut_vec();
     layers[0].objects.as_mut_vec().push(
         structs::SclyObject {
-            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            instance_id: poi_id,
             connections: vec![].into(),
             property_data: structs::SclyProperty::PointOfInterest(
                 Box::new(structs::PointOfInterest {
@@ -2191,7 +2208,7 @@ fn patch_add_poi<'r>(
 }
 
 fn patch_add_scan_actor<'r>(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     position: [f32;3],
@@ -2199,10 +2216,11 @@ fn patch_add_scan_actor<'r>(
 )
 -> Result<(), String>
 {
+    let actor_id = area.new_object_id_from_layer_name("Default");
     let scly = area.mrea().scly_section_mut();
     scly.layers.as_mut_vec()[0].objects.as_mut_vec().push(
         structs::SclyObject {
-            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            instance_id: actor_id,
             connections: vec![].into(),
             property_data: structs::SclyProperty::Actor(
                 Box::new(structs::Actor {
@@ -2405,7 +2423,7 @@ where R: Rng
 }
 
 fn modify_pickups_in_mrea<'r>(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     pickup_config: &PickupConfig,
     pickup_location: pickup_meta::PickupLocation,
@@ -2486,19 +2504,6 @@ fn modify_pickups_in_mrea<'r>(
         pickup_model_data.actor_params.thermal_cskr = ResId::invalid();
     }
 
-    let name = CString::new(format!(
-            "Randomizer - Pickup ({:?})", pickup_type.name())).unwrap();
-    area.add_layer(Cow::Owned(name));
-    let new_layer_idx = area.layer_flags.layer_count as usize - 1;
-
-    let new_layer_2_idx = new_layer_idx + 1;
-    if pickup_config.respawn.unwrap_or(false) {
-        let name2 = CString::new(format!(
-            "Randomizer - Pickup ({:?})", pickup_type.name())).unwrap();
-        area.add_layer(Cow::Owned(name2));
-        area.layer_flags.flags &= !(1 << new_layer_2_idx); // layer disabled by default
-    }
-
     // Add hudmemo string as dependency to room //
     let hudmemo_strg: ResId<res_id::STRG> = {
         if pickup_config.hudmemo_text.is_some() {
@@ -2509,7 +2514,7 @@ fn modify_pickups_in_mrea<'r>(
     };
 
     let hudmemo_dep: structs::Dependency = hudmemo_strg.into();
-    area.add_dependencies(game_resources, new_layer_idx, iter::once(hudmemo_dep));
+    area.add_dependencies(game_resources, 0, iter::once(hudmemo_dep));
 
     /* Add Model Dependencies */
     // Dependencies are defined externally
@@ -2521,7 +2526,7 @@ fn modify_pickups_in_mrea<'r>(
                 asset_type: fourcc,
             }
         );
-        area.add_dependencies(game_resources, new_layer_idx, deps_iter);
+        area.add_dependencies(game_resources, 0, deps_iter);
     }
     // If we aren't using an external model, use the dependencies traced by resource_tracing
     else {
@@ -2532,33 +2537,33 @@ fn modify_pickups_in_mrea<'r>(
                 asset_type: fourcc,
                 }
             );
-        area.add_dependencies(game_resources, new_layer_idx, deps_iter);
+        area.add_dependencies(game_resources, 0, deps_iter);
     }
 
     {
         let frme = ResId::<res_id::FRME>::new(0xDCEC3E77);
         let frme_dep: structs::Dependency = frme.into();
-        area.add_dependencies(game_resources, new_layer_idx, iter::once(frme_dep));
+        area.add_dependencies(game_resources, 0, iter::once(frme_dep));
     }
     let scan_id = {
         if pickup_config.scan_text.is_some() {
             let (scan, strg) = *pickup_scans.get(&pickup_hash_key).unwrap();
 
             let scan_dep: structs::Dependency = scan.into();
-            area.add_dependencies(game_resources, new_layer_idx, iter::once(scan_dep));
+            area.add_dependencies(game_resources, 0, iter::once(scan_dep));
 
             let strg_dep: structs::Dependency = strg.into();
-            area.add_dependencies(game_resources, new_layer_idx, iter::once(strg_dep));
+            area.add_dependencies(game_resources, 0, iter::once(strg_dep));
 
             scan
         }
         else
         {
             let scan_dep: structs::Dependency = pickup_type.scan().into();
-            area.add_dependencies(game_resources, new_layer_idx, iter::once(scan_dep));
+            area.add_dependencies(game_resources, 0, iter::once(scan_dep));
 
             let strg_dep: structs::Dependency = pickup_type.scan_strg().into();
-            area.add_dependencies(game_resources, new_layer_idx, iter::once(strg_dep));
+            area.add_dependencies(game_resources, 0, iter::once(strg_dep));
 
             pickup_type.scan()
         }
@@ -2575,7 +2580,69 @@ fn modify_pickups_in_mrea<'r>(
         );
     }
 
-    let room_id = area.mlvl_area.internal_id;
+    let post_pickup_relay_id = area.new_object_id_from_layer_name("Default");
+    let mut special_fn_artifact_layer_change_id = 0;
+    let mut timer_id = 0;
+    let mut trigger_id = 0;
+    let mut floaty_contraption_id = [0, 0, 0, 0];
+    let mut poi_id = 0;
+    let mut memory_relay_id = 0;
+
+    let pickup_kind = pickup_type.kind();
+    if pickup_kind >= 29 && pickup_kind <= 40 {
+        special_fn_artifact_layer_change_id = area.new_object_id_from_layer_name("Default");
+    }
+
+    if pickup_config.respawn.unwrap_or(false) {
+        timer_id = area.new_object_id_from_layer_name("Default");
+    }
+
+    if mrea_id == 0x40C548E9 {
+        trigger_id = area.new_object_id_from_layer_name("Default");
+    }
+
+    if pickup_type == PickupType::FloatyJump {
+        floaty_contraption_id = [
+            area.new_object_id_from_layer_name("Default"),
+            area.new_object_id_from_layer_name("Default"),
+            area.new_object_id_from_layer_name("Default"),
+            area.new_object_id_from_layer_name("Default"),
+        ];
+    }
+
+    if shuffle_position || *pickup_config.jumbo_scan.as_ref().unwrap_or(&false) {
+        poi_id = area.new_object_id_from_layer_name("Default");
+        memory_relay_id = area.new_object_id_from_layer_name("Default");
+
+        let memory_relay = structs::SclyObject {
+            instance_id: memory_relay_id,
+            property_data: structs::SclyProperty::MemoryRelay(
+                Box::new(structs::MemoryRelay {
+                    name: b"MemoryRelay - remove poi\0".as_cstr(),
+                    unknown: 0,
+                    active: 0,
+                })
+            ).into(),
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ACTIVE,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: poi_id,
+                }
+            ].into(),
+        };
+        area.add_memory_relay(memory_relay);
+    }
+
+    let mut world_teleporter_connections = Vec::new();
+    if pickup_config.destination.is_some() {
+        world_teleporter_connections = add_world_teleporter(
+            area,
+            &pickup_config.destination.clone().unwrap(),
+            version,
+        )
+    }
+
     let scly = area.mrea().scly_section_mut();
     let layers = scly.layers.as_mut_vec();
 
@@ -2585,7 +2652,7 @@ fn modify_pickups_in_mrea<'r>(
     // if pickup_type == PickupType::ScanVisor && no_starting_visor {
 
     // // If scan visor, and starting visor is none, then switch to combat and back to scan when obtaining scan
-    // let player_hint_id = ps.fresh_instance_id_range.next().unwrap();
+    // let player_hint_id = area.new_object_id_from_layer_name("Default");
     // let player_hint = structs::SclyObject {
     //     instance_id: player_hint_id,
     //         property_data: structs::PlayerHint {
@@ -2625,7 +2692,7 @@ fn modify_pickups_in_mrea<'r>(
     //     }
     // );
 
-    // let player_hint_id_2 = ps.fresh_instance_id_range.next().unwrap();
+    // let player_hint_id_2 = area.new_object_id_from_layer_name("Default");
     // let player_hint_2 = structs::SclyObject {
     //     instance_id: player_hint_id_2,
     //         property_data: structs::PlayerHint {
@@ -2657,7 +2724,7 @@ fn modify_pickups_in_mrea<'r>(
     //         connections: vec![].into(),
     // };
 
-    // let timer_id = ps.fresh_instance_id_range.next().unwrap();
+    // let timer_id = area.new_object_id_from_layer_name("Default");
     // let timer = structs::SclyObject {
     //     instance_id: timer_id,
     //     property_data: structs::Timer {
@@ -2686,49 +2753,35 @@ fn modify_pickups_in_mrea<'r>(
     // );
 
 
-    //     layers[new_layer_idx].objects.as_mut_vec().push(player_hint);
-    //     layers[new_layer_idx].objects.as_mut_vec().push(player_hint_2);
-    //     layers[new_layer_idx].objects.as_mut_vec().push(timer);
+    //     layers[0].objects.as_mut_vec().push(player_hint);
+    //     layers[0].objects.as_mut_vec().push(player_hint_2);
+    //     layers[0].objects.as_mut_vec().push(timer);
     // }
 
     // Add a post-pickup relay. This is used to support cutscene-skipping
-    let instance_id = ps.fresh_instance_id_range.next().unwrap();
-    let mut relay = post_pickup_relay_template(instance_id,
+    let mut relay = post_pickup_relay_template(post_pickup_relay_id,
                                             pickup_location.post_pickup_relay_connections);
 
     additional_connections.push(structs::Connection {
         state: structs::ConnectionState::ARRIVED,
         message: structs::ConnectionMsg::SET_TO_ZERO,
-        target_object_id: instance_id,
+        target_object_id: post_pickup_relay_id,
     });
 
     // If this is an artifact, insert a layer change function
-    let pickup_kind = pickup_type.kind();
     if pickup_kind >= 29 && pickup_kind <= 40 {
-        let instance_id = ps.fresh_instance_id_range.next().unwrap();
-        let function = artifact_layer_change_template(instance_id, pickup_kind);
-        layers[new_layer_idx].objects.as_mut_vec().push(function);
+        let function = artifact_layer_change_template(special_fn_artifact_layer_change_id, pickup_kind);
+        layers[0].objects.as_mut_vec().push(function);
         additional_connections.push(structs::Connection {
             state: structs::ConnectionState::ARRIVED,
             message: structs::ConnectionMsg::INCREMENT,
-            target_object_id: instance_id,
+            target_object_id: special_fn_artifact_layer_change_id,
         });
     }
 
     if pickup_config.respawn.unwrap_or(false) {
-        // add a special function that activates this pickup
-        let special_function_id = ps.fresh_instance_id_range.next().unwrap();
-        layers[new_layer_idx].objects.as_mut_vec().push(structs::SclyObject {
-            instance_id: special_function_id,
-            connections: vec![].into(),
-            property_data: structs::SpecialFunction::layer_change_fn(
-                b"Enable pickup\0".as_cstr(),
-                room_id,
-                new_layer_2_idx as u32,
-            ).into(),
-        });
-        layers[new_layer_2_idx].objects.as_mut_vec().push(structs::SclyObject {
-            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+        layers[0].objects.as_mut_vec().push(structs::SclyObject {
+            instance_id: timer_id,
             property_data: structs::Timer {
                 name: b"auto-spawn pickup\0".as_cstr(),
                 start_time: 0.001,
@@ -2745,16 +2798,10 @@ fn modify_pickups_in_mrea<'r>(
                 },
             ].into(),
         });
-        additional_connections.push(structs::Connection {
-            state: structs::ConnectionState::ARRIVED,
-            message: structs::ConnectionMsg::INCREMENT,
-            target_object_id: special_function_id
-        });
     }
 
     // Fix chapel IS
     if mrea_id == 0x40C548E9 {
-        let trigger_id = ps.fresh_instance_id_range.next().unwrap();
         additional_connections.push(
             structs::Connection {
                 state: structs::ConnectionState::ARRIVED,
@@ -2771,7 +2818,7 @@ fn modify_pickups_in_mrea<'r>(
             }
         );
 
-        layers[new_layer_idx].objects.as_mut_vec().push(
+        layers[0].objects.as_mut_vec().push(
             structs::SclyObject {
                 instance_id: trigger_id,
                 property_data: structs::Trigger {
@@ -2799,39 +2846,6 @@ fn modify_pickups_in_mrea<'r>(
                 ].into()
             }
         );
-
-        let special_fn_id = ps.fresh_instance_id_range.next().unwrap();
-        layers[new_layer_idx].objects.as_mut_vec().push(
-            structs::SclyObject {
-                instance_id: special_fn_id,
-                property_data: structs::SpecialFunction::layer_change_fn(
-                    b"SpecialFunction\0".as_cstr(),
-                    room_id,
-                    new_layer_idx as u32,
-                ).into(),
-                connections: vec![].into(),
-            }
-        );
-
-        additional_connections.push(
-            structs::Connection {
-                state: structs::ConnectionState::ARRIVED,
-                message: structs::ConnectionMsg::DECREMENT,
-                target_object_id: special_fn_id,
-            }
-        );
-    }
-
-    let floaty_contraption_id = ps.fresh_instance_id_range.next().unwrap();
-
-    if pickup_type == PickupType::FloatyJump {
-        additional_connections.push(
-            structs::Connection {
-                state: structs::ConnectionState::ARRIVED,
-                message: structs::ConnectionMsg::RESET_AND_START,
-                target_object_id: floaty_contraption_id,
-            }
-        );
     }
 
     let position: [f32; 3];
@@ -2839,12 +2853,7 @@ fn modify_pickups_in_mrea<'r>(
     {
         if pickup_config.destination.is_some() {
             additional_connections.extend_from_slice(
-                &add_world_teleporter(
-                    layers[new_layer_idx].objects.as_mut_vec(),
-                    ps,
-                    &pickup_config.destination.clone().unwrap(),
-                    version,
-                )
+                &world_teleporter_connections
             );
         }
 
@@ -2862,17 +2871,24 @@ fn modify_pickups_in_mrea<'r>(
     if pickup_type == PickupType::FloatyJump {
         place_floaty_contraption(
             layers[pickup_location.location.layer as usize].objects.as_mut_vec(),
-            floaty_contraption_id,
-            ps.fresh_instance_id_range.next().unwrap(),
-            ps.fresh_instance_id_range.next().unwrap(),
-            ps.fresh_instance_id_range.next().unwrap(),
+            floaty_contraption_id[0],
+            floaty_contraption_id[1],
+            floaty_contraption_id[2],
+            floaty_contraption_id[3],
             position.clone().into(),
+        );
+
+        additional_connections.push(
+            structs::Connection {
+                state: structs::ConnectionState::ARRIVED,
+                message: structs::ConnectionMsg::RESET_AND_START,
+                target_object_id: floaty_contraption_id[0],
+            }
         );
     }
 
     if shuffle_position || *pickup_config.jumbo_scan.as_ref().unwrap_or(&false) {
-        let poi_id = ps.fresh_instance_id_range.next().unwrap();
-        layers[new_layer_idx].objects.as_mut_vec().push(
+        layers[0].objects.as_mut_vec().push(
             structs::SclyObject {
                 instance_id: poi_id,
                 connections: vec![].into(),
@@ -2892,21 +2908,11 @@ fn modify_pickups_in_mrea<'r>(
         );
 
         // disable poi
-        let special_fn_id = ps.fresh_instance_id_range.next().unwrap();
-        layers[new_layer_idx].objects.as_mut_vec().push(structs::SclyObject {
-            instance_id: special_fn_id,
-            property_data: structs::SpecialFunction::layer_change_fn(
-                b"SpecialFunction - remove poi\0".as_cstr(),
-                room_id,
-                new_layer_idx as u32,
-            ).into(),
-            connections: vec![].into(),
-        });
         additional_connections.push(
             structs::Connection {
                 state: structs::ConnectionState::ARRIVED,
-                message: structs::ConnectionMsg::DECREMENT,
-                target_object_id: special_fn_id,
+                message: structs::ConnectionMsg::ACTIVATE,
+                target_object_id: memory_relay_id,
             }
         );
         additional_connections.push(
@@ -2919,8 +2925,8 @@ fn modify_pickups_in_mrea<'r>(
         relay.connections.as_mut_vec().push(
             structs::Connection {
                 state: structs::ConnectionState::ZERO,
-                message: structs::ConnectionMsg::DECREMENT,
-                target_object_id: special_fn_id,
+                message: structs::ConnectionMsg::ACTIVATE,
+                target_object_id: memory_relay_id,
             }
         );
         relay.connections.as_mut_vec().push(
@@ -2941,7 +2947,7 @@ fn modify_pickups_in_mrea<'r>(
         }
     }
 
-    layers[new_layer_idx].objects.as_mut_vec().push(relay);
+    layers[0].objects.as_mut_vec().push(relay);
 
     // find any overlapping POI that give "helpful" hints to the player and replace their scan text with the items //
     if qol_pickup_scans {
@@ -3410,7 +3416,12 @@ fn make_elevators_patch<'a>(
                 skip_ending_cinematic = true;
             }
 
-            patcher.add_scly_patch((elv.pak_name.as_bytes(), elv.mrea), move |ps, area| {
+            patcher.add_scly_patch((elv.pak_name.as_bytes(), elv.mrea), move |_ps, area| {
+                let mut timer_id = 0;
+                if auto_enabled_elevators {
+                    timer_id = area.new_object_id_from_layer_name("Default");
+                }
+
                 let scly = area.mrea().scly_section_mut();
                 for layer in scly.layers.iter_mut() {
                     let obj = layer.objects.iter_mut()
@@ -3435,7 +3446,7 @@ fn make_elevators_patch<'a>(
 
                     if let Some(mr_id) = mr_id {
                         layer.objects.as_mut_vec().push(structs::SclyObject {
-                            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+                            instance_id: timer_id,
                             property_data: structs::Timer {
                                 name: b"Auto enable elevator\0".as_cstr(),
 
@@ -3545,6 +3556,10 @@ fn patch_post_pq_frigate(
 ) -> Result<(), String>
 {
     let room_id = area.mlvl_area.mrea.to_u32();
+    let mut trigger_id = 0;
+    if room_id == 0x3ea190ee {
+        trigger_id = area.new_object_id_from_layer_name("Default");
+    }
     let layer_count = area.layer_flags.layer_count as usize;
     let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
     for i in 0..layer_count {
@@ -3632,7 +3647,7 @@ fn patch_post_pq_frigate(
     if room_id == 0x3ea190ee {
         layers[0].objects.as_mut_vec().push(
             structs::SclyObject {
-                instance_id: _ps.fresh_instance_id_range.next().unwrap(),
+                instance_id: trigger_id,
                 property_data: structs::Trigger {
                     name: b"Trigger\0".as_cstr(),
                     position: [184.816299, -263.740845, -86.882622].into(),
@@ -3679,7 +3694,7 @@ fn patch_post_pq_frigate(
 }
 
 fn patch_add_platform<'r>(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     position: [f32;3],
@@ -3725,10 +3740,12 @@ fn patch_add_platform<'r>(
     );
     area.add_dependencies(game_resources,0,deps_iter);
 
+    let platform_id = area.new_object_id_from_layer_name("Default");
+
     let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
     layers[0].objects.as_mut_vec().push(
         structs::SclyObject {
-            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            instance_id: platform_id,
             property_data: structs::Platform {
                 name: b"myplatform\0".as_cstr(),
 
@@ -3809,17 +3826,21 @@ fn patch_add_platform<'r>(
 }
 
 fn add_block<'r>(
-    ps: &mut PatcherState,
-    objects: &mut Vec<structs::SclyObject<'r>>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     position: [f32;3],
     scale: [f32;3],
     texture: GenericTexture,
     is_tangible: u8,
 )
 {
+    let actor_id = area.new_object_id_from_layer_name("Default");
+
+    let scly = area.mrea().scly_section_mut();
+    let objects = &mut scly.layers.as_mut_vec()[0].objects.as_mut_vec();
+
     objects.push(
         structs::SclyObject {
-            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            instance_id: actor_id,
             property_data: structs::Actor {
                 name: b"myactor\0".as_cstr(),
                 position: position.into(),
@@ -3897,7 +3918,7 @@ fn add_block<'r>(
 }
 
 fn patch_add_block<'r>(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     position: [f32;3],
@@ -3918,12 +3939,8 @@ fn patch_add_block<'r>(
     );
     area.add_dependencies(game_resources, 0, deps_iter);
 
-    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
-    let objects = layers[0].objects.as_mut_vec();
-
     add_block(
-        ps,
-        objects,
+        area,
         position,
         scale,
         texture,
@@ -3980,7 +3997,7 @@ fn derrive_bounding_box_measurements<'r>(
 }
 
 fn patch_visible_aether_boundaries<'r>(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
 )
@@ -4029,10 +4046,6 @@ fn patch_visible_aether_boundaries<'r>(
         return Ok(());
     }
 
-    let scly = area.mrea().scly_section_mut();
-    let layers = &mut scly.layers.as_mut_vec();
-    let objects = layers[0].objects.as_mut_vec();
-
     const X_SCALE_FACTOR: f32 = 1.18;
     const Y_SCALE_FACTOR: f32 = 1.18;
     const Z_SCALE_FACTOR: f32 = 1.18;
@@ -4054,8 +4067,7 @@ fn patch_visible_aether_boundaries<'r>(
         ([bounding_box_max[0], bounding_box_max[1], room_origin[2]], [0.1, 0.1, bounding_box_extent[2] * Z_SCALE_FACTOR]),
     ] {
         add_block(
-            ps,
-            objects,
+            area,
             position,
             scale,
             AETHER_BOUNDARY_TEXTURE,
@@ -4067,7 +4079,7 @@ fn patch_visible_aether_boundaries<'r>(
 }
 
 fn patch_add_escape_sequence<'r>(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     // mut time_s: f32,
     start_trigger_pos: [f32;3],
@@ -4076,11 +4088,13 @@ fn patch_add_escape_sequence<'r>(
     stop_trigger_scale: [f32;3],
 ) -> Result<(), String>
 {
+    let start_special_function_id = area.new_object_id_from_layer_name("Default");
+    let stop_special_function_id = area.new_object_id_from_layer_name("Default");
+    let start_sequence_trigger_id = area.new_object_id_from_layer_name("Default");
+    let stop_sequence_trigger_id = area.new_object_id_from_layer_name("Default");
+
     let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
     let objects = layers[0].objects.as_mut_vec();
-
-    let start_special_function_id = ps.fresh_instance_id_range.next().unwrap();
-    let stop_special_function_id = ps.fresh_instance_id_range.next().unwrap();
 
     objects.push(
         structs::SclyObject {
@@ -4111,7 +4125,7 @@ fn patch_add_escape_sequence<'r>(
 
     objects.push(
         structs::SclyObject {
-            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            instance_id: start_sequence_trigger_id,
             property_data: structs::Trigger {
                 name: b"Start Sequence Trigger\0".as_cstr(),
                 position: start_trigger_pos.into(),
@@ -4167,7 +4181,7 @@ fn patch_add_escape_sequence<'r>(
 
     objects.push(
         structs::SclyObject {
-            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            instance_id: stop_sequence_trigger_id,
             property_data: structs::Trigger {
                 name: b"stop Sequence Trigger\0".as_cstr(),
                 position: stop_trigger_pos.into(),
@@ -4198,7 +4212,7 @@ fn patch_add_escape_sequence<'r>(
 }
 
 fn patch_lock_on_point<'r>(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     position: [f32;3],
@@ -4241,10 +4255,32 @@ fn patch_lock_on_point<'r>(
         area.add_dependencies(game_resources, 0, deps_iter);
     }
 
+    let actor_id = area.new_object_id_from_layer_name("Default");
+    let mut grapple_point_id = 0;
+    let mut special_function_id = 0;
+    let mut timer_id = 0;
+    let mut poi_pre_id = 0;
+    let mut poi_post_id = 0;
+    let mut damageable_trigger_id = 0;
+    let mut add_scan_point = false;
+
+    if is_grapple {
+        grapple_point_id = area.new_object_id_from_layer_name("Default");
+        add_scan_point = true; // We don't actually need the scan points, just their assets. Could save on objects by making this false via config
+        if add_scan_point {
+            special_function_id = area.new_object_id_from_layer_name("Default");
+            timer_id = area.new_object_id_from_layer_name("Default");
+            poi_pre_id = area.new_object_id_from_layer_name("Default");
+            poi_post_id = area.new_object_id_from_layer_name("Default");
+        }
+    } else if !no_lock {
+        damageable_trigger_id = area.new_object_id_from_layer_name("Default");
+    }
+
     let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
     layers[0].objects.as_mut_vec().push(
         structs::SclyObject {
-            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            instance_id: actor_id,
             property_data: structs::Actor {
                 name: b"myactor\0".as_cstr(),
                 position: position.into(),
@@ -4321,14 +4357,9 @@ fn patch_lock_on_point<'r>(
     );
 
     if is_grapple {
-        let special_function_id = ps.fresh_instance_id_range.next().unwrap();
-        let timer_id = ps.fresh_instance_id_range.next().unwrap();
-        let poi_pre_id = ps.fresh_instance_id_range.next().unwrap();
-        let poi_post_id = ps.fresh_instance_id_range.next().unwrap();
-
         layers[0].objects.as_mut_vec().push(
             structs::SclyObject {
-                instance_id: ps.fresh_instance_id_range.next().unwrap(),
+                instance_id: grapple_point_id,
                 property_data: structs::GrapplePoint {
                     name: b"my grapple point\0".as_cstr(),
                     position: [position[0], position[1], position[2] - 0.5].into(),
@@ -4354,7 +4385,6 @@ fn patch_lock_on_point<'r>(
             },
         );
 
-        let add_scan_point = true; // We don't actually need the scan points, just their assets. Could save on objects by making this false via config
         if add_scan_point {
             layers[0].objects.as_mut_vec().push(
                 structs::SclyObject {
@@ -4456,7 +4486,7 @@ fn patch_lock_on_point<'r>(
     } else if !no_lock {
         layers[0].objects.as_mut_vec().push(
             structs::SclyObject {
-                instance_id: ps.fresh_instance_id_range.next().unwrap(),
+                instance_id: damageable_trigger_id,
                 property_data: structs::DamageableTrigger {
                     name: b"my dtrigger\0".as_cstr(),
                     position: position.into(),
@@ -4685,7 +4715,7 @@ fn patch_teleporter_destination<'r>(
 }
 
 fn patch_add_load_trigger<'r>(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
     position: [f32;3],
     scale: [f32;3],
@@ -4693,6 +4723,7 @@ fn patch_add_load_trigger<'r>(
 )
     -> Result<(), String>
 {
+    let trigger_id = area.new_object_id_from_layer_name("Default");
     let scly = area.mrea().scly_section_mut();
     let layer = &mut scly.layers.as_mut_vec()[0];
 
@@ -4731,7 +4762,7 @@ fn patch_add_load_trigger<'r>(
 
     layer.objects.as_mut_vec().push(
         structs::SclyObject {
-            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            instance_id: trigger_id,
             property_data: structs::Trigger {
                 name: b"Trigger\0".as_cstr(),
                 position: position.into(),
@@ -4756,7 +4787,7 @@ fn patch_add_load_trigger<'r>(
 }
 
 fn fix_artifact_of_truth_requirements(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
     config: &PatchConfig,
 ) -> Result<(), String>
@@ -4851,10 +4882,11 @@ fn fix_artifact_of_truth_requirements(
         }
     }
 
+    let new_relay_instance_id = area.new_object_id_from_layer_id(truth_req_layer_id as usize);
+
     let scly = area.mrea().scly_section_mut();
 
     // A relay on the new layer is created and connected to "Relay Show Progress 1"
-    let new_relay_instance_id = ps.fresh_instance_id_range.next().unwrap();
     let new_relay = structs::SclyObject {
         instance_id: new_relay_instance_id,
         connections: vec![
@@ -4946,22 +4978,24 @@ fn patch_sun_tower_prevent_wild_before_flaahgra(
 
 
 fn patch_sunchamber_prevent_wild_before_flaahgra(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea
 ) -> Result<(), String>
 {
+    let first_pass_enemies_layer_idx = area.get_layer_id_from_name("1st Pass Enemies");
+    let enable_sun_tower_layer_id = area.new_object_id_from_layer_id(first_pass_enemies_layer_idx);
+
     let scly = area.mrea().scly_section_mut();
-    let enable_sun_tower_layer_id = ps.fresh_instance_id_range.next().unwrap();
-    scly.layers.as_mut_vec()[1].objects.as_mut_vec().push(structs::SclyObject {
+    scly.layers.as_mut_vec()[first_pass_enemies_layer_idx].objects.as_mut_vec().push(structs::SclyObject {
         instance_id: enable_sun_tower_layer_id,
         connections: vec![].into(),
         property_data: structs::SpecialFunction::layer_change_fn(
             b"Enable Sun Tower Layer Change Trigger\0".as_cstr(),
             0xcf4c7aa5,
-            1,
+            first_pass_enemies_layer_idx as u32,
         ).into(),
     });
-    let flaahgra_dead_relay = scly.layers.as_mut_vec()[1].objects.iter_mut()
+    let flaahgra_dead_relay = scly.layers.as_mut_vec()[first_pass_enemies_layer_idx].objects.iter_mut()
         .find(|obj| obj.instance_id == 0x42500D4)
         .unwrap();
     flaahgra_dead_relay.connections.as_mut_vec().push(structs::Connection {
@@ -5068,15 +5102,16 @@ fn patch_lab_aether_cutscene_trigger(
 }
 
 fn patch_research_lab_aether_exploding_wall<'r>(
-    ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea
+    _ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea
 )
     -> Result<(), String>
 {
+    let id = area.new_object_id_from_layer_name("Default");
+
     // The room we're actually patching is Research Core..
     let scly = area.mrea().scly_section_mut();
     let layer = &mut scly.layers.as_mut_vec()[0];
 
-    let id = ps.fresh_instance_id_range.next().unwrap();
     let obj = layer.objects.as_mut_vec().iter_mut()
         .find(|obj| obj.instance_id == 2622568)
         .unwrap();
@@ -5248,15 +5283,17 @@ fn patch_observatory_1st_pass_softlock<'r>(_ps: &mut PatcherState, area: &mut ml
 }
 
 fn patch_main_ventilation_shaft_section_b_door<'r>(
-    ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea
+    _ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea
 )
     -> Result<(), String>
 {
+    let trigger_dooropen_id = area.new_object_id_from_layer_name("Default");
+
     let scly = area.mrea().scly_section_mut();
     let layer = &mut scly.layers.as_mut_vec()[0];
 
     layer.objects.as_mut_vec().push(structs::SclyObject {
-        instance_id: ps.fresh_instance_id_range.next().unwrap(),
+        instance_id: trigger_dooropen_id,
         property_data: structs::Trigger {
             name: b"Trigger_DoorOpen-component\0".as_cstr(),
             position: [31.232622, 442.69165, -64.20529].into(),
@@ -6123,7 +6160,7 @@ fn patch_ore_processing_destructible_rock_pal(_ps: &mut PatcherState, area: &mut
 // When deciding which objects to patch, the most significant
 // byte is ignored
 fn patch_remove_cutscenes(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
     timers_to_zero: Vec<u32>,
     mut skip_ids: Vec<u32>,
@@ -6133,7 +6170,11 @@ fn patch_remove_cutscenes(
 {
     let room_id = area.mlvl_area.mrea;
     let layer_count = area.layer_flags.layer_count as usize;
-    let scly = area.mrea().scly_section_mut();
+
+    let mut id0 = 0xFFFFFFFF;
+    if room_id == 0x0749DF46 || room_id == 0x7A3AD91E {
+        id0 = area.new_object_id_from_layer_name("Default");
+    }
 
     let mut camera_ids = Vec::<u32>::new();
     let mut spawn_point_ids = Vec::<u32>::new();
@@ -6141,6 +6182,7 @@ fn patch_remove_cutscenes(
     let mut elevator_orientation = [0.0, 0.0, 0.0];
 
     for i in 0..layer_count {
+        let scly = area.mrea().scly_section_mut();
         let layer = &mut scly.layers.as_mut_vec()[i];
 
         for obj in layer.objects.iter() {
@@ -6185,10 +6227,8 @@ fn patch_remove_cutscenes(
         }
     }
 
-    let mut id0 = 0xFFFFFFFF;
     if room_id == 0x0749DF46 || room_id == 0x7A3AD91E {
-        id0 = ps.fresh_instance_id_range.next().unwrap();
-
+        let scly = area.mrea().scly_section_mut();
         let target_object_id = {
             if room_id == 0x0749DF46 { // subchamber 2
                 0x0007000B
@@ -6220,6 +6260,8 @@ fn patch_remove_cutscenes(
 
     // for each layer
     for i in 0..layer_count {
+        let timer_id = area.new_object_id_from_layer_id(i);
+        let scly = area.mrea().scly_section_mut();
         let layer = &mut scly.layers.as_mut_vec()[i];
         let mut objs_to_add = Vec::<structs::SclyObject>::new();
 
@@ -6292,7 +6334,6 @@ fn patch_remove_cutscenes(
                     }
                 };
 
-                let timer_id = ps.fresh_instance_id_range.next().unwrap();
                 let mut timer = structs::SclyObject {
                     instance_id: timer_id,
                     property_data: structs::Timer {
@@ -6679,7 +6720,7 @@ fn patch_heat_damage_per_sec<'a>(patcher: &mut PrimePatcher<'_, 'a>, heat_damage
 }
 
 fn patch_save_station_for_warp_to_start<'r>(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     spawn_room: SpawnRoomData,
@@ -6703,12 +6744,12 @@ fn patch_save_station_for_warp_to_start<'r>(
         iter::once(custom_asset_ids::WARPING_TO_START_DELAY_STRG.into())
     );
 
+    let world_transporter_id = area.new_object_id_from_layer_name("Default");
+    let timer_id = area.new_object_id_from_layer_name("Default");
+    let hudmemo_id = area.new_object_id_from_layer_name("Default");
+    let player_hint_id = area.new_object_id_from_layer_name("Default");
     let scly = area.mrea().scly_section_mut();
     let layer = &mut scly.layers.as_mut_vec()[0];
-    let world_transporter_id = ps.fresh_instance_id_range.next().unwrap();
-    let timer_id = ps.fresh_instance_id_range.next().unwrap();
-    let hudmemo_id = ps.fresh_instance_id_range.next().unwrap();
-    let player_hint_id = ps.fresh_instance_id_range.next().unwrap();
 
     // Add world transporter leading to starting room
     layer.objects
@@ -7677,24 +7718,24 @@ fn patch_dol<'r>(
                     b          skip;
                 fmt:
                     .asciiz b"%03d/%03d";
-    
+
                 skip:
                     stw        r30, 40(r1);// var_8(r1);
                     mr         r30, r3;
                     stw        r4, 8(r1);// var_28(r1)
-    
+
                     lwz        r6, 4(r30);
-    
+
                     mr         r5, r4;
-    
+
                     lis        r4, fmt@h;
                     addi       r4, r4, fmt@l;
-    
+
                     addi       r3, r1, 12;// arg_C
-    
+
                     nop; // crclr      cr6;
                     bl         { symbol_addr!("sprintf", version) };
-    
+
                     addi       r3, r1, 20;// arg_14;
                     addi       r4, r1, 12;// arg_C
             });
@@ -8546,11 +8587,12 @@ fn patch_ctwk_ball(res: &mut structs::Resource, ctwk_config: &CtwkConfig)
 }
 
 fn patch_subchamber_five_nintendont_fix<'r>(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
 )
 -> Result<(), String>
 {
+    let trigger_id = area.new_object_id_from_layer_name("Default");
     let layers = &mut area.mrea().scly_section_mut().layers.as_mut_vec();
     let trigger = layers[0].objects.as_mut_vec()
         .iter_mut()
@@ -8563,7 +8605,7 @@ fn patch_subchamber_five_nintendont_fix<'r>(
 
     layers[0].objects.as_mut_vec().push(
         structs::SclyObject {
-            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            instance_id: trigger_id,
             connections: vec![].into(),
             property_data: structs::SclyProperty::Trigger(
                 Box::new(structs::Trigger {
@@ -8589,7 +8631,7 @@ fn patch_subchamber_five_nintendont_fix<'r>(
 }
 
 fn patch_final_boss_permadeath<'r>(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
 )
@@ -8619,6 +8661,43 @@ fn patch_final_boss_permadeath<'r>(
     {
         area.layer_flags.flags &= !(1 << layer_count); // layer disabled by default
     }
+
+    // Allocate list of ids
+    let destinations = if mrea_id == 0xA7AC009B {
+        vec![3858868330, 3883549607, 3886867740, 3851260989, 3847959174]
+    } else {
+        vec![3827358027]
+    };
+
+    let mut actor_id = 0;
+    let mut trigger_id = 0;
+    let mut hudmemo_id = 0;
+    let mut player_hint_id = 0;
+    let mut unload_subchamber_five_trigger_id = 0;
+    let mut remove_warp_timer_id = 0;
+    let mut remove_boss_timer_id = 0;
+    let mut change_layer_timer_id = 0;
+    let mut special_function_ids = Vec::<u32>::new();
+
+    if mrea_id == 0x1A666C55 {
+        actor_id = area.new_object_id_from_layer_name("Default");
+        trigger_id = area.new_object_id_from_layer_name("Default");
+        hudmemo_id = area.new_object_id_from_layer_name("Default");
+        player_hint_id = area.new_object_id_from_layer_name("Default");
+        unload_subchamber_five_trigger_id = area.new_object_id_from_layer_name("Default");
+        remove_warp_timer_id = area.new_object_id_from_layer_id(1);
+    } else {
+        remove_boss_timer_id = area.new_object_id_from_layer_id(1);
+    }
+
+    if mrea_id == 0xA7AC009B || mrea_id == 0x1A666C55
+    {
+        for _ in 0..destinations.len() {
+            special_function_ids.push(area.new_object_id_from_layer_name("Default"));
+        }
+        change_layer_timer_id = area.new_object_id_from_layer_name("Default");
+    }
+
     let layers = &mut area.mrea().scly_section_mut().layers.as_mut_vec();
     let mut objs_to_remove = Vec::<u32>::new();
     for i in 0..layer_count {
@@ -8640,21 +8719,6 @@ fn patch_final_boss_permadeath<'r>(
             }
         }
     }
-
-    // Allocate list of ids
-    let destinations = if mrea_id == 0xA7AC009B {
-        vec![3858868330, 3883549607, 3886867740, 3851260989, 3847959174]
-    } else {
-        vec![3827358027]
-    };
-
-    let mut special_function_ids = Vec::<u32>::new();
-    for _ in 0..destinations.len() {
-        special_function_ids.push(ps.fresh_instance_id_range.next().unwrap());
-    }
-
-    let actor_id = ps.fresh_instance_id_range.next().unwrap();
-    let trigger_id = ps.fresh_instance_id_range.next().unwrap();
 
     if mrea_id == 0x1A666C55 { // lair
         let essence = layers[0].objects.as_mut_vec()
@@ -8740,9 +8804,6 @@ fn patch_final_boss_permadeath<'r>(
             connections: vec![].into()
             }
         );
-
-        let hudmemo_id = ps.fresh_instance_id_range.next().unwrap();
-        let player_hint_id = ps.fresh_instance_id_range.next().unwrap();
 
         // Inform the player that they are about to be warped
         layers[0].objects
@@ -8849,7 +8910,7 @@ fn patch_final_boss_permadeath<'r>(
         // unload the previous room when entered
         layers[0].objects.as_mut_vec().push(
             structs::SclyObject {
-                instance_id: ps.fresh_instance_id_range.next().unwrap(),
+                instance_id: unload_subchamber_five_trigger_id,
                 connections: vec![
                     structs::Connection {
                         state: structs::ConnectionState::INSIDE,
@@ -8881,7 +8942,7 @@ fn patch_final_boss_permadeath<'r>(
         // Deactivate warp while essence is alive
         layers[1].objects.as_mut_vec().push(
             structs::SclyObject {
-                instance_id: ps.fresh_instance_id_range.next().unwrap(),
+                instance_id: remove_warp_timer_id,
                 property_data: structs::Timer {
                     name: b"remove warp\0".as_cstr(),
                     start_time: 0.1,
@@ -8927,7 +8988,7 @@ fn patch_final_boss_permadeath<'r>(
     {
         layers[1].objects.as_mut_vec().push(
             structs::SclyObject {
-                instance_id: ps.fresh_instance_id_range.next().unwrap(),
+                instance_id: remove_boss_timer_id,
                 property_data: structs::Timer {
                     name: b"remove boss\0".as_cstr(),
                     start_time: 0.1,
@@ -9003,7 +9064,7 @@ fn patch_final_boss_permadeath<'r>(
         }
         layers[0].objects.as_mut_vec().push(
             structs::SclyObject {
-                instance_id: ps.fresh_instance_id_range.next().unwrap(),
+                instance_id: change_layer_timer_id,
                 property_data: structs::Timer {
                     name: b"change layer\0".as_cstr(),
                     start_time: 0.1,
@@ -9245,7 +9306,7 @@ fn patch_remove_control_disabler<'r>(
 }
 
 fn patch_add_camera_hint<'r>(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     trigger_pos: [f32;3],
     trigger_scale: [f32;3],
@@ -9255,32 +9316,41 @@ fn patch_add_camera_hint<'r>(
 )
 -> Result<(), String>
 {
-    let scly = area.mrea().scly_section_mut();
-    let layer = &mut scly.layers.as_mut_vec()[0];
+    let camear_hint_id = area.new_object_id_from_layer_name("Default");
+    let camera_hint_trigger_id = area.new_object_id_from_layer_name("Default");
 
-    add_camera_hint(
-        ps,
-        layer.objects.as_mut_vec(),
+    let camera_objs = add_camera_hint(
+        camear_hint_id,
+        camera_hint_trigger_id,
         trigger_pos,
         trigger_scale,
         camera_pos,
         camera_rot,
         behavior,
     );
+
+    area.mrea()
+        .scly_section_mut()
+        .layers.as_mut_vec()[0]
+        .objects
+        .as_mut_vec()
+        .extend_from_slice(&camera_objs);
+
     Ok(())
 }
 
 fn add_camera_hint<'r>(
-    ps: &mut PatcherState,
-    objects: &mut Vec<structs::SclyObject<'r>>,
+    camear_hint_id: u32,
+    camera_hint_trigger_id: u32,
     trigger_pos: [f32;3],
     trigger_scale: [f32;3],
     camera_pos: [f32;3],
     camera_rot: [f32;3],
     behavior: u32,
-)
+) -> Vec<structs::SclyObject<'r>>
 {
-    let camear_hint_id = ps.fresh_instance_id_range.next().unwrap();
+    let mut objects = Vec::new();
+
     objects.push(
         structs::SclyObject {
             instance_id: camear_hint_id,
@@ -9370,7 +9440,7 @@ fn add_camera_hint<'r>(
 
     objects.push(
         structs::SclyObject {
-            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            instance_id: camera_hint_trigger_id,
             connections: vec![
                 structs::Connection {
                     state: structs::ConnectionState::ENTERED,
@@ -9404,9 +9474,9 @@ fn add_camera_hint<'r>(
         }
     );
 
-    // layer.objects.as_mut_vec().push(
+    // objects.push(
     //     structs::SclyObject {
-    //         instance_id: ps.fresh_instance_id_range.next().unwrap(),
+    //         instance_id: area.new_object_id_from_layer_name("Default"),
     //         connections: vec![
     //             structs::Connection {
     //                 state: structs::ConnectionState::INSIDE,
@@ -9432,10 +9502,12 @@ fn add_camera_hint<'r>(
     //         ),
     //     }
     // );
+
+    objects
 }
 
 fn patch_add_dock_teleport<'r>(
-    ps: &mut PatcherState,
+    _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     source_position: [f32;3],
     source_scale: [f32;3],
@@ -9456,8 +9528,12 @@ fn patch_add_dock_teleport<'r>(
         area.mlvl_area.attached_area_count += 1;
     }
 
+    let spawn_point_id = area.new_object_id_from_layer_name("Default");
+    let timer_id = area.new_object_id_from_layer_name("Default");
+    let dock_teleport_trigger_id = area.new_object_id_from_layer_name("Default");
+    let camera_hint_id = area.new_object_id_from_layer_name("Default");
+    let camera_hint_trigger_id = area.new_object_id_from_layer_name("Default");
     let layer = &mut area.mrea().scly_section_mut().layers.as_mut_vec()[0];
-    let spawn_point_id = ps.fresh_instance_id_range.next().unwrap();
 
     // find the destination dock
     let mut found = false;
@@ -9607,14 +9683,16 @@ fn patch_add_dock_teleport<'r>(
     // Insert a camera hint trigger to prevent the camera from getting slammed into the wall of the departure room
     // except for LGT because it already has a trigger and training chamber because it's goofy
     if is_morphball_door && mrea_id != 0xB4FBBEF5 && mrea_id != 0x3F04F304 {
-        add_camera_hint(
-            ps,
-            layer.objects.as_mut_vec(),
-            spawn_point_position.into(),
-            [4.0, 4.0, 3.0],
-            spawn_point_position.into(),
-            spawn_point_rotation,
-            4,
+        layer.objects.as_mut_vec().extend_from_slice(
+            &add_camera_hint(
+                camera_hint_id,
+                camera_hint_trigger_id,
+                spawn_point_position.into(),
+                [4.0, 4.0, 3.0],
+                spawn_point_position.into(),
+                spawn_point_rotation,
+                4,
+            )
         );
     }
 
@@ -9676,8 +9754,6 @@ fn patch_add_dock_teleport<'r>(
     let mut source_scale = source_scale.clone();
     source_scale[thinnest] = 0.1;
 
-    let timer_id = ps.fresh_instance_id_range.next().unwrap();
-
     // Insert a trigger at the previous room which sends the player to the freshly created spawn point
     let mut connections: Vec::<structs::Connection> = Vec::new();
     if door_id != 0 {
@@ -9699,7 +9775,7 @@ fn patch_add_dock_teleport<'r>(
 
     layer.objects.as_mut_vec().push(
         structs::SclyObject {
-            instance_id: ps.fresh_instance_id_range.next().unwrap(),
+            instance_id: dock_teleport_trigger_id,
             connections: connections.into(),
             property_data: structs::SclyProperty::Trigger(
                 Box::new(structs::Trigger {
@@ -9774,6 +9850,8 @@ fn patch_modify_dock<'r>(
     area.add_dependencies(game_resources, 0, iter::once(strg_dep));
     let frme_dep: structs::Dependency = frme_id.into();
     area.add_dependencies(game_resources, 0, iter::once(frme_dep));
+
+    let trigger_id = area.new_object_id_from_layer_name("Default");
 
     let mrea_id = area.mlvl_area.mrea.to_u32();
     let attached_areas: &mut reader_writer::LazyArray<'r, u16> = &mut area.mlvl_area.attached_areas;
@@ -9933,7 +10011,7 @@ fn patch_modify_dock<'r>(
             );
             layer.objects.as_mut_vec().push(
                 structs::SclyObject {
-                    instance_id: _ps.fresh_instance_id_range.next().unwrap(),
+                    instance_id: trigger_id,
                     property_data: structs::Trigger {
                         name: b"Trigger\0".as_cstr(),
                         position: trigger_pos.into(),
@@ -11395,6 +11473,8 @@ fn patch_hive_mecha<'a>(patcher: &mut PrimePatcher<'_, 'a>)
     });
 
     patcher.add_scly_patch(resource_info!("19_hive_totem.MREA").into(), |_ps, area| {
+        let auto_start_relay_timer_id = area.new_object_id_from_layer_name("Default");
+
         let scly = area.mrea().scly_section_mut();
 
         let layer = &mut scly.layers.as_mut_vec()[0]; // Default
@@ -11409,7 +11489,7 @@ fn patch_hive_mecha<'a>(patcher: &mut PrimePatcher<'_, 'a>)
 
         if let Some(relay_id) = relay_id {
             layer.objects.as_mut_vec().push(structs::SclyObject {
-                instance_id: _ps.fresh_instance_id_range.next().unwrap(),
+                instance_id: auto_start_relay_timer_id,
                 property_data: structs::Timer {
                     name: b"Auto start relay\0".as_cstr(),
                     start_time: 0.001,
