@@ -12895,6 +12895,10 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         |ps, area| patch_artifact_hint_availability(ps, area, config.artifact_hint_behavior)
     );
 
+    if config.required_artifact_count.is_some() {
+        patch_required_artifact_count(&mut patcher, config.required_artifact_count.clone().unwrap());
+    }
+
     patcher.add_resource_patch(
         resource_info!("TXTR_SaveBanner.TXTR").into(),
         patch_save_banner_txtr
@@ -13700,6 +13704,42 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     println!("Created patches in {:?}", time.elapsed());
 
     Ok(())
+}
+
+fn patch_required_artifact_count(patcher: &mut PrimePatcher, artifact_count: u32) {
+    if artifact_count > 12 {
+        panic!("Must specify between 0 and 12 required artifacts");
+    }
+
+    patcher.add_scly_patch(
+        resource_info!("07_stonehenge.MREA").into(),
+        move |_patcher, area| {
+            let scly = area.mrea().scly_section_mut();
+
+            let layer = &mut scly.layers.as_mut_vec()[1]; // Monoliths and Ridley
+
+            if artifact_count == 0 {
+                for obj in layer.objects.iter_mut() {
+                    if let Some(relay) = obj.property_data.as_relay_mut() {
+                        if relay.name == b"Relay Monoliths Complete\0".as_cstr() {
+                            relay.active = 1;
+                        }
+                    }
+                }
+            }
+            else {
+                for obj in layer.objects.iter_mut() {
+                    if let Some(counter) = obj.property_data.as_counter_mut() {
+                        if counter.name == b"Counter - Monoliths left to Activate\0".as_cstr() {
+                            counter.start_value = artifact_count;
+                        }
+                    }
+                }
+            }
+
+            Ok(())
+        }        
+    );
 }
 
 fn patch_hall_of_the_elders_bomb_slot_covers(
