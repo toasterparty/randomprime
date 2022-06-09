@@ -226,6 +226,7 @@ build_scly_property!(
     CameraFilterKeyframe, is_camera_filter_keyframe, as_camera_filter_keyframe, as_camera_filter_keyframe_mut,
     CameraHint,           is_camera_hint,            as_camera_hint,            as_camera_hint_mut,
     CameraHintTrigger,    is_camera_hint_trigger,    as_camera_hint_trigger,    as_camera_hint_trigger_mut,
+    Counter,              is_counter,                as_counter,                as_counter_mut,
     DamageableTrigger,    is_damageable_trigger,     as_damageable_trigger,     as_damageable_trigger_mut,
     Dock,                 is_dock,                   as_dock,                   as_dock_mut,
     Door,                 is_door,                   as_door,                   as_door_mut,

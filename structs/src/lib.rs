@@ -35,6 +35,7 @@ pub mod scly_props
     pub mod camera_filter_keyframe;
     pub mod camera_hint_trigger;
     pub mod camera_hint;
+    pub mod counter;
     pub mod damageable_trigger;
     pub mod dock;
     pub mod door;
@@ -84,6 +85,7 @@ pub mod scly_props
     pub use self::camera_filter_keyframe::*;
     pub use self::camera_hint_trigger::*;
     pub use self::camera_hint::*;
+    pub use self::counter::*;
     pub use self::damageable_trigger::*;
     pub use self::dock::*;
     pub use self::door::*;
