@@ -42,7 +42,7 @@ use crate::{
     elevators::{Elevator, SpawnRoom, SpawnRoomData, World, is_elevator},
     gcz_writer::GczWriter,
     mlvl_wrapper,
-    pickup_meta::{self, PickupType, PickupModel, DoorLocation},
+    pickup_meta::{self, PickupType, PickupModel, DoorLocation, ObjectsToRemove},
     door_meta::{DoorType, BlastShieldType},
     patcher::{PatcherState, PrimePatcher},
     starting_items::StartingItems,
@@ -5674,6 +5674,22 @@ fn patch_cutscene_force_phazon_suit<'r>
     Ok(())
 }
 
+fn patch_remove_otrs<'r>
+(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    otrs: &'static [ObjectsToRemove],
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layers = &mut scly.layers.as_mut_vec();
+    for otr in otrs {
+        layers[otr.layer as usize].objects.as_mut_vec().retain(|i| !otr.instance_ids.contains(&i.instance_id));
+    }
+    Ok(())
+}
+
 fn patch_remove_ids<'r>
 (
     _ps: &mut PatcherState,
@@ -10834,7 +10850,6 @@ fn patch_qol_cosmetic(
         );
     }
 
-
     patcher.add_scly_patch(
         resource_info!("08_courtyard.MREA").into(),
         patch_arboretum_vines
@@ -12153,14 +12168,10 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
             // Remove objects patch
             if config.qol_cosmetic && !(config.shuffle_pickup_position && room_info.room_id.to_u32() == 0x40C548E9) {
-                patcher.add_scly_patch((pak_name.as_bytes(), room_info.room_id.to_u32()), move |_, area| {
-                    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
-                    for otr in room_info.objects_to_remove {
-                        layers[otr.layer as usize].objects.as_mut_vec()
-                            .retain(|i| !otr.instance_ids.contains(&i.instance_id));
-                    }
-                    Ok(())
-                });
+                patcher.add_scly_patch(
+                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                    move |_ps, area| patch_remove_otrs(_ps, area, room_info.objects_to_remove),
+                );
             }
 
             if config.qol_cutscenes == CutsceneMode::Major && is_elevator(room_info.room_id.to_u32()) {
