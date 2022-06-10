@@ -361,7 +361,7 @@ pub fn custom_assets<'r>(
         vec![
             "Toaster's Champions: Awp82, DiggleWrath, Yeti2000, freak532486, AlphaRage, Csabi,\0".to_string(),
             "\0".to_string(),
-            "BajaBlood, hammergoboom, Firemetroid, Lokir, MeriKatt, Cosmonawt, Haldadrin\0".to_string(),
+            "BajaBlood, hammergoboom, Firemetroid, Lokir, MeriKatt, Cosmonawt, Haldadrin, RXM027\0".to_string(),
         ],
         1,
         0,
@@ -451,10 +451,11 @@ pub fn custom_assets<'r>(
                     };
 
                     let mut strings: Vec<String> = vec![];
-                    let contents = contents.to_string() + "\0";
+                    let mut contents = contents.to_string() + "\0";
                     let mut content_len = contents.len();
 
                     // "The &push;&main-color=#c300ff;Phazon Suit&pop; can be found in &push;&main-color=#89a1ff;Phazon Mines - Processing Center Access&pop;.",
+                    // TODO: the game will actually crash if we paginate the color wrong
                     for x in contents.split("&") {
                         let semicolon_index = x.find(";").unwrap_or(0);
                         if semicolon_index != 0 {
@@ -462,15 +463,34 @@ pub fn custom_assets<'r>(
                         }
                     }
 
-                    if content_len > 92 {
-                        let string1: String = (contents.clone().to_string())[..92].to_string();
-                        let remainder = (contents.clone().to_string())[92..].to_string();
-                        strings.push(string1 + "\0");
-                        strings.push("\0".to_string());
-                        strings.push(remainder);
-                    } else {
-                        strings.push(contents.clone().to_string());
-                        strings.push("\0".to_string());
+                    let mut category = false;
+                    const PAGINATION_SIZE: usize = 123;
+                    while content_len > PAGINATION_SIZE {
+                        let mut i = PAGINATION_SIZE - 1;
+                        while contents.chars().nth(i).unwrap_or(' ') != ' ' {
+                            i -= 1;
+                        }
+
+                        i += 1;
+
+                        let page = (contents.clone().to_string())[..i].to_string();
+                        strings.push(page + "\0");
+
+                        contents = (contents.clone().to_string())[i..].to_string();
+                        content_len -= i;
+
+                        if !category {
+                            strings.push("\0".to_string()); // logbook category
+                            category = true;
+                        }
+                    }
+
+                    if content_len > 0 {
+                        strings.push(contents.clone() + "\0");
+                    }
+
+                    if !category {
+                        strings.push("\0".to_string()); // logbook category
                     }
 
                     if custom_scan.logbook_title.is_some() || custom_scan.logbook_category.is_some() {
