@@ -84,11 +84,11 @@ impl<'r, 'mlvl, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'cursor, 'list>
 
     pub fn new_object_id_from_layer_name(&mut self, layer_name: &str) -> u32
     {
-        let layer_id = self.get_layer_id_from_name(layer_name) as u32;
+        let layer_id = self.get_layer_id_from_name(layer_name);
         return self.new_object_id_from_layer_id(layer_id);
     }
 
-    pub fn new_object_id_from_layer_id(&mut self, layer_id: u32) -> u32
+    pub fn new_object_id_from_layer_id(&mut self, layer_id: usize) -> u32
     {
         let mut new_obj_id: u32 = self.last_assigned_object_id;
         if new_obj_id == 0 {
@@ -109,7 +109,7 @@ impl<'r, 'mlvl, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'cursor, 'list>
         new_obj_id |= (self.mrea_index as u32) << 16;
 
         // add the layer id to the object id
-        new_obj_id |= layer_id << 26;
+        new_obj_id |= (layer_id as u32) << 26;
 
         self.last_assigned_object_id = new_obj_id & 0xffffff;
 
