@@ -74,7 +74,7 @@ use reader_writer::{
     // Readable,
     Writable,
 };
-use structs::{res_id, scly_structs::TypeVulnerability, ResId};
+use structs::{res_id, ResId, scly_structs::TypeVulnerability};
 
 use std::{
     borrow::Cow,
@@ -883,6 +883,7 @@ fn patch_door<'r>(
 fn patch_add_item<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    _pickup_idx: usize,
     pickup_config: &PickupConfig,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     pickup_hudmemos: &HashMap<PickupHashKey, ResId<res_id::STRG>>,
@@ -897,6 +898,7 @@ fn patch_add_item<'r>(
 ) -> Result<(), String>
 {
     let mut rng = StdRng::seed_from_u64(seed);
+    let _mrea_index = area.mrea_index;
 
     // Pickup to use for game functionality //
     let pickup_type = PickupType::from_str(&pickup_config.pickup_type);
@@ -1392,6 +1394,26 @@ fn patch_add_item<'r>(
             }
         );
     }
+
+    /*if pickup_config.show_icon.unwrap_or(false) {
+        let special_fn_remove_map_obj_id = ((mrea_index as u32) << 16) | (0xffff - (pickup_idx as u32));
+        layers[0]
+            .objects
+            .as_mut_vec()
+            .push(structs::SclyObject {
+                instance_id: special_fn_remove_map_obj_id,
+                property_data: structs::SpecialFunction::remove_map_icon_fn(
+                    b"Remove pickup icon\0".as_cstr()
+                ).into(),
+                connections: vec![].into(),
+            });
+
+        pickup_obj.connections.as_mut_vec().push(structs::Connection {
+            state: structs::ConnectionState::ACTIVE,
+            message: structs::ConnectionMsg::DECREMENT,
+            target_object_id: special_fn_remove_map_obj_id,
+        });
+    }*/
 
     if shuffle_position || *pickup_config.jumbo_scan.as_ref().unwrap_or(&false) {
         layers[0].objects.as_mut_vec().push(
@@ -2422,9 +2444,48 @@ where R: Rng
     ]
 }
 
+fn add_map_pickup_icon_txtr(file: &mut structs::FstEntryFile<'_>)
+    -> Result<(), String>
+{
+    let pak = match file {
+        structs::FstEntryFile::Pak(pak) => pak,
+        _ => unreachable!(),
+    };
+
+    const TXTR_BYTES: &[u8] = include_bytes!("../extra_assets/map_pickupdot.txtr");
+
+    // append at the end of the pak
+    let mut cursor = pak.resources.cursor();
+    while cursor.cursor_advancer().peek().is_some() {}
+    let mut res = crate::custom_assets::build_resource_raw(
+        custom_asset_ids::MAP_PICKUP_ICON_TXTR.into(),
+        structs::ResourceKind::Unknown(Reader::new(TXTR_BYTES), b"TXTR".into())
+    );
+    res.compressed = false;
+    cursor.insert_after(iter::once(res));
+    Ok(())
+}
+
+fn add_pickups_to_mapa<'r>(
+    res: &mut structs::Resource,
+    area_idx: usize,
+    pickup_idx: usize,
+    pickup_config: &PickupConfig,
+    pickup_location: [f32; 3]
+) -> Result<(), String>
+{
+    let mapa = res.kind.as_mapa_mut().unwrap();
+    if pickup_config.show_icon.unwrap_or(false) {
+        mapa.add_pickup(((area_idx as u32) >> 16) | (0xffff - (pickup_idx as u32)), pickup_location);
+    }
+
+    Ok(())
+}
+
 fn modify_pickups_in_mrea<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    _pickup_idx: usize,
     pickup_config: &PickupConfig,
     pickup_location: pickup_meta::PickupLocation,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
@@ -2443,6 +2504,7 @@ fn modify_pickups_in_mrea<'r>(
 -> Result<(), String>
 {
     let mrea_id = area.mlvl_area.mrea.to_u32();
+    let _mrea_index = area.mrea_index;
     let mut rng = StdRng::seed_from_u64(seed);
 
     let mut position_override: Option<[f32;3]> = None;
@@ -2847,6 +2909,27 @@ fn modify_pickups_in_mrea<'r>(
             }
         );
     }
+
+    // Add pickup icon removal function to pickup
+    /*if pickup_config.show_icon.unwrap_or(false) {
+        let special_fn_remove_map_obj_id = ((mrea_index as u32) << 16) | (0xffff - (pickup_idx as u32));
+        layers[pickup_location.location.layer as usize]
+            .objects
+            .as_mut_vec()
+            .push(structs::SclyObject {
+                instance_id: special_fn_remove_map_obj_id,
+                property_data: structs::SpecialFunction::remove_map_icon_fn(
+                    b"Remove pickup icon\0".as_cstr()
+                ).into(),
+                connections: vec![].into(),
+            });
+
+        additional_connections.push(structs::Connection {
+            state: structs::ConnectionState::ACTIVE,
+            message: structs::ConnectionMsg::DECREMENT,
+            target_object_id: special_fn_remove_map_obj_id,
+        });
+    }*/
 
     let position: [f32; 3];
     let scan_id_out: ResId<res_id::SCAN>;
@@ -8022,6 +8105,28 @@ fn patch_dol<'r>(
 
     new_text_section_end = new_text_section_end + rel_loader_size;
 
+    let patch_pickup_icon_case = ppcasm!(symbol_addr!("Case1B_Switch_Draw__CMappableObject", version) + ((structs::MapaObjectType::Pickup as u32) - 0x1b) * 4, {
+            .long         new_text_section_end;
+    });
+    dol_patcher.ppcasm_patch(&patch_pickup_icon_case)?;
+
+    // Pattern to find CMappableObject::Draw(int, const CMapWorldInfo&, float, bool)
+    // 2c070000 7c????78 38000000
+    let off = if version == Version::Pal || version == Version::NtscJ {
+        0x284
+    } else {
+        0x298
+    };
+    let set_pickup_icon_txtr_patch = ppcasm!(new_text_section_end, {
+            lwz          r3, -0x5eb4(r13);
+            lis          r6, { custom_asset_ids::MAP_PICKUP_ICON_TXTR.to_u32() }@h;
+            addi         r6, r6, { custom_asset_ids::MAP_PICKUP_ICON_TXTR.to_u32() }@l;
+            b            { symbol_addr!("Draw__15CMappableObjectCFiRC13CMapWorldInfofb", version) + off };
+    });
+
+    new_text_section_end = new_text_section_end + set_pickup_icon_txtr_patch.encoded_bytes().len() as u32;
+    new_text_section.extend(set_pickup_icon_txtr_patch.encoded_bytes());
+
     if config.warp_to_start
     {
         let handle_no_to_save_msg_patch = ppcasm!(symbol_addr!("ThinkSaveStation__22CScriptSpecialFunctionFfR13CStateManager", version) + 0x54, {
@@ -11914,6 +12019,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                 modal_hudmemo: None,
                                 jumbo_scan: None,
                                 destination: None,
+                                show_icon: None,
                             }
                         ]
                     );
@@ -12054,6 +12160,12 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     let file_select_play_game_fmv = gc_disc.find_file(&n).unwrap().file().unwrap().clone();
 
     let mut patcher = PrimePatcher::new();
+
+    // Add the pickup icon
+    patcher.add_file_patch(
+        b"GGuiSys.pak",
+        |file| add_map_pickup_icon_txtr(file),
+    );
 
     patcher.add_file_patch(b"opening.bnr", |file| patch_bnr(file, &config.game_banner));
 
@@ -12221,6 +12333,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         let world = World::from_pak(pak_name).unwrap();
 
         for room_info in rooms.iter() {
+            let room_idx = room_info.index();
             if remove_control_disabler
             {
                 patcher.add_scly_patch(
@@ -12478,11 +12591,13 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             modal_hudmemo: None,
                             jumbo_scan: None,
                             destination: None,
+                            show_icon: None,
                         }
                     } else {
                         pickups[idx].clone() // TODO: cloning is suboptimal
                     }
                 };
+                let pickup2 = pickup.clone();
 
                 let key = PickupHashKey {
                     level_id: world.mlvl(),
@@ -12512,6 +12627,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     move |ps, area| modify_pickups_in_mrea(
                             ps,
                             area,
+                            idx,
                             &pickup,
                             *pickup_location,
                             game_resources,
@@ -12529,6 +12645,17 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     )
                 );
 
+                patcher.add_resource_patch(
+                    (&[pak_name.as_bytes()], room_info.mapa_id.to_u32(), FourCC::from_bytes(b"MAPA")),
+                    move |res| add_pickups_to_mapa(
+                            res,
+                            room_idx,
+                            idx,
+                            &pickup2,
+                            (*pickup_location).position
+                        )
+                );
+
                 idx = idx + 1;
                 seed = seed + 1;
             }
@@ -12536,6 +12663,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
             // Patch extra item locations
             while idx < pickups_config_len {
                 let pickup = pickups[idx].clone(); // TODO: cloning is suboptimal
+                let pickup2 = pickups[idx].clone();
 
                 let key = PickupHashKey {
                     level_id: world.mlvl(),
@@ -12556,6 +12684,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     move |_ps, area| patch_add_item(
                         _ps,
                         area,
+                        idx,
                         &pickup,
                         game_resources,
                         pickup_hudmemos,
@@ -12569,6 +12698,20 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                         version,
                     ),
                 );
+
+                if pickup2.position.is_some() {
+                    let position = pickup2.position.unwrap().clone();
+                    patcher.add_resource_patch(
+                        (&[pak_name.as_bytes()], room_info.mapa_id.to_u32(), FourCC::from_bytes(b"MAPA")),
+                        move |res| add_pickups_to_mapa(
+                                res,
+                                room_idx,
+                                idx,
+                                &pickup2,
+                                position,
+                            )
+                    );
+                }
 
                 idx = idx + 1;
             }
@@ -13795,8 +13938,8 @@ fn patch_required_artifact_count(patcher: &mut PrimePatcher, artifact_count: u32
         resource_info!("07_stonehenge.MREA").into(),
         move |_patcher, area| {
             let layer_index = area.get_layer_id_from_name("Monoliths and Ridley");
-            
-            let scly = area.mrea().scly_section_mut();            
+
+            let scly = area.mrea().scly_section_mut();
 
             let layer = &mut scly.layers.as_mut_vec()[layer_index];
 
@@ -13820,7 +13963,7 @@ fn patch_required_artifact_count(patcher: &mut PrimePatcher, artifact_count: u32
             }
 
             Ok(())
-        }        
+        }
     );
 }
 

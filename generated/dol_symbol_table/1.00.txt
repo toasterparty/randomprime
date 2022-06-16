@@ -14336,6 +14336,8 @@
 0x803d47cc aMetroidprimeA
 0x803d47db aMetroidprimeB
 0x803dad40 IncrPickUpSwitchCaseData
+0x803dfc10 Case1B_Switch_Draw__CMappableObject
+0x803e2bd4 Case0_Switch_AcceptScriptMsg_CScriptSpecialFunction
 0x8045a1a8 g_StateManager
 0x805a8c34 g_MainStringTable
 0x805a8c38 g_Main

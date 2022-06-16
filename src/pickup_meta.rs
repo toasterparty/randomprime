@@ -178,7 +178,7 @@ impl PickupType
                 return i;
             }
         }
-        
+
         // Alternate Names
         if vec!["combat"]
             .contains(&string)
@@ -201,7 +201,7 @@ impl PickupType
         panic!("Unknown Pickup Type - {}", string);
     }
 
-    // This is kind of a hack, but we need to index FJ and Nothing seperately 
+    // This is kind of a hack, but we need to index FJ and Nothing seperately
     pub fn asset_index(&self) -> u32 {
         let kind = self.kind();
         if kind == PickupType::Nothing.kind() && self.name() == PickupType::FloatyJump.name() {
@@ -340,47 +340,47 @@ impl PickupModel
     pub fn iter() -> impl Iterator<Item = PickupModel>
     {
         [
-            PickupModel::Missile, 
-            PickupModel::EnergyTank, 
+            PickupModel::Missile,
+            PickupModel::EnergyTank,
             PickupModel::Visor,
             PickupModel::CombatVisor,
             PickupModel::ThermalVisor,
             PickupModel::XRayVisor,
-            PickupModel::VariaSuit, 
-            PickupModel::GravitySuit, 
-            PickupModel::PhazonSuit, 
-            PickupModel::MorphBall, 
-            PickupModel::BoostBall, 
-            PickupModel::SpiderBall, 
-            PickupModel::MorphBallBomb, 
-            PickupModel::PowerBombExpansion, 
-            PickupModel::PowerBomb, 
-            PickupModel::ChargeBeam, 
-            PickupModel::SpaceJumpBoots, 
-            PickupModel::GrappleBeam, 
-            PickupModel::SuperMissile, 
-            PickupModel::Wavebuster, 
-            PickupModel::IceSpreader, 
-            PickupModel::Flamethrower, 
-            PickupModel::WaveBeam, 
-            PickupModel::IceBeam, 
-            PickupModel::PlasmaBeam, 
-            PickupModel::ArtifactOfLifegiver, 
-            PickupModel::ArtifactOfWild, 
-            PickupModel::ArtifactOfWorld, 
-            PickupModel::ArtifactOfSun, 
-            PickupModel::ArtifactOfElder, 
-            PickupModel::ArtifactOfSpirit, 
-            PickupModel::ArtifactOfTruth, 
-            PickupModel::ArtifactOfChozo, 
-            PickupModel::ArtifactOfWarrior, 
-            PickupModel::ArtifactOfNewborn, 
-            PickupModel::ArtifactOfNature, 
-            PickupModel::ArtifactOfStrength, 
-            PickupModel::Nothing, 
-            PickupModel::HealthRefill, 
-            PickupModel::MissileRefill, 
-            PickupModel::PowerBombRefill, 
+            PickupModel::VariaSuit,
+            PickupModel::GravitySuit,
+            PickupModel::PhazonSuit,
+            PickupModel::MorphBall,
+            PickupModel::BoostBall,
+            PickupModel::SpiderBall,
+            PickupModel::MorphBallBomb,
+            PickupModel::PowerBombExpansion,
+            PickupModel::PowerBomb,
+            PickupModel::ChargeBeam,
+            PickupModel::SpaceJumpBoots,
+            PickupModel::GrappleBeam,
+            PickupModel::SuperMissile,
+            PickupModel::Wavebuster,
+            PickupModel::IceSpreader,
+            PickupModel::Flamethrower,
+            PickupModel::WaveBeam,
+            PickupModel::IceBeam,
+            PickupModel::PlasmaBeam,
+            PickupModel::ArtifactOfLifegiver,
+            PickupModel::ArtifactOfWild,
+            PickupModel::ArtifactOfWorld,
+            PickupModel::ArtifactOfSun,
+            PickupModel::ArtifactOfElder,
+            PickupModel::ArtifactOfSpirit,
+            PickupModel::ArtifactOfTruth,
+            PickupModel::ArtifactOfChozo,
+            PickupModel::ArtifactOfWarrior,
+            PickupModel::ArtifactOfNewborn,
+            PickupModel::ArtifactOfNature,
+            PickupModel::ArtifactOfStrength,
+            PickupModel::Nothing,
+            PickupModel::HealthRefill,
+            PickupModel::MissileRefill,
+            PickupModel::PowerBombRefill,
             PickupModel::ShinyMissile,
         ].iter().map(|i| *i)
     }
@@ -552,6 +552,21 @@ impl RoomInfo
         }
 
         panic!("Could not find room {}", string)
+    }
+
+    pub fn index(&self) -> usize
+    {
+        let mut i = 0;
+        for (_, rooms) in ROOM_INFO.iter() {
+            for room_info in rooms.iter() {
+                if room_info.room_id == self.room_id {
+                    return i;
+                }
+                i += i;
+            }
+        }
+
+        panic!("Could not find room {}", self.name)
     }
 }
 
