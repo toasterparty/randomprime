@@ -511,6 +511,7 @@
 0x800de59c InRange__7CBeetleFR13CStateManager9EStateMsgf
 0x800df87c GetOrbitPosition__7CBeetleCFRC13CStateManager
 0x800e0314 __ct__13CHUDMemoParmsFR12CInputStream
+0x800e0dec Draw__15CMappableObjectCFiRC13CMapWorldInfofb
 0x800e11bc PostConstruct__15CMappableObjectFPCv
 0x800e149c ReadAutomapperTweaks__15CMappableObjectFRC16CTweakAutoMapper
 0x800e152c __sinit_CMappableObject_cpp
@@ -2799,6 +2800,7 @@
 0x803b95b8 skBallInnerGlowColors
 0x803bf304 aMetroidprime
 0x803c6098 IncrPickUpSwitchCaseData
+0x803ca1b0 Case1B_Switch_Draw__CMappableObject
 0x803e2088 g_StateManager
 0x8046ad38 g_MainStringTable
 0x8046ad3c g_Main

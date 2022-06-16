@@ -85,10 +85,10 @@ pub mod custom_asset_ids {
         CFLDG_POI_STRG: STRG,
         TOURNEY_WINNERS_SCAN: SCAN,
         TOURNEY_WINNERS_STRG: STRG,
-        
+
         // Starting items memo
         STARTING_ITEMS_HUDMEMO_STRG: STRG,
-        
+
         // Warping
         WARPING_TO_START_STRG: STRG,
         GENERIC_WARP_STRG: STRG,
@@ -136,7 +136,6 @@ pub mod custom_asset_ids {
         FLAMETHROWER_DOOR_TXTR: TXTR,
         DISABLED_DOOR_TXTR: TXTR,
         AI_DOOR_TXTR: TXTR,
-        MAP_DOT_TXTR: TXTR,
 
         // blast shield assets //
         POWER_BOMB_BLAST_SHIELD_CMDL: CMDL,
@@ -166,6 +165,9 @@ pub mod custom_asset_ids {
         WAVEBUSTER_BLAST_SHIELD_STRG: STRG,
         ICESPREADER_BLAST_SHIELD_STRG: STRG,
         FLAMETHROWER_BLAST_SHIELD_STRG: STRG,
+
+        // Pickup dot icon
+        MAP_PICKUP_ICON_TXTR: TXTR,
 
         // Strings to use if none are specified
         DEFAULT_PICKUP_SCAN_STRGS: STRG,
@@ -248,7 +250,7 @@ fn extern_assets_compile_time<'r>() -> Vec<Resource<'r>>
         (custom_asset_ids::WAVEBUSTER_BLAST_SHIELD_TXTR  , *b"TXTR", include_bytes!("../extra_assets/blast_shield_wvb.txtr"    )),
         (custom_asset_ids::ICESPREADER_BLAST_SHIELD_TXTR , *b"TXTR", include_bytes!("../extra_assets/blast_shield_ice.txtr"    )),
         (custom_asset_ids::FLAMETHROWER_BLAST_SHIELD_TXTR, *b"TXTR", include_bytes!("../extra_assets/blast_shield_flm.txtr"    )),
-        (custom_asset_ids::MAP_DOT_TXTR                  , *b"TXTR", include_bytes!("../extra_assets/map_pickupdot.txtr"       )),
+        (custom_asset_ids::MAP_PICKUP_ICON_TXTR          , *b"TXTR", include_bytes!("../extra_assets/map_pickupdot.txtr"       )),
     ];
 
     extern_assets.iter().map(|&(res, ref fourcc, bytes)| {
@@ -265,7 +267,7 @@ pub fn custom_assets<'r>(
     pickup_scans: &mut HashMap<PickupHashKey, (ResId<res_id::SCAN>, ResId<res_id::STRG>)>,
     extra_scans: &mut HashMap<PickupHashKey, (ResId<res_id::SCAN>, ResId<res_id::STRG>)>,
     config: &PatchConfig,
-    
+
 )
 ->
     Result<
@@ -280,8 +282,8 @@ pub fn custom_assets<'r>(
 {
     /*  List of all custom SCAN IDs which might be used throughout the game.
         We need to patch these into a SAVW file so that the game engine allocates enough space
-        on initialization to store each individual scan's completion %. This first list is for 
-        scans which could appear in any world. 
+        on initialization to store each individual scan's completion %. This first list is for
+        scans which could appear in any world.
     */
     let mut global_savw_scans_to_add: Vec<ResId<res_id::SCAN>> = Vec::new();
 
@@ -308,7 +310,7 @@ pub fn custom_assets<'r>(
 
     // External assets
     let mut assets = extern_assets_compile_time();
-    let extern_models = if config.extern_assets_dir.is_some() {    
+    let extern_models = if config.extern_assets_dir.is_some() {
         let (more_assets, extern_models) = extern_assets_runtime(config.extern_assets_dir.clone())?;
         assets.extend_from_slice(&more_assets);
         extern_models // HashMap of extern models available for use
@@ -426,7 +428,7 @@ pub fn custom_assets<'r>(
                         let (scan_id, strg_id) = string_to_scan_strg.get(contents).unwrap();
 
                         // Add this scan_id as a dep of this world if it wasn't already //
-                        if !local_savw_scans_to_add[world as usize].contains(scan_id) { 
+                        if !local_savw_scans_to_add[world as usize].contains(scan_id) {
                             local_savw_scans_to_add[world as usize].push(scan_id.clone());
                         }
 
@@ -515,7 +517,7 @@ pub fn custom_assets<'r>(
                     let key = PickupHashKey::from_location(level_name, room_name, extra_scans_idx);
                     extra_scans.insert(key, (scan_id, strg_id));
                     local_savw_scans_to_add[world as usize].push(scan_id);
-                    
+
                     // Cache this scan/strg pair for re-use //
                     string_to_scan_strg.insert(contents, (scan_id, strg_id));
 
@@ -534,7 +536,7 @@ pub fn custom_assets<'r>(
                         let (scan_id, strg_id) = string_to_scan_strg.get(&string.clone()).unwrap();
 
                         // Add this scan_id as a dep of this world if it wasn't already //
-                        if !local_savw_scans_to_add[world as usize].contains(scan_id) { 
+                        if !local_savw_scans_to_add[world as usize].contains(scan_id) {
                             local_savw_scans_to_add[world as usize].push(scan_id.clone());
                         }
 
@@ -593,7 +595,7 @@ pub fn custom_assets<'r>(
                     });
                     let resource = build_resource(strg_id, strg);
                     assets.push(resource);
-    
+
                     // Map for easy lookup when patching //
                     let key = PickupHashKey::from_location(level_name, room_name, pickup_idx);
                     pickup_hudmemos.insert(key, strg_id);
@@ -609,7 +611,7 @@ pub fn custom_assets<'r>(
                         let (scan_id, strg_id) = string_to_scan_strg.get(scan_text).unwrap();
 
                         // Add this scan_id as a dep of this world if it wasn't already //
-                        if !local_savw_scans_to_add[world as usize].contains(scan_id) { 
+                        if !local_savw_scans_to_add[world as usize].contains(scan_id) {
                             local_savw_scans_to_add[world as usize].push(scan_id.clone());
                         }
 
@@ -659,7 +661,7 @@ pub fn custom_assets<'r>(
             }
         }
     }
-    
+
     // Warping to starting area
     assets.push(build_resource(
         custom_asset_ids::WARPING_TO_START_STRG,
@@ -726,7 +728,7 @@ pub fn custom_assets<'r>(
                 global_savw_scans_to_add.push(blast_shield.scan());
             }
         } else {
-            // If vanilla CMDL, then it can't depend on custom textures 
+            // If vanilla CMDL, then it can't depend on custom textures
             assert!(
                 blast_shield.dependencies()
                 .iter()
@@ -741,7 +743,7 @@ pub fn custom_assets<'r>(
         if savw_scan_logbook_category.contains_key(&scan_id.to_u32()) {
             continue;
         }
-        
+
         savw_scan_logbook_category.insert(scan_id.to_u32(), 0);
     }
 
@@ -750,11 +752,11 @@ pub fn custom_assets<'r>(
             if savw_scan_logbook_category.contains_key(&scan_id.to_u32()) {
                 continue;
             }
-            
+
             savw_scan_logbook_category.insert(scan_id.to_u32(), 0);
         }
     }
-    
+
 
     Ok((assets, global_savw_scans_to_add, local_savw_scans_to_add, savw_scan_logbook_category, extern_models))
 }
@@ -787,7 +789,7 @@ pub fn collect_game_resources<'r>(
     looking_for.extend(BlastShieldType::iter().flat_map(|x| x.dependencies()));
     looking_for.extend(GenericTexture::iter().flat_map(|x| x.dependencies()));
     looking_for.extend(WaterType::iter().flat_map(|x| x.dependencies()));
-    
+
     let platform_deps: Vec<(u32,FourCC)> = vec![
         (0x48DF38A3, FourCC::from_bytes(b"CMDL")),
         (0xB2D50628, FourCC::from_bytes(b"DCLN")),
@@ -798,7 +800,7 @@ pub fn collect_game_resources<'r>(
         (0xF1478D6A, FourCC::from_bytes(b"TXTR")),
     ];
     looking_for.extend(platform_deps);
-    
+
     let platform_deps: Vec<(u32,FourCC)> = vec![
         (0x27D0663B, FourCC::from_bytes(b"CMDL")), // actually the block model but I'm lazy
         (0xDCDFD386, FourCC::from_bytes(b"CMDL")),
@@ -814,7 +816,7 @@ pub fn collect_game_resources<'r>(
         (0xA6114429, FourCC::from_bytes(b"TXTR")),
     ];
     looking_for.extend(glow_ring);
-    
+
     let orange_light: Vec<(u32,FourCC)> = vec![
         (0xB4A658C3, FourCC::from_bytes(b"PART")),
     ];
@@ -904,7 +906,7 @@ fn create_custom_block_cmdl<'r>(
     // Find and read the vanilla block cmdl
     let old_cmdl = ResourceData::new(&resources[&resource_info!("27D0663B.CMDL").into()]);
 
-    // Create a copy 
+    // Create a copy
     let old_cmdl_bytes = old_cmdl.decompress().into_owned();
     let mut new_cmdl = Reader::new(&old_cmdl_bytes[..]).read::<structs::Cmdl>(());
 
@@ -934,7 +936,7 @@ fn create_custom_blast_shield_cmdl<'r>(
     // Find and read the vanilla blast shield cmdl
     let old_cmdl = ResourceData::new(&resources[&resource_info!("EFDFFB8C.CMDL").into()]);
 
-    // Create a copy 
+    // Create a copy
     let old_cmdl_bytes = old_cmdl.decompress().into_owned();
     let mut new_cmdl = Reader::new(&old_cmdl_bytes[..]).read::<structs::Cmdl>(());
 

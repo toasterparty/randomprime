@@ -32,9 +32,9 @@ pub struct Mapa<'r>
 
     // TODO: This can be iter derived from surfaces...
     #[auto_struct(init = (surface_count as usize, ()))]
-    pub surface_headers: RoArray<'r, MapaSurfaceHeader>,
+    pub surface_headers: LazyArray<'r, MapaSurfaceHeader>,
     #[auto_struct(init = (surface_count as usize, ()))]
-    pub surfaces: RoArray<'r, MapaSurface<'r>>,
+    pub surfaces: LazyArray<'r, MapaSurface<'r>>,
 
     #[auto_struct(pad_align = 32)]
     _pad: (),
@@ -160,7 +160,17 @@ pub struct MapaBorder<'r>
 
 impl<'r> Mapa<'r>
 {
-    pub fn add_pickup(&mut self, editor_id : u32, pickup_pos : GenericArray<f32, U3>)
+    fn update_offsets(&mut self)
+    {
+        // update the table start offsets
+        for i in 0..self.surfaces.len() {
+            let surface_header = &mut self.surface_headers.as_mut_vec()[i];
+            surface_header.primitive_table_start += 80;
+            surface_header.border_table_start += 80;
+        }
+    }
+
+    pub fn add_pickup(&mut self, editor_id : u32, pickup_pos : [f32; 3])
     {
         let mappable_objects = &mut self.objects;
         let transform_matrix = [
@@ -180,5 +190,8 @@ impl<'r> Mapa<'r>
                     seek2: [0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF].into()
                 }
             );
+
+        // fix offsets else it crashes
+        self.update_offsets()
     }
 }

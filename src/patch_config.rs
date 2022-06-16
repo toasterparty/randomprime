@@ -125,6 +125,7 @@ pub struct PickupConfig
     pub modal_hudmemo: Option<bool>,
     pub jumbo_scan: Option<bool>,
     pub destination: Option<String>,
+    pub show_icon: Option<bool>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
@@ -436,7 +437,7 @@ pub struct CtwkConfig
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct IncineratorDroneConfig {
     pub contraption_start_delay_minimum_time: Option<f32>,
-    pub contraption_start_delay_random_time: Option<f32>,    
+    pub contraption_start_delay_random_time: Option<f32>,
     pub eye_stay_up_minimum_time: Option<f32>,
     pub eye_stay_up_random_time: Option<f32>,
     pub eye_wait_initial_minimum_time: Option<f32>,
@@ -466,7 +467,7 @@ pub enum BombSlotCover {
 #[derive(Debug, Serialize)]
 pub struct PatchConfig
 {
-    pub run_mode: RunMode, 
+    pub run_mode: RunMode,
     pub logbook_filename: Option<String>,
     pub export_asset_dir: Option<String>,
     pub extern_assets_dir: Option<String>,
@@ -864,7 +865,7 @@ impl PatchConfig
         if let Some(warp_to_start_delay_s) = matches.value_of("warp to start delay") {
             patch_config.game_config.warp_to_start_delay_s = Some(warp_to_start_delay_s.parse::<f32>().unwrap());
         }
-        
+
         // custom
         if let Some(starting_items_str) = matches.value_of("starting items") {
             patch_config.game_config.starting_items = Some(
@@ -1043,7 +1044,7 @@ impl PatchConfigPrivate
             "plasma" => Beam::Plasma,
             _ => panic!("Unknown starting beam {}", self.game_config.starting_beam.as_ref().unwrap()),
         };
-        
+
         let spring_ball = self.game_config.spring_ball.unwrap_or(false);
         let warp_to_start = self.game_config.warp_to_start.unwrap_or(false);
         let main_menu_message = {
@@ -1089,7 +1090,7 @@ impl PatchConfigPrivate
             qol_cutscenes,
             qol_pickup_scans,
 
-            phazon_elite_without_dynamo: self.game_config.phazon_elite_without_dynamo.unwrap_or(true), 
+            phazon_elite_without_dynamo: self.game_config.phazon_elite_without_dynamo.unwrap_or(true),
             main_plaza_door: self.game_config.main_plaza_door.unwrap_or(true),
             backwards_labs: self.game_config.backwards_labs.unwrap_or(true),
             backwards_frigate: self.game_config.backwards_frigate.unwrap_or(true),

@@ -95,8 +95,8 @@ impl<'r, 'mlvl, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'cursor, 'list>
             // search for the last object id
             for layer in self.mrea().scly_section_mut().layers.iter_mut() {
                 for obj in layer.objects.iter_mut() {
-                    if obj.instance_id & 0xffff > new_obj_id {
-                        new_obj_id = obj.instance_id & 0xffff
+                    if obj.instance_id & 0x7fff > new_obj_id {
+                        new_obj_id = obj.instance_id & 0x7fff
                     }
                 }
             }
@@ -111,7 +111,7 @@ impl<'r, 'mlvl, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'cursor, 'list>
         // add the layer id to the object id
         new_obj_id |= (layer_id as u32) << 26;
 
-        self.last_assigned_object_id = new_obj_id & 0xffffff;
+        self.last_assigned_object_id = new_obj_id & 0xff7fff;
 
         new_obj_id
     }
