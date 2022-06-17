@@ -4227,7 +4227,7 @@ fn patch_add_escape_sequence<'r>(
             }.into(),
             connections: vec![
                 structs::Connection {
-                    state: structs::ConnectionState::ENTERED,
+                    state: structs::ConnectionState::EXITED,
                     message: structs::ConnectionMsg::ACTION,
                     target_object_id: start_special_function_id,
                 },
