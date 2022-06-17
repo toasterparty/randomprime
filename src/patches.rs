@@ -88,7 +88,7 @@ use std::{
     time::Instant,
 };
 
-const ARTIFACT_OF_TRUTH_REQ_LAYER: u32 = 24;
+const ARTIFACT_OF_TRUTH_REQ_LAYER: u32 = 23;
 
 fn artifact_layer_change_template<'r>(instance_id: u32, pickup_kind: u32)
     -> structs::SclyObject<'r>
@@ -4879,7 +4879,7 @@ fn fix_artifact_of_truth_requirements(
     let artifact_temple_layer_overrides = config.artifact_temple_layer_overrides.clone().unwrap_or(HashMap::new());
 
     // Create a new layer that will be toggled on when the Artifact of Truth is collected
-    let truth_req_layer_id = area.layer_flags.layer_count;
+    assert!(ARTIFACT_OF_TRUTH_REQ_LAYER == area.layer_flags.layer_count);
     area.add_layer(b"Randomizer - Got Artifact 1\0".as_cstr());
 
     // What is the item at artifact temple?
@@ -4902,7 +4902,7 @@ fn fix_artifact_of_truth_requirements(
 
     for i in 0..12 {
         let layer_number = if i == 0 {
-            truth_req_layer_id
+            ARTIFACT_OF_TRUTH_REQ_LAYER
         } else {
             i + 1
         };
@@ -4965,26 +4965,27 @@ fn fix_artifact_of_truth_requirements(
         }
     }
 
-    let new_relay_instance_id = area.new_object_id_from_layer_id(truth_req_layer_id as usize);
+    let new_relay_instance_id = area.new_object_id_from_layer_id(ARTIFACT_OF_TRUTH_REQ_LAYER as usize);
 
     let scly = area.mrea().scly_section_mut();
 
     // A relay on the new layer is created and connected to "Relay Show Progress 1"
-    let new_relay = structs::SclyObject {
-        instance_id: new_relay_instance_id,
-        connections: vec![
-            structs::Connection {
-                state: structs::ConnectionState::ZERO,
-                message: structs::ConnectionMsg::SET_TO_ZERO,
-                target_object_id: 1048869,
-            },
-        ].into(),
-        property_data: structs::Relay {
-            name: b"Relay Show Progress1\0".as_cstr(),
-            active: 1,
-        }.into(),
-    };
-    scly.layers.as_mut_vec()[truth_req_layer_id as usize].objects.as_mut_vec().push(new_relay);
+    scly.layers.as_mut_vec()[ARTIFACT_OF_TRUTH_REQ_LAYER as usize].objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: new_relay_instance_id,
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::SET_TO_ZERO,
+                    target_object_id: 1048869,
+                },
+            ].into(),
+            property_data: structs::Relay {
+                name: b"Relay Show Progress1\0".as_cstr(),
+                active: 1,
+            }.into(),
+        }
+    );
 
     // An existing relay is disconnected from "Relay Show Progress 1" and connected
     // to the new relay
@@ -12078,7 +12079,6 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     let local_savw_scans_to_add = &local_savw_scans_to_add;
     let savw_scan_logbook_category = &savw_scan_logbook_category;
 
-
     // Remove unused artifacts from logbook
     let mut savw_to_remove_from_logbook: Vec<u32> = Vec::new();
     for i in 0..12 {
@@ -12264,6 +12264,11 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     patcher.add_resource_patch(
         resource_info!("FRME_ThermalHud.FRME").into(),
         move |res| patch_combat_hud_color(res, &config.ctwk_config),
+    );
+
+    patcher.add_scly_patch(
+        resource_info!("07_stonehenge.MREA").into(),
+        |ps, area| fix_artifact_of_truth_requirements(ps, area, config)
     );
 
     // Patch end sequence (player size)
@@ -13109,10 +13114,6 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         );
     }
 
-    patcher.add_scly_patch(
-        resource_info!("07_stonehenge.MREA").into(),
-        |ps, area| fix_artifact_of_truth_requirements(ps, area, config)
-    );
     patcher.add_scly_patch(
         resource_info!("07_stonehenge.MREA").into(),
         |ps, area| patch_artifact_hint_availability(ps, area, config.artifact_hint_behavior)
