@@ -6238,6 +6238,126 @@ fn patch_ore_processing_destructible_rock_pal(_ps: &mut PatcherState, area: &mut
     Ok(())
 }
 
+fn patch_debug_trigger_1(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+)
+    -> Result<(), String>
+{
+    let layer_change_id = area.new_object_id_from_layer_id(0);
+    let instance_id = area.new_object_id_from_layer_id(0);
+
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: layer_change_id,
+            property_data: structs::SpecialFunction::layer_change_fn(
+                b"SpecialFunction - Debug Trigger\0".as_cstr(),
+                0xFB5299C0,
+                6,
+            ).into(),
+            connections: vec![].into(),
+        }
+    );
+
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: instance_id,
+            property_data: structs::DamageableTrigger {
+                name: b"my dtrigger\0".as_cstr(),
+                position: [-380.12619, 297.455017, -3.8425].into(),
+                scale: [5.0, 1.5, 3.0].into(),
+                health_info: structs::scly_structs::HealthInfo {
+                    health: 0.5,
+                    knockback_resistance: 1.0,
+                },
+                damage_vulnerability: DoorType::Blue.vulnerability(),
+                unknown0: 0,
+                pattern_txtr0: ResId::invalid(),
+                pattern_txtr1: ResId::invalid(),
+                color_txtr: ResId::invalid(),
+                lock_on: 0,
+                active: 1,
+                visor_params: structs::scly_structs::VisorParameters {
+                    unknown0: 0,
+                    target_passthrough: 0,
+                    visor_mask: 15 // Combat|Scan|Thermal|XRay
+                }
+            }.into(),
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::DEAD,
+                    message: structs::ConnectionMsg::INCREMENT,
+                    target_object_id: layer_change_id,
+                },
+            ].into(),
+        },
+    );
+
+    Ok(())
+}
+
+fn patch_debug_trigger_2(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+)
+    -> Result<(), String>
+{
+    area.add_layer(b"debug\0".as_cstr());
+    area.layer_flags.flags &= !(1 << 6);
+
+    let id = area.new_object_id_from_layer_id(6);
+    let scly = area.mrea().scly_section_mut();
+    
+    for layer in scly.layers.as_mut_vec() {
+        // find quarantine access door damage trigger
+        for obj in layer.objects.as_mut_vec() {
+            if obj.instance_id&0x00FFFFFF == 0x001B0470 {
+                obj.connections.as_mut_vec().push(
+                    structs::Connection {
+                        state: structs::ConnectionState::DEAD,
+                        message: structs::ConnectionMsg::RESET_AND_START,
+                        target_object_id: id,
+                    },
+                );
+            }
+        }
+    }
+
+    let layer = &mut scly.layers.as_mut_vec()[6];
+    let objects = layer.objects.as_mut_vec();
+
+    objects.push(
+        structs::SclyObject {
+            instance_id: id,
+            property_data: structs::Timer {
+                name: b"\0".as_cstr(),
+                start_time: 0.1,
+                max_random_add: 0.0,
+                reset_to_zero: 0,
+                start_immediately: 0,
+                active: 1,
+            }.into(),
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::ACTIVATE,
+                    target_object_id: 0x001B02F2,
+                },
+                structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::SET_TO_ZERO,
+                    target_object_id: 0x001B03FA,
+                }
+            ].into(),
+        }
+    );
+
+    Ok(())
+}
+
 // Removes all cameras and spawn point repositions in the area
 // igoring any provided exlcuded script objects.
 // Additionally, shortens any specified timers to 0-ish seconds
@@ -12330,6 +12450,17 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 ),
             );
         }
+    }
+
+    {
+        patcher.add_scly_patch(
+            resource_info!("01_over_mainplaza.MREA").into(),
+            move |ps, area| patch_debug_trigger_1(ps, area),
+        );
+        patcher.add_scly_patch(
+            resource_info!("07_mines_electric.MREA").into(),
+            move |ps, area| patch_debug_trigger_2(ps, area),
+        );
     }
 
     // Patch pickups
