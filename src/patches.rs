@@ -6549,7 +6549,7 @@ fn patch_remove_cutscenes(
                 };
 
                 let mut timer = structs::SclyObject {
-                    instance_id: timer_id,
+                    instance_id: timer_ids[0],
                     property_data: structs::Timer {
                         name: b"cutscene-replacement\0".as_cstr(),
                         start_time: shot_duration,
@@ -6578,13 +6578,16 @@ fn patch_remove_cutscenes(
                     relay_connections.push(structs::Connection {
                         state: structs::ConnectionState::ZERO,
                         message:  structs::ConnectionMsg::RESET_AND_START,
-                        target_object_id: timer_id,
+                        target_object_id: timer_ids[0],
                     });
 
                     relay_connections.retain(|conn| conn.state != structs::ConnectionState::INACTIVE);
                     objs_to_add.push(timer);
                 }
 
+                if timer_ids.len() > 0 {
+                    timer_ids.remove(0);
+                }
                 objs_to_add.push(relay);
             }
 
