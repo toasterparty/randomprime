@@ -6464,7 +6464,11 @@ fn patch_remove_cutscenes(
 
     // for each layer
     for i in 0..layer_count {
-        let timer_id = area.new_object_id_from_layer_id(i);
+        let mut timer_ids = vec![];
+        let timer_count = camera_ids.len();
+        for _ in 0..timer_count {
+            timer_ids.push(area.new_object_id_from_layer_id(i));
+        }
         let scly = area.mrea().scly_section_mut();
         let layer = &mut scly.layers.as_mut_vec()[i];
         let mut objs_to_add = Vec::<structs::SclyObject>::new();
@@ -6536,6 +6540,12 @@ fn patch_remove_cutscenes(
                             0.1
                         }
                     }
+                };
+
+                let timer_id = if timer_ids.last().is_some() {
+                    timer_ids.pop().unwrap()
+                } else {
+                    0xffffffff
                 };
 
                 let mut timer = structs::SclyObject {
