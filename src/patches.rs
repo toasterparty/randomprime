@@ -255,7 +255,7 @@ fn patch_save_banner_txtr(res: &mut structs::Resource)
 
 fn patch_tournament_winners<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
 )
 -> Result<(), String>
@@ -445,7 +445,7 @@ fn patch_map_door_icon(
 
 fn patch_door<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     door_loc: DoorLocation,
     door_type: Option<DoorType>,
     blast_shield_type: Option<BlastShieldType>,
@@ -882,7 +882,7 @@ fn patch_door<'r>(
 // TODO: factor out shared code with modify_pickups_in_mrea
 fn patch_add_item<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     _pickup_idx: usize,
     pickup_config: &PickupConfig,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
@@ -1482,7 +1482,7 @@ fn patch_add_item<'r>(
 }
 
 fn add_world_teleporter<'r>(
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     destination: &str,
     version: Version,
 ) -> Vec<structs::Connection>
@@ -1625,7 +1625,7 @@ fn is_area_damage_special_function<'r>(obj: &structs::SclyObject<'r>)
 
 fn patch_deheat_room<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
 )
 -> Result<(), String>
 {
@@ -1641,7 +1641,7 @@ fn patch_deheat_room<'r>(
 
 fn patch_superheated_room<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     heat_damage_per_sec: f32,
 )
 -> Result<(), String>
@@ -1697,7 +1697,7 @@ fn is_underwater_sound<'r>(obj: &structs::SclyObject<'r>) -> bool {
 
 fn patch_remove_water<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
 )
 -> Result<(), String>
 {
@@ -2088,7 +2088,7 @@ impl WaterType
 
 fn patch_submerge_room<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
 )
 -> Result<(), String>
@@ -2127,7 +2127,7 @@ fn patch_submerge_room<'r>(
 
 fn patch_add_liquid<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     water_config: &WaterConfig,
     resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
 )
@@ -2164,7 +2164,7 @@ fn patch_add_liquid<'r>(
 
 fn patch_remove_tangle_weed_scan_point<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     tangle_weed_ids: Vec<u32>,
 ) -> Result<(), String>
 {
@@ -2186,7 +2186,7 @@ fn patch_remove_tangle_weed_scan_point<'r>(
 
 fn patch_add_poi<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     scan_id: ResId<res_id::SCAN>,
     strg_id: ResId<res_id::STRG>,
@@ -2231,7 +2231,7 @@ fn patch_add_poi<'r>(
 
 fn patch_add_scan_actor<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     position: [f32;3],
     rotation: f32,
@@ -2358,7 +2358,7 @@ where R: Rng
 }
 
 fn get_shuffled_position<'r, R>(
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     rng: &mut R,
 )
 -> [f32; 3]
@@ -2484,7 +2484,7 @@ fn add_pickups_to_mapa<'r>(
 
 fn modify_pickups_in_mrea<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     _pickup_idx: usize,
     pickup_config: &PickupConfig,
     pickup_location: pickup_meta::PickupLocation,
@@ -3378,7 +3378,7 @@ fn rotate(mut coordinate: [f32; 3], mut rotation: [f32; 3], center: [f32; 3])
 
 fn patch_samus_actor_size<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     player_size: f32,
 ) -> Result<(), String>
 {
@@ -3434,7 +3434,7 @@ fn patch_samus_actor_size<'r>(
 
 fn patch_elevator_actor_size<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     player_size: f32,
 ) -> Result<(), String>
 {
@@ -3778,7 +3778,7 @@ fn patch_post_pq_frigate(
 
 fn patch_add_platform<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     position: [f32;3],
     rotation: [f32;3],
@@ -3909,7 +3909,7 @@ fn patch_add_platform<'r>(
 }
 
 fn add_block<'r>(
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     position: [f32;3],
     scale: [f32;3],
     texture: GenericTexture,
@@ -4002,7 +4002,7 @@ fn add_block<'r>(
 
 fn patch_add_block<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     position: [f32;3],
     scale: [f32;3],
@@ -4046,7 +4046,7 @@ fn local_to_global_tranform(
 }
 
 fn derrive_bounding_box_measurements<'r>(
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
 ) -> ([f32;3], [f32;3], [f32;3], [f32;3])
 {
     let area_transform: [f32;12] = area.mlvl_area.area_transform.into();
@@ -4081,7 +4081,7 @@ fn derrive_bounding_box_measurements<'r>(
 
 fn patch_visible_aether_boundaries<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
 )
 -> Result<(), String>
@@ -4163,7 +4163,7 @@ fn patch_visible_aether_boundaries<'r>(
 
 fn patch_add_escape_sequence<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     // mut time_s: f32,
     start_trigger_pos: [f32;3],
     start_trigger_scale: [f32;3],
@@ -4296,7 +4296,7 @@ fn patch_add_escape_sequence<'r>(
 
 fn patch_lock_on_point<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     position: [f32;3],
     is_grapple: bool,
@@ -4601,7 +4601,7 @@ fn patch_lock_on_point<'r>(
 
 fn patch_ambient_lighting<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     scale: f32,
 ) -> Result<(), String>
 {
@@ -4619,7 +4619,7 @@ fn patch_ambient_lighting<'r>(
 
 // fn patch_add_orange_light<'r>(
 //     ps: &mut PatcherState,
-//     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+//     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
 //     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
 //     position: [f32;3],
 //     scale: [f32;3],
@@ -5778,7 +5778,7 @@ fn patch_arboretum_invisible_wall(
 fn patch_cutscene_force_phazon_suit<'r>
 (
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
 )
 -> Result<(), String>
 {
@@ -5800,7 +5800,7 @@ fn patch_cutscene_force_phazon_suit<'r>
 fn patch_remove_otrs<'r>
 (
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     otrs: &'static [ObjectsToRemove],
     remove: bool,
 )
@@ -5819,7 +5819,7 @@ fn patch_remove_otrs<'r>
 fn patch_remove_ids<'r>
 (
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     remove_ids: Vec<u32>,
 )
 -> Result<(), String>
@@ -5835,7 +5835,7 @@ fn patch_remove_ids<'r>
 fn patch_remove_doors<'r>
 (
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
 )
 -> Result<(), String>
 {
@@ -5853,7 +5853,7 @@ fn patch_remove_doors<'r>
 
 fn patch_transform_bounding_box<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     offset: [f32;3],
     scale: [f32;3],
 )
@@ -5878,7 +5878,7 @@ fn patch_transform_bounding_box<'r>(
 
 fn patch_spawn_point_position<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     new_position: [f32; 3],
     relative_position: bool,
     force_default: bool,
@@ -6935,7 +6935,7 @@ fn patch_heat_damage_per_sec<'a>(patcher: &mut PrimePatcher<'_, 'a>, heat_damage
 
 fn patch_save_station_for_warp_to_start<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     spawn_room: SpawnRoomData,
     version: Version,
@@ -7350,7 +7350,7 @@ fn patch_completion_screen(
 
 fn patch_starting_pickups<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     starting_items: &StartingItems,
     show_starting_memo: bool,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
@@ -8824,7 +8824,7 @@ fn patch_ctwk_ball(res: &mut structs::Resource, ctwk_config: &CtwkConfig)
 
 fn patch_subchamber_five_nintendont_fix<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
 )
 -> Result<(), String>
 {
@@ -8868,7 +8868,7 @@ fn patch_subchamber_five_nintendont_fix<'r>(
 
 fn patch_final_boss_permadeath<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
 )
 -> Result<(), String>
@@ -9441,7 +9441,7 @@ fn patch_ctwk_gui_colors(res: &mut structs::Resource, ctwk_config: &CtwkConfig)
 
 fn patch_move_item_loss_scan<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
 )
 -> Result<(), String>
 {
@@ -9463,7 +9463,7 @@ fn patch_move_item_loss_scan<'r>(
 
 // fn patch_remove_visor_changer<'r>(
 //     _ps: &mut PatcherState,
-//     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+//     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
 // )
 // -> Result<(), String>
 // {
@@ -9502,7 +9502,7 @@ fn is_blast_shield_poi<'r>(obj: &structs::SclyObject<'r>) -> bool {
 
 fn patch_remove_blast_shields<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
 )
 -> Result<(), String>
 {
@@ -9518,7 +9518,7 @@ fn patch_remove_blast_shields<'r>(
 
 fn patch_remove_control_disabler<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
 )
 -> Result<(), String>
 {
@@ -9543,7 +9543,7 @@ fn patch_remove_control_disabler<'r>(
 
 fn patch_add_camera_hint<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     trigger_pos: [f32;3],
     trigger_scale: [f32;3],
     camera_pos: [f32;3],
@@ -9744,7 +9744,7 @@ fn add_camera_hint<'r>(
 
 fn patch_add_dock_teleport<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     source_position: [f32;3],
     source_scale: [f32;3],
     destination_dock_num: u32,
@@ -10069,7 +10069,7 @@ fn patch_add_dock_teleport<'r>(
 
 fn patch_modify_dock<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     scan_id: ResId<res_id::SCAN>,
     strg_id: ResId<res_id::STRG>,
@@ -10279,7 +10279,7 @@ fn patch_modify_dock<'r>(
 
 fn patch_exo_scale<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     scale: f32,
 )
 -> Result<(), String>
@@ -10310,7 +10310,7 @@ fn patch_exo_scale<'r>(
 
 fn patch_ridley_scale<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     version: Version,
     scale: f32,
 )
@@ -10354,7 +10354,7 @@ fn patch_ridley_scale<'r>(
 
 fn patch_omega_pirate_scale<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     scale: f32,
 )
 -> Result<(), String>
@@ -10411,7 +10411,7 @@ fn patch_omega_pirate_scale<'r>(
 
 fn patch_elite_pirate_scale<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     scale: f32,
 )
 -> Result<(), String>
@@ -10448,7 +10448,7 @@ fn patch_elite_pirate_scale<'r>(
 
 fn patch_sheegoth_scale<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     scale: f32,
 )
 -> Result<(), String>
@@ -10470,7 +10470,7 @@ fn patch_sheegoth_scale<'r>(
 
 fn patch_flaahgra_scale<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     scale: f32,
 )
 -> Result<(), String>
@@ -10493,7 +10493,7 @@ fn patch_flaahgra_scale<'r>(
 
 fn patch_idrone_scale<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     scale: f32,
 )
 -> Result<(), String>
@@ -10514,7 +10514,7 @@ fn patch_idrone_scale<'r>(
 
 fn patch_pq_scale<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     scale: f32,
 )
 -> Result<(), String>
@@ -10544,7 +10544,7 @@ fn patch_pq_scale<'r>(
 
 fn patch_thardus_scale<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     scale: f32,
 )
 -> Result<(), String>
@@ -10574,7 +10574,7 @@ fn patch_thardus_scale<'r>(
 
 fn patch_essence_scale<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     scale: f32,
 )
 -> Result<(), String>
@@ -10615,7 +10615,7 @@ fn patch_essence_scale<'r>(
 
 fn patch_drone_scale<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     scale: f32,
 )
 -> Result<(), String>
@@ -10636,7 +10636,7 @@ fn patch_drone_scale<'r>(
 
 fn patch_garbeetle_scale<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
     scale: f32,
 )
 -> Result<(), String>
@@ -11748,7 +11748,7 @@ fn patch_hive_mecha<'a>(patcher: &mut PrimePatcher<'_, 'a>)
     });
 }
 
-fn patch_incinerator_drone_timer<'r>(area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>, timer_name: CString, minimum_time: Option<f32>, random_add: Option<f32>) -> Result<(), String> {
+fn patch_incinerator_drone_timer<'r>(area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>, timer_name: CString, minimum_time: Option<f32>, random_add: Option<f32>) -> Result<(), String> {
     let scly = area.mrea().scly_section_mut();
 
     let layer = &mut scly.layers.as_mut_vec()[0]; // Default
