@@ -1,5 +1,5 @@
 use structs::{
-    Area, AreaLayerFlags, Dependency, MemoryRelayConn, Mlvl, Mrea, SclyLayer, SclyObject, Resource,
+    Area, AreaLayerFlags, Dependency, MemoryRelayConn, Mlvl, Mrea, Savw, SclyLayer, SclyObject, Resource,
     ResourceListCursor
 };
 use reader_writer::{CStr, CStrConversionExtension, FourCC, LazyArray};
@@ -10,9 +10,10 @@ use std::collections::HashMap;
 pub struct MlvlEditor<'r>
 {
     pub mlvl: Mlvl<'r>,
+    pub savw: Savw<'r>,
 }
 
-pub struct MlvlArea<'r, 'mlvl, 'cursor, 'list>
+pub struct MlvlArea<'r, 'mlvl, 'savw, 'cursor, 'list>
 {
     pub mrea_index: usize,
     pub mrea_cursor: &'cursor mut ResourceListCursor<'r, 'list>,
@@ -20,21 +21,22 @@ pub struct MlvlArea<'r, 'mlvl, 'cursor, 'list>
     pub layer_flags: &'mlvl mut AreaLayerFlags,
     pub layer_names: &'mlvl mut Vec<CStr<'r>>,
     pub memory_relay_conns: &'mlvl mut LazyArray<'r, MemoryRelayConn>,
+    pub persistent_memory_relays: &'savw mut LazyArray<'r, u32>,
     last_assigned_object_id: u32,
 }
 
 impl<'r> MlvlEditor<'r>
 {
-    pub fn new(mlvl: Mlvl<'r>) -> MlvlEditor<'r>
+    pub fn new(mlvl: Mlvl<'r>, savw: Savw<'r>) -> MlvlEditor<'r>
     {
-        MlvlEditor { mlvl }
+        MlvlEditor { mlvl, savw }
     }
 
     pub fn get_area<'s, 'cursor, 'list: 'cursor>(
         &'s mut self,
         mrea_cursor: &'cursor mut ResourceListCursor<'r, 'list>
     )
-        -> MlvlArea<'r, 's, 'cursor, 'list>
+        -> MlvlArea<'r, 's, 's, 'cursor, 'list>
     {
         assert_eq!(mrea_cursor.peek().unwrap().fourcc(), b"MREA".into());
         let file_id = mrea_cursor.peek().unwrap().file_id;
@@ -49,12 +51,13 @@ impl<'r> MlvlEditor<'r>
             layer_flags: self.mlvl.area_layer_flags.as_mut_vec().get_mut(i).unwrap(),
             layer_names: self.mlvl.area_layer_names.mut_names_for_area(i).unwrap(),
             memory_relay_conns: &mut self.mlvl.memory_relay_conns,
+            persistent_memory_relays: &mut self.savw.memory_relay_array,
             last_assigned_object_id: 0,
         }
     }
 }
 
-impl<'r, 'mlvl, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'cursor, 'list>
+impl<'r, 'mlvl, 'savw, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'savw, 'cursor, 'list>
 {
     pub fn mrea_file_id(&mut self) -> u32
     {
@@ -171,6 +174,8 @@ impl<'r, 'mlvl, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'cursor, 'list>
                     active: active
                 });
         }
+
+        self.persistent_memory_relays.as_mut_vec().push(mem_relay.instance_id);
     }
 
     pub fn add_layer(&mut self, name: CStr<'r>)
