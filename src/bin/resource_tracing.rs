@@ -526,7 +526,9 @@ fn extract_pickup_location<'r>(
         });
     };
 
-    // Required for map dots
+    // Get the memory relay linked to the pickup
+    // This memory relay is activated when getting the pickup
+    // and deactivate the pickup when loading again the room
     let memory_relay = search_for_scly_object(&obj.connections, &scly_db,
         |obj| obj.property_data.as_memory_relay()
             .map(|hm| hm.name.to_str().unwrap() == "Memory Relay")
@@ -536,7 +538,7 @@ fn extract_pickup_location<'r>(
     let memory_relay_id = if memory_relay.is_some() {
         memory_relay.unwrap().instance_id
     } else {
-        0xffffffff
+        panic!("Couldn't find the memory relay for pickup {:X}", obj.instance_id)
     };
 
     // If this is a pickup with an associated cutscene, find the connections we want to
