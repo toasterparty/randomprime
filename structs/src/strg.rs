@@ -46,6 +46,37 @@ impl<'r> Strg<'r>
             }].into(),
         }
     }
+
+    pub fn from_strings_pal(strings: Vec<String>) -> Strg<'r>
+    {
+        let strings: LazyArray<LazyUtf16beStr> = strings.into_iter().map(|i| i.into()).collect::<Vec<_>>().into();
+        Strg {
+            string_tables: vec![StrgStringTable {
+                lang: b"ENGL".into(),
+                strings: strings.clone(),
+            },
+            StrgStringTable {
+                lang: b"FREN".into(),
+                strings: strings.clone(),
+            },
+            StrgStringTable {
+                lang: b"GERM".into(),
+                strings: strings.clone(),
+            },
+            StrgStringTable {
+                lang: b"SPAN".into(),
+                strings: strings.clone(),
+            },
+            StrgStringTable {
+                lang: b"ITAL".into(),
+                strings: strings.clone(),
+            },
+            StrgStringTable {
+                lang: b"JAPN".into(),
+                strings: strings,
+            }].into(),
+        }
+    }
 }
 
 #[doc(hidden)]
