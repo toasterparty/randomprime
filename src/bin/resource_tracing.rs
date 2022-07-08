@@ -26,6 +26,7 @@ pub struct PickupLocation
     location: ScriptObjectLocation,
     hudmemo: ScriptObjectLocation,
     attainment_audio: ScriptObjectLocation,
+    memory_relay: ScriptObjectLocation,
     post_pickup_relay_connections: Vec<structs::Connection>,
     position: [f32;3],
 }
@@ -525,6 +526,21 @@ fn extract_pickup_location<'r>(
         });
     };
 
+    // Get the memory relay linked to the pickup
+    // This memory relay is activated when getting the pickup
+    // and deactivate the pickup when loading again the room
+    let memory_relay = search_for_scly_object(&obj.connections, &scly_db,
+        |obj| obj.property_data.as_memory_relay()
+            .map(|hm| hm.name.to_str().unwrap() == "Memory Relay")
+            .unwrap_or(false),
+    );
+
+    let memory_relay_id = if memory_relay.is_some() {
+        memory_relay.unwrap().instance_id
+    } else {
+        panic!("Couldn't find the memory relay for pickup {:X}", obj.instance_id)
+    };
+
     // If this is a pickup with an associated cutscene, find the connections we want to
     // preserve and the objects we want to remove.
     let post_pickup_relay_connections = if CUT_SCENE_PICKUPS.contains(&(mrea_id, obj.instance_id)) {
@@ -542,6 +558,10 @@ fn extract_pickup_location<'r>(
         attainment_audio: attainment_audio_location,
         hudmemo: hudmemo_loc,
         post_pickup_relay_connections: post_pickup_relay_connections,
+        memory_relay: ScriptObjectLocation {
+            layer: memory_relay_id >> 26,
+            instance_id: memory_relay_id,
+        },
         position: pickup.position.clone().into(),
     };
 
@@ -1284,6 +1304,7 @@ fn main()
                 println!("                    location: {:?},", location.location);
                 println!("                    attainment_audio: {:?},", location.attainment_audio);
                 println!("                    hudmemo: {:?},", location.hudmemo);
+                println!("                    memory_relay: {:?},", location.memory_relay);
                 println!("                    position: {:?},", location.position);
                 if location.post_pickup_relay_connections.len() == 0 {
                     println!("                    post_pickup_relay_connections: &[]");
