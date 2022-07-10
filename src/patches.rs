@@ -8214,11 +8214,15 @@ fn patch_dol<'r>(
     let is_memory_active_func = new_text_section_end;
     let is_memory_active_func_patch = ppcasm!(is_memory_active_func, {
         // function header
-        stwu      r1, -0x1c(r1);
+        stwu      r1, -0x24(r1);
         mflr      r0;
-        stw       r0, 0x1c(r1);
-        stw       r14, 0x18(r1);
-        stw       r15, 0x14(r1);
+        stw       r0, 0x24(r1);
+        stw       r14, 0x20(r1);
+        stw       r15, 0x1c(r1);
+        stw       r29, 0x18(r1);
+        mr        r29, r6;
+        stw       r30, 0x14(r1);
+        mr        r30, r4;
         stw       r31, 0x10(r1);
         mr        r31, r3;
 
@@ -8234,25 +8238,29 @@ fn patch_dol<'r>(
         lwz       r6, 0x00(r14);
         addi      r6, r6, 1;
         cmpw      r3, r6;
-        bge       { is_memory_active_func + 0x70 };
+        bge       { is_memory_active_func + 0x80 };
         rlwinm    r3, r3, 2, 0, 29;
         lwzx      r15, r3, r14;
         rlwinm    r3, r3, 30, 4, 31;
         cmpw      r15, r31;
-        bne       { is_memory_active_func + 0x68 };
+        bne       { is_memory_active_func + 0x78 };
         li        r0, 1;
-        b         { is_memory_active_func + 0x70 };
+        b         { is_memory_active_func + 0x80 };
         addi      r3, r3, 1;
-        b         { is_memory_active_func + 0x44 };
+        b         { is_memory_active_func + 0x54 };
         mr        r3, r0;
 
         // function footer
-        lwz       r0, 0x1c(r1);
-        lwz       r14, 0x18(r1);
-        lwz       r15, 0x14(r1);
+        lwz       r0, 0x24(r1);
+        lwz       r14, 0x20(r1);
+        lwz       r15, 0x1c(r1);
+        mr        r6, r29;
+        lwz       r29, 0x18(r1);
+        mr        r4, r30;
+        lwz       r30, 0x14(r1);
         lwz       r31, 0x10(r1);
         mtlr      r0;
-        addi      r1, r1, 0x1c;
+        addi      r1, r1, 0x24;
         blr;
     });
 
@@ -8266,25 +8274,48 @@ fn patch_dol<'r>(
 
     // Pattern to find CMappableObject::Draw(int, const CMapWorldInfo&, float, bool)
     // 2c070000 7c????78 38000000
-    let off = if version == Version::Pal || version == Version::NtscJ {
-        0x284
+    let off = if version == Version::Pal {
+        -0x5e3c
+    } else if version == Version::NtscJ {
+        -0x5e64
     } else {
-        0x298
+        -0x5eb4
     };
-    let set_pickup_icon_txtr_patch = ppcasm!(new_text_section_end, {
+
+    if version == Version::NtscJ || version == Version::Pal {
+        let set_pickup_icon_txtr_patch = ppcasm!(new_text_section_end, {
+            lwz          r3, 0x08(r18);
+            bl           { is_memory_active_func };
+            lis          r31, { custom_asset_ids::MAP_PICKUP_ICON_TXTR.to_u32() }@h;
+            addi         r31, r31, { custom_asset_ids::MAP_PICKUP_ICON_TXTR.to_u32() }@l;
+            mr           r0, r31;
+            cmpwi        r3, 0;
+            lis          r31, 0xffff;
+            ori          r31, r31, 0xffff;
+            lwz          r3, { off }(r13);
+            beq          { new_text_section_end + 0x2c };
+            fmr          f30, f14;
+            b            { symbol_addr!("Draw__15CMappableObjectCFiRC13CMapWorldInfofb", version) + 0x284 };
+        });
+
+        new_text_section_end = new_text_section_end + set_pickup_icon_txtr_patch.encoded_bytes().len() as u32;
+        new_text_section.extend(set_pickup_icon_txtr_patch.encoded_bytes());
+    } else {
+        let set_pickup_icon_txtr_patch = ppcasm!(new_text_section_end, {
             lwz          r3, 0x08(r18);
             bl           { is_memory_active_func };
             cmpwi        r3, 0;
-            lwz          r3, -0x5eb4(r13);
+            lwz          r3, { off }(r13);
             lis          r6, { custom_asset_ids::MAP_PICKUP_ICON_TXTR.to_u32() }@h;
             addi         r6, r6, { custom_asset_ids::MAP_PICKUP_ICON_TXTR.to_u32() }@l;
             beq          { new_text_section_end + 0x20 };
             fmr          f30, f14;
-            b            { symbol_addr!("Draw__15CMappableObjectCFiRC13CMapWorldInfofb", version) + off };
-    });
+            b            { symbol_addr!("Draw__15CMappableObjectCFiRC13CMapWorldInfofb", version) + 0x298 };
+        });
 
-    new_text_section_end = new_text_section_end + set_pickup_icon_txtr_patch.encoded_bytes().len() as u32;
-    new_text_section.extend(set_pickup_icon_txtr_patch.encoded_bytes());
+        new_text_section_end = new_text_section_end + set_pickup_icon_txtr_patch.encoded_bytes().len() as u32;
+        new_text_section.extend(set_pickup_icon_txtr_patch.encoded_bytes());
+    }
 
     if config.warp_to_start
     {
