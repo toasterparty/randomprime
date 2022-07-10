@@ -1,9 +1,12 @@
+use std::str::FromStr;
+
 use auto_struct_macros::auto_struct;
 
 use reader_writer::{LazyArray, RoArray};
 use reader_writer::typenum::*;
 use reader_writer::generic_array::GenericArray;
 
+use serde::{Deserialize, Serialize};
 
 #[auto_struct(Readable, Writable)]
 #[derive(Debug, Clone)]
@@ -71,7 +74,7 @@ pub enum MapaObjectType
     MissileStation     = 37,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Serialize, PartialEq, Debug, Deserialize, Copy, Clone)]
 pub enum MapaObjectVisibilityMode
 {
     Always             = 0,
@@ -79,6 +82,21 @@ pub enum MapaObjectVisibilityMode
     Visit              = 2,
     Never              = 3,
     MapStationOrVisit2 = 4,
+}
+
+impl FromStr for MapaObjectVisibilityMode {
+    type Err = ();
+
+    fn from_str(input: &str) -> Result<MapaObjectVisibilityMode, Self::Err> {
+        match input {
+            "Always"  => Ok(MapaObjectVisibilityMode::Always),
+            "MapStationOrVisit"  => Ok(MapaObjectVisibilityMode::MapStationOrVisit),
+            "Visit"  => Ok(MapaObjectVisibilityMode::Visit),
+            "Never" => Ok(MapaObjectVisibilityMode::Never),
+            "MapStationOrVisit2" => Ok(MapaObjectVisibilityMode::MapStationOrVisit2),
+            _      => Err(()),
+        }
+    }
 }
 
 #[auto_struct(Readable, Writable, FixedSize)]

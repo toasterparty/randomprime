@@ -1,7 +1,6 @@
 use std::{
     ffi::CStr,
     collections::HashMap,
-    fmt,
     fs::{File, OpenOptions},
     fs,
 };
@@ -51,21 +50,6 @@ pub enum ArtifactHintBehavior
     Default,
     None,
     All,
-}
-
-#[derive(Serialize, PartialEq, Debug, Deserialize, Copy, Clone)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub enum MapState
-{
-    Default,
-    Visible,
-    Visited,
-}
-
-impl fmt::Display for MapState {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
-    }
 }
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Copy, Clone)]
@@ -336,6 +320,7 @@ pub struct RoomConfig
     pub superheated: Option<bool>,
     pub remove_water: Option<bool>,
     pub submerge: Option<bool>,
+	pub map_default_state: Option<structs::MapaObjectVisibilityMode>,
     pub liquids: Option<Vec<WaterConfig>>,
     pub pickups: Option<Vec<PickupConfig>>,
     pub extra_scans: Option<Vec<ScanConfig>>,
@@ -520,7 +505,6 @@ pub struct PatchConfig
     pub heat_damage_per_sec: f32,
     pub staggered_suit_damage: bool,
     pub item_max_capacity: HashMap<PickupType, u32>,
-    pub map_default_state: MapState,
     pub auto_enabled_elevators: bool,
     pub multiworld_dol_patches: bool,
     pub update_hint_state_replacement: Option<Vec<u8>>,
@@ -945,23 +929,6 @@ impl PatchConfigPrivate
             }
         };
 
-        let map_default_state = {
-                let map_default_state_string = self.preferences.map_default_state
-                                                .as_deref()
-                                                .unwrap_or("default")
-                                                .trim()
-                                                .to_lowercase();
-                match &map_default_state_string[..] {
-                    "default" => MapState::Default,
-                    "visited" => MapState::Visited,
-                    "visible" => MapState::Visible,
-                    _ => Err(format!(
-                        "Unhandled map default state - '{}'",
-                        map_default_state_string
-                    ))?,
-                }
-        };
-
         let flaahgra_music_files = self.preferences.trilogy_disc_path.as_ref()
             .map(|path| extract_flaahgra_music_files(path))
             .transpose()?;
@@ -1140,7 +1107,6 @@ impl PatchConfigPrivate
             artifact_temple_layer_overrides: self.game_config.artifact_temple_layer_overrides.clone(),
             no_doors: self.game_config.no_doors.unwrap_or(false),
             boss_sizes: self.game_config.boss_sizes.clone().unwrap_or(HashMap::new()),
-            map_default_state,
 
             starting_items,
             item_loss_items: self.game_config.item_loss_items.clone()
