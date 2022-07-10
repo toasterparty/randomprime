@@ -10763,7 +10763,7 @@ fn patch_bnr(
 }
 
 #[derive(PartialEq, Copy, Clone)]
-enum Version
+pub enum Version
 {
     NtscU0_00,
     NtscU0_01,
@@ -12256,7 +12256,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     };
 
     let (game_resources, pickup_hudmemos, pickup_scans, extra_scans, savw_scans_to_add, local_savw_scans_to_add, savw_scan_logbook_category, extern_models) =
-        collect_game_resources(gc_disc, starting_memo, &config)?;
+        collect_game_resources(gc_disc, starting_memo, &config, version)?;
 
     let extern_models = &extern_models;
     let game_resources = &game_resources;

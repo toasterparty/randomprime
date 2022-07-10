@@ -14,7 +14,7 @@ use crate::{
     ResourceData,
     GcDiscLookupExtensions,
     extern_assets::ExternPickupModel,
-    patches::WaterType,
+    patches::{WaterType, Version},
 };
 
 use std::{
@@ -267,6 +267,7 @@ pub fn custom_assets<'r>(
     pickup_scans: &mut HashMap<PickupHashKey, (ResId<res_id::SCAN>, ResId<res_id::STRG>)>,
     extra_scans: &mut HashMap<PickupHashKey, (ResId<res_id::SCAN>, ResId<res_id::STRG>)>,
     config: &PatchConfig,
+    version: Version,
 
 )
 ->
@@ -355,6 +356,7 @@ pub fn custom_assets<'r>(
         custom_asset_ids::SHORELINES_POI_SCAN,
         custom_asset_ids::SHORELINES_POI_STRG,
         "task failed successfully\0".to_string(),
+        version,
     ));
     local_savw_scans_to_add[World::PhendranaDrifts as usize].push(custom_asset_ids::SHORELINES_POI_SCAN);
     assets.extend_from_slice(&create_item_scan_strg_pair_2(
@@ -367,6 +369,7 @@ pub fn custom_assets<'r>(
         ],
         1,
         0,
+        version,
     ));
     local_savw_scans_to_add[World::TallonOverworld as usize].push(custom_asset_ids::CFLDG_POI_SCAN);
     assets.extend_from_slice(&create_item_scan_strg_pair_2(
@@ -379,6 +382,7 @@ pub fn custom_assets<'r>(
         ],
         1,
         0,
+        version,
     ));
     local_savw_scans_to_add[World::TallonOverworld as usize].push(custom_asset_ids::TOURNEY_WINNERS_SCAN);
 
@@ -400,6 +404,7 @@ pub fn custom_assets<'r>(
             vec![format!("{}\0", name)],
             1,
             0,
+            version,
         ));
         global_savw_scans_to_add.push(pt.scan());
 
@@ -510,6 +515,7 @@ pub fn custom_assets<'r>(
                         strings,
                         is_red,
                         *custom_scan.logbook_category.as_ref().unwrap_or(&0),
+                        version,
                         )
                     );
 
@@ -558,6 +564,7 @@ pub fn custom_assets<'r>(
                         scan_id,
                         strg_id,
                         string.clone(),
+                        version,
                     ));
                     local_savw_scans_to_add[world as usize].push(scan_id);
 
@@ -636,6 +643,7 @@ pub fn custom_assets<'r>(
                                 vec![format!("{}\0", scan_text)],
                                 1,
                                 0,
+                                version,
                             ));
                         }
                         else
@@ -644,6 +652,7 @@ pub fn custom_assets<'r>(
                                 scan_id,
                                 strg_id,
                                 format!("{}\0", scan_text),
+                                version,
                             ));
                         }
 
@@ -724,6 +733,7 @@ pub fn custom_assets<'r>(
                     blast_shield.scan_text(),
                     1,
                     0,
+                    version,
                 ));
                 global_savw_scans_to_add.push(blast_shield.scan());
             }
@@ -767,6 +777,7 @@ pub fn collect_game_resources<'r>(
     gc_disc: &structs::GcDisc<'r>,
     starting_memo: Option<&str>,
     config: &PatchConfig,
+    version: Version,
 )
     ->
     Result<
@@ -882,7 +893,7 @@ pub fn collect_game_resources<'r>(
     // Remove extra assets from dependency search since they won't appear     //
     // in any pak. Instead add them to the output resource pool. These assets //
     // are provided as external files checked into the repository.            //
-    let (custom_assets, global_savw_scans_to_add, local_savw_scans_to_add, savw_scan_logbook_category, extern_models) = custom_assets(&found, starting_memo, &mut pickup_hudmemos, &mut pickup_scans, &mut extra_scans, config)?;
+    let (custom_assets, global_savw_scans_to_add, local_savw_scans_to_add, savw_scan_logbook_category, extern_models) = custom_assets(&found, starting_memo, &mut pickup_hudmemos, &mut pickup_scans, &mut extra_scans, config, version)?;
     for res in custom_assets {
         let key = (res.file_id, res.fourcc());
         looking_for.remove(&key);
@@ -1235,9 +1246,10 @@ fn create_item_scan_strg_pair<'r>(
     new_scan: ResId<res_id::SCAN>,
     new_strg: ResId<res_id::STRG>,
     contents: String,
+    version: Version,
 ) -> [structs::Resource<'r>; 2]
 {
-    create_item_scan_strg_pair_2(new_scan, new_strg, vec![contents], 0, 0)
+    create_item_scan_strg_pair_2(new_scan, new_strg, vec![contents], 0, 0, version)
 }
 
 fn create_item_scan_strg_pair_2<'r>(
@@ -1246,6 +1258,7 @@ fn create_item_scan_strg_pair_2<'r>(
     contents: Vec<String>,
     is_important: u8,
     logbook_category: u32,
+    version: Version,
 ) -> [structs::Resource<'r>; 2]
 {
     let scan = build_resource(
@@ -1299,9 +1312,15 @@ fn create_item_scan_strg_pair_2<'r>(
         }),
     );
 
+    let kind = if version == Version::Pal {
+        structs::ResourceKind::Strg(structs::Strg::from_strings_pal(contents))
+    } else {
+        structs::ResourceKind::Strg(structs::Strg::from_strings(contents))
+    };
+
     let strg = build_resource(
         new_strg,
-        structs::ResourceKind::Strg(structs::Strg::from_strings(contents)),
+        kind,
     );
 
     [scan, strg]
