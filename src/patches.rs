@@ -73,7 +73,7 @@ use reader_writer::{
     // Readable,
     Writable,
 };
-use structs::{res_id, ResId, scly_structs::TypeVulnerability};
+use structs::{MapState, res_id, ResId, scly_structs::TypeVulnerability};
 
 use std::{
     borrow::Cow,
@@ -8049,6 +8049,14 @@ fn patch_dol<'r>(
         dol_patcher.ppcasm_patch(&players_choice_scan_dash_patch)?;
     }
 
+    if config.map_default_state == MapState::Visited {
+        let is_area_visited_patch = ppcasm!(symbol_addr!("IsAreaVisited__13CMapWorldInfoCF7TAreaId", version), {
+            li      r3, 0x1;
+            blr;
+        });
+        dol_patcher.ppcasm_patch(&is_area_visited_patch)?;
+    }
+
     // Update default game options to match user's prefrence
     {
         /* define default defaults (lol) */
@@ -12747,7 +12755,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             );
                         }
 
-                        let map_default_state = room.map_default_state.clone().unwrap_or(structs::MapaObjectVisibilityMode::MapStationOrVisit);
+                        let map_default_state = room.map_default_state.clone().unwrap_or(config.map_default_state.into());
                         patcher.add_resource_patch(
                             (&[pak_name.as_bytes()], room_info.mapa_id.to_u32(), reader_writer::FourCC::from_bytes(b"MAPA")),
                             move |res| set_room_map_default_state(res, map_default_state)

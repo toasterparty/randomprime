@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{fmt, str::FromStr};
 
 use auto_struct_macros::auto_struct;
 
@@ -84,16 +84,26 @@ pub enum MapaObjectVisibilityMode
     MapStationOrVisit2 = 4,
 }
 
+impl From<MapState> for MapaObjectVisibilityMode {
+    fn from(map_state: MapState) -> Self {
+        match map_state {
+            MapState::Default => MapaObjectVisibilityMode::MapStationOrVisit,
+            MapState::Visible => MapaObjectVisibilityMode::Always,
+            MapState::Visited => MapaObjectVisibilityMode::Always,
+        }
+    }
+}
+
 impl FromStr for MapaObjectVisibilityMode {
     type Err = ();
 
     fn from_str(input: &str) -> Result<MapaObjectVisibilityMode, Self::Err> {
-        match input {
-            "Always"  => Ok(MapaObjectVisibilityMode::Always),
-            "MapStationOrVisit"  => Ok(MapaObjectVisibilityMode::MapStationOrVisit),
-            "Visit"  => Ok(MapaObjectVisibilityMode::Visit),
-            "Never" => Ok(MapaObjectVisibilityMode::Never),
-            "MapStationOrVisit2" => Ok(MapaObjectVisibilityMode::MapStationOrVisit2),
+        match input.trim() {
+            "always"  => Ok(MapaObjectVisibilityMode::Always),
+            "map_station_or_visit"  => Ok(MapaObjectVisibilityMode::MapStationOrVisit),
+            "visit"  => Ok(MapaObjectVisibilityMode::Visit),
+            "never" => Ok(MapaObjectVisibilityMode::Never),
+            "map_station_or_visit_2" => Ok(MapaObjectVisibilityMode::MapStationOrVisit2),
             _      => Err(()),
         }
     }
@@ -211,5 +221,21 @@ impl<'r> Mapa<'r>
 
         // fix offsets else it crashes
         self.update_offsets()
+    }
+}
+
+// unrelated to mapa but kept for backward compatibility
+#[derive(Serialize, PartialEq, Debug, Deserialize, Copy, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub enum MapState
+{
+    Default,
+    Visible,
+    Visited,
+}
+
+impl fmt::Display for MapState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
     }
 }
