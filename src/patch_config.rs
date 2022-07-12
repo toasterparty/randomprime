@@ -505,7 +505,7 @@ pub struct PatchConfig
     pub heat_damage_per_sec: f32,
     pub staggered_suit_damage: bool,
     pub item_max_capacity: HashMap<PickupType, u32>,
-    #[deprecated = "Use RoomConfig::map_default_state instead of global map_default_state"]
+    // Use RoomConfig::map_default_state instead of global map_default_state
     pub map_default_state: structs::MapState,
     pub auto_enabled_elevators: bool,
     pub multiworld_dol_patches: bool,
