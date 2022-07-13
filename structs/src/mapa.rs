@@ -1,9 +1,12 @@
+use std::{fmt, str::FromStr};
+
 use auto_struct_macros::auto_struct;
 
 use reader_writer::{LazyArray, RoArray};
 use reader_writer::typenum::*;
 use reader_writer::generic_array::GenericArray;
 
+use serde::{Deserialize, Serialize};
 
 #[auto_struct(Readable, Writable)]
 #[derive(Debug, Clone)]
@@ -71,7 +74,7 @@ pub enum MapaObjectType
     MissileStation     = 37,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Serialize, PartialEq, Debug, Deserialize, Copy, Clone)]
 pub enum MapaObjectVisibilityMode
 {
     Always             = 0,
@@ -79,6 +82,31 @@ pub enum MapaObjectVisibilityMode
     Visit              = 2,
     Never              = 3,
     MapStationOrVisit2 = 4,
+}
+
+impl From<MapState> for MapaObjectVisibilityMode {
+    fn from(map_state: MapState) -> Self {
+        match map_state {
+            MapState::Default => MapaObjectVisibilityMode::MapStationOrVisit,
+            MapState::Visible => MapaObjectVisibilityMode::Always,
+            MapState::Visited => MapaObjectVisibilityMode::Always,
+        }
+    }
+}
+
+impl FromStr for MapaObjectVisibilityMode {
+    type Err = ();
+
+    fn from_str(input: &str) -> Result<MapaObjectVisibilityMode, Self::Err> {
+        match input.trim() {
+            "always"  => Ok(MapaObjectVisibilityMode::Always),
+            "map_station_or_visit"  => Ok(MapaObjectVisibilityMode::MapStationOrVisit),
+            "visit"  => Ok(MapaObjectVisibilityMode::Visit),
+            "never" => Ok(MapaObjectVisibilityMode::Never),
+            "map_station_or_visit_2" => Ok(MapaObjectVisibilityMode::MapStationOrVisit2),
+            _      => Err(()),
+        }
+    }
 }
 
 #[auto_struct(Readable, Writable, FixedSize)]
@@ -193,5 +221,21 @@ impl<'r> Mapa<'r>
 
         // fix offsets else it crashes
         self.update_offsets()
+    }
+}
+
+// unrelated to mapa but kept for backward compatibility
+#[derive(Serialize, PartialEq, Debug, Deserialize, Copy, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub enum MapState
+{
+    Default,
+    Visible,
+    Visited,
+}
+
+impl fmt::Display for MapState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
     }
 }

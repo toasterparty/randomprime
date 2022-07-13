@@ -15,7 +15,6 @@ use crate::patch_config::{
     RunMode,
     ArtifactHintBehavior,
     Visor,
-    MapState,
     IsoFormat,
     PickupConfig,
     PatchConfig,
@@ -74,7 +73,7 @@ use reader_writer::{
     // Readable,
     Writable,
 };
-use structs::{res_id, ResId, scly_structs::TypeVulnerability};
+use structs::{MapState, res_id, ResId, scly_structs::TypeVulnerability};
 
 use std::{
     borrow::Cow,
@@ -2418,6 +2417,17 @@ where R: Rng
         bounding_box[1] + (bounding_box[4]-bounding_box[1])*y_factor,
         bounding_box[2] + (bounding_box[5]-bounding_box[2])*z_factor,
     ]
+}
+
+fn set_room_map_default_state(
+    res: &mut structs::Resource,
+    map_default_state: structs::MapaObjectVisibilityMode,
+) -> Result<(), String>
+{
+    let mapa = res.kind.as_mapa_mut().unwrap();
+    mapa.visibility_mode = map_default_state as u32;
+
+    Ok(())
 }
 
 fn add_map_pickup_icon_txtr(file: &mut structs::FstEntryFile<'_>)
@@ -8039,19 +8049,12 @@ fn patch_dol<'r>(
         dol_patcher.ppcasm_patch(&players_choice_scan_dash_patch)?;
     }
 
-    if config.map_default_state != MapState::Default {
-        let is_mapped_patch = ppcasm!(symbol_addr!("IsMapped__13CMapWorldInfoCF7TAreaId", version), {
+    if config.map_default_state == MapState::Visited {
+        let is_area_visited_patch = ppcasm!(symbol_addr!("IsAreaVisited__13CMapWorldInfoCF7TAreaId", version), {
             li      r3, 0x1;
             blr;
         });
-        dol_patcher.ppcasm_patch(&is_mapped_patch)?;
-        if config.map_default_state == MapState::Visited {
-            let is_area_visited_patch = ppcasm!(symbol_addr!("IsAreaVisited__13CMapWorldInfoCF7TAreaId", version), {
-                li      r3, 0x1;
-                blr;
-            });
-            dol_patcher.ppcasm_patch(&is_area_visited_patch)?;
-        }
+        dol_patcher.ppcasm_patch(&is_area_visited_patch)?;
     }
 
     // Update default game options to match user's prefrence
@@ -12186,6 +12189,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             lock_on_points: None,
                             escape_sequences: None,
                             repositions: None,
+                            map_default_state: Some(structs::MapaObjectVisibilityMode::MapStationOrVisit),
                         }
                     );
                 }
@@ -12539,6 +12543,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
         for room_info in rooms.iter() {
             let room_idx = room_info.index();
+
             if remove_control_disabler
             {
                 patcher.add_scly_patch(
@@ -12749,6 +12754,12 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                 move |_ps, area| patch_ambient_lighting(_ps, area, room.ambient_lighting_scale.unwrap()),
                             );
                         }
+
+                        let map_default_state = room.map_default_state.clone().unwrap_or(config.map_default_state.into());
+                        patcher.add_resource_patch(
+                            (&[pak_name.as_bytes()], room_info.mapa_id.to_u32(), reader_writer::FourCC::from_bytes(b"MAPA")),
+                            move |res| set_room_map_default_state(res, map_default_state)
+                        );
 
                         let submerge = room.submerge.clone().unwrap_or(false);
                         if room.remove_water.clone().unwrap_or(false) || submerge {
