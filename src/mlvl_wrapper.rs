@@ -52,7 +52,7 @@ impl<'r> MlvlEditor<'r>
             layer_names: self.mlvl.area_layer_names.mut_names_for_area(i).unwrap(),
             memory_relay_conns: &mut self.mlvl.memory_relay_conns,
             persistent_memory_relays: &mut self.savw.memory_relay_array,
-            last_assigned_object_id: 0,
+            last_assigned_object_id: 0xefff,
         }
     }
 }
@@ -94,19 +94,23 @@ impl<'r, 'mlvl, 'savw, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'savw, 'cursor, 'list
     pub fn new_object_id_from_layer_id(&mut self, layer_id: usize) -> u32
     {
         let mut new_obj_id: u32 = self.last_assigned_object_id;
-        if new_obj_id == 0 {
-            // search for the last object id
-            for layer in self.mrea().scly_section_mut().layers.iter_mut() {
-                for obj in layer.objects.iter_mut() {
-                    if obj.instance_id & 0x7fff > new_obj_id {
-                        new_obj_id = obj.instance_id & 0x7fff
-                    }
-                }
-            }
+
+        if new_obj_id < 0x7fff {
+            panic!("Objects limit reached! (area index = {}, object id  = {})", self.mrea_index, new_obj_id);
         }
 
-        // add one to the last object id so it's using a free slot
-        new_obj_id += 1;
+        let scly = self.mrea().scly_section_mut();
+        let mut objects = scly.layers.iter_mut()
+                          .flat_map(|layer| layer.objects.iter_mut());
+
+        // search for a free slot in the existing objects
+        while objects.any(|obj| obj.instance_id & 0xefff == new_obj_id) {
+            new_obj_id -= 1;
+
+            if new_obj_id < 0x7fff {
+                panic!("Objects limit reached! (area index = {}, object id  = {})", self.mrea_index, new_obj_id);
+            }
+        }
 
         // add the area id to the object id
         new_obj_id |= (self.mrea_index as u32) << 16;
@@ -114,7 +118,7 @@ impl<'r, 'mlvl, 'savw, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'savw, 'cursor, 'list
         // add the layer id to the object id
         new_obj_id |= (layer_id as u32) << 26;
 
-        self.last_assigned_object_id = new_obj_id & 0xff7fff;
+        self.last_assigned_object_id = new_obj_id & 0xefff;
 
         new_obj_id
     }
