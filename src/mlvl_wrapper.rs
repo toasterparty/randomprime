@@ -152,21 +152,16 @@ impl<'r, 'mlvl, 'savw, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'savw, 'cursor, 'list
 
     pub fn add_memory_relay(&mut self, mem_relay: SclyObject<'r>)
     {
-        let layer_id = ((mem_relay.instance_id >> 26) & 0x1f) as usize;
-        let active = mem_relay.property_data.as_memory_relay().unwrap().active;
+        let mem_relay_id = mem_relay.instance_id;
+        let layer_id = ((mem_relay_id >> 26) & 0x1f) as usize;
 
         if !mem_relay.property_data.is_memory_relay() {
             panic!("[add_memory_relay] mem_relay is not a memory relay object! (ID : {:X})", mem_relay.instance_id);
         }
 
-        let layers = self.mrea()
-                         .scly_section_mut()
-                         .layers
-                         .as_mut_vec();
+        self.persistent_memory_relays.as_mut_vec().push(mem_relay_id);
 
-        layers[layer_id].objects
-                        .as_mut_vec()
-                        .push(mem_relay.clone());
+        let active = mem_relay.property_data.as_memory_relay().unwrap().active;
 
         for conn in mem_relay.connections.iter() {
             self.memory_relay_conns
@@ -179,7 +174,14 @@ impl<'r, 'mlvl, 'savw, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'savw, 'cursor, 'list
                 });
         }
 
-        self.persistent_memory_relays.as_mut_vec().push(mem_relay.instance_id);
+        let layers = self.mrea()
+                         .scly_section_mut()
+                         .layers
+                         .as_mut_vec();
+
+        layers[layer_id].objects
+                        .as_mut_vec()
+                        .push(mem_relay);
     }
 
     pub fn add_layer(&mut self, name: CStr<'r>)
