@@ -671,6 +671,15 @@ fn patch_door<'r>(
             ),
         };
 
+        /* Remove shield when it dies */
+        blast_shield.connections.as_mut_vec().push(
+            structs::Connection {
+                state: structs::ConnectionState::DEAD,
+                message: structs::ConnectionMsg::DEACTIVATE,
+                target_object_id: blast_shield_instance_id,
+            }
+        );
+
         // Find the door open trigger
         let mut door_open_trigger_id = 0;
         for obj in layers[0].objects.as_mut_vec() {
@@ -697,6 +706,7 @@ fn patch_door<'r>(
 
         assert!(door_open_trigger_id != 0);
 
+        /* Open the door when the shield is destroyed */
         blast_shield.connections.as_mut_vec().push(
             structs::Connection {
                 state: structs::ConnectionState::DEAD,
@@ -725,7 +735,7 @@ fn patch_door<'r>(
         // This is needed because otherwise the shield would re-appear every
         // time the room is loaded
 
-        // Activate the layer change when blast shield is destroyed
+        // Deactivate the shield's memory relay change when blast shield is destroyed
         blast_shield.connections.as_mut_vec().push(
             structs::Connection {
                 state: structs::ConnectionState::DEAD,
@@ -746,7 +756,7 @@ fn patch_door<'r>(
                                 panic!("Custom Blast Shields cannot be placed on morph ball doors");
                             }
 
-                            // Activate the layer change when the door is opened from the other side
+                            // Deactivatre the shield's memory relay when the door is opened from the other side
                             obj.connections.as_mut_vec().push(
                                 structs::Connection {
                                     state: structs::ConnectionState::MAX_REACHED,
@@ -1358,7 +1368,7 @@ fn patch_add_item<'r>(
 
         area.add_memory_relay(memory_relay);
 
-        // Activate the layer change when item is picked up
+        // Deactivate the pickup's memory relay when item is picked up
         pickup_obj.connections.as_mut_vec().push(
             structs::Connection {
                 state: structs::ConnectionState::ARRIVED,
@@ -7782,6 +7792,8 @@ fn patch_dol<'r>(
         dol_patcher.ppcasm_patch(&splash_scren_patch)?;
     }
 
+    /* This is where I keep random dol patch experiments */
+
     // let boost_on_spider = ppcasm!(symbol_addr!("ComputeBoostBallMovement__10CMorphBallFRC11CFinalInputRC13CStateManagerf", version) + (0x800f4454 - 0x800f43ac), {
     //         nop;
     // });
@@ -7796,6 +7808,36 @@ fn patch_dol<'r>(
     //         nop;
     // });
     // dol_patcher.ppcasm_patch(&disable_platform_ride_patch)?;
+
+    // let fidgety_samus_patch = ppcasm!(0x80041024, {
+    //         nop;
+    // });
+    // dol_patcher.ppcasm_patch(&fidgety_samus_patch)?;    
+    // let fidgety_samus_patch = ppcasm!(0x80041030, {
+    //         nop;
+    // });
+    // dol_patcher.ppcasm_patch(&fidgety_samus_patch)?;
+
+    // let roll_shot_patch = ppcasm!(0x80040540, { // if shot_ready
+    //         nop;
+    // });
+    // dol_patcher.ppcasm_patch(&roll_shot_patch)?;
+    // let roll_shot_patch = ppcasm!(0x8003dd60, { // if unmorphed
+    //         b   0x8003df38;
+    // });
+    // dol_patcher.ppcasm_patch(&roll_shot_patch)?;
+    // let roll_shot_patch = ppcasm!(0x8003dd54, { // if state flags
+    //         b   0x8003df38;
+    // });
+    // dol_patcher.ppcasm_patch(&roll_shot_patch)?;
+    // let roll_shot_patch = ppcasm!(0x8003dd80, { // if uVar4
+    //         b   0x8003df38;
+    // });
+    // dol_patcher.ppcasm_patch(&roll_shot_patch)?;
+    // let roll_shot_patch = ppcasm!(0x8003da74, { // just some random instruction at start of fn
+    //         b   0x8003df38;
+    // });
+    // dol_patcher.ppcasm_patch(&roll_shot_patch)?;
 
     if smoother_teleports {
         // Do not holster arm cannon
