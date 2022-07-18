@@ -735,7 +735,7 @@ fn patch_door<'r>(
         // This is needed because otherwise the shield would re-appear every
         // time the room is loaded
 
-        // Deactivate the shield's memory relay change when blast shield is destroyed
+        // Disable the blast shield via memory relay when it is destroyed
         blast_shield.connections.as_mut_vec().push(
             structs::Connection {
                 state: structs::ConnectionState::DEAD,
@@ -756,7 +756,7 @@ fn patch_door<'r>(
                                 panic!("Custom Blast Shields cannot be placed on morph ball doors");
                             }
 
-                            // Deactivatre the shield's memory relay when the door is opened from the other side
+                            // Disable the blast shield via memory relay when the door is opened from the other side
                             obj.connections.as_mut_vec().push(
                                 structs::Connection {
                                     state: structs::ConnectionState::MAX_REACHED,
@@ -1368,7 +1368,7 @@ fn patch_add_item<'r>(
 
         area.add_memory_relay(memory_relay);
 
-        // Deactivate the pickup's memory relay when item is picked up
+        // Disable the pickup via memory relay when item is obtained
         pickup_obj.connections.as_mut_vec().push(
             structs::Connection {
                 state: structs::ConnectionState::ARRIVED,
