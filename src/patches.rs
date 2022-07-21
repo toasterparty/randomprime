@@ -475,17 +475,50 @@ fn patch_door<'r>(
 
     area.add_dependencies(&door_resources, 0, deps_iter);
 
+    let (damageable_trigger_id, shield_actor_id) = {
+        let scly = area.mrea().scly_section_mut();
+        let layers = &mut scly.layers.as_mut_vec();
+        let door_id = door_loc.door_location.unwrap().instance_id;
+        let mut _damageable_trigger_id: u32 = 0;
+        let mut _shield_actor_id: u32 = 0;
+        for obj in layers[0].objects.as_mut_vec() {
+            let mut has_connection = false;
+            for conn in obj.connections.as_mut_vec() {
+                if conn.target_object_id == door_id && conn.state == structs::ConnectionState::DEAD && conn.message == structs::ConnectionMsg::SET_TO_ZERO {
+                    has_connection = true;
+                    break;
+                }
+            }
+            
+            if has_connection {
+                _damageable_trigger_id = obj.instance_id;
+                _shield_actor_id = obj.connections.as_mut_vec().iter_mut().find(|conn| conn.state == structs::ConnectionState::MAX_REACHED).unwrap().target_object_id;
+                // let dt = obj.property_data.as_damageable_trigger_mut().unwrap();
+                // dt.active = 0; // Damageable trigger is disabled until blast shield is destroyed
+                break;
+            }
+        }
+
+        if _damageable_trigger_id == 0 || _shield_actor_id == 0 {
+            panic!("Failed to find damageable trigger on door in room 0x{:X}", mrea_id);
+        }
+
+        (_damageable_trigger_id, _shield_actor_id)
+    };
+
     // Add blast shield
     let mut memory_relay_id = 0;
     let mut blast_shield_instance_id = 0;
     let mut sound_id = 0;
     let mut streamed_audio_id = 0;
+    let mut timer_id = 0;
 
     if blast_shield_type.is_some() {
         memory_relay_id = area.new_object_id_from_layer_name("Default");
         blast_shield_instance_id = area.new_object_id_from_layer_name("Default");
         sound_id = area.new_object_id_from_layer_name("Default");
         streamed_audio_id = area.new_object_id_from_layer_name("Default");
+        timer_id = area.new_object_id_from_layer_name("Default");
 
         let memory_relay = structs::SclyObject {
             instance_id: memory_relay_id,
@@ -494,7 +527,12 @@ fn patch_door<'r>(
                     state: structs::ConnectionState::ACTIVE,
                     message: structs::ConnectionMsg::DEACTIVATE,
                     target_object_id: blast_shield_instance_id,
-                }
+                },
+                structs::Connection {
+                    state: structs::ConnectionState::ACTIVE,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: timer_id,
+                },
             ].into(),
             property_data: structs::SclyProperty::MemoryRelay(
                 Box::new(structs::MemoryRelay {
@@ -766,6 +804,30 @@ fn patch_door<'r>(
             }
         }
 
+        let timer = structs::SclyObject {
+            instance_id: timer_id,
+            property_data: structs::Timer {
+                name: b"revive dt\0".as_cstr(),
+                start_time: 1.0,
+                max_random_add: 0.0,
+                reset_to_zero: 0,
+                start_immediately: 1,
+                active: 1,
+            }.into(),
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: damageable_trigger_id,
+                },
+                structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::ACTIVATE,
+                    target_object_id: shield_actor_id,
+                },
+            ].into(),
+        };
+
         // Create Gibbs and activate on DEAD //
         // TODO: It's possible, but there's so many goddam dependencies
 
@@ -847,6 +909,7 @@ fn patch_door<'r>(
         layers[0].objects.as_mut_vec().push(streamed_audio);
         layers[0].objects.as_mut_vec().push(sound);
         layers[0].objects.as_mut_vec().push(blast_shield);
+        layers[0].objects.as_mut_vec().push(timer);
     }
 
     // Patch door vulnerability
