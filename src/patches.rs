@@ -526,7 +526,6 @@ fn patch_door<'r>(
         let position: GenericArray<f32, U3>;
         let rotation: GenericArray<f32, U3>;
         let scale: GenericArray<f32, U3>;
-        let hitbox: GenericArray<f32, U3>;
         let scan_offset: GenericArray<f32, U3>;
 
         let door_rotation = door_loc.door_rotation.unwrap();
@@ -542,13 +541,11 @@ fn patch_door<'r>(
                 // Ceiling door
                 position    = [door_shield.position[0] + 2.0, door_shield.position[1], door_shield.position[2] + 0.2].into();
                 rotation    = [0.0, -90.0, 0.0].into();
-                hitbox      = [5.0, 5.0, 0.8].into();
                 scan_offset = [-2.2, 0.0, -0.9].into();
             } else if door_rotation[0] < -90.0 && door_rotation[0] > -270.0 {
                 // Floor door
                 position    = [door_shield.position[0] - 2.0, door_shield.position[1], door_shield.position[2] - 0.2].into();
                 rotation    = [0.0, 90.0, 0.0].into();
-                hitbox      = [5.0, 5.0, 0.8].into();
                 scan_offset = [2.2, 0.0, 0.9].into();
             } else {
                 panic!("Unhandled door rotation on vertical door {:?} in room 0x{:X}", door_rotation, mrea_id);
@@ -556,30 +553,32 @@ fn patch_door<'r>(
         } else {
             scale = [1.0, 1.5, 1.5].into();
             rotation = door_rotation.into();
+            
+            let door_offset: f32 = 0.2;
+            let door_offset_z: f32 = 1.8017;
+
+            let scan_offset_width: f32 = 0.0;
+            let scan_offset_depth: f32 = 1.0;
+            let scan_offset_z: f32 = 2.2;
 
             if door_rotation[2] >= 45.0 && door_rotation[2] < 135.0 {
                 // Leads North
-                hitbox = [5.0, 1.5, 6.0].into();
-                position = [door_shield.position[0], door_shield.position[1] - 0.2, door_shield.position[2]- 1.8017].into();
-                scan_offset = [0.0, -0.8, 2.0].into();
+                position = [door_shield.position[0], door_shield.position[1] - door_offset, door_shield.position[2] - door_offset_z].into();
+                scan_offset = [scan_offset_width, -scan_offset_depth, scan_offset_z].into();
             } else if (door_rotation[2] >= 135.0 && door_rotation[2] < 225.0) || (door_rotation[2] < -135.0 && door_rotation[2] > -225.0) {
                 // Leads East
-                hitbox = [1.5, 5.0, 6.0].into();
-                position = [door_shield.position[0] + 0.2, door_shield.position[1], door_shield.position[2] - 1.8017].into();
-                scan_offset = [0.8, 0.0, 2.0].into();
-
+                position = [door_shield.position[0] + door_offset, door_shield.position[1], door_shield.position[2] - door_offset_z].into();
+                scan_offset = [scan_offset_depth, scan_offset_width, scan_offset_z].into();
             } else if door_rotation[2] >= -135.0 && door_rotation[2] < -45.0 {
                 // Leads South
-                hitbox = [5.0, 1.5, 6.0].into();
-                position = [door_shield.position[0], door_shield.position[1] + 0.2, door_shield.position[2] - 1.8017].into();
-                scan_offset = [0.0, 0.8, 2.0].into();
+                position = [door_shield.position[0], door_shield.position[1] + door_offset, door_shield.position[2] - door_offset_z].into();
+                scan_offset = [scan_offset_width, scan_offset_depth, scan_offset_z].into();
             } else if door_rotation[2] >= -45.0 && door_rotation[2] < 45.0 {
                 // Leads West
-                hitbox = [1.5, 5.0, 6.0].into();
-                position = [door_shield.position[0] - 0.2, door_shield.position[1], door_shield.position[2] - 1.8017].into();
-                scan_offset = [-0.8, 0.0, 2.0].into();
+                position = [door_shield.position[0] - door_offset, door_shield.position[1], door_shield.position[2] - door_offset_z].into();
+                scan_offset = [-scan_offset_depth, scan_offset_width, scan_offset_z].into();
             } else {
-                panic!("Unhandled door rotation on horizontal door {:?} in room 0x{:X}", door_loc.door_rotation, mrea_id);
+                panic!("Unhandled door rotation on horizontal door {:?} in room 0x{:X}", door_rotation, mrea_id);
             }
         }
 
@@ -599,7 +598,7 @@ fn patch_door<'r>(
                     position,
                     rotation,
                     scale,
-                    hitbox,
+                    hitbox: [0.0, 0.0, 0.0].into(),
                     scan_offset,
                     unknown1: 1.0, // mass
                     unknown2: 0.0, // momentum
