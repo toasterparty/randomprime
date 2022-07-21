@@ -671,15 +671,6 @@ fn patch_door<'r>(
             ),
         };
 
-        /* Remove shield when it dies */
-        blast_shield.connections.as_mut_vec().push(
-            structs::Connection {
-                state: structs::ConnectionState::DEAD,
-                message: structs::ConnectionMsg::DEACTIVATE,
-                target_object_id: blast_shield_instance_id,
-            }
-        );
-
         // Find the door open trigger
         let mut door_open_trigger_id = 0;
         for obj in layers[0].objects.as_mut_vec() {

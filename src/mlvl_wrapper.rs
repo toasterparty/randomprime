@@ -94,6 +94,7 @@ impl<'r, 'mlvl, 'savw, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'savw, 'cursor, 'list
     pub fn new_object_id_from_layer_id(&mut self, layer_id: usize) -> u32
     {
         let mut new_obj_id: u32 = self.last_assigned_object_id;
+        new_obj_id -= 1; // subtract one to garuntee uniqueness
 
         if new_obj_id < 0x7fff {
             panic!("Objects limit reached! (area index = {}, object id  = {})", self.mrea_index, new_obj_id);
