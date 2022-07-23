@@ -10971,6 +10971,10 @@ fn patch_qol_game_breaking(
         patch_fix_central_dynamo_crash
     );
     patcher.add_scly_patch(
+        resource_info!("05_under_intro_zoo.MREA").into(), // stop crashing from too much stuff in biohazard containment + our patches
+        patch_fix_central_dynamo_crash
+    );
+    patcher.add_scly_patch(
         resource_info!("00p_mines_connect.MREA").into(),
         patch_fix_pca_crash
     );
