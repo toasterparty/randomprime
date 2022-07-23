@@ -493,8 +493,6 @@ fn patch_door<'r>(
             if has_connection {
                 _damageable_trigger_id = obj.instance_id;
                 _shield_actor_id = obj.connections.as_mut_vec().iter_mut().find(|conn| conn.state == structs::ConnectionState::MAX_REACHED).unwrap().target_object_id;
-                // let dt = obj.property_data.as_damageable_trigger_mut().unwrap();
-                // dt.active = 0; // Damageable trigger is disabled until blast shield is destroyed
                 break;
             }
         }
@@ -513,6 +511,8 @@ fn patch_door<'r>(
     let mut streamed_audio_id = 0;
     let mut timer_id = 0;
     let mut effect_id = 0;
+    let mut relay_id = 0;
+    let mut dt_id = 0;
 
     if blast_shield_type.is_some() {
         memory_relay_id = area.new_object_id_from_layer_name("Default");
@@ -521,6 +521,8 @@ fn patch_door<'r>(
         streamed_audio_id = area.new_object_id_from_layer_name("Default");
         timer_id = area.new_object_id_from_layer_name("Default");
         effect_id = area.new_object_id_from_layer_name("Default");
+        relay_id = area.new_object_id_from_layer_name("Default");
+        dt_id = area.new_object_id_from_layer_name("Default");
 
         let memory_relay = structs::SclyObject {
             instance_id: memory_relay_id,
@@ -591,7 +593,8 @@ fn patch_door<'r>(
                 panic!("Unhandled door rotation on vertical door {:?} in room 0x{:X}", door_rotation, mrea_id);
             }
         } else {
-            scale = [1.0, 1.5, 1.5].into();
+            let scale_scale = 1.0;
+            scale = [1.0*scale_scale, 1.5*scale_scale, 1.5*scale_scale].into();
             rotation = door_rotation.into();
             
             let door_offset: f32 = 0.2;
@@ -623,14 +626,14 @@ fn patch_door<'r>(
         }
 
         // Create new blast shield actor //
-        let mut blast_shield = structs::SclyObject {
+        let blast_shield = structs::SclyObject {
             instance_id: blast_shield_instance_id,
             connections: vec![
                 structs::Connection {
                     state: structs::ConnectionState::DEAD,
-                    message: structs::ConnectionMsg::DEACTIVATE,
-                    target_object_id: blast_shield_instance_id,
-                },
+                    message: structs::ConnectionMsg::SET_TO_ZERO,
+                    target_object_id: relay_id,
+                }
             ].into(),
             property_data: structs::SclyProperty::Actor(
                 Box::new(structs::Actor {
@@ -682,7 +685,7 @@ fn patch_door<'r>(
                         unknown2: 1.0,
                         visor_params: structs::scly_structs::VisorParameters {
                             unknown0: 0,
-                            target_passthrough: 0,
+                            target_passthrough: 1,
                             visor_mask: 15, // Visor Flags : Combat|Scan|Thermal|XRay
                         },
                         enable_thermal_heat: 0,
@@ -731,49 +734,143 @@ fn patch_door<'r>(
 
         assert!(door_open_trigger_id != 0);
 
-        /* Open the door when the shield is destroyed */
+        /* Create Relay for causing destruction of blast shield */
+        let mut relay = structs::SclyObject {
+            instance_id: relay_id,
+            connections: vec![
+                structs::Connection { // Remove the blast shield
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: blast_shield_instance_id,
+                },
+                structs::Connection { // Stop the blast shield from respawning
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::ACTIVATE,
+                    target_object_id: memory_relay_id,
+                },
+                structs::Connection { // Make gibbs
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::ACTIVATE,
+                    target_object_id: effect_id,
+                },
+                structs::Connection { // Play explosion sound effect TODO: I don't think this is working
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::PLAY,
+                    target_object_id: sound_id,
+                },
+                structs::Connection { // Play puzzle solved jingle
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::PLAY,
+                    target_object_id: streamed_audio_id,
+                },
+                structs::Connection { // remover helper damageable trigger
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: dt_id,
+                },
+            ].into(),
+            property_data: structs::Relay {
+                name: b"myrelay\0".as_cstr(),
+                active: 1,
+            }.into(),
+        };
+
+        /* Create damageable trigger, in case the shot hits the sliver of the door between normal collision and the blast shield hitbox */
+        let (dt_pos, dt_scale) = {
+            let dt_offset_z = 1.9;
+            let dt_offset = 1.0;
+            if door_rotation[2] >= 45.0 && door_rotation[2] < 135.0 {
+                (
+                    [position[0], position[1] - dt_offset, position[2] + dt_offset_z],
+                    [4.0, 0.8, 4.0],
+                )
+                // Leads North
+            } else if (door_rotation[2] >= 135.0 && door_rotation[2] < 225.0) || (door_rotation[2] < -135.0 && door_rotation[2] > -225.0) {
+                // Leads East
+                (
+                    [position[0] + dt_offset, position[1], position[2] + dt_offset_z],
+                    [0.8, 4.0, 4.0],
+                )
+            } else if door_rotation[2] >= -135.0 && door_rotation[2] < -45.0 {
+                // Leads South
+                (
+                    [position[0], position[1] + dt_offset, position[2] + dt_offset_z],
+                    [4.0, 0.8, 4.0],
+                )
+            } else if door_rotation[2] >= -45.0 && door_rotation[2] < 45.0 {
+                // Leads West
+                (
+                    [position[0] - dt_offset, position[1], position[2] + dt_offset_z],
+                    [0.8, 4.0, 4.0],
+                )
+            } else {
+                panic!("Unhandled door rotation on horizontal door {:?} in room 0x{:X}", door_rotation, mrea_id);
+            }
+        };
+
+        let dt = 
+            structs::SclyObject {
+                instance_id: dt_id,
+                connections: vec![
+                    structs::Connection {
+                        state: structs::ConnectionState::DEAD,
+                        message: structs::ConnectionMsg::SET_TO_ZERO,
+                        target_object_id: relay_id,
+                    }
+                ].into(),
+                property_data: structs::DamageableTrigger {
+                    name: b"mydtrigger\0".as_cstr(),
+                    position: dt_pos.into(),
+                    scale: dt_scale.into(),
+                    health_info: structs::scly_structs::HealthInfo {
+                        health: 1.0,
+                        knockback_resistance: 1.0
+                    },
+                    damage_vulnerability: blast_shield_type.vulnerability(),
+                    unknown0: 0, // render side
+                    pattern_txtr0: ResId::invalid(),
+                    pattern_txtr1: ResId::invalid(),
+                    color_txtr: ResId::invalid(),
+                    lock_on: 0,
+                    active: 1,
+                    visor_params: structs::scly_structs::VisorParameters {
+                        unknown0: 0,
+                        target_passthrough: 0,
+                        visor_mask: 15 // Combat|Scan|Thermal|XRay
+                    }
+                }.into(),
+            };
+
+        /* Relay should also open the door, but only if this isn't an unpowered door */
         if !vec![
             (0xAC2C58FE, 1), // Biohazard Containment
             (0x5F2EB7B6, 1), // Biotech Research Area 1
             (0x1921876D, 3), // Ruined Courtyard
         ].contains(&(mrea_id, door_loc.dock_number)) {
-            blast_shield.connections.as_mut_vec().push(
-                structs::Connection {
-                    state: structs::ConnectionState::DEAD,
+            relay.connections.as_mut_vec().push(
+                structs::Connection { // Load next room
+                    state: structs::ConnectionState::ZERO,
                     message: structs::ConnectionMsg::SET_TO_ZERO,
                     target_object_id: door_loc.door_location.unwrap().instance_id,
                 }
             );
-            blast_shield.connections.as_mut_vec().push(
-                structs::Connection {
-                    state: structs::ConnectionState::DEAD,
+            relay.connections.as_mut_vec().push(
+                structs::Connection { // Activate door open trigger
+                    state: structs::ConnectionState::ZERO,
                     message: structs::ConnectionMsg::ACTIVATE,
                     target_object_id: door_open_trigger_id,
                 }
             );
             for loc in door_loc.door_shield_locations {
-                blast_shield.connections.as_mut_vec().push(
-                    structs::Connection {
-                        state: structs::ConnectionState::DEAD,
+                relay.connections.as_mut_vec().push(
+                    structs::Connection { // Deactivate shield
+                        state: structs::ConnectionState::ZERO,
                         message: structs::ConnectionMsg::DEACTIVATE,
                         target_object_id: loc.instance_id,
                     }
                 );
             }
         }
-
-        // Create Memory Relay to disable shield once it is destroyed
-        // This is needed because otherwise the shield would re-appear every
-        // time the room is loaded
-
-        // Disable the blast shield via memory relay when it is destroyed
-        blast_shield.connections.as_mut_vec().push(
-            structs::Connection {
-                state: structs::ConnectionState::DEAD,
-                message: structs::ConnectionMsg::ACTIVATE,
-                target_object_id: memory_relay_id,
-            }
-        );
 
         let mut _break = false;
         for obj in layers[0].objects.as_mut_vec() {
@@ -804,6 +901,15 @@ fn patch_door<'r>(
                                     target_object_id: blast_shield_instance_id,
                                 }
                             );
+                            
+                            // Remove the helper dt when the door is opened from the other side
+                            obj.connections.as_mut_vec().push(
+                                structs::Connection {
+                                    state: structs::ConnectionState::MAX_REACHED,
+                                    message: structs::ConnectionMsg::DEACTIVATE,
+                                    target_object_id: dt_id,
+                                },
+                            );
 
                             _break = true;
                             break;
@@ -812,10 +918,11 @@ fn patch_door<'r>(
             }
         }
 
+        // Timer used to deactivate the damageable trigger again shortly after room loads
         let timer = structs::SclyObject {
             instance_id: timer_id,
             property_data: structs::Timer {
-                name: b"revive dt\0".as_cstr(),
+                name: b"disable-dt\0".as_cstr(),
                 start_time: 1.0,
                 max_random_add: 0.0,
                 reset_to_zero: 0,
@@ -841,7 +948,7 @@ fn patch_door<'r>(
             instance_id: effect_id,
             connections: vec![].into(),
             property_data: structs::scly_props::Effect {
-                name: b"revive dt\0".as_cstr(),
+                name: b"gibbs effect\0".as_cstr(),
 
                 position,
                 rotation,
@@ -884,13 +991,6 @@ fn patch_door<'r>(
                 },
             }.into()
         };
-        blast_shield.connections.as_mut_vec().push(
-            structs::Connection {
-                state: structs::ConnectionState::DEAD,
-                message: structs::ConnectionMsg::ACTIVATE,
-                target_object_id: effect.instance_id,
-            }
-        );
 
         // Create camera shake and activate on DEAD //
         // TODO: It's possible, I'm just lazy
@@ -929,15 +1029,6 @@ fn patch_door<'r>(
             )
         };
 
-        // Blast shield triggers explosion sfx when dead //
-        blast_shield.connections.as_mut_vec().push(
-            structs::Connection {
-                state: structs::ConnectionState::DEAD,
-                message: structs::ConnectionMsg::PLAY,
-                target_object_id: sound.instance_id,
-            }
-        );
-
         // Create "You did it" Jingle //
         let streamed_audio = structs::SclyObject {
             instance_id: streamed_audio_id,
@@ -957,21 +1048,16 @@ fn patch_door<'r>(
             ),
         };
 
-        // Blast shield triggers jingle when dead //
-        blast_shield.connections.as_mut_vec().push(
-            structs::Connection {
-                state: structs::ConnectionState::DEAD,
-                message: structs::ConnectionMsg::PLAY,
-                target_object_id: streamed_audio.instance_id,
-            }
-        );
-
         // add new script objects to layer //
         layers[0].objects.as_mut_vec().push(streamed_audio);
         layers[0].objects.as_mut_vec().push(sound);
         layers[0].objects.as_mut_vec().push(blast_shield);
-        layers[0].objects.as_mut_vec().push(timer);
+        if !is_vertical {
+            layers[0].objects.as_mut_vec().push(timer); // don't disable the dt if it's a vertical door  
+            layers[0].objects.as_mut_vec().push(dt); // we don't need a helper dt then
+        }
         layers[0].objects.as_mut_vec().push(effect);
+        layers[0].objects.as_mut_vec().push(relay);
     }
 
     // Patch door vulnerability
@@ -6379,7 +6465,7 @@ fn patch_debug_trigger_1(
                     knockback_resistance: 1.0,
                 },
                 damage_vulnerability: DoorType::Blue.vulnerability(),
-                unknown0: 0,
+                unknown0: 0, // render side
                 pattern_txtr0: ResId::invalid(),
                 pattern_txtr1: ResId::invalid(),
                 color_txtr: ResId::invalid(),
