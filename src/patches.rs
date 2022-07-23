@@ -732,28 +732,34 @@ fn patch_door<'r>(
         assert!(door_open_trigger_id != 0);
 
         /* Open the door when the shield is destroyed */
-        blast_shield.connections.as_mut_vec().push(
-            structs::Connection {
-                state: structs::ConnectionState::DEAD,
-                message: structs::ConnectionMsg::SET_TO_ZERO,
-                target_object_id: door_loc.door_location.unwrap().instance_id,
-            }
-        );
-        blast_shield.connections.as_mut_vec().push(
-            structs::Connection {
-                state: structs::ConnectionState::DEAD,
-                message: structs::ConnectionMsg::ACTIVATE,
-                target_object_id: door_open_trigger_id,
-            }
-        );
-        for loc in door_loc.door_shield_locations {
+        if !vec![
+            (0xAC2C58FE, 1), // Biohazard Containment
+            (0x5F2EB7B6, 1), // Biotech Research Area 1
+            (0x1921876D, 3), // Ruined Courtyard
+        ].contains(&(mrea_id, door_loc.dock_number)) {
             blast_shield.connections.as_mut_vec().push(
                 structs::Connection {
                     state: structs::ConnectionState::DEAD,
-                    message: structs::ConnectionMsg::DEACTIVATE,
-                    target_object_id: loc.instance_id,
+                    message: structs::ConnectionMsg::SET_TO_ZERO,
+                    target_object_id: door_loc.door_location.unwrap().instance_id,
                 }
             );
+            blast_shield.connections.as_mut_vec().push(
+                structs::Connection {
+                    state: structs::ConnectionState::DEAD,
+                    message: structs::ConnectionMsg::ACTIVATE,
+                    target_object_id: door_open_trigger_id,
+                }
+            );
+            for loc in door_loc.door_shield_locations {
+                blast_shield.connections.as_mut_vec().push(
+                    structs::Connection {
+                        state: structs::ConnectionState::DEAD,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: loc.instance_id,
+                    }
+                );
+            }
         }
 
         // Create Memory Relay to disable shield once it is destroyed
