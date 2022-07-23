@@ -512,6 +512,7 @@ fn patch_door<'r>(
     let mut sound_id = 0;
     let mut streamed_audio_id = 0;
     let mut timer_id = 0;
+    let mut effect_id = 0;
 
     if blast_shield_type.is_some() {
         memory_relay_id = area.new_object_id_from_layer_name("Default");
@@ -519,6 +520,7 @@ fn patch_door<'r>(
         sound_id = area.new_object_id_from_layer_name("Default");
         streamed_audio_id = area.new_object_id_from_layer_name("Default");
         timer_id = area.new_object_id_from_layer_name("Default");
+        effect_id = area.new_object_id_from_layer_name("Default");
 
         let memory_relay = structs::SclyObject {
             instance_id: memory_relay_id,
@@ -829,7 +831,60 @@ fn patch_door<'r>(
         };
 
         // Create Gibbs and activate on DEAD //
-        // TODO: It's possible, but there's so many goddam dependencies
+        let effect = structs::SclyObject {
+            instance_id: effect_id,
+            connections: vec![].into(),
+            property_data: structs::scly_props::Effect {
+                name: b"revive dt\0".as_cstr(),
+
+                position,
+                rotation,
+                scale,
+            
+                part: ResId::<res_id::PART>::new(0xCDCBDF04),
+                elsc: ResId::invalid(),
+                hot_in_thermal: 0,
+                no_timer_unless_area_occluded: 0,
+                rebuild_systems_on_active: 1,
+                active: 0,
+                use_rate_inverse_cam_dist: 0,
+                rate_inverse_cam_dist: 5.0,
+                rate_inverse_cam_dist_rate: 0.5,
+                duration: 0.2,
+                dureation_reset_while_visible: 0.1,
+                use_rate_cam_dist_range: 0,
+                rate_cam_dist_range_min: 20.0,
+                rate_cam_dist_range_max: 30.0,
+                rate_cam_dist_range_far_rate: 0.0,
+                combat_visor_visible: 1,
+                thermal_visor_visible:1 ,
+                xray_visor_visible: 1,
+                die_when_systems_done: 0,
+                light_params: structs::scly_structs::LightParameters {
+                    unknown0: 1,
+                    unknown1: 1.0,
+                    shadow_tessellation: 0,
+                    unknown2: 1.0,
+                    unknown3: 20.0,
+                    color: [1.0, 1.0, 1.0, 1.0].into(), // RGBA
+                    unknown4: 0,
+                    world_lighting: 1,
+                    light_recalculation: 1,
+                    unknown5: [0.0, 0.0, 0.0].into(),
+                    unknown6: 4,
+                    unknown7: 4,
+                    unknown8: 0,
+                    light_layer_id: 0,
+                },
+            }.into()
+        };
+        blast_shield.connections.as_mut_vec().push(
+            structs::Connection {
+                state: structs::ConnectionState::DEAD,
+                message: structs::ConnectionMsg::ACTIVATE,
+                target_object_id: effect.instance_id,
+            }
+        );
 
         // Create camera shake and activate on DEAD //
         // TODO: It's possible, I'm just lazy
@@ -910,6 +965,7 @@ fn patch_door<'r>(
         layers[0].objects.as_mut_vec().push(sound);
         layers[0].objects.as_mut_vec().push(blast_shield);
         layers[0].objects.as_mut_vec().push(timer);
+        layers[0].objects.as_mut_vec().push(effect);
     }
 
     // Patch door vulnerability
