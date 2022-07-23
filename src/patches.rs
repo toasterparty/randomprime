@@ -571,6 +571,8 @@ fn patch_door<'r>(
         let scan_offset: GenericArray<f32, U3>;
 
         let door_rotation = door_loc.door_rotation.unwrap();
+        let mut is_ceiling = false;
+        let mut is_floor = false;
 
         if is_vertical {
             if door_loc.door_rotation.is_none() {
@@ -581,11 +583,13 @@ fn patch_door<'r>(
 
             if door_rotation[0] > -90.0 && door_rotation[0] < 90.0 {
                 // Ceiling door
+                is_ceiling = true;
                 position    = [door_shield.position[0] + 2.0, door_shield.position[1], door_shield.position[2] + 0.2].into();
                 rotation    = [0.0, -90.0, 0.0].into();
                 scan_offset = [-2.2, 0.0, -0.9].into();
             } else if door_rotation[0] < -90.0 && door_rotation[0] > -270.0 {
                 // Floor door
+                is_floor = true;
                 position    = [door_shield.position[0] - 2.0, door_shield.position[1], door_shield.position[2] - 0.2].into();
                 rotation    = [0.0, 90.0, 0.0].into();
                 scan_offset = [2.2, 0.0, 0.9].into();
@@ -779,12 +783,23 @@ fn patch_door<'r>(
         let (dt_pos, dt_scale) = {
             let dt_offset_z = 1.9;
             let dt_offset = 1.0;
-            if door_rotation[2] >= 45.0 && door_rotation[2] < 135.0 {
+
+            if is_ceiling {
+                (
+                    [position[0] - dt_offset_z, position[1], position[2] - dt_offset],
+                    [4.0, 4.0, 0.8],
+                )
+            } else if is_floor {
+                (
+                    [position[0] + dt_offset_z, position[1], position[2] + dt_offset],
+                    [4.0, 4.0, 0.8],
+                )
+            } else if door_rotation[2] >= 45.0 && door_rotation[2] < 135.0 {
+                // Leads North
                 (
                     [position[0], position[1] - dt_offset, position[2] + dt_offset_z],
                     [4.0, 0.8, 4.0],
                 )
-                // Leads North
             } else if (door_rotation[2] >= 135.0 && door_rotation[2] < 225.0) || (door_rotation[2] < -135.0 && door_rotation[2] > -225.0) {
                 // Leads East
                 (
@@ -831,11 +846,11 @@ fn patch_door<'r>(
                     pattern_txtr0: ResId::invalid(),
                     pattern_txtr1: ResId::invalid(),
                     color_txtr: ResId::invalid(),
-                    lock_on: 0,
+                    lock_on: 1,
                     active: 1,
                     visor_params: structs::scly_structs::VisorParameters {
                         unknown0: 0,
-                        target_passthrough: 0,
+                        target_passthrough: 1,
                         visor_mask: 15 // Combat|Scan|Thermal|XRay
                     }
                 }.into(),
@@ -1052,10 +1067,8 @@ fn patch_door<'r>(
         layers[0].objects.as_mut_vec().push(streamed_audio);
         layers[0].objects.as_mut_vec().push(sound);
         layers[0].objects.as_mut_vec().push(blast_shield);
-        if !is_vertical {
-            layers[0].objects.as_mut_vec().push(timer); // don't disable the dt if it's a vertical door  
-            layers[0].objects.as_mut_vec().push(dt); // we don't need a helper dt then
-        }
+        layers[0].objects.as_mut_vec().push(timer); // don't disable the dt if it's a vertical door  
+        layers[0].objects.as_mut_vec().push(dt); // we don't need a helper dt then
         layers[0].objects.as_mut_vec().push(effect);
         layers[0].objects.as_mut_vec().push(relay);
     }
