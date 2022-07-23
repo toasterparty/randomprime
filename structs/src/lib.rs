@@ -43,6 +43,7 @@ pub mod scly_props
     pub mod grapple_point;
     pub mod hud_memo;
     pub mod memory_relay;
+    pub mod new_camera_shaker;
     pub mod pickup;
     pub mod pickup_generator;
     pub mod platorm;
@@ -93,6 +94,7 @@ pub mod scly_props
     pub use self::grapple_point::*;
     pub use self::hud_memo::*;
     pub use self::memory_relay::*;
+    pub use self::new_camera_shaker::*;
     pub use self::pickup::*;
     pub use self::pickup_generator::*;
     pub use self::platorm::*;
@@ -142,6 +144,7 @@ pub use scly_props::effect::*;
 pub use scly_props::grapple_point::*;
 pub use scly_props::hud_memo::*;
 pub use scly_props::memory_relay::*;
+pub use scly_props::new_camera_shaker::*;
 pub use scly_props::pickup_generator::*;
 pub use scly_props::pickup::*;
 pub use scly_props::platorm::*;

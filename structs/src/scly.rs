@@ -234,6 +234,7 @@ build_scly_property!(
     GrapplePoint,         is_grapple_point,          as_grapple_point,          as_grapple_point_mut,
     HudMemo,              is_hud_memo,               as_hud_memo,               as_hud_memo_mut,
     MemoryRelay,          is_memory_relay,           as_memory_relay,           as_memory_relay_mut,
+    NewCameraShaker,      is_new_camera_shaker,      as_new_camera_shaker,      as_new_camera_shaker_mut,
     Pickup,               is_pickup,                 as_pickup,                 as_pickup_mut,
     PickupGenerator,      is_pickup_generator,       as_pickup_generator,       as_pickup_generator_mut,
     Platform,             is_platform,               as_platform,               as_platform_mut,
