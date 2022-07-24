@@ -567,6 +567,7 @@ fn patch_door<'r>(
         // Calculate placement //
         let position: GenericArray<f32, U3>;
         let rotation: GenericArray<f32, U3>;
+        let hitbox: GenericArray<f32, U3>;
         let scale: GenericArray<f32, U3>;
         let scan_offset: GenericArray<f32, U3>;
 
@@ -579,7 +580,8 @@ fn patch_door<'r>(
                 panic!("Vertical door in room {:X} didn't get position data dumped", mrea_id);
             }
 
-            scale = [1.7, 1.7, 1.7].into();
+            scale = [1.6, 1.6, 1.6].into();
+            hitbox = [5.0, 5.0, 0.8].into();
 
             if door_rotation[0] > -90.0 && door_rotation[0] < 90.0 {
                 // Ceiling door
@@ -607,6 +609,8 @@ fn patch_door<'r>(
             let scan_offset_width: f32 = 0.0;
             let scan_offset_depth: f32 = 1.0;
             let scan_offset_z: f32 = 2.2;
+
+            hitbox = [0.0, 0.0, 0.0].into();
 
             if door_rotation[2] >= 45.0 && door_rotation[2] < 135.0 {
                 // Leads North
@@ -645,7 +649,7 @@ fn patch_door<'r>(
                     position,
                     rotation,
                     scale,
-                    hitbox: [0.0, 0.0, 0.0].into(),
+                    hitbox,
                     scan_offset,
                     unknown1: 1.0, // mass
                     unknown2: 0.0, // momentum
@@ -721,7 +725,7 @@ fn patch_door<'r>(
 
             let mut is_the_trigger = false;
             for conn in obj.connections.as_mut_vec() {
-                if conn.target_object_id&0x00FFFFFF == door_loc.door_location.unwrap().instance_id&0x00FFFFFF {
+                if conn.target_object_id&0x00FFFFFF == door_loc.door_location.unwrap().instance_id&0x00FFFFFF && conn.message == structs::ConnectionMsg::OPEN {
                     is_the_trigger = true;
                     break;
                 }
