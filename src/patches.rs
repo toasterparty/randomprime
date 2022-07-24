@@ -7538,14 +7538,31 @@ fn patch_credits(
             .as_mut_vec()
             .push(output_jpn.into());
     }
-    res.kind.as_strg_mut().unwrap().string_tables
-        .as_mut_vec()
+
+    let string_tables = res.kind
+        .as_strg_mut()
+        .unwrap()
+        .string_tables
+        .as_mut_vec();
+
+    let strings = string_tables
         .iter_mut()
         .find(|table| table.lang == b"ENGL".into())
         .unwrap()
         .strings
-        .as_mut_vec()
-        .push(output.into());
+        .as_mut_vec();
+
+    strings.push(output.into());
+
+    /* We are who we choose to be */
+    /* https://mobile.twitter.com/ZoidCTF/status/1542699504041750528 */
+    strings[0] = strings[0]
+        .clone()
+        .into_string()
+        .replace("David 'Zoid' Kirsch", "Zoid Kirsch")
+        .to_owned()
+        .into();
+
     Ok(())
 }
 
