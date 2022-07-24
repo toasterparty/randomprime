@@ -1008,7 +1008,7 @@ impl BlastShieldType {
             BlastShieldType::Wavebuster   => custom_asset_ids::WAVEBUSTER_BLAST_SHIELD_SCAN,
             BlastShieldType::Icespreader  => custom_asset_ids::ICESPREADER_BLAST_SHIELD_SCAN,
             BlastShieldType::Flamethrower => custom_asset_ids::FLAMETHROWER_BLAST_SHIELD_SCAN,
-            _ => ResId::invalid(), // Vanilla missile locks do not have scans associated with the actor
+            BlastShieldType::Missile      => ResId::<res_id::SCAN>::new(0x05F56F9D),
         }
     }
 
@@ -1019,7 +1019,7 @@ impl BlastShieldType {
             BlastShieldType::Wavebuster   => custom_asset_ids::WAVEBUSTER_BLAST_SHIELD_STRG,
             BlastShieldType::Icespreader  => custom_asset_ids::ICESPREADER_BLAST_SHIELD_STRG,
             BlastShieldType::Flamethrower => custom_asset_ids::FLAMETHROWER_BLAST_SHIELD_STRG,
-            _ => ResId::invalid(), // Vanilla missile locks do not have scans associated with the actor
+            BlastShieldType::Missile      => ResId::<res_id::STRG>::new(0x265142BA),
         }
     }
 
