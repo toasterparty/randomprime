@@ -6233,11 +6233,16 @@ fn patch_backwards_lower_mines_mqb(_ps: &mut PatcherState, area: &mut mlvl_wrapp
     Ok(())
 }
 
-fn patch_backwards_lower_mines_mqa(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
+fn patch_backwards_lower_mines_mqa(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea, version: Version)
     -> Result<(), String>
 {
     let scly = area.mrea().scly_section_mut();
-    let layer = &mut scly.layers.as_mut_vec()[0];
+    let layer_id = if version == Version::Pal || version == Version::NtscJ {
+        7
+    } else {
+        0
+    };
+    let layer = &mut scly.layers.as_mut_vec()[layer_id];
     let obj = layer.objects.as_mut_vec().iter_mut()
         .find(|obj| obj.instance_id&0x00FFFFFF == 0x00200214) // metriod aggro trigger
         .unwrap();
@@ -11303,7 +11308,7 @@ fn make_elite_research_fight_prereq_patches(patcher: &mut PrimePatcher)
     });
 }
 
-fn patch_qol_logical(patcher: &mut PrimePatcher, config: &PatchConfig)
+fn patch_qol_logical(patcher: &mut PrimePatcher, config: &PatchConfig, version: Version)
 {
     if config.main_plaza_door {
         patcher.add_scly_patch(
@@ -11353,7 +11358,7 @@ fn patch_qol_logical(patcher: &mut PrimePatcher, config: &PatchConfig)
         );
         patcher.add_scly_patch(
             resource_info!("08_mines.MREA").into(),
-            patch_backwards_lower_mines_mqa
+            move |ps, area| patch_backwards_lower_mines_mqa(ps, area, version)
         );
         patcher.add_scly_patch(
             resource_info!("05_mines_forcefields.MREA").into(),
@@ -14166,7 +14171,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     }
 
     if !config.force_vanilla_layout {
-        patch_qol_logical(&mut patcher, config);
+        patch_qol_logical(&mut patcher, config, version);
     }
 
     for (_boss_name, scale) in config.boss_sizes.iter() {
