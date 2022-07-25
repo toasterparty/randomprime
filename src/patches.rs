@@ -8742,6 +8742,11 @@ fn patch_dol<'r>(
                 fmr       f1, f15;
                 bl        { symbol_addr!("ComputeBoostBallMovement__10CMorphBallFRC11CFinalInputRC13CStateManagerf", version) };
 
+                // clear used registers
+                andi      r14, r14, 0;
+                andi      r15, r15, 0;
+                andi      r16, r16, 0;
+
                 // stack deinit
                 lwz       r0, 0x20(r1);
                 fmr       f1, f15;
