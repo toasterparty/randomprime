@@ -489,7 +489,7 @@ fn patch_door<'r>(
                     break;
                 }
             }
-            
+
             if has_connection {
                 _damageable_trigger_id = obj.instance_id;
                 _shield_actor_id = obj.connections.as_mut_vec().iter_mut().find(|conn| conn.state == structs::ConnectionState::MAX_REACHED).unwrap().target_object_id;
@@ -602,7 +602,7 @@ fn patch_door<'r>(
             let scale_scale = 1.0;
             scale = [1.0*scale_scale, 1.5*scale_scale, 1.5*scale_scale].into();
             rotation = door_rotation.into();
-            
+
             let door_offset: f32 = 0.2;
             let door_offset_z: f32 = 1.8017;
 
@@ -827,7 +827,7 @@ fn patch_door<'r>(
             }
         };
 
-        let dt = 
+        let dt =
             structs::SclyObject {
                 instance_id: dt_id,
                 connections: vec![
@@ -920,7 +920,7 @@ fn patch_door<'r>(
                                     target_object_id: blast_shield_instance_id,
                                 }
                             );
-                            
+
                             // Remove the helper dt when the door is opened from the other side
                             obj.connections.as_mut_vec().push(
                                 structs::Connection {
@@ -972,7 +972,7 @@ fn patch_door<'r>(
                 position,
                 rotation,
                 scale,
-            
+
                 part: ResId::<res_id::PART>::new(0xCDCBDF04),
                 elsc: ResId::invalid(),
                 hot_in_thermal: 0,
@@ -1071,7 +1071,7 @@ fn patch_door<'r>(
         layers[0].objects.as_mut_vec().push(streamed_audio);
         layers[0].objects.as_mut_vec().push(sound);
         layers[0].objects.as_mut_vec().push(blast_shield);
-        layers[0].objects.as_mut_vec().push(timer); // don't disable the dt if it's a vertical door  
+        layers[0].objects.as_mut_vec().push(timer); // don't disable the dt if it's a vertical door
         layers[0].objects.as_mut_vec().push(dt); // we don't need a helper dt then
         layers[0].objects.as_mut_vec().push(effect);
         layers[0].objects.as_mut_vec().push(relay);
@@ -6518,7 +6518,7 @@ fn patch_debug_trigger_2(
 
     let id = area.new_object_id_from_layer_id(6);
     let scly = area.mrea().scly_section_mut();
-    
+
     for layer in scly.layers.as_mut_vec() {
         // find quarantine access door damage trigger
         for obj in layer.objects.as_mut_vec() {
@@ -8051,7 +8051,7 @@ fn patch_dol<'r>(
     // let fidgety_samus_patch = ppcasm!(0x80041024, {
     //         nop;
     // });
-    // dol_patcher.ppcasm_patch(&fidgety_samus_patch)?;    
+    // dol_patcher.ppcasm_patch(&fidgety_samus_patch)?;
     // let fidgety_samus_patch = ppcasm!(0x80041030, {
     //         nop;
     // });
@@ -8495,8 +8495,9 @@ fn patch_dol<'r>(
 
     new_text_section_end = new_text_section_end + rel_loader_size;
 
-    let is_memory_active_func = new_text_section_end;
-    let is_memory_active_func_patch = ppcasm!(is_memory_active_func, {
+    // bool __thiscall CGameState::IsMemoryRelayActive(uint object_id, uint mlvl_id)
+    let is_memory_relay_active_func = new_text_section_end;
+    let is_memory_relay_active_func_patch = ppcasm!(is_memory_relay_active_func, {
         // function header
         stwu      r1, -0x24(r1);
         mflr      r0;
@@ -8514,7 +8515,7 @@ fn patch_dol<'r>(
         lis       r3, { symbol_addr!("g_GameState", version) }@h;
         addi      r3, r3, { symbol_addr!("g_GameState", version) }@l;
         lwz       r3, 0x0(r3);
-        bl        { symbol_addr!("CurrentWorldState__10CGameStateFv", version) };
+        bl        { symbol_addr!("StateForWorld__10CGameStateFUi", version) };
         lwz       r14, 0x08(r3);
         lwz       r14, 0x00(r14);
         li        r0, 0;
@@ -8522,16 +8523,16 @@ fn patch_dol<'r>(
         lwz       r6, 0x00(r14);
         addi      r6, r6, 1;
         cmpw      r3, r6;
-        bge       { is_memory_active_func + 0x80 };
+        bge       { is_memory_relay_active_func + 0x80 };
         rlwinm    r3, r3, 2, 0, 29;
         lwzx      r15, r3, r14;
         rlwinm    r3, r3, 30, 4, 31;
         cmpw      r15, r31;
-        bne       { is_memory_active_func + 0x78 };
+        bne       { is_memory_relay_active_func + 0x78 };
         li        r0, 1;
-        b         { is_memory_active_func + 0x80 };
+        b         { is_memory_relay_active_func + 0x80 };
         addi      r3, r3, 1;
-        b         { is_memory_active_func + 0x54 };
+        b         { is_memory_relay_active_func + 0x54 };
         mr        r3, r0;
 
         // function footer
@@ -8548,14 +8549,17 @@ fn patch_dol<'r>(
         blr;
     });
 
-    new_text_section_end = new_text_section_end + is_memory_active_func_patch.encoded_bytes().len() as u32;
-    new_text_section.extend(is_memory_active_func_patch.encoded_bytes());
+    new_text_section_end = new_text_section_end + is_memory_relay_active_func_patch.encoded_bytes().len() as u32;
+    new_text_section.extend(is_memory_relay_active_func_patch.encoded_bytes());
 
     let patch_pickup_icon_case = ppcasm!(symbol_addr!("Case1B_Switch_Draw__CMappableObject", version) + ((structs::MapaObjectType::Pickup as u32) - 0x1b) * 4, {
             .long         new_text_section_end;
     });
     dol_patcher.ppcasm_patch(&patch_pickup_icon_case)?;
 
+    // r31 -> CMapWorldDrawParams from CMapWorld::DrawAreas()
+    // lwz r4, 0x24(r31) -> IWorld
+    // lwz r4, 0x08(r4) -> MLVL
     // Pattern to find CMappableObject::Draw(int, const CMapWorldInfo&, float, bool)
     // 2c070000 7c????78 38000000
     let off = if version == Version::Pal {
@@ -8569,7 +8573,18 @@ fn patch_dol<'r>(
     if version == Version::NtscJ || version == Version::Pal {
         let set_pickup_icon_txtr_patch = ppcasm!(new_text_section_end, {
             lwz          r3, 0x08(r18);
-            bl           { is_memory_active_func };
+            lwz          r4, 0x6c(r1);
+            lwz          r4, 0x24(r4);
+            lbz          r0, 0x04(r4);
+
+            // here we check if IWorld is CDummyWorld or CWorld
+            cmpwi        r0, 1;
+            beq          { new_text_section_end + 0x20 };
+            lwz          r4, 0x08(r4);
+            b            { new_text_section_end + 0x24 };
+            lwz          r4, 0x0c(r4);
+
+            bl           { is_memory_relay_active_func };
             lis          r31, { custom_asset_ids::MAP_PICKUP_ICON_TXTR.to_u32() }@h;
             addi         r31, r31, { custom_asset_ids::MAP_PICKUP_ICON_TXTR.to_u32() }@l;
             mr           r0, r31;
@@ -8577,7 +8592,7 @@ fn patch_dol<'r>(
             lis          r31, 0xffff;
             ori          r31, r31, 0xffff;
             lwz          r3, { off }(r13);
-            beq          { new_text_section_end + 0x2c };
+            beq          { new_text_section_end + 0x4c };
             fmr          f30, f14;
             b            { symbol_addr!("Draw__15CMappableObjectCFiRC13CMapWorldInfofb", version) + 0x284 };
         });
@@ -8587,12 +8602,22 @@ fn patch_dol<'r>(
     } else {
         let set_pickup_icon_txtr_patch = ppcasm!(new_text_section_end, {
             lwz          r3, 0x08(r18);
-            bl           { is_memory_active_func };
+            lwz          r4, 0x24(r31);
+            lbz          r0, 0x04(r4);
+
+            // here we check if IWorld is CDummyWorld or CWorld
+            cmpwi        r0, 1;
+            beq          { new_text_section_end + 0x1c };
+            lwz          r4, 0x08(r4);
+            b            { new_text_section_end + 0x20 };
+            lwz          r4, 0x0c(r4);
+
+            bl           { is_memory_relay_active_func };
             cmpwi        r3, 0;
             lwz          r3, { off }(r13);
             lis          r6, { custom_asset_ids::MAP_PICKUP_ICON_TXTR.to_u32() }@h;
             addi         r6, r6, { custom_asset_ids::MAP_PICKUP_ICON_TXTR.to_u32() }@l;
-            beq          { new_text_section_end + 0x20 };
+            beq          { new_text_section_end + 0x3c };
             fmr          f30, f14;
             b            { symbol_addr!("Draw__15CMappableObjectCFiRC13CMapWorldInfofb", version) + 0x298 };
         });
