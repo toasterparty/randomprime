@@ -41,7 +41,7 @@ use crate::{
     elevators::{Elevator, SpawnRoom, SpawnRoomData, World, is_elevator},
     gcz_writer::GczWriter,
     mlvl_wrapper,
-    pickup_meta::{self, PickupType, PickupModel, DoorLocation, ObjectsToRemove},
+    pickup_meta::{self, PickupType, PickupModel, DoorLocation, ObjectsToRemove, ScriptObjectLocation },
     door_meta::{DoorType, BlastShieldType},
     patcher::{PatcherState, PrimePatcher},
     starting_items::StartingItems,
@@ -86,6 +86,31 @@ use std::{
     mem,
     time::Instant,
 };
+
+#[derive(Clone, Debug)]
+struct ModifiableDoorLocation {
+    pub door_location: Option<ScriptObjectLocation>,
+    pub door_rotation: Option<[f32;3]>,
+    pub door_force_locations: Box<[ScriptObjectLocation]>,
+    pub door_shield_locations: Box<[ScriptObjectLocation]>,
+    pub dock_number: u32,
+    pub dock_position: [f32;3],
+    pub dock_scale: [f32;3],
+}
+
+impl From<DoorLocation> for ModifiableDoorLocation {
+    fn from(door_loc: DoorLocation) -> Self {
+        ModifiableDoorLocation {
+            door_location: door_loc.door_location,
+            door_rotation: door_loc.door_rotation,
+            door_force_locations: door_loc.door_force_locations.to_vec().into_boxed_slice(),
+            door_shield_locations: door_loc.door_shield_locations.to_vec().into_boxed_slice(),
+            dock_number: door_loc.dock_number,
+            dock_position: door_loc.dock_position,
+            dock_scale: door_loc.dock_scale,
+        }
+    }
+}
 
 const ARTIFACT_OF_TRUTH_REQ_LAYER: u32 = 23;
 
@@ -423,7 +448,7 @@ fn patch_add_scans_to_savw(
 
 fn patch_map_door_icon(
     res: &mut structs::Resource,
-    door: DoorLocation,
+    door: ModifiableDoorLocation,
     map_object_type: u32,
 ) -> Result<(), String>
 {
@@ -445,7 +470,7 @@ fn patch_map_door_icon(
 fn patch_door<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
-    door_loc: DoorLocation,
+    door_loc: ModifiableDoorLocation,
     door_type: Option<DoorType>,
     blast_shield_type: Option<BlastShieldType>,
     door_resources:&HashMap<(u32, FourCC), structs::Resource<'r>>,
@@ -498,7 +523,7 @@ fn patch_door<'r>(
         }
 
         if _damageable_trigger_id == 0 || _shield_actor_id == 0 {
-            panic!("Failed to find damageable trigger on door in room 0x{:X}", mrea_id);
+            panic!("Failed to find damageable trigger on door 0x{:X} in room 0x{:X}", door_id, mrea_id);
         }
 
         (_damageable_trigger_id, _shield_actor_id)
@@ -880,7 +905,7 @@ fn patch_door<'r>(
                     target_object_id: door_open_trigger_id,
                 }
             );
-            for loc in door_loc.door_shield_locations {
+            for loc in door_loc.door_shield_locations.iter() {
                 relay.connections.as_mut_vec().push(
                     structs::Connection { // Deactivate shield
                         state: structs::ConnectionState::ZERO,
@@ -1080,7 +1105,7 @@ fn patch_door<'r>(
     // Patch door vulnerability
     if door_type.is_some() {
         let _door_type = door_type.as_ref().unwrap();
-        for door_force_location in door_loc.door_force_locations {
+        for door_force_location in door_loc.door_force_locations.iter() {
             let door_force = layers[door_force_location.layer as usize].objects.iter_mut()
                 .find(|obj| obj.instance_id == door_force_location.instance_id)
                 .and_then(|obj| obj.property_data.as_damageable_trigger_mut())
@@ -1089,7 +1114,7 @@ fn patch_door<'r>(
             door_force.damage_vulnerability = _door_type.vulnerability();
         }
 
-        for door_shield_location in door_loc.door_shield_locations {
+        for door_shield_location in door_loc.door_shield_locations.iter() {
             let door_shield = layers[door_shield_location.layer as usize].objects.iter_mut()
                 .find(|obj| obj.instance_id == door_shield_location.instance_id)
                 .and_then(|obj| obj.property_data.as_actor_mut())
@@ -13301,13 +13326,30 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 ].contains(&(room_info.room_id.to_u32(), dock_num));
 
                 // Find the corresponding traced info for this dock
-                let mut maybe_door_location: Option<DoorLocation> = None;
+                let mut maybe_door_location: Option<ModifiableDoorLocation> = None;
                 for dl in room_info.door_locations {
                     if dl.dock_number != dock_num {
                         continue;
                     }
 
-                    let door_location = dl.clone();
+                    let mut local_dl: ModifiableDoorLocation = (*dl).into();
+
+                    let mrea_id = room_info.room_id.to_u32();
+
+                    // Some doors have their object IDs changed in non NTSC-U versions
+                    // NTSC-K is based on NTSC-U and shouldn't be part of those changes
+                    if version == Version::Pal || version == Version::NtscJ {
+                        // Tallon Overworld - Temple Security Station
+                        if mrea_id == 0xBDB1FCAC {
+                            if local_dl.door_location.unwrap().instance_id == 0x00070055 {
+                                local_dl.door_location = Some(ScriptObjectLocation { layer: 0, instance_id: 0x000700a5 });
+                                local_dl.door_force_locations = Box::new([ScriptObjectLocation { layer: 0, instance_id: 0x000700a6 }]);
+                                local_dl.door_shield_locations = Box::new([ScriptObjectLocation { layer: 0, instance_id: 0x000700a8 }]);
+                            }
+                        }
+                    }
+
+                    let door_location = local_dl.clone();
                     maybe_door_location = Some(door_location.clone());
 
                     if door_config.shield_type.is_none() && door_config.blast_shield_type.is_none()
@@ -13315,7 +13357,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                         break;
                     }
 
-                    if door_location.door_location.is_none() {
+                    if local_dl.door_location.is_none() {
                         panic!("Tried to modify shield of door in {} on a dock which does not have a door", room_info.name);
                     }
 
@@ -13347,7 +13389,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                         (pak_name.as_bytes(), room_info.room_id.to_u32()),
                         move |ps, area| patch_door(
                             ps, area,
-                            door_location,
+                            local_dl.clone(),
                             door_type,
                             blast_shield_type,
                             game_resources,
@@ -13375,7 +13417,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
                         patcher.add_resource_patch(
                             (&[pak_name.as_bytes()], room_info.mapa_id.to_u32(), b"MAPA".into()),
-                            move |res| patch_map_door_icon(res, door_location, map_object_type)
+                            move |res| patch_map_door_icon(res, door_location.clone(), map_object_type)
                         );
                     }
 
