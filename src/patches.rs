@@ -41,7 +41,7 @@ use crate::{
     elevators::{Elevator, SpawnRoom, SpawnRoomData, World, is_elevator},
     gcz_writer::GczWriter,
     mlvl_wrapper,
-    pickup_meta::{self, PickupType, PickupModel, DoorLocation, ObjectsToRemove},
+    pickup_meta::{self, PickupType, PickupModel, DoorLocation, ObjectsToRemove, ScriptObjectLocation },
     door_meta::{DoorType, BlastShieldType},
     patcher::{PatcherState, PrimePatcher},
     starting_items::StartingItems,
@@ -86,6 +86,31 @@ use std::{
     mem,
     time::Instant,
 };
+
+#[derive(Clone, Debug)]
+struct ModifiableDoorLocation {
+    pub door_location: Option<ScriptObjectLocation>,
+    pub door_rotation: Option<[f32;3]>,
+    pub door_force_locations: Box<[ScriptObjectLocation]>,
+    pub door_shield_locations: Box<[ScriptObjectLocation]>,
+    pub dock_number: u32,
+    pub dock_position: [f32;3],
+    pub dock_scale: [f32;3],
+}
+
+impl From<DoorLocation> for ModifiableDoorLocation {
+    fn from(door_loc: DoorLocation) -> Self {
+        ModifiableDoorLocation {
+            door_location: door_loc.door_location,
+            door_rotation: door_loc.door_rotation,
+            door_force_locations: door_loc.door_force_locations.to_vec().into_boxed_slice(),
+            door_shield_locations: door_loc.door_shield_locations.to_vec().into_boxed_slice(),
+            dock_number: door_loc.dock_number,
+            dock_position: door_loc.dock_position,
+            dock_scale: door_loc.dock_scale,
+        }
+    }
+}
 
 const ARTIFACT_OF_TRUTH_REQ_LAYER: u32 = 23;
 
@@ -423,7 +448,7 @@ fn patch_add_scans_to_savw(
 
 fn patch_map_door_icon(
     res: &mut structs::Resource,
-    door: DoorLocation,
+    door: ModifiableDoorLocation,
     map_object_type: u32,
 ) -> Result<(), String>
 {
@@ -445,7 +470,7 @@ fn patch_map_door_icon(
 fn patch_door<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
-    door_loc: DoorLocation,
+    door_loc: ModifiableDoorLocation,
     door_type: Option<DoorType>,
     blast_shield_type: Option<BlastShieldType>,
     door_resources:&HashMap<(u32, FourCC), structs::Resource<'r>>,
@@ -489,7 +514,7 @@ fn patch_door<'r>(
                     break;
                 }
             }
-            
+
             if has_connection {
                 _damageable_trigger_id = obj.instance_id;
                 _shield_actor_id = obj.connections.as_mut_vec().iter_mut().find(|conn| conn.state == structs::ConnectionState::MAX_REACHED).unwrap().target_object_id;
@@ -498,7 +523,7 @@ fn patch_door<'r>(
         }
 
         if _damageable_trigger_id == 0 || _shield_actor_id == 0 {
-            panic!("Failed to find damageable trigger on door in room 0x{:X}", mrea_id);
+            panic!("Failed to find damageable trigger on door 0x{:X} in room 0x{:X}", door_id, mrea_id);
         }
 
         (_damageable_trigger_id, _shield_actor_id)
@@ -602,7 +627,7 @@ fn patch_door<'r>(
             let scale_scale = 1.0;
             scale = [1.0*scale_scale, 1.5*scale_scale, 1.5*scale_scale].into();
             rotation = door_rotation.into();
-            
+
             let door_offset: f32 = 0.2;
             let door_offset_z: f32 = 1.8017;
 
@@ -827,7 +852,7 @@ fn patch_door<'r>(
             }
         };
 
-        let dt = 
+        let dt =
             structs::SclyObject {
                 instance_id: dt_id,
                 connections: vec![
@@ -880,7 +905,7 @@ fn patch_door<'r>(
                     target_object_id: door_open_trigger_id,
                 }
             );
-            for loc in door_loc.door_shield_locations {
+            for loc in door_loc.door_shield_locations.iter() {
                 relay.connections.as_mut_vec().push(
                     structs::Connection { // Deactivate shield
                         state: structs::ConnectionState::ZERO,
@@ -920,7 +945,7 @@ fn patch_door<'r>(
                                     target_object_id: blast_shield_instance_id,
                                 }
                             );
-                            
+
                             // Remove the helper dt when the door is opened from the other side
                             obj.connections.as_mut_vec().push(
                                 structs::Connection {
@@ -972,7 +997,7 @@ fn patch_door<'r>(
                 position,
                 rotation,
                 scale,
-            
+
                 part: ResId::<res_id::PART>::new(0xCDCBDF04),
                 elsc: ResId::invalid(),
                 hot_in_thermal: 0,
@@ -1071,7 +1096,7 @@ fn patch_door<'r>(
         layers[0].objects.as_mut_vec().push(streamed_audio);
         layers[0].objects.as_mut_vec().push(sound);
         layers[0].objects.as_mut_vec().push(blast_shield);
-        layers[0].objects.as_mut_vec().push(timer); // don't disable the dt if it's a vertical door  
+        layers[0].objects.as_mut_vec().push(timer); // don't disable the dt if it's a vertical door
         layers[0].objects.as_mut_vec().push(dt); // we don't need a helper dt then
         layers[0].objects.as_mut_vec().push(effect);
         layers[0].objects.as_mut_vec().push(relay);
@@ -1080,7 +1105,7 @@ fn patch_door<'r>(
     // Patch door vulnerability
     if door_type.is_some() {
         let _door_type = door_type.as_ref().unwrap();
-        for door_force_location in door_loc.door_force_locations {
+        for door_force_location in door_loc.door_force_locations.iter() {
             let door_force = layers[door_force_location.layer as usize].objects.iter_mut()
                 .find(|obj| obj.instance_id == door_force_location.instance_id)
                 .and_then(|obj| obj.property_data.as_damageable_trigger_mut())
@@ -1089,7 +1114,7 @@ fn patch_door<'r>(
             door_force.damage_vulnerability = _door_type.vulnerability();
         }
 
-        for door_shield_location in door_loc.door_shield_locations {
+        for door_shield_location in door_loc.door_shield_locations.iter() {
             let door_shield = layers[door_shield_location.layer as usize].objects.iter_mut()
                 .find(|obj| obj.instance_id == door_shield_location.instance_id)
                 .and_then(|obj| obj.property_data.as_actor_mut())
@@ -6208,11 +6233,16 @@ fn patch_backwards_lower_mines_mqb(_ps: &mut PatcherState, area: &mut mlvl_wrapp
     Ok(())
 }
 
-fn patch_backwards_lower_mines_mqa(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
+fn patch_backwards_lower_mines_mqa(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea, version: Version)
     -> Result<(), String>
 {
     let scly = area.mrea().scly_section_mut();
-    let layer = &mut scly.layers.as_mut_vec()[0];
+    let layer_id = if version == Version::Pal || version == Version::NtscJ {
+        7
+    } else {
+        0
+    };
+    let layer = &mut scly.layers.as_mut_vec()[layer_id];
     let obj = layer.objects.as_mut_vec().iter_mut()
         .find(|obj| obj.instance_id&0x00FFFFFF == 0x00200214) // metriod aggro trigger
         .unwrap();
@@ -6518,7 +6548,7 @@ fn patch_debug_trigger_2(
 
     let id = area.new_object_id_from_layer_id(6);
     let scly = area.mrea().scly_section_mut();
-    
+
     for layer in scly.layers.as_mut_vec() {
         // find quarantine access door damage trigger
         for obj in layer.objects.as_mut_vec() {
@@ -8051,7 +8081,7 @@ fn patch_dol<'r>(
     // let fidgety_samus_patch = ppcasm!(0x80041024, {
     //         nop;
     // });
-    // dol_patcher.ppcasm_patch(&fidgety_samus_patch)?;    
+    // dol_patcher.ppcasm_patch(&fidgety_samus_patch)?;
     // let fidgety_samus_patch = ppcasm!(0x80041030, {
     //         nop;
     // });
@@ -8495,8 +8525,9 @@ fn patch_dol<'r>(
 
     new_text_section_end = new_text_section_end + rel_loader_size;
 
-    let is_memory_active_func = new_text_section_end;
-    let is_memory_active_func_patch = ppcasm!(is_memory_active_func, {
+    // bool __thiscall CGameState::IsMemoryRelayActive(uint object_id, uint mlvl_id)
+    let is_memory_relay_active_func = new_text_section_end;
+    let is_memory_relay_active_func_patch = ppcasm!(is_memory_relay_active_func, {
         // function header
         stwu      r1, -0x24(r1);
         mflr      r0;
@@ -8514,7 +8545,7 @@ fn patch_dol<'r>(
         lis       r3, { symbol_addr!("g_GameState", version) }@h;
         addi      r3, r3, { symbol_addr!("g_GameState", version) }@l;
         lwz       r3, 0x0(r3);
-        bl        { symbol_addr!("CurrentWorldState__10CGameStateFv", version) };
+        bl        { symbol_addr!("StateForWorld__10CGameStateFUi", version) };
         lwz       r14, 0x08(r3);
         lwz       r14, 0x00(r14);
         li        r0, 0;
@@ -8522,16 +8553,16 @@ fn patch_dol<'r>(
         lwz       r6, 0x00(r14);
         addi      r6, r6, 1;
         cmpw      r3, r6;
-        bge       { is_memory_active_func + 0x80 };
+        bge       { is_memory_relay_active_func + 0x80 };
         rlwinm    r3, r3, 2, 0, 29;
         lwzx      r15, r3, r14;
         rlwinm    r3, r3, 30, 4, 31;
         cmpw      r15, r31;
-        bne       { is_memory_active_func + 0x78 };
+        bne       { is_memory_relay_active_func + 0x78 };
         li        r0, 1;
-        b         { is_memory_active_func + 0x80 };
+        b         { is_memory_relay_active_func + 0x80 };
         addi      r3, r3, 1;
-        b         { is_memory_active_func + 0x54 };
+        b         { is_memory_relay_active_func + 0x54 };
         mr        r3, r0;
 
         // function footer
@@ -8548,14 +8579,17 @@ fn patch_dol<'r>(
         blr;
     });
 
-    new_text_section_end = new_text_section_end + is_memory_active_func_patch.encoded_bytes().len() as u32;
-    new_text_section.extend(is_memory_active_func_patch.encoded_bytes());
+    new_text_section_end = new_text_section_end + is_memory_relay_active_func_patch.encoded_bytes().len() as u32;
+    new_text_section.extend(is_memory_relay_active_func_patch.encoded_bytes());
 
     let patch_pickup_icon_case = ppcasm!(symbol_addr!("Case1B_Switch_Draw__CMappableObject", version) + ((structs::MapaObjectType::Pickup as u32) - 0x1b) * 4, {
             .long         new_text_section_end;
     });
     dol_patcher.ppcasm_patch(&patch_pickup_icon_case)?;
 
+    // r31 -> CMapWorldDrawParams from CMapWorld::DrawAreas()
+    // lwz r4, 0x24(r31) -> IWorld
+    // lwz r4, 0x08(r4) -> MLVL
     // Pattern to find CMappableObject::Draw(int, const CMapWorldInfo&, float, bool)
     // 2c070000 7c????78 38000000
     let off = if version == Version::Pal {
@@ -8569,7 +8603,18 @@ fn patch_dol<'r>(
     if version == Version::NtscJ || version == Version::Pal {
         let set_pickup_icon_txtr_patch = ppcasm!(new_text_section_end, {
             lwz          r3, 0x08(r18);
-            bl           { is_memory_active_func };
+            lwz          r4, 0x6c(r1);
+            lwz          r4, 0x24(r4);
+            lbz          r0, 0x04(r4);
+
+            // here we check if IWorld is CDummyWorld or CWorld
+            cmpwi        r0, 1;
+            beq          { new_text_section_end + 0x20 };
+            lwz          r4, 0x08(r4);
+            b            { new_text_section_end + 0x24 };
+            lwz          r4, 0x0c(r4);
+
+            bl           { is_memory_relay_active_func };
             lis          r31, { custom_asset_ids::MAP_PICKUP_ICON_TXTR.to_u32() }@h;
             addi         r31, r31, { custom_asset_ids::MAP_PICKUP_ICON_TXTR.to_u32() }@l;
             mr           r0, r31;
@@ -8577,7 +8622,7 @@ fn patch_dol<'r>(
             lis          r31, 0xffff;
             ori          r31, r31, 0xffff;
             lwz          r3, { off }(r13);
-            beq          { new_text_section_end + 0x2c };
+            beq          { new_text_section_end + 0x4c };
             fmr          f30, f14;
             b            { symbol_addr!("Draw__15CMappableObjectCFiRC13CMapWorldInfofb", version) + 0x284 };
         });
@@ -8587,12 +8632,22 @@ fn patch_dol<'r>(
     } else {
         let set_pickup_icon_txtr_patch = ppcasm!(new_text_section_end, {
             lwz          r3, 0x08(r18);
-            bl           { is_memory_active_func };
+            lwz          r4, 0x24(r31);
+            lbz          r0, 0x04(r4);
+
+            // here we check if IWorld is CDummyWorld or CWorld
+            cmpwi        r0, 1;
+            beq          { new_text_section_end + 0x1c };
+            lwz          r4, 0x08(r4);
+            b            { new_text_section_end + 0x20 };
+            lwz          r4, 0x0c(r4);
+
+            bl           { is_memory_relay_active_func };
             cmpwi        r3, 0;
             lwz          r3, { off }(r13);
             lis          r6, { custom_asset_ids::MAP_PICKUP_ICON_TXTR.to_u32() }@h;
             addi         r6, r6, { custom_asset_ids::MAP_PICKUP_ICON_TXTR.to_u32() }@l;
-            beq          { new_text_section_end + 0x20 };
+            beq          { new_text_section_end + 0x3c };
             fmr          f30, f14;
             b            { symbol_addr!("Draw__15CMappableObjectCFiRC13CMapWorldInfofb", version) + 0x298 };
         });
@@ -8741,6 +8796,11 @@ fn patch_dol<'r>(
                 mr        r5, r30;
                 fmr       f1, f15;
                 bl        { symbol_addr!("ComputeBoostBallMovement__10CMorphBallFRC11CFinalInputRC13CStateManagerf", version) };
+
+                // clear used registers
+                andi      r14, r14, 0;
+                andi      r15, r15, 0;
+                andi      r16, r16, 0;
 
                 // stack deinit
                 lwz       r0, 0x20(r1);
@@ -11248,7 +11308,7 @@ fn make_elite_research_fight_prereq_patches(patcher: &mut PrimePatcher)
     });
 }
 
-fn patch_qol_logical(patcher: &mut PrimePatcher, config: &PatchConfig)
+fn patch_qol_logical(patcher: &mut PrimePatcher, config: &PatchConfig, version: Version)
 {
     if config.main_plaza_door {
         patcher.add_scly_patch(
@@ -11298,7 +11358,7 @@ fn patch_qol_logical(patcher: &mut PrimePatcher, config: &PatchConfig)
         );
         patcher.add_scly_patch(
             resource_info!("08_mines.MREA").into(),
-            patch_backwards_lower_mines_mqa
+            move |ps, area| patch_backwards_lower_mines_mqa(ps, area, version)
         );
         patcher.add_scly_patch(
             resource_info!("05_mines_forcefields.MREA").into(),
@@ -13271,13 +13331,30 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 ].contains(&(room_info.room_id.to_u32(), dock_num));
 
                 // Find the corresponding traced info for this dock
-                let mut maybe_door_location: Option<DoorLocation> = None;
+                let mut maybe_door_location: Option<ModifiableDoorLocation> = None;
                 for dl in room_info.door_locations {
                     if dl.dock_number != dock_num {
                         continue;
                     }
 
-                    let door_location = dl.clone();
+                    let mut local_dl: ModifiableDoorLocation = (*dl).into();
+
+                    let mrea_id = room_info.room_id.to_u32();
+
+                    // Some doors have their object IDs changed in non NTSC-U versions
+                    // NTSC-K is based on NTSC-U and shouldn't be part of those changes
+                    if version == Version::Pal || version == Version::NtscJ {
+                        // Tallon Overworld - Temple Security Station
+                        if mrea_id == 0xBDB1FCAC {
+                            if local_dl.door_location.unwrap().instance_id == 0x00070055 {
+                                local_dl.door_location = Some(ScriptObjectLocation { layer: 0, instance_id: 0x000700a5 });
+                                local_dl.door_force_locations = Box::new([ScriptObjectLocation { layer: 0, instance_id: 0x000700a6 }]);
+                                local_dl.door_shield_locations = Box::new([ScriptObjectLocation { layer: 0, instance_id: 0x000700a8 }]);
+                            }
+                        }
+                    }
+
+                    let door_location = local_dl.clone();
                     maybe_door_location = Some(door_location.clone());
 
                     if door_config.shield_type.is_none() && door_config.blast_shield_type.is_none()
@@ -13285,7 +13362,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                         break;
                     }
 
-                    if door_location.door_location.is_none() {
+                    if local_dl.door_location.is_none() {
                         panic!("Tried to modify shield of door in {} on a dock which does not have a door", room_info.name);
                     }
 
@@ -13317,7 +13394,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                         (pak_name.as_bytes(), room_info.room_id.to_u32()),
                         move |ps, area| patch_door(
                             ps, area,
-                            door_location,
+                            local_dl.clone(),
                             door_type,
                             blast_shield_type,
                             game_resources,
@@ -13345,7 +13422,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
 
                         patcher.add_resource_patch(
                             (&[pak_name.as_bytes()], room_info.mapa_id.to_u32(), b"MAPA".into()),
-                            move |res| patch_map_door_icon(res, door_location, map_object_type)
+                            move |res| patch_map_door_icon(res, door_location.clone(), map_object_type)
                         );
                     }
 
@@ -14094,7 +14171,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     }
 
     if !config.force_vanilla_layout {
-        patch_qol_logical(&mut patcher, config);
+        patch_qol_logical(&mut patcher, config, version);
     }
 
     for (_boss_name, scale) in config.boss_sizes.iter() {
