@@ -355,55 +355,55 @@ impl DoorType {
                 vec![
                     "Analysis complete.\0".to_string(),
                     "\0".to_string(),
-                    "This door will open open with &push;&main-color=#D91818;Boost Ball&pop;.\0".to_string(),
+                    "This door will open with &push;&main-color=#D91818;Boost Ball&pop;.\0".to_string(),
                 ],
             DoorType::PowerBomb    =>
                 vec![
                     "Analysis complete.\0".to_string(),
                     "\0".to_string(),
-                    "This door will open open with &push;&main-color=#D91818;Power Bombs&pop;.\0".to_string(),
+                    "This door will open with &push;&main-color=#D91818;Power Bombs&pop;.\0".to_string(),
                 ],
             DoorType::Bomb         =>
                 vec![
                     "Analysis complete.\0".to_string(),
                     "\0".to_string(),
-                    "This door will open open with &push;&main-color=#D91818;Morph Ball Bombs&pop;.\0".to_string(),
+                    "This door will open with &push;&main-color=#D91818;Morph Ball Bombs&pop;.\0".to_string(),
                 ],
             DoorType::Missile      =>
                 vec![
                     "Analysis complete.\0".to_string(),
                     "\0".to_string(),
-                    "This door will open open with &push;&main-color=#D91818;Missiles&pop;.\0".to_string(),
+                    "This door will open with &push;&main-color=#D91818;Missiles&pop;.\0".to_string(),
                 ],
             DoorType::Charge       =>
                 vec![
                     "Analysis complete.\0".to_string(),
                     "\0".to_string(),
-                    "This door will open open with &push;&main-color=#D91818;Charge Beam&pop;.\0".to_string(),
+                    "This door will open with &push;&main-color=#D91818;Charge Beam&pop;.\0".to_string(),
                 ],
             DoorType::Super        =>
                 vec![
                     "Analysis complete.\0".to_string(),
                     "\0".to_string(),
-                    "This door will open open with &push;&main-color=#D91818;Super Missiles&pop;.\0".to_string(),
+                    "This door will open with &push;&main-color=#D91818;Super Missiles&pop;.\0".to_string(),
                 ],
             DoorType::Wavebuster   =>
                 vec![
                     "Analysis complete.\0".to_string(),
                     "\0".to_string(),
-                    "This door will open open with &push;&main-color=#D91818;Wavebuster&pop;.\0".to_string(),
+                    "This door will open with &push;&main-color=#D91818;Wavebuster&pop;.\0".to_string(),
                 ],
             DoorType::Icespreader  =>
                 vec![
                     "Analysis complete.\0".to_string(),
                     "\0".to_string(),
-                    "This door will open open with &push;&main-color=#D91818;Ice Spreader&pop;.\0".to_string(),
+                    "This door will open with &push;&main-color=#D91818;Ice Spreader&pop;.\0".to_string(),
                 ],
             DoorType::Flamethrower =>
                 vec![
                     "Analysis complete.\0".to_string(),
                     "\0".to_string(),
-                    "This door will open open with &push;&main-color=#D91818;Flamethrower&pop;.\0".to_string(),
+                    "This door will open with &push;&main-color=#D91818;Flamethrower&pop;.\0".to_string(),
                 ],
             DoorType::Disabled     =>
                 vec![
@@ -415,7 +415,7 @@ impl DoorType {
                 vec![
                     "Analysis complete.\0".to_string(),
                     "\0".to_string(),
-                    "This door will open open with the &push;&main-color=#D91818;help of an enemy&pop;.\0".to_string(),
+                    "This door will open with the &push;&main-color=#D91818;help of an enemy&pop;.\0".to_string(),
                 ],
             DoorType::VerticalBlue         =>   DoorType::Blue.scan_text(),
             DoorType::VerticalPowerOnly    =>   DoorType::PowerOnly.scan_text(),
