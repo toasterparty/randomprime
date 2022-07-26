@@ -424,7 +424,7 @@ fn patch_add_scans_to_savw(
     -> Result<(), String>
 {
     let savw = res.kind.as_savw_mut().unwrap();
-    savw.cinematic_skip_array.as_mut_vec().clear();
+    savw.cinematic_skip_array.as_mut_vec().clear(); // This is obsoleted due to the .dol patch, remove to save space
     let scan_array = savw.scan_array.as_mut_vec();
 
     for entry in scan_array.iter_mut() {
@@ -441,7 +441,7 @@ fn patch_add_scans_to_savw(
     }
 
     // Danger level is about 5,000
-    // println!("size={}", res.size());
+    // println!("size={}", res.resource_info(0).size);
 
     Ok(())
 }
@@ -723,7 +723,7 @@ fn patch_door<'r>(
                         unknown2: 1.0,
                         visor_params: structs::scly_structs::VisorParameters {
                             unknown0: 0,
-                            target_passthrough: 1,
+                            target_passthrough: 0,
                             visor_mask: 15, // Visor Flags : Combat|Scan|Thermal|XRay
                         },
                         enable_thermal_heat: 0,
@@ -1125,6 +1125,36 @@ fn patch_door<'r>(
                 .and_then(|obj| obj.property_data.as_actor_mut())
                 .unwrap();
             door_shield.cmdl = _door_type.shield_cmdl();
+        }
+
+        // Add scan point
+        if _door_type.scan() != ResId::invalid() {
+            let _door_location = door_loc.door_location.unwrap();
+            let door = layers[_door_location.layer as usize].objects.iter_mut()
+                    .find(|obj| obj.instance_id == _door_location.instance_id)
+                    .and_then(|obj| obj.property_data.as_door_mut())
+                    .unwrap();
+    
+            let is_ceiling_door = door.ancs.file_id == 0xf57dd484 && door.rotation[0] > -90.0 && door.rotation[0] < 90.0;
+            let is_floor_door = door.ancs.file_id == 0xf57dd484 && door.rotation[0] < -90.0 && door.rotation[0] > -270.0;
+            let is_morphball_door = door.is_morphball_door != 0;
+    
+            if is_ceiling_door {
+                door.scan_offset[0] = 0.0;
+                door.scan_offset[1] = 0.0;
+                door.scan_offset[2] = -2.5;
+            }
+            else if is_floor_door {
+                door.scan_offset[0] = 0.0;
+                door.scan_offset[1] = 0.0;
+                door.scan_offset[2] = 2.5;
+            } else if is_morphball_door {
+                door.scan_offset[0] = 0.0;
+                door.scan_offset[1] = 0.0;
+                door.scan_offset[2] = 1.0;
+            }
+    
+            door.actor_params.scan_params.scan = _door_type.scan();
         }
     }
 

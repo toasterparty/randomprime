@@ -115,6 +115,7 @@ pub mod custom_asset_ids {
         AI_DOOR_CMDL: CMDL,
 
         VERTICAL_RED_DOOR_CMDL: CMDL,
+        VERTICAL_BOOST_DOOR_CMDL: CMDL,
         VERTICAL_POWER_BOMB_DOOR_CMDL: CMDL,
         VERTICAL_MORPH_BALL_BOMB_DOOR_CMDL: CMDL,
         VERTICAL_MISSILE_DOOR_CMDL: CMDL,
@@ -136,6 +137,29 @@ pub mod custom_asset_ids {
         FLAMETHROWER_DOOR_TXTR: TXTR,
         DISABLED_DOOR_TXTR: TXTR,
         AI_DOOR_TXTR: TXTR,
+
+        BOOST_DOOR_SCAN: SCAN,
+        BOOST_DOOR_STRG: STRG,
+        POWER_BOMB_DOOR_SCAN: SCAN,
+        POWER_BOMB_DOOR_STRG: STRG,
+        BOMB_DOOR_SCAN: SCAN,
+        BOMB_DOOR_STRG: STRG,
+        MISSILE_DOOR_SCAN: SCAN,
+        MISSILE_DOOR_STRG: STRG,
+        CHARGE_DOOR_SCAN: SCAN,
+        CHARGE_DOOR_STRG: STRG,
+        SUPER_MISSILE_DOOR_SCAN: SCAN,
+        SUPER_MISSILE_DOOR_STRG: STRG,
+        WAVEBUSTER_DOOR_SCAN: SCAN,
+        WAVEBUSTER_DOOR_STRG: STRG,
+        ICESPREADER_DOOR_SCAN: SCAN,
+        ICESPREADER_DOOR_STRG: STRG,
+        FLAMETHROWER_DOOR_SCAN: SCAN,
+        FLAMETHROWER_DOOR_STRG: STRG,
+        DISABLED_DOOR_SCAN: SCAN,
+        DISABLED_DOOR_STRG: STRG,
+        AI_DOOR_SCAN: SCAN,
+        AI_DOOR_STRG: STRG,
 
         // blast shield assets //
         POWER_BOMB_BLAST_SHIELD_CMDL: CMDL,
@@ -718,6 +742,28 @@ pub fn custom_assets<'r>(
     for door_type in DoorType::iter() {
         if door_type.shield_cmdl().to_u32() >= 0xDEAF0000 && door_type.shield_cmdl().to_u32() <= custom_asset_ids::EXTRA_IDS_START.to_u32() + 50 { // only if it doesn't exist in-game already
             assets.push(create_custom_door_cmdl(resources, door_type));
+
+            if door_type.scan() != ResId::invalid() || door_type.strg() != ResId::invalid() {
+                if door_type.scan() == ResId::invalid() || door_type.strg() == ResId::invalid() {
+                    panic!("strg/scan do not make a pair");
+                }
+
+                if global_savw_scans_to_add.contains(&door_type.scan()) {
+                    continue; // Duplicate scan point
+                }
+
+                assets.extend_from_slice(
+                    &create_item_scan_strg_pair_2(
+                        door_type.scan(),
+                        door_type.strg(),
+                        door_type.scan_text(),
+                        1,
+                        0,
+                        version,
+                    )
+                );
+                global_savw_scans_to_add.push(door_type.scan());
+            }
         }
     }
 
@@ -726,15 +772,25 @@ pub fn custom_assets<'r>(
         if blast_shield.cmdl().to_u32() >= 0xDEAF0000 && blast_shield.cmdl().to_u32() <= custom_asset_ids::EXTRA_IDS_START.to_u32() + 50 { // only if it doesn't exist in-game already
             assets.push(create_custom_blast_shield_cmdl(resources, blast_shield));
 
-            if blast_shield.scan() != ResId::invalid() && blast_shield.strg() != ResId::invalid() {
-                assets.extend_from_slice(&create_item_scan_strg_pair_2(
-                    blast_shield.scan(),
-                    blast_shield.strg(),
-                    blast_shield.scan_text(),
-                    1,
-                    0,
-                    version,
-                ));
+            if blast_shield.scan() != ResId::invalid() || blast_shield.strg() != ResId::invalid() {
+                if blast_shield.scan() == ResId::invalid() || blast_shield.strg() == ResId::invalid() {
+                    panic!("strg/scan do not make a pair");
+                }
+
+                if global_savw_scans_to_add.contains(&blast_shield.scan()) {
+                    continue; // Duplicate scan point
+                }
+
+                assets.extend_from_slice(
+                    &create_item_scan_strg_pair_2(
+                        blast_shield.scan(),
+                        blast_shield.strg(),
+                        blast_shield.scan_text(),
+                        1,
+                        0,
+                        version,
+                    )
+                );
                 global_savw_scans_to_add.push(blast_shield.scan());
             }
         } else {

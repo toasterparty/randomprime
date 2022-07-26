@@ -29,6 +29,7 @@ pub enum DoorType {
     VerticalPurple,
     VerticalWhite,
     VerticalRed,
+    VerticalBoost,
     VerticalPowerBomb,
     VerticalBomb,
     VerticalMissile,
@@ -60,6 +61,7 @@ impl DoorType {
             DoorType::VerticalPurple       =>   true,
             DoorType::VerticalWhite        =>   true,
             DoorType::VerticalRed          =>   true,
+            DoorType::VerticalBoost        =>   true,
             DoorType::VerticalPowerBomb    =>   true,
             DoorType::VerticalBomb         =>   true,
             DoorType::VerticalMissile      =>   true,
@@ -81,6 +83,7 @@ impl DoorType {
             DoorType::Purple       =>   DoorType::VerticalPurple       ,
             DoorType::White        =>   DoorType::VerticalWhite        ,
             DoorType::Red          =>   DoorType::VerticalRed          ,
+            DoorType::Boost        =>   DoorType::VerticalBoost        ,
             DoorType::PowerBomb    =>   DoorType::VerticalPowerBomb    ,
             DoorType::Bomb         =>   DoorType::VerticalBomb         ,
             DoorType::Missile      =>   DoorType::VerticalMissile      ,
@@ -152,6 +155,7 @@ impl DoorType {
             DoorType::VerticalPurple       =>   ResId::new(0x095B0B93), // vanilla CMDL
             DoorType::VerticalWhite        =>   ResId::new(0xB7A8A4C9), // vanilla CMDL
             DoorType::VerticalRed          =>   custom_asset_ids::VERTICAL_RED_DOOR_CMDL, // vanilla CMDL
+            DoorType::VerticalBoost        =>   custom_asset_ids::VERTICAL_BOOST_DOOR_CMDL,
             DoorType::VerticalPowerBomb    =>   custom_asset_ids::VERTICAL_POWER_BOMB_DOOR_CMDL,
             DoorType::VerticalBomb         =>   custom_asset_ids::VERTICAL_MORPH_BALL_BOMB_DOOR_CMDL,
             DoorType::VerticalMissile      =>   custom_asset_ids::VERTICAL_MISSILE_DOOR_CMDL,
@@ -216,6 +220,7 @@ impl DoorType {
             DoorType::VerticalPurple       =>   DoorType::Purple.forcefield_txtr(),
             DoorType::VerticalWhite        =>   DoorType::White.forcefield_txtr(),
             DoorType::VerticalRed          =>   DoorType::Red.forcefield_txtr(),
+            DoorType::VerticalBoost        =>   DoorType::Boost.forcefield_txtr(),
             DoorType::VerticalPowerBomb    =>   DoorType::PowerBomb.forcefield_txtr(),
             DoorType::VerticalBomb         =>   DoorType::Bomb.forcefield_txtr(),         
             DoorType::VerticalMissile      =>   DoorType::Missile.forcefield_txtr(), 
@@ -254,6 +259,7 @@ impl DoorType {
             DoorType::VerticalPurple       =>   DoorType::Purple.holorim_texture(),
             DoorType::VerticalWhite        =>   DoorType::White.holorim_texture(),
             DoorType::VerticalRed          =>   DoorType::Red.holorim_texture(),
+            DoorType::VerticalBoost        =>   DoorType::Boost.holorim_texture(),
             DoorType::VerticalPowerBomb    =>   DoorType::PowerBomb.holorim_texture(),
             DoorType::VerticalBomb         =>   DoorType::Bomb.holorim_texture(),         
             DoorType::VerticalMissile      =>   DoorType::Missile.holorim_texture(), 
@@ -267,13 +273,198 @@ impl DoorType {
         }
     }
 
+    // only bomb and charge doors get scans because we are running out of memory
+    pub fn scan(&self) -> ResId<res_id::SCAN> {
+        match self {
+            // DoorType::Boost        => custom_asset_ids::BOOST_DOOR_SCAN,
+            // DoorType::PowerBomb    => custom_asset_ids::POWER_BOMB_DOOR_SCAN,
+            DoorType::Bomb         => custom_asset_ids::BOMB_DOOR_SCAN,
+            // DoorType::Missile      => custom_asset_ids::MISSILE_DOOR_SCAN,
+            DoorType::Charge       => custom_asset_ids::CHARGE_DOOR_SCAN,
+            // DoorType::Super        => custom_asset_ids::SUPER_MISSILE_DOOR_SCAN,
+            // DoorType::Wavebuster   => custom_asset_ids::WAVEBUSTER_DOOR_SCAN,
+            // DoorType::Icespreader  => custom_asset_ids::ICESPREADER_DOOR_SCAN,
+            // DoorType::Flamethrower => custom_asset_ids::FLAMETHROWER_DOOR_SCAN,
+            // DoorType::Disabled     => custom_asset_ids::DISABLED_DOOR_SCAN,
+            // DoorType::Ai           => custom_asset_ids::AI_DOOR_SCAN,
+
+            // vertical doors use the same scans as their horizontal variants //
+            DoorType::VerticalBlue         =>   DoorType::Blue.scan(),
+            DoorType::VerticalPowerOnly    =>   DoorType::PowerOnly.scan(),
+            DoorType::VerticalPurple       =>   DoorType::Purple.scan(),
+            DoorType::VerticalWhite        =>   DoorType::White.scan(),
+            DoorType::VerticalRed          =>   DoorType::Red.scan(),
+            DoorType::VerticalBoost        =>   DoorType::Boost.scan(),
+            DoorType::VerticalPowerBomb    =>   DoorType::PowerBomb.scan(),
+            DoorType::VerticalBomb         =>   DoorType::Bomb.scan() ,
+            DoorType::VerticalMissile      =>   DoorType::Missile.scan() ,
+            DoorType::VerticalCharge       =>   DoorType::Charge.scan() ,
+            DoorType::VerticalSuper        =>   DoorType::Super.scan() ,
+            DoorType::VerticalDisabled     =>   DoorType::Disabled.scan() ,
+            DoorType::VerticalWavebuster   =>   DoorType::Wavebuster.scan() ,
+            DoorType::VerticalIcespreader  =>   DoorType::Icespreader.scan() ,
+            DoorType::VerticalFlamethrower =>   DoorType::Flamethrower.scan() ,
+            DoorType::VerticalAi           =>   DoorType::Ai.scan(),
+
+            // Vanilla doors don't need scans //
+            _                              =>   ResId::invalid(),
+        }
+    }
+
+    // only bomb and charge doors get scans because we are running out of memory
+    pub fn strg(&self) -> ResId<res_id::STRG> {
+        match self {
+            // DoorType::Boost        => custom_asset_ids::BOOST_DOOR_STRG,
+            // DoorType::PowerBomb    => custom_asset_ids::POWER_BOMB_DOOR_STRG,
+            DoorType::Bomb         => custom_asset_ids::BOMB_DOOR_STRG,
+            // DoorType::Missile      => custom_asset_ids::MISSILE_DOOR_STRG,
+            DoorType::Charge       => custom_asset_ids::CHARGE_DOOR_STRG,
+            // DoorType::Super        => custom_asset_ids::SUPER_MISSILE_DOOR_STRG,
+            // DoorType::Wavebuster   => custom_asset_ids::WAVEBUSTER_DOOR_STRG,
+            // DoorType::Icespreader  => custom_asset_ids::ICESPREADER_DOOR_STRG,
+            // DoorType::Flamethrower => custom_asset_ids::FLAMETHROWER_DOOR_STRG,
+            // DoorType::Disabled     => custom_asset_ids::DISABLED_DOOR_STRG,
+            // DoorType::Ai           => custom_asset_ids::AI_DOOR_STRG,
+
+            // vertical doors use the same scans as their horizontal variants //
+            DoorType::VerticalBlue         =>   DoorType::Blue.strg(),
+            DoorType::VerticalPowerOnly    =>   DoorType::PowerOnly.strg(),
+            DoorType::VerticalPurple       =>   DoorType::Purple.strg(),
+            DoorType::VerticalWhite        =>   DoorType::White.strg(),
+            DoorType::VerticalRed          =>   DoorType::Red.strg(),
+            DoorType::VerticalBoost        =>   DoorType::Boost.strg(),
+            DoorType::VerticalPowerBomb    =>   DoorType::PowerBomb.strg(),
+            DoorType::VerticalBomb         =>   DoorType::Bomb.strg(),
+            DoorType::VerticalMissile      =>   DoorType::Missile.strg(),
+            DoorType::VerticalCharge       =>   DoorType::Charge.strg(),
+            DoorType::VerticalSuper        =>   DoorType::Super.strg(),
+            DoorType::VerticalDisabled     =>   DoorType::Disabled.strg(),
+            DoorType::VerticalWavebuster   =>   DoorType::Wavebuster.strg(),
+            DoorType::VerticalIcespreader  =>   DoorType::Icespreader.strg(),
+            DoorType::VerticalFlamethrower =>   DoorType::Flamethrower.strg(),
+            DoorType::VerticalAi           =>   DoorType::Ai.strg(),
+
+            // Vanilla doors don't need scans //
+            _                              =>   ResId::invalid(),
+        }
+    }
+
+    pub fn scan_text(&self) -> Vec<String> {
+        match self {
+            DoorType::Boost        =>
+                vec![
+                    "Analysis complete.\0".to_string(),
+                    "\0".to_string(),
+                    "This door will open open with &push;&main-color=#D91818;Boost Ball&pop;.\0".to_string(),
+                ],
+            DoorType::PowerBomb    =>
+                vec![
+                    "Analysis complete.\0".to_string(),
+                    "\0".to_string(),
+                    "This door will open open with &push;&main-color=#D91818;Power Bombs&pop;.\0".to_string(),
+                ],
+            DoorType::Bomb         =>
+                vec![
+                    "Analysis complete.\0".to_string(),
+                    "\0".to_string(),
+                    "This door will open open with &push;&main-color=#D91818;Morph Ball Bombs&pop;.\0".to_string(),
+                ],
+            DoorType::Missile      =>
+                vec![
+                    "Analysis complete.\0".to_string(),
+                    "\0".to_string(),
+                    "This door will open open with &push;&main-color=#D91818;Missiles&pop;.\0".to_string(),
+                ],
+            DoorType::Charge       =>
+                vec![
+                    "Analysis complete.\0".to_string(),
+                    "\0".to_string(),
+                    "This door will open open with &push;&main-color=#D91818;Charge Beam&pop;.\0".to_string(),
+                ],
+            DoorType::Super        =>
+                vec![
+                    "Analysis complete.\0".to_string(),
+                    "\0".to_string(),
+                    "This door will open open with &push;&main-color=#D91818;Super Missiles&pop;.\0".to_string(),
+                ],
+            DoorType::Wavebuster   =>
+                vec![
+                    "Analysis complete.\0".to_string(),
+                    "\0".to_string(),
+                    "This door will open open with &push;&main-color=#D91818;Wavebuster&pop;.\0".to_string(),
+                ],
+            DoorType::Icespreader  =>
+                vec![
+                    "Analysis complete.\0".to_string(),
+                    "\0".to_string(),
+                    "This door will open open with &push;&main-color=#D91818;Ice Spreader&pop;.\0".to_string(),
+                ],
+            DoorType::Flamethrower =>
+                vec![
+                    "Analysis complete.\0".to_string(),
+                    "\0".to_string(),
+                    "This door will open open with &push;&main-color=#D91818;Flamethrower&pop;.\0".to_string(),
+                ],
+            DoorType::Disabled     =>
+                vec![
+                    "Analysis complete.\0".to_string(),
+                    "\0".to_string(),
+                    "This door cannot be opened.\0".to_string(),
+                ],
+            DoorType::Ai           =>
+                vec![
+                    "Analysis complete.\0".to_string(),
+                    "\0".to_string(),
+                    "This door will open open with the &push;&main-color=#D91818;help of an enemy&pop;.\0".to_string(),
+                ],
+            DoorType::VerticalBlue         =>   DoorType::Blue.scan_text(),
+            DoorType::VerticalPowerOnly    =>   DoorType::PowerOnly.scan_text(),
+            DoorType::VerticalPurple       =>   DoorType::Purple.scan_text(),
+            DoorType::VerticalWhite        =>   DoorType::White.scan_text(),
+            DoorType::VerticalRed          =>   DoorType::Red.scan_text(),
+            DoorType::VerticalBoost        =>   DoorType::Boost.scan_text(),
+            DoorType::VerticalPowerBomb    =>   DoorType::PowerBomb.scan_text(),
+            DoorType::VerticalBomb         =>   DoorType::Bomb.scan_text(),
+            DoorType::VerticalMissile      =>   DoorType::Missile.scan_text(),
+            DoorType::VerticalCharge       =>   DoorType::Charge.scan_text(),
+            DoorType::VerticalSuper        =>   DoorType::Super.scan_text(),
+            DoorType::VerticalDisabled     =>   DoorType::Disabled.scan_text(),
+            DoorType::VerticalWavebuster   =>   DoorType::Wavebuster.scan_text(),
+            DoorType::VerticalIcespreader  =>   DoorType::Icespreader.scan_text(),
+            DoorType::VerticalFlamethrower =>   DoorType::Flamethrower.scan_text(),
+            DoorType::VerticalAi           =>   DoorType::Ai.scan_text(),
+
+            _ => vec!["Task failed successfully\0".to_string()], // Vanilla doors do not need a scan point
+        }
+    }
+
     pub fn dependencies(&self) -> Vec<(u32, FourCC)> { // dependencies to add to the area
         
         let mut data: Vec<(u32, FourCC)> = Vec::new();
-        data.push((self.shield_cmdl().to_u32(),FourCC::from_bytes(b"CMDL")));
-        data.push((self.forcefield_txtr().to_u32(),FourCC::from_bytes(b"TXTR")));
-        if self.holorim_texture() != 0x00000000 {
-            data.push((self.holorim_texture().to_u32(),FourCC::from_bytes(b"TXTR")));
+
+        let dep = (self.shield_cmdl().to_u32(),FourCC::from_bytes(b"CMDL"));
+        if !data.contains(&dep) {
+            data.push(dep);
+        }
+
+        let dep = (self.forcefield_txtr().to_u32(),FourCC::from_bytes(b"TXTR"));
+        if !data.contains(&dep) {
+            data.push(dep);
+        }
+
+        let dep = (self.holorim_texture().to_u32(),FourCC::from_bytes(b"TXTR"));
+        if !data.contains(&dep) {
+            data.push(dep);
+        }
+
+        let dep = (self.scan().to_u32(),FourCC::from_bytes(b"SCAN"));
+        if !data.contains(&dep) {
+            data.push(dep);
+        }
+
+        let dep = (self.strg().to_u32(),FourCC::from_bytes(b"STRG"));
+        if !data.contains(&dep) {
+            data.push(dep);
         }
 
         // If the door is a t-posing chozo ghost, add that models dependencies as well
@@ -282,6 +473,8 @@ impl DoorType {
             data.push((0x8D4EF1D8,FourCC::from_bytes(b"TXTR")));
             data.push((0x7D81B904,FourCC::from_bytes(b"TXTR")));
         }
+
+        data.retain(|i| i.0 != 0xffffffff && i.0 != 0);
 
         data
     }
@@ -293,6 +486,7 @@ impl DoorType {
             DoorType::Purple,
             DoorType::White,
             DoorType::Red,
+            DoorType::Boost,
             DoorType::PowerBomb,
             DoorType::Bomb,
             DoorType::Boost,
@@ -309,6 +503,7 @@ impl DoorType {
             DoorType::VerticalPurple,
             DoorType::VerticalWhite,
             DoorType::VerticalRed,
+            DoorType::VerticalBoost,
             DoorType::VerticalPowerBomb,
             DoorType::VerticalBomb,
             DoorType::VerticalMissile,
@@ -894,6 +1089,7 @@ impl DoorType {
             DoorType::VerticalPurple       =>   DoorType::Purple.vulnerability(),
             DoorType::VerticalWhite        =>   DoorType::White.vulnerability(),
             DoorType::VerticalRed          =>   DoorType::Red.vulnerability(),
+            DoorType::VerticalBoost        =>   DoorType::Boost.vulnerability(),
             DoorType::VerticalPowerBomb    =>   DoorType::PowerBomb.vulnerability(),
             DoorType::VerticalBomb         =>   DoorType::Bomb.vulnerability(),         
             DoorType::VerticalMissile      =>   DoorType::Missile.vulnerability(), 
