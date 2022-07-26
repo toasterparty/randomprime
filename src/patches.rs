@@ -558,6 +558,11 @@ fn patch_door<'r>(
                     target_object_id: blast_shield_instance_id,
                 },
                 structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: dt_id,
+                },
+                structs::Connection {
                     state: structs::ConnectionState::ACTIVE,
                     message: structs::ConnectionMsg::DEACTIVATE,
                     target_object_id: timer_id,
