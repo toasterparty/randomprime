@@ -276,11 +276,12 @@ impl DoorType {
     // only bomb and charge doors get scans because we are running out of memory
     pub fn scan(&self) -> ResId<res_id::SCAN> {
         match self {
+            // If these get uncommented we get infinite scan glitch
             // DoorType::Boost        => custom_asset_ids::BOOST_DOOR_SCAN,
             // DoorType::PowerBomb    => custom_asset_ids::POWER_BOMB_DOOR_SCAN,
-            DoorType::Bomb         => custom_asset_ids::BOMB_DOOR_SCAN,
+            // DoorType::Bomb         => custom_asset_ids::BOMB_DOOR_SCAN,
             // DoorType::Missile      => custom_asset_ids::MISSILE_DOOR_SCAN,
-            DoorType::Charge       => custom_asset_ids::CHARGE_DOOR_SCAN,
+            // DoorType::Charge       => custom_asset_ids::CHARGE_DOOR_SCAN,
             // DoorType::Super        => custom_asset_ids::SUPER_MISSILE_DOOR_SCAN,
             // DoorType::Wavebuster   => custom_asset_ids::WAVEBUSTER_DOOR_SCAN,
             // DoorType::Icespreader  => custom_asset_ids::ICESPREADER_DOOR_SCAN,
@@ -314,11 +315,12 @@ impl DoorType {
     // only bomb and charge doors get scans because we are running out of memory
     pub fn strg(&self) -> ResId<res_id::STRG> {
         match self {
+            // If these get uncommented we get infinite scan glitch
             // DoorType::Boost        => custom_asset_ids::BOOST_DOOR_STRG,
             // DoorType::PowerBomb    => custom_asset_ids::POWER_BOMB_DOOR_STRG,
-            DoorType::Bomb         => custom_asset_ids::BOMB_DOOR_STRG,
+            // DoorType::Bomb         => custom_asset_ids::BOMB_DOOR_STRG,
             // DoorType::Missile      => custom_asset_ids::MISSILE_DOOR_STRG,
-            DoorType::Charge       => custom_asset_ids::CHARGE_DOOR_STRG,
+            // DoorType::Charge       => custom_asset_ids::CHARGE_DOOR_STRG,
             // DoorType::Super        => custom_asset_ids::SUPER_MISSILE_DOOR_STRG,
             // DoorType::Wavebuster   => custom_asset_ids::WAVEBUSTER_DOOR_STRG,
             // DoorType::Icespreader  => custom_asset_ids::ICESPREADER_DOOR_STRG,

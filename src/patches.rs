@@ -8143,6 +8143,12 @@ fn patch_dol<'r>(
     // });
     // dol_patcher.ppcasm_patch(&roll_shot_patch)?;
 
+    // This would work, but it makes all scans already compelted
+    // let infinite_scan_fix_patch = ppcasm!(0x80091720, {
+    //         nop;
+    // });
+    // dol_patcher.ppcasm_patch(&infinite_scan_fix_patch)?;
+
     if smoother_teleports {
         // Do not holster arm cannon
         let better_teleport_patch = ppcasm!(symbol_addr!("Teleport__7CPlayerFRC12CTransform4fR13CStateManagerb", version) + 0x31C, {
