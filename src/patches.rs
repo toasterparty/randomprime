@@ -476,6 +476,8 @@ fn patch_door<'r>(
     door_resources:&HashMap<(u32, FourCC), structs::Resource<'r>>,
 ) -> Result<(), String> {
     let mrea_id = area.mlvl_area.mrea.to_u32();
+    let area_internal_id = area.mlvl_area.internal_id;
+
     if door_loc.door_force_locations.len() == 0 || door_loc.door_shield_locations.len() == 0 {
         panic!("Tried to change vulnerability/blast shield of door without a damageable shield in room 0x{:X}", mrea_id);
     }
@@ -530,7 +532,7 @@ fn patch_door<'r>(
     };
 
     // Add blast shield
-    let mut memory_relay_id = 0;
+    let mut special_function_id = 0;
     let mut blast_shield_instance_id = 0;
     let mut sound_id = 0;
     let mut streamed_audio_id = 0;
@@ -539,8 +541,9 @@ fn patch_door<'r>(
     let mut relay_id = 0;
     let mut dt_id = 0;
 
+    let mut blast_shield_layer_idx: usize = 0;
     if blast_shield_type.is_some() {
-        memory_relay_id = area.new_object_id_from_layer_name("Default");
+        special_function_id = area.new_object_id_from_layer_name("Default");
         blast_shield_instance_id = area.new_object_id_from_layer_name("Default");
         sound_id = area.new_object_id_from_layer_name("Default");
         streamed_audio_id = area.new_object_id_from_layer_name("Default");
@@ -549,41 +552,28 @@ fn patch_door<'r>(
         relay_id = area.new_object_id_from_layer_name("Default");
         dt_id = area.new_object_id_from_layer_name("Default");
 
-        let memory_relay = structs::SclyObject {
-            instance_id: memory_relay_id,
-            connections: vec![
-                structs::Connection {
-                    state: structs::ConnectionState::ACTIVE,
-                    message: structs::ConnectionMsg::DEACTIVATE,
-                    target_object_id: blast_shield_instance_id,
-                },
-                structs::Connection {
-                    state: structs::ConnectionState::ZERO,
-                    message: structs::ConnectionMsg::DEACTIVATE,
-                    target_object_id: dt_id,
-                },
-                structs::Connection {
-                    state: structs::ConnectionState::ACTIVE,
-                    message: structs::ConnectionMsg::DEACTIVATE,
-                    target_object_id: timer_id,
-                },
-            ].into(),
-            property_data: structs::SclyProperty::MemoryRelay(
-                Box::new(structs::MemoryRelay {
-                    name: b"mymemoryrelay\0".as_cstr(),
-                    unknown: 0,
-                    active: 0,
-                })
-            ),
-        };
-
-        area.add_memory_relay(memory_relay);
+        /* Add a new layer to this room to put all the blast shield objects onto */
+        area.add_layer(b"Custom Shield Layer\0".as_cstr());
+        blast_shield_layer_idx = area.layer_flags.layer_count as usize - 1;
     }
 
     let scly = area.mrea().scly_section_mut();
     let layers = &mut scly.layers.as_mut_vec();
 
     if blast_shield_type.is_some() {
+        /* Special Function to disable the blast shield */
+        layers[0].objects.as_mut_vec().push(
+            structs::SclyObject {
+                instance_id: special_function_id,
+                connections: vec![].into(),
+                property_data: structs::SpecialFunction::layer_change_fn(
+                    b"Artifact Layer Switch\0".as_cstr(),
+                    area_internal_id,
+                    blast_shield_layer_idx as u32
+                ).into(),
+            }
+        );
+
         let door_shield_location = door_loc.door_shield_locations[0];
         let door_shield = layers[door_shield_location.layer as usize].objects.iter_mut()
             .find(|obj| obj.instance_id == door_shield_location.instance_id)
@@ -783,8 +773,8 @@ fn patch_door<'r>(
                 },
                 structs::Connection { // Stop the blast shield from respawning
                     state: structs::ConnectionState::ZERO,
-                    message: structs::ConnectionMsg::ACTIVATE,
-                    target_object_id: memory_relay_id,
+                    message: structs::ConnectionMsg::DECREMENT,
+                    target_object_id: special_function_id,
                 },
                 structs::Connection { // Make gibbs
                     state: structs::ConnectionState::ZERO,
@@ -937,8 +927,8 @@ fn patch_door<'r>(
                             obj.connections.as_mut_vec().push(
                                 structs::Connection {
                                     state: structs::ConnectionState::MAX_REACHED,
-                                    message: structs::ConnectionMsg::ACTIVATE,
-                                    target_object_id: memory_relay_id,
+                                    message: structs::ConnectionMsg::DECREMENT,
+                                    target_object_id: special_function_id,
                                 }
                             );
 
@@ -1098,13 +1088,13 @@ fn patch_door<'r>(
         };
 
         // add new script objects to layer //
-        layers[0].objects.as_mut_vec().push(streamed_audio);
-        layers[0].objects.as_mut_vec().push(sound);
-        layers[0].objects.as_mut_vec().push(blast_shield);
-        layers[0].objects.as_mut_vec().push(timer); // don't disable the dt if it's a vertical door
-        layers[0].objects.as_mut_vec().push(dt); // we don't need a helper dt then
-        layers[0].objects.as_mut_vec().push(effect);
-        layers[0].objects.as_mut_vec().push(relay);
+        layers[blast_shield_layer_idx].objects.as_mut_vec().push(streamed_audio);
+        layers[blast_shield_layer_idx].objects.as_mut_vec().push(sound);
+        layers[blast_shield_layer_idx].objects.as_mut_vec().push(blast_shield);
+        layers[blast_shield_layer_idx].objects.as_mut_vec().push(timer);
+        layers[blast_shield_layer_idx].objects.as_mut_vec().push(dt);
+        layers[blast_shield_layer_idx].objects.as_mut_vec().push(effect);
+        layers[blast_shield_layer_idx].objects.as_mut_vec().push(relay);
     }
 
     // Patch door vulnerability
