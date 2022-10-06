@@ -50,6 +50,10 @@ pub enum BlastShieldType {
     Wavebuster,
     Icespreader,
     Flamethrower,
+    
+    // These don't have assets
+    None,
+    Unchanged,
 }
 
 impl DoorType {
@@ -1134,7 +1138,11 @@ impl BlastShieldType {
             "wavebuster"    => Some(BlastShieldType::Wavebuster   ),
             "icespreader"   => Some(BlastShieldType::Icespreader  ),
             "flamethrower"  => Some(BlastShieldType::Flamethrower ),
-            _               => None                              ,
+            "none"          => Some(BlastShieldType::None         ),
+            "empty"         => Some(BlastShieldType::None         ),
+            "unchanged"     => Some(BlastShieldType::Unchanged    ),
+            "vanilla"       => Some(BlastShieldType::Unchanged    ),
+            _               => None                                ,
         }
     }
 
@@ -1207,6 +1215,7 @@ impl BlastShieldType {
             BlastShieldType::Icespreader  => custom_asset_ids::ICESPREADER_BLAST_SHIELD_SCAN,
             BlastShieldType::Flamethrower => custom_asset_ids::FLAMETHROWER_BLAST_SHIELD_SCAN,
             BlastShieldType::Missile      => ResId::<res_id::SCAN>::new(0x05F56F9D),
+            _ => panic!("none/unchanged blast shield doesn't have scan"),
         }
     }
 
@@ -1218,6 +1227,7 @@ impl BlastShieldType {
             BlastShieldType::Icespreader  => custom_asset_ids::ICESPREADER_BLAST_SHIELD_STRG,
             BlastShieldType::Flamethrower => custom_asset_ids::FLAMETHROWER_BLAST_SHIELD_STRG,
             BlastShieldType::Missile      => ResId::<res_id::STRG>::new(0x265142BA),
+            _ => panic!("none/unchanged blast shield doesn't have strg"),
         }
     }
 
@@ -1317,7 +1327,7 @@ impl BlastShieldType {
             BlastShieldType::Wavebuster     => DoorType::Wavebuster.vulnerability(),
             BlastShieldType::Icespreader    => DoorType::Icespreader.vulnerability(),
             BlastShieldType::Flamethrower   => DoorType::Flamethrower.vulnerability(),
-            
+            _ => panic!("none/unchanged blast shield doesn't have vulnerability"),
         }
     }
 
@@ -1329,6 +1339,7 @@ impl BlastShieldType {
             BlastShieldType::Wavebuster     => DoorType::Wavebuster,
             BlastShieldType::Icespreader    => DoorType::Icespreader,
             BlastShieldType::Flamethrower   => DoorType::Flamethrower,
+            _ => panic!("none/unchanged blast shield doesn't have door type counterpart"),
         }
     }
 }

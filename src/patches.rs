@@ -467,6 +467,59 @@ fn patch_map_door_icon(
     Ok(())
 }
 
+fn patch_remove_blast_shield<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
+    dock_num: u32,
+) -> Result<(), String> {
+    let mut dock_position: GenericArray<f32, U3> = [0.0, 0.0, 0.0].into();
+
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+
+    let mut found = false;
+
+    for obj in layer.objects.as_mut_vec() {
+        if !obj.property_data.is_dock() {
+            continue;
+        }
+
+        let dock = obj.property_data.as_dock_mut().unwrap();
+        if dock.dock_index == dock_num {
+            found = true;
+            dock_position = dock.position.clone();
+        }
+    }
+
+    if !found {
+        panic!("Failed to find dock num {}", dock_num);
+    }
+
+    for obj in layer.objects.as_mut_vec() {
+        if !obj.property_data.is_actor() {
+            continue;
+        }
+
+        let actor = obj.property_data.as_actor_mut().unwrap();
+
+        if  f32::abs(actor.position[0] - dock_position[0]) < 5.0 &&
+            f32::abs(actor.position[1] - dock_position[1]) < 5.0 &&
+            f32::abs(actor.position[2] - dock_position[2]) < 5.0
+        {
+            continue;
+        }
+
+        if actor.cmdl.to_u32() != BlastShieldType::Missile.cmdl().to_u32() {
+            continue;
+        }
+
+        actor.active = 0;
+        actor.position[2] -= 100.0;
+    }
+
+    Ok(())
+}
+
 fn patch_door<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_, '_>,
@@ -13429,6 +13482,25 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                         if blast_shield_type.is_none() {
                             panic!("Unexpected Blast Shield Type - {}", blast_shield_name);
                         }
+
+                        if blast_shield_type.as_ref().unwrap() == &BlastShieldType::Unchanged {
+                            // Unchanged is the same as not writing the field
+                            blast_shield_type = None;
+                        } else if blast_shield_type.as_ref().unwrap() == &BlastShieldType::None {
+                            patcher.add_scly_patch(
+                                (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                move |ps, area| patch_remove_blast_shield (
+                                    ps, area,
+                                    local_dl.dock_number,
+                                )
+                            );
+
+                            blast_shield_type = None;
+                        }
+                    }
+
+                    if door_type.is_none() && blast_shield_type.is_none() {
+                        break;
                     }
 
                     patcher.add_scly_patch(
