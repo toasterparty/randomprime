@@ -160,7 +160,7 @@ impl<'r, 'mlvl, 'savw, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'savw, 'cursor, 'list
             panic!("[add_memory_relay] mem_relay is not a memory relay object! (ID : {:X})", mem_relay.instance_id);
         }
 
-        if self.persistent_memory_relays.as_mut_vec().len() > 255
+        if self.persistent_memory_relays.as_mut_vec().len() >= 511
         {
             panic!("Ran out of memory relays!");
         }
