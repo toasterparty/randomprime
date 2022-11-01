@@ -170,7 +170,7 @@ impl<'r, 's> PrimePatcher<'r, 's>
 
                 if mlvl_editor.is_some() {
                     if cursor.peek().unwrap().fourcc() == b"SAVW".into() {
-                        let savw = mlvl_editor.as_mut().unwrap().savw.clone();
+                        let savw = mlvl_editor.take().unwrap().savw;
                         cursor.value().unwrap().kind = ResourceKind::Savw(savw);
                     } else if cursor.peek().unwrap().fourcc() == b"MLVL".into() {
                         let mlvl = mlvl_editor.take().unwrap().mlvl;
