@@ -13486,7 +13486,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                         if blast_shield_type.as_ref().unwrap() == &BlastShieldType::Unchanged {
                             // Unchanged is the same as not writing the field
                             blast_shield_type = None;
-                        } else if blast_shield_type.as_ref().unwrap() == &BlastShieldType::None {
+                        } else {
+                            // Remove the existing blast shield
                             patcher.add_scly_patch(
                                 (pak_name.as_bytes(), room_info.room_id.to_u32()),
                                 move |ps, area| patch_remove_blast_shield (
@@ -13494,8 +13495,12 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                     local_dl.dock_number,
                                 )
                             );
-
-                            blast_shield_type = None;
+                            
+                            // Skip patching if removal was the ask
+                            if blast_shield_type.as_ref().unwrap() == &BlastShieldType::None
+                            {
+                                blast_shield_type = None;
+                            }
                         }
                     }
 
