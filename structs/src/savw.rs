@@ -24,7 +24,7 @@ pub struct Savw<'r>
     #[auto_struct(derive = memory_relay_array.len() as u32)]
     memory_relay_count: u32,
     #[auto_struct(init = (memory_relay_count as usize, ()))]
-    pub memory_relay_array: LazyArray<'r, u32>,
+    pub memory_relay_array: RoArray<'r, u32>,
 
     #[auto_struct(derive = layer_toggle_array.len() as u32)]
     layer_toggle_count: u32,
