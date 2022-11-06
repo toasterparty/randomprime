@@ -1224,6 +1224,7 @@ fn patch_add_item<'r>(
 {
     let mut rng = StdRng::seed_from_u64(seed);
     let mrea_index = area.mrea_index;
+    let room_id = area.mlvl_area.internal_id;
 
     // Pickup to use for game functionality //
     let pickup_type = PickupType::from_str(&pickup_config.pickup_type);
@@ -1279,6 +1280,15 @@ fn patch_add_item<'r>(
         pickup_model_data.actor_params.thermal_cskr = ResId::invalid();
     }
 
+    let new_layer_idx = if area.layer_flags.layer_count < 60 {
+        let name = CString::new(format!(
+            "Randomizer - Pickup ({:?})", pickup_model_data.name)).unwrap();
+        area.add_layer(Cow::Owned(name));
+        area.layer_flags.layer_count as usize - 1
+    } else {
+        0
+    };
+
     // Add hudmemo string as dependency to room //
     let hudmemo_strg: ResId<res_id::STRG> = {
         if pickup_config.hudmemo_text.is_some() {
@@ -1289,7 +1299,7 @@ fn patch_add_item<'r>(
     };
 
     let hudmemo_dep: structs::Dependency = hudmemo_strg.into();
-    area.add_dependencies(game_resources, 0, iter::once(hudmemo_dep));
+    area.add_dependencies(game_resources, new_layer_idx, iter::once(hudmemo_dep));
 
     /* Add Model Dependencies */
     // Dependencies are defined externally
@@ -1301,7 +1311,7 @@ fn patch_add_item<'r>(
                 asset_type: fourcc,
             }
         );
-        area.add_dependencies(game_resources, 0, deps_iter);
+        area.add_dependencies(game_resources, new_layer_idx, deps_iter);
     }
     // If we aren't using an external model, use the dependencies traced by resource_tracing
     else {
@@ -1312,33 +1322,33 @@ fn patch_add_item<'r>(
                 asset_type: fourcc,
                 }
             );
-        area.add_dependencies(game_resources, 0, deps_iter);
+        area.add_dependencies(game_resources, new_layer_idx, deps_iter);
     }
 
     {
         let frme = ResId::<res_id::FRME>::new(0xDCEC3E77);
         let frme_dep: structs::Dependency = frme.into();
-        area.add_dependencies(game_resources, 0, iter::once(frme_dep));
+        area.add_dependencies(game_resources, new_layer_idx, iter::once(frme_dep));
     }
     let scan_id = {
         if pickup_config.scan_text.is_some() {
             let (scan, strg) = *pickup_scans.get(&pickup_hash_key).unwrap();
 
             let scan_dep: structs::Dependency = scan.into();
-            area.add_dependencies(game_resources, 0, iter::once(scan_dep));
+            area.add_dependencies(game_resources, new_layer_idx, iter::once(scan_dep));
 
             let strg_dep: structs::Dependency = strg.into();
-            area.add_dependencies(game_resources, 0, iter::once(strg_dep));
+            area.add_dependencies(game_resources, new_layer_idx, iter::once(strg_dep));
 
             scan
         }
         else
         {
             let scan_dep: structs::Dependency = pickup_type.scan().into();
-            area.add_dependencies(game_resources, 0, iter::once(scan_dep));
+            area.add_dependencies(game_resources, new_layer_idx, iter::once(scan_dep));
 
             let strg_dep: structs::Dependency = pickup_type.scan_strg().into();
-            area.add_dependencies(game_resources, 0, iter::once(strg_dep));
+            area.add_dependencies(game_resources, new_layer_idx, iter::once(strg_dep));
 
             pickup_type.scan()
         }
@@ -1354,6 +1364,8 @@ fn patch_add_item<'r>(
             iter::once(custom_asset_ids::WARPING_TO_START_DELAY_STRG.into())
         );
     }
+
+    let new_layer_idx = new_layer_idx as u32;
 
     let curr_increase = {
         if pickup_type == PickupType::Nothing {
@@ -1440,7 +1452,7 @@ fn patch_add_item<'r>(
     // set the scan file id //
     pickup.actor_params.scan_params.scan = scan_id;
 
-    let pickup_obj_id = area.new_object_id_from_layer_name("Default");
+    let pickup_obj_id = area.new_object_id_from_layer_id(new_layer_idx);
     let mut pickup_obj = structs::SclyObject {
         instance_id: pickup_obj_id,
         connections: vec![].into(),
@@ -1450,7 +1462,7 @@ fn patch_add_item<'r>(
     };
 
     let hudmemo = structs::SclyObject {
-        instance_id: area.new_object_id_from_layer_name("Default"),
+        instance_id: area.new_object_id_from_layer_id(new_layer_idx),
         connections: vec![].into(),
         property_data: structs::SclyProperty::HudMemo(
             Box::new(structs::HudMemo {
@@ -1487,7 +1499,7 @@ fn patch_add_item<'r>(
 
     // create attainment audio
     let attainment_audio = structs::SclyObject {
-        instance_id: area.new_object_id_from_layer_name("Default"),
+        instance_id: area.new_object_id_from_layer_id(new_layer_idx),
         connections: vec![].into(),
         property_data: structs::SclyProperty::Sound(
             Box::new(structs::Sound { // copied from main plaza half-pipe
@@ -1526,7 +1538,7 @@ fn patch_add_item<'r>(
 
     // 2022-02-08 - I had to remove this because there's a bug in the vanilla engine where playerhint -> Scan Visor doesn't holster the weapon
     // // If scan visor, and starting visor is none, then switch to combat and back to scan when obtaining scan
-    // let player_hint_id = area.new_object_id_from_layer_name("Default");
+    // let player_hint_id = area.new_object_id_from_layer_id(new_layer_idx);
     // let player_hint = structs::SclyObject {
     //     instance_id: player_hint_id,
     //         property_data: structs::PlayerHint {
@@ -1566,7 +1578,7 @@ fn patch_add_item<'r>(
     //     }
     // );
 
-    // let player_hint_id_2 = area.new_object_id_from_layer_name("Default");
+    // let player_hint_id_2 = area.new_object_id_from_layer_id(new_layer_idx);
     // let player_hint_2 = structs::SclyObject {
     //     instance_id: player_hint_id_2,
     //         property_data: structs::PlayerHint {
@@ -1598,7 +1610,7 @@ fn patch_add_item<'r>(
     //         connections: vec![].into(),
     // };
 
-    // let timer_id = area.new_object_id_from_layer_name("Default");
+    // let timer_id = area.new_object_id_from_layer_id(new_layer_idx);
     // let timer = structs::SclyObject {
     //     instance_id: timer_id,
     //     property_data: structs::Timer {
@@ -1633,10 +1645,10 @@ fn patch_add_item<'r>(
     let memory_relay_id = (mrea_index << 16 | (0xffff - pickup_idx)) as u32;
     if pickup_type == PickupType::FloatyJump {
         floaty_contraption_id = [
-            area.new_object_id_from_layer_name("Default"),
-            area.new_object_id_from_layer_name("Default"),
-            area.new_object_id_from_layer_name("Default"),
-            area.new_object_id_from_layer_name("Default"),
+            area.new_object_id_from_layer_id(new_layer_idx),
+            area.new_object_id_from_layer_id(new_layer_idx),
+            area.new_object_id_from_layer_id(new_layer_idx),
+            area.new_object_id_from_layer_id(new_layer_idx),
         ];
     }
 
@@ -1650,15 +1662,7 @@ fn patch_add_item<'r>(
     }
 
     // update MREA layer with new Objects
-    let additional_connections = if pickup_config.destination.is_some() {
-        add_world_teleporter(
-            area,
-            &pickup_config.destination.clone().unwrap(),
-            version,
-        )
-    } else {
-        Vec::new()
-    };
+    let additional_connections = Vec::new();
 
     if !pickup_config.respawn.unwrap_or(false) {
         // Create Special Function to disable layer once item is obtained
@@ -1717,7 +1721,7 @@ fn patch_add_item<'r>(
     }
 
     if shuffle_position || *pickup_config.jumbo_scan.as_ref().unwrap_or(&false) {
-        layers[0].objects.as_mut_vec().push(
+        layers[new_layer_idx as usize].objects.as_mut_vec().push(
             structs::SclyObject {
                 instance_id: poi_id,
                 connections: vec![].into(),
@@ -1748,7 +1752,7 @@ fn patch_add_item<'r>(
     // If this is an artifact, create and push change function
     if pickup_kind >= 29 && pickup_kind <= 40 {
         let function = artifact_layer_change_template(special_fn_artifact_layer_change_id, pickup_kind);
-        layers[0].objects.as_mut_vec().push(function);
+        layers[new_layer_idx as usize].objects.as_mut_vec().push(function);
         pickup_obj.connections.as_mut_vec().push(
             structs::Connection {
                 state: structs::ConnectionState::ARRIVED,
@@ -1758,45 +1762,90 @@ fn patch_add_item<'r>(
         );
     }
 
-    layers[0].objects.as_mut_vec().push(hudmemo);
-    layers[0].objects.as_mut_vec().push(attainment_audio);
-    layers[0].objects.as_mut_vec().push(pickup_obj);
+    if !pickup_config.respawn.unwrap_or(false) && new_layer_idx != 0 {
+        // Create Special Function to disable layer once item is obtained
+        // This is needed because otherwise the item would re-appear every
+        // time the room is loaded
+        let special_function = structs::SclyObject {
+            instance_id: area.new_object_id_from_layer_name("Default"),
+            connections: vec![].into(),
+            property_data: structs::SclyProperty::SpecialFunction(
+                Box::new(structs::SpecialFunction {
+                    name: b"myspecialfun\0".as_cstr(),
+                    position: [0., 0., 0.].into(),
+                    rotation: [0., 0., 0.].into(),
+                    type_: 16, // layer change
+                    unknown0: b"\0".as_cstr(),
+                    unknown1: 0.,
+                    unknown2: 0.,
+                    unknown3: 0.,
+                    layer_change_room_id: room_id,
+                    layer_change_layer_id: new_layer_idx as u32,
+                    item_id: 0,
+                    unknown4: 1, // active
+                    unknown5: 0.,
+                    unknown6: 0xFFFFFFFF,
+                    unknown7: 0xFFFFFFFF,
+                    unknown8: 0xFFFFFFFF,
+                })
+            ),
+        };
+
+        // Activate the layer change when item is picked up
+        pickup_obj.connections.as_mut_vec().push(
+            structs::Connection {
+                state: structs::ConnectionState::ARRIVED,
+                message: structs::ConnectionMsg::DECREMENT,
+                target_object_id: special_function.instance_id,
+            }
+        );
+
+        layers[new_layer_idx as usize].objects.as_mut_vec().push(special_function);
+    }
 
     if pickup_config.destination.is_some() {
-        layers[0].objects
-                 .iter_mut()
-                 .find(|obj| obj.instance_id == pickup_obj_id)
-                 .unwrap()
-                 .connections.as_mut_vec().extend_from_slice(
-            &additional_connections
+        pickup_obj.connections.as_mut_vec().extend_from_slice(
+            &add_world_teleporter(
+                [
+                    area.new_object_id_from_layer_id(new_layer_idx),
+                    area.new_object_id_from_layer_id(new_layer_idx),
+                    area.new_object_id_from_layer_id(new_layer_idx),
+                    area.new_object_id_from_layer_id(new_layer_idx),
+                ],
+                layers[new_layer_idx as usize].objects.as_mut_vec(),
+                &pickup_config.destination.clone().unwrap(),
+                version,
+            )
         );
     }
 
+    layers[new_layer_idx as usize].objects.as_mut_vec().push(hudmemo);
+    layers[new_layer_idx as usize].objects.as_mut_vec().push(attainment_audio);
+    layers[new_layer_idx as usize].objects.as_mut_vec().push(pickup_obj);
+
     // 2022-02-08 - I had to remove this because there's a bug in the vanilla engine where playerhint -> Scan Visor doesn't holster the weapon
     // if pickup_type == PickupType::ScanVisor && no_starting_visor{
-    //     layers[0].objects.as_mut_vec().push(player_hint);
-    //     layers[0].objects.as_mut_vec().push(player_hint_2);
-    //     layers[0].objects.as_mut_vec().push(timer);
+    //     layers[new_layer_idx as usize].objects.as_mut_vec().push(player_hint);
+    //     layers[new_layer_idx as usize].objects.as_mut_vec().push(player_hint_2);
+    //     layers[new_layer_idx as usize].objects.as_mut_vec().push(timer);
     // }
 
     Ok(())
 }
 
 fn add_world_teleporter<'r>(
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    the_next_four_ids: [u32; 4],
+    objects: &mut Vec<structs::SclyObject<'r>>,
     destination: &str,
     version: Version,
 ) -> Vec<structs::Connection>
 {
     let destination = SpawnRoomData::from_str(&destination);
 
-    let world_transporter_id = area.new_object_id_from_layer_name("Default");
-    let timer_id = area.new_object_id_from_layer_name("Default");
-    let hudmemo_id = area.new_object_id_from_layer_name("Default");
-    let player_hint_id = area.new_object_id_from_layer_name("Default");
-
-    let scly = area.mrea().scly_section_mut();
-    let objects = &mut scly.layers.as_mut_vec()[0].objects.as_mut_vec();
+    let world_transporter_id = the_next_four_ids[0];
+    let timer_id = the_next_four_ids[1];
+    let hudmemo_id = the_next_four_ids[2];
+    let player_hint_id = the_next_four_ids[3];
 
     // Teleporter
     objects.push(
@@ -2494,12 +2543,11 @@ fn patch_add_poi<'r>(
     position: [f32;3],
 ) -> Result<(), String>
 {
-    let poi_id = area.new_object_id_from_layer_name("Default");
     let scly = area.mrea().scly_section_mut();
     let layers = scly.layers.as_mut_vec();
     layers[0].objects.as_mut_vec().push(
         structs::SclyObject {
-            instance_id: poi_id,
+            instance_id: area.new_object_id_from_layer_name("Default"),
             connections: vec![].into(),
             property_data: structs::SclyProperty::PointOfInterest(
                 Box::new(structs::PointOfInterest {
@@ -2539,11 +2587,10 @@ fn patch_add_scan_actor<'r>(
 )
 -> Result<(), String>
 {
-    let actor_id = area.new_object_id_from_layer_name("Default");
     let scly = area.mrea().scly_section_mut();
     scly.layers.as_mut_vec()[0].objects.as_mut_vec().push(
         structs::SclyObject {
-            instance_id: actor_id,
+            instance_id: area.new_object_id_from_layer_name("Default"),
             connections: vec![].into(),
             property_data: structs::SclyProperty::Actor(
                 Box::new(structs::Actor {
