@@ -1365,8 +1365,6 @@ fn patch_add_item<'r>(
         );
     }
 
-    let new_layer_idx = new_layer_idx as u32;
-
     let curr_increase = {
         if pickup_type == PickupType::Nothing {
             0
@@ -1452,7 +1450,7 @@ fn patch_add_item<'r>(
     // set the scan file id //
     pickup.actor_params.scan_params.scan = scan_id;
 
-    let pickup_obj_id = area.new_object_id_from_layer_id(new_layer_idx);
+    let pickup_obj_id = area.new_object_id_from_layer_id(new_layer_idx as usize);
     let mut pickup_obj = structs::SclyObject {
         instance_id: pickup_obj_id,
         connections: vec![].into(),
@@ -1651,6 +1649,13 @@ fn patch_add_item<'r>(
             area.new_object_id_from_layer_id(new_layer_idx),
         ];
     }
+    let special_function_id = area.new_object_id_from_layer_name("Default");
+    let four_ids = [
+        area.new_object_id_from_layer_id(new_layer_idx),
+        area.new_object_id_from_layer_id(new_layer_idx),
+        area.new_object_id_from_layer_id(new_layer_idx),
+        area.new_object_id_from_layer_id(new_layer_idx),
+    ];
 
     if shuffle_position || *pickup_config.jumbo_scan.as_ref().unwrap_or(&false) {
         poi_id = area.new_object_id_from_layer_name("Default");
@@ -1660,9 +1665,6 @@ fn patch_add_item<'r>(
     if pickup_kind >= 29 && pickup_kind <= 40 {
         special_fn_artifact_layer_change_id = area.new_object_id_from_layer_name("Default");
     }
-
-    // update MREA layer with new Objects
-    let additional_connections = Vec::new();
 
     if !pickup_config.respawn.unwrap_or(false) {
         // Create Special Function to disable layer once item is obtained
@@ -1767,7 +1769,7 @@ fn patch_add_item<'r>(
         // This is needed because otherwise the item would re-appear every
         // time the room is loaded
         let special_function = structs::SclyObject {
-            instance_id: area.new_object_id_from_layer_name("Default"),
+            instance_id: special_function_id,
             connections: vec![].into(),
             property_data: structs::SclyProperty::SpecialFunction(
                 Box::new(structs::SpecialFunction {
@@ -1806,12 +1808,7 @@ fn patch_add_item<'r>(
     if pickup_config.destination.is_some() {
         pickup_obj.connections.as_mut_vec().extend_from_slice(
             &add_world_teleporter(
-                [
-                    area.new_object_id_from_layer_id(new_layer_idx),
-                    area.new_object_id_from_layer_id(new_layer_idx),
-                    area.new_object_id_from_layer_id(new_layer_idx),
-                    area.new_object_id_from_layer_id(new_layer_idx),
-                ],
+                four_ids,
                 layers[new_layer_idx as usize].objects.as_mut_vec(),
                 &pickup_config.destination.clone().unwrap(),
                 version,
@@ -2543,11 +2540,12 @@ fn patch_add_poi<'r>(
     position: [f32;3],
 ) -> Result<(), String>
 {
+    let instance_id = area.new_object_id_from_layer_name("Default");
     let scly = area.mrea().scly_section_mut();
     let layers = scly.layers.as_mut_vec();
     layers[0].objects.as_mut_vec().push(
         structs::SclyObject {
-            instance_id: area.new_object_id_from_layer_name("Default"),
+            instance_id: instance_id,
             connections: vec![].into(),
             property_data: structs::SclyProperty::PointOfInterest(
                 Box::new(structs::PointOfInterest {
@@ -2587,10 +2585,11 @@ fn patch_add_scan_actor<'r>(
 )
 -> Result<(), String>
 {
+    let instance_id = area.new_object_id_from_layer_name("Default");
     let scly = area.mrea().scly_section_mut();
     scly.layers.as_mut_vec()[0].objects.as_mut_vec().push(
         structs::SclyObject {
-            instance_id: area.new_object_id_from_layer_name("Default"),
+            instance_id: instance_id,
             connections: vec![].into(),
             property_data: structs::SclyProperty::Actor(
                 Box::new(structs::Actor {
@@ -3054,17 +3053,25 @@ fn modify_pickups_in_mrea<'r>(
         area.add_memory_relay(memory_relay);
     }
 
-    let mut world_teleporter_connections = Vec::new();
-    if pickup_config.destination.is_some() {
-        world_teleporter_connections = add_world_teleporter(
-            area,
-            &pickup_config.destination.clone().unwrap(),
-            version,
-        )
-    }
+    let four_ids = [
+        area.new_object_id_from_layer_id(0),
+        area.new_object_id_from_layer_id(0),
+        area.new_object_id_from_layer_id(0),
+        area.new_object_id_from_layer_id(0),
+    ];
 
     let scly = area.mrea().scly_section_mut();
     let layers = scly.layers.as_mut_vec();
+
+    let mut world_teleporter_connections = Vec::new();
+    if pickup_config.destination.is_some() {
+        world_teleporter_connections = add_world_teleporter(
+            four_ids,
+            layers[0].objects.as_mut_vec(),
+            &pickup_config.destination.clone().unwrap(),
+            version,
+        );
+    }
 
     let mut additional_connections = Vec::new();
 
