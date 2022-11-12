@@ -1279,14 +1279,9 @@ fn patch_add_item<'r>(
         pickup_model_data.actor_params.thermal_cskr = ResId::invalid();
     }
 
-    let new_layer_idx = if area.layer_flags.layer_count < 60 {
-        let name = CString::new(format!(
-            "Randomizer - Pickup ({:?})", pickup_model_data.name)).unwrap();
+    let name = CString::new(format!("Randomizer - Pickup ({:?})", pickup_model_data.name)).unwrap();
         area.add_layer(Cow::Owned(name));
-        area.layer_flags.layer_count as usize - 1
-    } else {
-        0
-    };
+    let new_layer_idx = area.layer_flags.layer_count as usize - 1;
 
     // Add hudmemo string as dependency to room //
     let hudmemo_strg: ResId<res_id::STRG> = {

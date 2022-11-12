@@ -189,6 +189,11 @@ impl<'r, 'mlvl, 'cursor, 'list> MlvlArea<'r, 'mlvl, 'cursor, 'list>
 
     pub fn add_layer(&mut self, name: CStr<'r>)
     {
+        if self.layer_flags.layer_count >= 64
+        {
+            panic!("Room 0x{:X} ran out of usable layers!", self.mlvl_area.mrea.to_u32());
+        }
+
         // Mark this layer as active
         self.layer_flags.flags |= 1 << self.layer_flags.layer_count;
         self.layer_flags.layer_count += 1;
