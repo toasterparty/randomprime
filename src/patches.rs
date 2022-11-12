@@ -1647,7 +1647,7 @@ fn patch_add_item<'r>(
             area.new_object_id_from_layer_id(new_layer_idx),
         ];
     }
-    let special_function_id = area.new_object_id_from_layer_name(new_layer_idx);
+    let special_function_id = area.new_object_id_from_layer_id(new_layer_idx);
     let four_ids = [
         area.new_object_id_from_layer_id(new_layer_idx),
         area.new_object_id_from_layer_id(new_layer_idx),
@@ -2968,8 +2968,7 @@ fn modify_pickups_in_mrea<'r>(
     let mut timer_id = 0;
     let mut trigger_id = 0;
     let mut floaty_contraption_id = [0, 0, 0, 0];
-    let mut poi_id = 0;
-    let mut memory_relay_id = 0;
+    let poi_id = area.new_object_id_from_layer_name("Default");
 
     let pickup_kind = pickup_type.kind();
     if pickup_kind >= 29 && pickup_kind <= 40 {
@@ -2991,30 +2990,6 @@ fn modify_pickups_in_mrea<'r>(
             area.new_object_id_from_layer_name("Default"),
             area.new_object_id_from_layer_name("Default"),
         ];
-    }
-
-    if shuffle_position || *pickup_config.jumbo_scan.as_ref().unwrap_or(&false) {
-        poi_id = area.new_object_id_from_layer_name("Default");
-        memory_relay_id = area.new_object_id_from_layer_name("Default");
-
-        let memory_relay = structs::SclyObject {
-            instance_id: memory_relay_id,
-            property_data: structs::SclyProperty::MemoryRelay(
-                Box::new(structs::MemoryRelay {
-                    name: b"MemoryRelay - remove poi\0".as_cstr(),
-                    unknown: 0,
-                    active: 0,
-                })
-            ).into(),
-            connections: vec![
-                structs::Connection {
-                    state: structs::ConnectionState::ACTIVE,
-                    message: structs::ConnectionMsg::DEACTIVATE,
-                    target_object_id: poi_id,
-                }
-            ].into(),
-        };
-        area.add_memory_relay(memory_relay);
     }
 
     let four_ids = [
@@ -3323,22 +3298,8 @@ fn modify_pickups_in_mrea<'r>(
         additional_connections.push(
             structs::Connection {
                 state: structs::ConnectionState::ARRIVED,
-                message: structs::ConnectionMsg::ACTIVATE,
-                target_object_id: memory_relay_id,
-            }
-        );
-        additional_connections.push(
-            structs::Connection {
-                state: structs::ConnectionState::ARRIVED,
                 message: structs::ConnectionMsg::DECREMENT,
                 target_object_id: poi_id,
-            }
-        );
-        relay.connections.as_mut_vec().push(
-            structs::Connection {
-                state: structs::ConnectionState::ZERO,
-                message: structs::ConnectionMsg::ACTIVATE,
-                target_object_id: memory_relay_id,
             }
         );
         relay.connections.as_mut_vec().push(
