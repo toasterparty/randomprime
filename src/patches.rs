@@ -2984,7 +2984,6 @@ fn modify_pickups_in_mrea<'r>(
 
     let post_pickup_relay_id = area.new_object_id_from_layer_name("Default");
     let mut special_fn_artifact_layer_change_id = 0;
-    let mut timer_id = 0;
     let mut trigger_id = 0;
     let mut floaty_contraption_id = [0, 0, 0, 0];
 
@@ -7747,13 +7746,19 @@ fn patch_starting_pickups<'r>(
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
 ) -> Result<(), String>
 {
+    let area_internal_id = area.mlvl_area.internal_id;
+
+    let mut starting_memo_layer_idx = 0;
     let mut timer_starting_items_popup_id = 0;
     let mut hud_memo_starting_items_popup_id = 0;
-    let mut memory_relay_starting_items_popup_id = 0;
+    let mut special_function_id = 0;
     if show_starting_memo {
-        timer_starting_items_popup_id = area.new_object_id_from_layer_name("Default");
-        hud_memo_starting_items_popup_id = area.new_object_id_from_layer_name("Default");
-        memory_relay_starting_items_popup_id = area.new_object_id_from_layer_name("Default");
+        starting_memo_layer_idx = area.layer_flags.layer_count as usize;
+        area.add_layer(b"starting items\0".as_cstr());
+
+        timer_starting_items_popup_id = area.new_object_id_from_layer_id(starting_memo_layer_idx);
+        hud_memo_starting_items_popup_id = area.new_object_id_from_layer_id(starting_memo_layer_idx);
+        special_function_id = area.new_object_id_from_layer_name("Default");
     }
 
     let scly = area.mrea().scly_section_mut();
@@ -7767,7 +7772,8 @@ fn patch_starting_pickups<'r>(
     }
 
     if show_starting_memo {
-        scly.layers.as_mut_vec()[0].objects.as_mut_vec().extend_from_slice(
+        let layers = scly.layers.as_mut_vec();
+        layers[starting_memo_layer_idx].objects.as_mut_vec().extend_from_slice(
             &[
                 structs::SclyObject {
                     instance_id: timer_starting_items_popup_id,
@@ -7788,8 +7794,8 @@ fn patch_starting_pickups<'r>(
                         },
                         structs::Connection {
                             state: structs::ConnectionState::ZERO,
-                            message: structs::ConnectionMsg::ACTIVATE,
-                            target_object_id: memory_relay_starting_items_popup_id,
+                            message: structs::ConnectionMsg::DECREMENT,
+                            target_object_id: special_function_id,
                         },
                     ].into(),
                 },
@@ -7815,21 +7821,17 @@ fn patch_starting_pickups<'r>(
             ]
         );
 
-        area.add_memory_relay(structs::SclyObject {
-            instance_id: memory_relay_starting_items_popup_id,
-            connections: vec![
-                structs::Connection {
-                    state: structs::ConnectionState::ACTIVE,
-                    message: structs::ConnectionMsg::DEACTIVATE,
-                    target_object_id: timer_starting_items_popup_id,
-                },
-            ].into(),
-            property_data: structs::MemoryRelay {
-                name: b"Starting Items popup Memory Relay\0".as_cstr(),
-                unknown: 0,
-                active: 0,
-            }.into(),
-        });
+        layers[0].objects.as_mut_vec().push(
+            structs::SclyObject {
+                instance_id: special_function_id,
+                property_data: structs::SpecialFunction::layer_change_fn(
+                    b"hudmemo layer change\0".as_cstr(),
+                    area_internal_id,
+                    starting_memo_layer_idx as u32,
+                ).into(),
+                connections: vec![].into(),
+            }
+        );
 
         area.add_dependencies(
             &game_resources,
