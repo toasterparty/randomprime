@@ -1208,7 +1208,7 @@ fn patch_door<'r>(
 fn patch_add_item<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
-    pickup_idx: usize,
+    _pickup_idx: usize,
     pickup_config: &PickupConfig,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     pickup_hudmemos: &HashMap<PickupHashKey, ResId<res_id::STRG>>,
@@ -1223,7 +1223,6 @@ fn patch_add_item<'r>(
 ) -> Result<(), String>
 {
     let mut rng = StdRng::seed_from_u64(seed);
-    let mrea_index = area.mrea_index;
     let room_id = area.mlvl_area.internal_id;
 
     // Pickup to use for game functionality //
@@ -1640,7 +1639,6 @@ fn patch_add_item<'r>(
     let mut floaty_contraption_id = [0, 0, 0, 0];
     let mut poi_id = 0;
     let mut special_fn_artifact_layer_change_id = 0;
-    let memory_relay_id = (mrea_index << 16 | (0xffff - pickup_idx)) as u32;
     if pickup_type == PickupType::FloatyJump {
         floaty_contraption_id = [
             area.new_object_id_from_layer_id(new_layer_idx),
@@ -1649,7 +1647,7 @@ fn patch_add_item<'r>(
             area.new_object_id_from_layer_id(new_layer_idx),
         ];
     }
-    let special_function_id = area.new_object_id_from_layer_name("Default");
+    let special_function_id = area.new_object_id_from_layer_name(new_layer_idx);
     let four_ids = [
         area.new_object_id_from_layer_id(new_layer_idx),
         area.new_object_id_from_layer_id(new_layer_idx),
@@ -1664,40 +1662,6 @@ fn patch_add_item<'r>(
     let pickup_kind = pickup_type.kind();
     if pickup_kind >= 29 && pickup_kind <= 40 {
         special_fn_artifact_layer_change_id = area.new_object_id_from_layer_name("Default");
-    }
-
-    if !pickup_config.respawn.unwrap_or(false) {
-        // Create Special Function to disable layer once item is obtained
-        // This is needed because otherwise the item would re-appear every
-        // time the room is loaded
-        let memory_relay = structs::SclyObject {
-            instance_id: memory_relay_id,
-            connections: vec![
-                structs::Connection {
-                    state: structs::ConnectionState::ACTIVE,
-                    message: structs::ConnectionMsg::DEACTIVATE,
-                    target_object_id: pickup_obj.instance_id,
-                }
-            ].into(),
-            property_data: structs::SclyProperty::MemoryRelay(
-                Box::new(structs::MemoryRelay {
-                    name: b"mymemoryrelay\0".as_cstr(),
-                    unknown: 0,
-                    active: 0,
-                })
-            ),
-        };
-
-        area.add_memory_relay(memory_relay);
-
-        // Disable the pickup via memory relay when item is obtained
-        pickup_obj.connections.as_mut_vec().push(
-            structs::Connection {
-                state: structs::ConnectionState::ARRIVED,
-                message: structs::ConnectionMsg::ACTIVATE,
-                target_object_id: memory_relay_id,
-            }
-        );
     }
 
     let scly = area.mrea().scly_section_mut();
@@ -1798,7 +1762,7 @@ fn patch_add_item<'r>(
             structs::Connection {
                 state: structs::ConnectionState::ARRIVED,
                 message: structs::ConnectionMsg::DECREMENT,
-                target_object_id: special_function.instance_id,
+                target_object_id: special_function_id,
             }
         );
 
