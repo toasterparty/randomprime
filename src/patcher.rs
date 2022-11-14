@@ -22,7 +22,7 @@ struct MreaKey<'r>
     room_id: u32,
 }
 
-type SclyPatch<'r, 's> = dyn FnMut(&mut PatcherState, &mut MlvlArea<'r, '_, '_, '_, '_>) -> Result<(), String> + 's;
+type SclyPatch<'r, 's> = dyn FnMut(&mut PatcherState, &mut MlvlArea<'r, '_, '_, '_>) -> Result<(), String> + 's;
 pub struct PrimePatcher<'r, 's>
 {
     file_patches: HashMap<&'s [u8], Box<dyn FnMut(&mut FstEntryFile<'r>) -> Result<(), String> + 's>>,
@@ -73,7 +73,7 @@ impl<'r, 's> PrimePatcher<'r, 's>
     }
 
     pub fn add_scly_patch<F>(&mut self, (pak_name, room_id): (&'s [u8], u32), f: F)
-        where F: FnMut(&mut PatcherState, &mut MlvlArea<'r, '_, '_, '_, '_>) -> Result<(), String> + 's
+        where F: FnMut(&mut PatcherState, &mut MlvlArea<'r, '_, '_, '_>) -> Result<(), String> + 's
     {
         let key = MreaKey { pak_name, room_id, };
         if let Some((_, v)) = self.scly_patches.iter_mut().find(|p| p.0 == key) {
@@ -133,11 +133,7 @@ impl<'r, 's> PrimePatcher<'r, 's>
                     .find(|i| i.fourcc() == reader_writer::FourCC::from_bytes(b"MLVL"))
                     .unwrap()
                     .kind.as_mlvl().unwrap().into_owned();
-                let savw = pak.resources.iter()
-                    .find(|i| i.fourcc() == reader_writer::FourCC::from_bytes(b"SAVW"))
-                    .unwrap()
-                    .kind.as_savw().unwrap().into_owned();
-                Some(MlvlEditor::new(mlvl, savw))
+                Some(MlvlEditor::new(mlvl))
             } else {
                 None
             };
@@ -168,14 +164,9 @@ impl<'r, 's> PrimePatcher<'r, 's>
                     }
                 }
 
-                if mlvl_editor.is_some() {
-                    if cursor.peek().unwrap().fourcc() == b"SAVW".into() {
-                        let savw = mlvl_editor.take().unwrap().savw;
-                        cursor.value().unwrap().kind = ResourceKind::Savw(savw);
-                    } else if cursor.peek().unwrap().fourcc() == b"MLVL".into() {
-                        let mlvl = mlvl_editor.take().unwrap().mlvl;
-                        cursor.value().unwrap().kind = ResourceKind::Mlvl(mlvl);
-                    }
+                if cursor.peek().unwrap().fourcc() == b"MLVL".into() && mlvl_editor.is_some() {
+                    let mlvl = mlvl_editor.take().unwrap().mlvl;
+                    cursor.value().unwrap().kind = ResourceKind::Mlvl(mlvl);
                 }
             }
         }
