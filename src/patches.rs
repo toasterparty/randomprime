@@ -3295,36 +3295,7 @@ fn modify_pickups_in_mrea<'r>(
         });
     }*/
 
-    let position: [f32; 3];
-    let scan_id_out: ResId<res_id::SCAN>;
-    {
-        if pickup_config.destination.is_some() {
-            additional_connections.extend_from_slice(
-                &world_teleporter_connections
-            );
-        }
-
-        let pickup_obj = layers[pickup_location.location.layer as usize].objects.iter_mut()
-        .find(|obj| obj.instance_id == pickup_location.location.instance_id)
-        .unwrap();
-
-        (position, scan_id_out) = update_pickup(pickup_obj, pickup_type, pickup_model_data, pickup_config, scan_id, position_override);
-
-        if additional_connections.len() > 0 {
-            pickup_obj.connections.as_mut_vec().extend_from_slice(&additional_connections);
-        }
-    }
-
     if pickup_type == PickupType::FloatyJump {
-        place_floaty_contraption(
-            layers[0].objects.as_mut_vec(),
-            floaty_contraption_id[0],
-            floaty_contraption_id[1],
-            floaty_contraption_id[2],
-            floaty_contraption_id[3],
-            position.clone().into(),
-        );
-
         additional_connections.push(
             structs::Connection {
                 state: structs::ConnectionState::ARRIVED,
@@ -3335,25 +3306,6 @@ fn modify_pickups_in_mrea<'r>(
     }
 
     if jumbo_poi {
-        layers[jumbo_poi_layer_idx].objects.as_mut_vec().push(
-            structs::SclyObject {
-                instance_id: jumbo_poi_id,
-                connections: vec![].into(),
-                property_data: structs::SclyProperty::PointOfInterest(
-                    Box::new(structs::PointOfInterest {
-                        name: b"mypoi\0".as_cstr(),
-                        position: position.clone().into(),
-                        rotation: [0.0, 0.0, 0.0].into(),
-                        active: 1,
-                        scan_param: structs::scly_structs::ScannableParameters {
-                            scan: scan_id,
-                        },
-                        point_size: 500.0, // makes it jumbo!
-                    })
-                ),
-            }
-        );
-
         layers[0].objects.as_mut_vec().push(
             structs::SclyObject {
                 instance_id: jumbo_poi_special_function_id,
@@ -3404,6 +3356,58 @@ fn modify_pickups_in_mrea<'r>(
                 .unwrap();
             trigger.active = 1;
         }
+    }
+
+    let position: [f32; 3];
+    let scan_id_out: ResId<res_id::SCAN>;
+    {
+        if pickup_config.destination.is_some() {
+            additional_connections.extend_from_slice(
+                &world_teleporter_connections
+            );
+        }
+
+        let pickup_obj = layers[pickup_location.location.layer as usize].objects.iter_mut()
+        .find(|obj| obj.instance_id == pickup_location.location.instance_id)
+        .unwrap();
+
+        (position, scan_id_out) = update_pickup(pickup_obj, pickup_type, pickup_model_data, pickup_config, scan_id, position_override);
+
+        if additional_connections.len() > 0 {
+            pickup_obj.connections.as_mut_vec().extend_from_slice(&additional_connections);
+        }
+    }
+
+    if pickup_type == PickupType::FloatyJump {
+        place_floaty_contraption(
+            layers[0].objects.as_mut_vec(),
+            floaty_contraption_id[0],
+            floaty_contraption_id[1],
+            floaty_contraption_id[2],
+            floaty_contraption_id[3],
+            position.clone().into(),
+        );
+    }
+
+    if jumbo_poi {
+        layers[jumbo_poi_layer_idx].objects.as_mut_vec().push(
+            structs::SclyObject {
+                instance_id: jumbo_poi_id,
+                connections: vec![].into(),
+                property_data: structs::SclyProperty::PointOfInterest(
+                    Box::new(structs::PointOfInterest {
+                        name: b"mypoi\0".as_cstr(),
+                        position: position.clone().into(),
+                        rotation: [0.0, 0.0, 0.0].into(),
+                        active: 1,
+                        scan_param: structs::scly_structs::ScannableParameters {
+                            scan: scan_id,
+                        },
+                        point_size: 500.0, // makes it jumbo!
+                    })
+                ),
+            }
+        );
     }
 
     layers[0].objects.as_mut_vec().push(relay);
