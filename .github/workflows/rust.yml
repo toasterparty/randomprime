@@ -32,7 +32,7 @@ jobs:
     - uses: actions-rs/toolchain@v1
       with:
         profile: minimal
-        toolchain: 1.59.0
+        toolchain: stable
         target: powerpc-unknown-linux-gnu
         override: true
         
