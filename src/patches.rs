@@ -180,7 +180,7 @@ fn build_artifact_temple_totem_scan_strings<R>(
             if room.pickups.is_none() { continue };
             for pickup in room.pickups.as_ref().unwrap().iter() {
                 let pickup_type = PickupType::from_str(&pickup.pickup_type);
-                if pickup_type.kind() >= PickupType::ArtifactOfLifegiver.kind() && pickup_type.kind() <= PickupType::ArtifactOfStrength.kind() {
+                if pickup_type.kind() >= PickupType::ArtifactOfTruth.kind() && pickup_type.kind() <= PickupType::ArtifactOfNewborn.kind() {
                     artifact_locations.push((&room_name.as_str(), pickup_type));
                 }
             }
@@ -207,7 +207,24 @@ fn build_artifact_temple_totem_scan_strings<R>(
 
     // Shame there isn't a way to flatten tuples automatically
     for (room_name, pt) in artifact_locations.iter() {
-        let artifact_id = (pt.kind() - PickupType::ArtifactOfLifegiver.kind()) as usize;
+        let artifact_id = (pt.kind() - PickupType::ArtifactOfTruth.kind()) as usize;
+
+        let artifact_id = match artifact_id {
+            0  => 6 , // ArtifactOfTruth
+            1  => 11, // ArtifactOfStrength
+            2  => 4 , // ArtifactOfElder
+            3  => 1 , // ArtifactOfWild
+            4  => 0 , // ArtifactOfLifegive
+            5  => 8 , // ArtifactOfWarrior
+            6  => 7 , // ArtifactOfChozo
+            7  => 10, // ArtifactOfNature
+            8  => 3 , // ArtifactOfSun
+            9  => 2 , // ArtifactOfWorld
+            10 => 5 , // ArtifactOfSpirit
+            11 => 9 , // ArtifactOfNewborn
+            _ => panic!("Error - Bad artifact id '{}'", artifact_id)
+        };
+
         if scan_text[artifact_id].len() != 0 {
             // If there are multiple of this particular artifact, then we use the first instance
             // for the location of the artifact.
@@ -2998,10 +3015,10 @@ fn modify_pickups_in_mrea<'r>(
 
     if pickup_type == PickupType::FloatyJump {
         floaty_contraption_id = [
-            area.new_object_id_from_layer_name("Default"),
-            area.new_object_id_from_layer_name("Default"),
-            area.new_object_id_from_layer_name("Default"),
-            area.new_object_id_from_layer_name("Default"),
+            area.new_object_id_from_layer_id(0),
+            area.new_object_id_from_layer_id(0),
+            area.new_object_id_from_layer_id(0),
+            area.new_object_id_from_layer_id(0),
         ];
     }
 
@@ -3300,7 +3317,7 @@ fn modify_pickups_in_mrea<'r>(
 
     if pickup_type == PickupType::FloatyJump {
         place_floaty_contraption(
-            layers[pickup_location.location.layer as usize].objects.as_mut_vec(),
+            layers[0].objects.as_mut_vec(),
             floaty_contraption_id[0],
             floaty_contraption_id[1],
             floaty_contraption_id[2],
@@ -3459,6 +3476,13 @@ fn place_floaty_contraption<'r>(
     position: [f32;3],
 )
 {
+    if timer1_id == 0 || timer2_id == 0 || water_id == 0 || camera_id == 0 ||
+        timer1_id == timer2_id || timer1_id == water_id || timer1_id == camera_id ||
+        timer2_id == water_id || timer2_id == camera_id || water_id == camera_id
+    {
+        panic!("something went wrong making floaty contraption");
+    }
+
     let mut water_obj = WaterType::Normal.to_obj();
     water_obj.instance_id = water_id;
 
