@@ -64,7 +64,10 @@ extern "C"
 {
     fn fwrite(bytes: *const u8, len: usize, count: usize) -> usize;
 
-    pub fn printf(fmt: *const u8, ...);
+    // Sometime around 2022-11-12, the use of printf in this file started requiring external symbol "puts" which
+    // can't be found because puts isn't in the shipping dol or something. Anyways, if you use printf anywhere in
+    // this lib, it will break litterally everything you ever cared about
+    // pub fn printf(fmt: *const u8, ...);
 
     pub fn sprintf(s: *mut u8, fmt: *const u8, ...);
     // #[link_name = "__nw__FUlPCcPCc"]
@@ -247,7 +250,7 @@ pub static PROLOG_FUNCS: [unsafe extern "C" fn()] = [..];
 #[no_mangle]
 unsafe extern "C" fn __rel_prolog()
 {
-    printf(b"prolog called\n\0".as_ptr());
+    // printf(b"prolog called\n\0".as_ptr());
     let version = GameVersion::current();
     for patch in PATCHES.iter() {
         if !version.matches(patch.version) {
@@ -286,7 +289,7 @@ unsafe extern "C" fn __rel_prolog()
     }
 
     for prolog_func in PROLOG_FUNCS.iter() {
-        printf(b"calling prolog func ptr\n\0".as_ptr());
+        // printf(b"calling prolog func ptr\n\0".as_ptr());
         prolog_func();
     }
 }
