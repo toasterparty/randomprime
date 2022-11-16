@@ -8859,17 +8859,17 @@ fn patch_dol<'r>(
         dol_patcher.ppcasm_patch(&call_compute_spring_ball_movement_patch)?;
 
         // rewrote as tuple to make it cleaner
-        let (velocity_offset, movement_state_offset, attached_actor_offset, energy_drain_offset, out_of_water_ticks_offset, surface_restraint_type_offset) = if version == Version::NtscU0_00 || version == Version::NtscU0_01 || version == Version::NtscK
+        let (velocity_offset, movement_state_offset, attached_actor_offset, energy_drain_offset, out_of_water_ticks_offset, surface_restraint_type_offset, morph_ball_offset) = if version == Version::NtscU0_00 || version == Version::NtscU0_01 || version == Version::NtscK
         {
-            (0x138, 0x258, 0x26c, 0x274, 0x2b0, 0x2ac)
+            (0x138, 0x258, 0x26c, 0x274, 0x2b0, 0x2ac, 0x768)
         }
         else
         {
-            (0x148, 0x268, 0x27c, 0x284, 0x2c0, 0x2bc)
+            (0x148, 0x268, 0x27c, 0x284, 0x2c0, 0x2bc, 0x778)
         };
 
         let spring_ball_patch = ppcasm!(new_text_section_end, {
-                // stack init
+                // stack init (at +0x000)
                 stwu      r1, -0x20(r1);
                 mflr      r0;
                 stw       r0, 0x20(r1);
@@ -8882,11 +8882,12 @@ fn patch_dol<'r>(
                 stw       r28, 0x10(r1);
                 mr        r28, r3;
 
-                // function body
+                // function body (at +0x02c)
                 lwz       r14, 0x84c(r30);
                 lwz       r15, 0x8b8(r30);
                 lis       r16, data@h;
                 addi      r16, r16, data@l;
+                lwz       r17, { morph_ball_offset }(r14);
                 lfs       f1, 0x40(r14);
                 stfs      f1, 0x00(r16);
                 lfs       f1, 0x50(r14);
@@ -8895,43 +8896,43 @@ fn patch_dol<'r>(
                 stfs      f1, 0x08(r16);
                 lwz       r0, 0x0c(r16);
                 cmplwi    r0, 0;
-                bgt       { new_text_section_end + 0x12c };
+                bgt       { new_text_section_end + 0x14c };
                 lwz       r0, { movement_state_offset }(r14);
                 cmplwi    r0, 0;
-                beq       { new_text_section_end + 0x80 };
-                b         { new_text_section_end + 0x12c };
+                beq       { new_text_section_end + 0x84 };
+                b         { new_text_section_end + 0x14c };
                 cmplwi    r0, 4;
-                bne       { new_text_section_end + 0x12c };
+                bne       { new_text_section_end + 0x14c };
                 lwz       r0, { out_of_water_ticks_offset }(r14);
                 cmplwi    r0, 2;
-                bne       { new_text_section_end + 0x8c };
+                bne       { new_text_section_end + 0x90 };
                 lwz       r0, { surface_restraint_type_offset }(r14);
-                b         { new_text_section_end + 0x90 };
+                b         { new_text_section_end + 0x94 };
                 li        r0, 4;
                 cmplwi    r0, 7;
-                beq       { new_text_section_end + 0x12c };
+                beq       { new_text_section_end + 0x14c };
                 mr        r3, r28;
                 bl        { symbol_addr!("IsMovementAllowed__10CMorphBallCFv", version) };
                 cmplwi    r3, 0;
-                beq       { new_text_section_end + 0x12c };
+                beq       { new_text_section_end + 0x14c };
                 lwz       r3, 0x0(r15);
                 li        r4, 6;
                 bl        { symbol_addr!("HasPowerUp__12CPlayerStateCFQ212CPlayerState9EItemType", version) };
                 cmplwi    r3, 0;
-                beq       { new_text_section_end + 0x12c };
+                beq       { new_text_section_end + 0x14c };
                 lhz       r0, { attached_actor_offset }(r14);
                 cmplwi    r0, 65535;
-                bne       { new_text_section_end + 0x12c };
+                bne       { new_text_section_end + 0x14c };
                 addi      r3, r14, { energy_drain_offset };
                 bl        { symbol_addr!("GetEnergyDrainIntensity__18CPlayerEnergyDrainCFv", version) };
                 fcmpu     cr0, f1, f14;
-                bgt       { new_text_section_end + 0x12c };
+                bgt       { new_text_section_end + 0x14c };
                 lwz       r0, 0x187c(r28);
                 cmplwi    r0, 0;
-                bne       { new_text_section_end + 0x12c };
+                bne       { new_text_section_end + 0x14c };
                 lfs       f1, 0x14(r29);
                 fcmpu     cr0, f1, f14;
-                ble       { new_text_section_end + 0x12c };
+                ble       { new_text_section_end + 0x14c };
                 lfs       f16, { velocity_offset }(r14);
                 lfs       f17, { velocity_offset + 4 }(r14);
                 mr        r3, r14;
@@ -8940,32 +8941,40 @@ fn patch_dol<'r>(
                 bl        { symbol_addr!("BombJump__7CPlayerFRC9CVector3fR13CStateManager", version) };
                 stfs      f16, { velocity_offset }(r14);
                 stfs      f17, { velocity_offset + 4 }(r14);
+                lfs       f17, 0x1dfc(r17);
+                fcmpu     cr0, f17, f14;
+                ble       { new_text_section_end + 0x130 };
+                lfs       f17, 0x10(r16);
+                lfs       f16, { velocity_offset + 8 }(r14);
+                fdivs     f16, f16, f17;
+                stfs      f16, { velocity_offset + 8 }(r14);
                 mr        r3, r14;
                 li        r4, 4;
                 mr        r5, r29;
                 bl        { symbol_addr!("SetMoveState__7CPlayerFQ27NPlayer20EPlayerMovementStateR13CStateManager", version) };
                 li        r3, 40;
                 stw       r3, 0x0c(r16);
-                b         { new_text_section_end + 0x140 };
+                b         { new_text_section_end + 0x160 };
                 lwz       r3, 0x0c(r16);
                 cmplwi    r3, 0;
-                beq       { new_text_section_end + 0x140 };
+                beq       { new_text_section_end + 0x160 };
                 addi      r3, r3, -1;
                 stw       r3, 0x0c(r16);
 
-                // call compute boost ball movement
+                // call compute boost ball movement (at +0x160)
                 mr        r3, r28;
                 mr        r4, r29;
                 mr        r5, r30;
                 fmr       f1, f15;
                 bl        { symbol_addr!("ComputeBoostBallMovement__10CMorphBallFRC11CFinalInputRC13CStateManagerf", version) };
 
-                // clear used registers
+                // clear used registers (at +0x174)
                 andi      r14, r14, 0;
                 andi      r15, r15, 0;
                 andi      r16, r16, 0;
+                andi      r17, r17, 0;
 
-                // stack deinit
+                // stack deinit (at +0x184)
                 lwz       r0, 0x20(r1);
                 fmr       f1, f15;
                 fmr       f15, f14;
@@ -8983,10 +8992,99 @@ fn patch_dol<'r>(
                 .float 0.0;
                 .float 0.0;
                 .long 0;
+                .float 1.5;
         });
 
         new_text_section_end = new_text_section_end + spring_ball_patch.encoded_bytes().len() as u32;
         new_text_section.extend(spring_ball_patch.encoded_bytes());
+
+        let spring_ball_cooldown = new_text_section_end - 8;
+
+        let (call_leave_morph_ball_offset, call_enter_morph_ball_offset) = if version == Version::NtscJ || version == Version::Pal {
+            (0x850, 0x940)
+        } else {
+            (0xa34, 0xb24)
+        };
+
+        let call_leave_morph_ball_patch = ppcasm!(symbol_addr!("UpdateMorphBallTransition__7CPlayerFfR13CStateManager", version) + call_leave_morph_ball_offset, {
+                bl         { new_text_section_end };
+        });
+        dol_patcher.ppcasm_patch(&call_leave_morph_ball_patch)?;
+
+        let spring_ball_cooldown_reset_on_unmorph_patch = ppcasm!(new_text_section_end, {
+                // stack init (at +0x000)
+                stwu      r1, -0x18(r1);
+                mflr      r0;
+                stw       r0, 0x18(r1);
+                fmr       f15, f1;
+                stw       r31, 0x10(r1);
+                mr        r31, r3;
+                stw       r30, 0x14(r1);
+                mr        r30, r4;
+
+                // function body (at +0x20)
+                lis       r14, { spring_ball_cooldown }@h;
+                addi      r14, r14, { spring_ball_cooldown }@l;
+                li        r0, 0;
+                stw       r0, 0x0(r14);
+                mr        r3, r31;
+                mr        r4, r30;
+                bl        { symbol_addr!("LeaveMorphBallState__7CPlayerFR13CStateManager", version) };
+
+                // clear used registers (at +0x3c)
+                andi      r14, r14, 0;
+
+                // stack deinit (at +0x40)
+                lwz       r0, 0x18(r1);
+                lwz       r31, 0x14(r1);
+                lwz       r30, 0x10(r1);
+                mtlr      r0;
+                addi      r1, r1, 0x18;
+                blr;
+        });
+
+        new_text_section_end = new_text_section_end + spring_ball_cooldown_reset_on_unmorph_patch.encoded_bytes().len() as u32;
+        new_text_section.extend(spring_ball_cooldown_reset_on_unmorph_patch.encoded_bytes());
+
+        let call_enter_morph_ball_patch = ppcasm!(symbol_addr!("UpdateMorphBallTransition__7CPlayerFfR13CStateManager", version) + call_enter_morph_ball_offset, {
+                bl         { new_text_section_end };
+        });
+        dol_patcher.ppcasm_patch(&call_enter_morph_ball_patch)?;
+
+        let spring_ball_cooldown_reset_on_morph_patch = ppcasm!(new_text_section_end, {
+                // stack init (at +0x000)
+                stwu      r1, -0x18(r1);
+                mflr      r0;
+                stw       r0, 0x18(r1);
+                fmr       f15, f1;
+                stw       r31, 0x10(r1);
+                mr        r31, r3;
+                stw       r30, 0x14(r1);
+                mr        r30, r4;
+
+                // function body (at +0x20)
+                lis       r14, { spring_ball_cooldown }@h;
+                addi      r14, r14, { spring_ball_cooldown }@l;
+                li        r0, 0;
+                stw       r0, 0x0(r14);
+                mr        r3, r31;
+                mr        r4, r30;
+                bl        { symbol_addr!("EnterMorphBallState__7CPlayerFR13CStateManager", version) };
+
+                // clear used registers (at +0x3c)
+                andi      r14, r14, 0;
+
+                // stack deinit (at +0x40)
+                lwz       r0, 0x18(r1);
+                lwz       r31, 0x14(r1);
+                lwz       r30, 0x10(r1);
+                mtlr      r0;
+                addi      r1, r1, 0x18;
+                blr;
+        });
+
+        new_text_section_end = new_text_section_end + spring_ball_cooldown_reset_on_morph_patch.encoded_bytes().len() as u32;
+        new_text_section.extend(spring_ball_cooldown_reset_on_morph_patch.encoded_bytes());
     }
 
     let bytes_needed = ((new_text_section.len() + 31) & !31) - new_text_section.len();
