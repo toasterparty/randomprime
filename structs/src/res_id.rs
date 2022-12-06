@@ -12,7 +12,7 @@ pub trait ResIdKind {
 macro_rules! decl_res_id_kind {
     ($($id:ident $e:expr,)*) => {
         $(
-            #[allow(non_camel_case)]
+            #[allow(non_snake_case)]
             #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
             pub struct $id;
             impl ResIdKind for $id

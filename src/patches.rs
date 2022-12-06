@@ -519,9 +519,9 @@ fn patch_remove_blast_shield<'r>(
 
         let actor = obj.property_data.as_actor_mut().unwrap();
 
-        if  f32::abs(actor.position[0] - dock_position[0]) < 5.0 &&
-            f32::abs(actor.position[1] - dock_position[1]) < 5.0 &&
-            f32::abs(actor.position[2] - dock_position[2]) < 5.0
+        if  f32::abs(actor.position[0] - dock_position[0]) > 5.0 ||
+            f32::abs(actor.position[1] - dock_position[1]) > 5.0 ||
+            f32::abs(actor.position[2] - dock_position[2]) > 5.0
         {
             continue;
         }
@@ -13650,10 +13650,10 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             panic!("Unexpected Blast Shield Type - {}", blast_shield_name);
                         }
 
-                        if blast_shield_type.as_ref().unwrap() == &BlastShieldType::Unchanged {
+                        if *blast_shield_type.as_ref().unwrap() == BlastShieldType::Unchanged {
                             // Unchanged is the same as not writing the field
                             blast_shield_type = None;
-                        } else {
+                        } else if *blast_shield_type.as_ref().unwrap() == BlastShieldType::None {
                             // Remove the existing blast shield
                             patcher.add_scly_patch(
                                 (pak_name.as_bytes(), room_info.room_id.to_u32()),
@@ -13663,11 +13663,7 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                 )
                             );
                             
-                            // Skip patching if removal was the ask
-                            if blast_shield_type.as_ref().unwrap() == &BlastShieldType::None
-                            {
-                                blast_shield_type = None;
-                            }
+                            blast_shield_type = None;
                         }
                     }
 
