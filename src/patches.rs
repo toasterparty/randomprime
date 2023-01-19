@@ -12795,6 +12795,17 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             lock_on_points: None,
                             escape_sequences: None,
                             repositions: None,
+                            audio_override: None,
+                            delete_ids: None,
+                            disabled_layers: None,
+                            enabled_layers: None,
+                            fog: None,
+                            triggers: None,
+                            hudmemos: None,
+                            xray_fog_distance: None,
+                            enviornmental_effect: None,
+                            initial_enviornmental_effect: None,
+                            initial_thermal_heat_level: None,
                             map_default_state: Some(structs::MapaObjectVisibilityMode::MapStationOrVisit),
                         }
                     );
@@ -12820,6 +12831,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                 jumbo_scan: None,
                                 destination: None,
                                 show_icon: None,
+                                invisible_and_silent: None,
+                                thermal_only: None,
                             }
                         ]
                     );
@@ -13414,6 +13427,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             jumbo_scan: None,
                             destination: None,
                             show_icon: None,
+                            invisible_and_silent: None,
+                            thermal_only: None,
                         }
                     } else {
                         pickups[idx].clone() // TODO: cloning is suboptimal

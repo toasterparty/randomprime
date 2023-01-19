@@ -110,6 +110,8 @@ pub struct PickupConfig
     pub jumbo_scan: Option<bool>,
     pub destination: Option<String>,
     pub show_icon: Option<bool>,
+    pub invisible_and_silent: Option<bool>,
+    pub thermal_only: Option<bool>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
@@ -189,6 +191,8 @@ pub struct PlatformConfig
     pub position: [f32;3],
     pub rotation: Option<[f32;3]>,
     pub alt_platform: Option<bool>,
+    pub xray_only: Option<bool>,
+    pub thermal_only: Option<bool>,
     // pub scale: [f32;3],
 }
 
@@ -305,12 +309,72 @@ pub struct LockOnPoint
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TriggerConfig
+{
+    pub position: [f32;3],
+    pub scale: [f32;3],
+    pub force: Option<[f32;3]>,
+    pub damage_type: Option<String>,
+    pub damage_amount: Option<f32>,
+}
+
+#[derive(PartialEq, Debug, Serialize, Deserialize, Copy, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub enum FogMode
+{
+    None = 0,
+    PerspLin = 2,
+    PerspExp = 4,
+    PerspExp2 = 5,
+    PerspRevExp = 6,
+    PerspRevExp2 = 7,
+    OrthoLin = 10,
+    OrthoExp = 12,
+    OrthoExp2 = 13,
+    OrthoRevExp = 14,
+    OrthoRevExp2 = 15,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct FogConfig
+{
+    pub mode: FogMode,
+    pub explicit: bool,
+    pub color: [f32;4], // RGBA
+    pub range: [f32;2], // X, Y
+    pub color_delta: Option<f32>,
+    pub range_delta: Option<[f32;2]>,
+    pub keep_original: Option<bool>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RepositionConfig
 {
     pub trigger_position: [f32;3],
     pub trigger_scale: [f32;3],
     pub destination_position: [f32;3],
     pub destination_rotation: f32,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HudmemoConfig
+{
+    pub trigger_position: [f32;3],
+    pub trigger_scale: [f32;3],
+    pub text: String,
+    pub disable_on_enter: Option<bool>, // default - true
+}
+
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub enum EnviornmentalEffect {
+    None,
+    Snow,
+    Rain,
+    Bubbles,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
@@ -332,9 +396,20 @@ pub struct RoomConfig
     pub camera_hints: Option<Vec<CameraHintConfig>>,
     pub blocks: Option<Vec<BlockConfig>>,
     pub lock_on_points: Option<Vec<LockOnPoint>>,
+    pub triggers: Option<Vec<TriggerConfig>>,
+    pub fog: Option<FogConfig>,
     pub ambient_lighting_scale: Option<f32>, // 1.0 is default lighting
+    pub enviornmental_effect: Option<EnviornmentalEffect>,
+    pub initial_enviornmental_effect: Option<f32>,
+    pub initial_thermal_heat_level: Option<f32>,
+    pub xray_fog_distance: Option<f32>,
     pub escape_sequences: Option<Vec<EscapeSequenceConfig>>,
     pub repositions: Option<Vec<RepositionConfig>>,
+    pub hudmemos: Option<Vec<HudmemoConfig>>,
+    pub enabled_layers: Option<Vec<u32>>,
+    pub disabled_layers: Option<Vec<u32>>,
+    pub delete_ids: Option<Vec<u32>>,
+    pub audio_override: Option<HashMap<u32, String>>, // key=instance_id, value=/audio/min_phazonL.dsp|/audio/min_phazonR.dsp
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
@@ -489,6 +564,8 @@ pub struct PatchConfig
 
     #[serde(skip_serializing)] // stop racers from peeking at locations
     pub level_data: HashMap<String, LevelConfig>,
+
+    pub strg: HashMap<u32, String>,
 
     pub starting_room: String,
     pub starting_memo: Option<String>,
@@ -655,6 +732,9 @@ struct PatchConfigPrivate
 
     #[serde(default)]
     level_data: HashMap<String, LevelConfig>,
+    
+    #[serde(default)]
+    strg: HashMap<u32, String>,
 }
 
 /*** Parse Patcher Input ***/
@@ -1070,6 +1150,7 @@ impl PatchConfigPrivate
             extern_assets_dir: self.extern_assets_dir.clone(),
 
             level_data: self.level_data.clone(),
+            strg: self.strg.clone(),
 
             qol_game_breaking,
             qol_cosmetic,
