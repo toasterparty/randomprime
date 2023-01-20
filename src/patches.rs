@@ -14619,8 +14619,33 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
                     move |ps, area| patch_remove_doors(ps, area)
                 );
-
             }
+        }
+    }
+
+    // remove arbitrary objects
+    for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {
+        let world = World::from_pak(pak_name).unwrap();
+        for room_info in rooms.iter() {
+            let level = level_data.get(world.to_json_key());
+            if level.is_none() {
+                continue;
+            }
+
+            let room = level.unwrap().rooms.get(room_info.name.trim());
+            if room.is_none() {
+                continue;
+            }
+
+            let room = room.unwrap();
+            if room.delete_ids.is_none() {
+                continue;
+            }
+
+            patcher.add_scly_patch(
+                (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                move |ps, area| patch_remove_ids(ps, area, room.delete_ids.as_ref().unwrap().to_vec())
+            );
         }
     }
 
