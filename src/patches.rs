@@ -7766,6 +7766,28 @@ fn patch_completion_screen(
     Ok(())
 }
 
+fn patch_arbitrary_strg(
+    res: &mut structs::Resource,
+    replacement_strings: Vec<String>,
+) -> Result<(), String>
+{
+    let strg = res.kind.as_strg_mut().unwrap();
+
+    for st in strg.string_tables.as_mut_vec().iter_mut() {
+        let strings = st.strings.as_mut_vec();
+        strings.clear();
+
+        for mut replacement_string in replacement_strings.clone() {
+            if !replacement_string.ends_with("\0") {
+                replacement_string += "\0";
+            }
+            strings.push(replacement_string.to_owned().into());
+        }
+    }
+    
+    Ok(())
+}
+
 fn patch_starting_pickups<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -12886,6 +12908,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     let pickup_hudmemos = &pickup_hudmemos;
     let pickup_scans = &pickup_scans;
     let extra_scans = &extra_scans;
+    let strgs = config.strg.clone();
+    let strgs = &strgs;
 
     let savw_scans_to_add = &savw_scans_to_add;
     let local_savw_scans_to_add = &local_savw_scans_to_add;
@@ -14608,6 +14632,21 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         else
         {
             panic!("Unexpected boss name {}", _boss_name);
+        }
+    }
+
+    // Edit Strings
+    for (strg, replacement_strings) in strgs {
+        let id = match strg.parse::<u32>() {
+            Ok(n) => n,
+            Err(_e) => panic!("{} is not a valid STRG identifier", strg),
+        };
+
+        for (pak_name, _) in pickup_meta::ROOM_INFO.iter() {
+            patcher.add_resource_patch(
+                (&[pak_name.as_bytes()], id, FourCC::from_bytes(b"STRG")),
+                move |res| patch_arbitrary_strg(res, replacement_strings.clone())
+            );
         }
     }
 

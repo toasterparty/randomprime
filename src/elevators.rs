@@ -2,7 +2,7 @@
 
 use serde::Deserialize;
 use enum_map::{Enum, EnumMap};
-use crate::{pickup_meta::self};
+use crate::{pickup_meta};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum World {

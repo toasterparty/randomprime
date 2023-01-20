@@ -565,7 +565,7 @@ pub struct PatchConfig
     #[serde(skip_serializing)] // stop racers from peeking at locations
     pub level_data: HashMap<String, LevelConfig>,
 
-    pub strg: HashMap<u32, String>,
+    pub strg: HashMap<String, Vec<String>>, // "<decimal asset ID>": <non-null terminated table of strings>
 
     pub starting_room: String,
     pub starting_memo: Option<String>,
@@ -734,7 +734,7 @@ struct PatchConfigPrivate
     level_data: HashMap<String, LevelConfig>,
     
     #[serde(default)]
-    strg: HashMap<u32, String>,
+    strg: HashMap<String, Vec<String>>, // "<decimal asset ID>": <non-null terminated table of strings>
 }
 
 /*** Parse Patcher Input ***/
