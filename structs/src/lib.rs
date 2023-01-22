@@ -37,6 +37,7 @@ pub mod scly_props
     pub mod camera_hint;
     pub mod counter;
     pub mod damageable_trigger;
+    pub mod distance_fog;
     pub mod dock;
     pub mod door;
     pub mod effect;
@@ -88,6 +89,7 @@ pub mod scly_props
     pub use self::camera_hint::*;
     pub use self::counter::*;
     pub use self::damageable_trigger::*;
+    pub use self::distance_fog::*;
     pub use self::dock::*;
     pub use self::door::*;
     pub use self::effect::*;
@@ -138,6 +140,7 @@ pub use scly_props::camera_filter_keyframe::*;
 pub use scly_props::camera_hint_trigger::*;
 pub use scly_props::camera_hint::*;
 pub use scly_props::damageable_trigger::*;
+pub use scly_props::distance_fog::*;
 pub use scly_props::dock::*;
 pub use scly_props::door::*;
 pub use scly_props::effect::*;

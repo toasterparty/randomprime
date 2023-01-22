@@ -318,28 +318,23 @@ pub struct TriggerConfig
     pub damage_amount: Option<f32>,
 }
 
-#[derive(PartialEq, Debug, Serialize, Deserialize, Copy, Clone)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub enum FogMode
-{
-    None = 0,
-    PerspLin = 2,
-    PerspExp = 4,
-    PerspExp2 = 5,
-    PerspRevExp = 6,
-    PerspRevExp2 = 7,
-    OrthoLin = 10,
-    OrthoExp = 12,
-    OrthoExp2 = 13,
-    OrthoRevExp = 14,
-    OrthoRevExp2 = 15,
-}
+// None = 0,
+// PerspLin = 2,
+// PerspExp = 4,
+// PerspExp2 = 5,
+// PerspRevExp = 6,
+// PerspRevExp2 = 7,
+// OrthoLin = 10,
+// OrthoExp = 12,
+// OrthoExp2 = 13,
+// OrthoRevExp = 14,
+// OrthoRevExp2 = 15,
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct FogConfig
 {
-    pub mode: FogMode,
+    pub mode: u32,
     pub explicit: bool,
     pub color: [f32;4], // RGBA
     pub range: [f32;2], // X, Y
