@@ -548,10 +548,6 @@ fn patch_door<'r>(
     let mrea_id = area.mlvl_area.mrea.to_u32();
     let area_internal_id = area.mlvl_area.internal_id;
 
-    if door_loc.door_force_locations.len() == 0 || door_loc.door_shield_locations.len() == 0 {
-        panic!("Tried to change vulnerability/blast shield of door without a damageable shield in room 0x{:X}", mrea_id);
-    }
-
     // Update dependencies based on the upcoming patch(es)
     let mut deps: Vec<(u32, FourCC)> = Vec::new();
 
@@ -592,10 +588,6 @@ fn patch_door<'r>(
                 _shield_actor_id = obj.connections.as_mut_vec().iter_mut().find(|conn| conn.state == structs::ConnectionState::MAX_REACHED).unwrap().target_object_id;
                 break;
             }
-        }
-
-        if _damageable_trigger_id == 0 || _shield_actor_id == 0 {
-            panic!("Failed to find damageable trigger on door 0x{:X} in room 0x{:X}", door_id, mrea_id);
         }
 
         (_damageable_trigger_id, _shield_actor_id)
@@ -1038,19 +1030,28 @@ fn patch_door<'r>(
                 start_immediately: 1,
                 active: 1,
             }.into(),
-            connections: vec![
+            connections: vec![].into(),
+        };
+
+        if damageable_trigger_id != 0 {
+            timer.connections.as_mut_vec().push(
                 structs::Connection {
                     state: structs::ConnectionState::ZERO,
                     message: structs::ConnectionMsg::DEACTIVATE,
                     target_object_id: damageable_trigger_id,
-                },
+                }
+            );
+        }
+
+        if shield_actor_id != 0 {
+            timer.connections.as_mut_vec().push(
                 structs::Connection {
                     state: structs::ConnectionState::ZERO,
                     message: structs::ConnectionMsg::ACTIVATE,
                     target_object_id: shield_actor_id,
-                },
-            ].into(),
-        };
+                }
+            );
+        }
 
         // Create Gibbs and activate on DEAD //
         let effect = structs::SclyObject {
