@@ -6194,6 +6194,54 @@ fn patch_arboretum_invisible_wall(
     Ok(())
 }
 
+fn patch_op_death_pickup_spawn<'r>
+(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layers = &mut scly.layers.as_mut_vec();
+    for layer in layers.iter_mut() {
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+            let obj_id = obj.instance_id&0x00FFFFFF;
+
+            if obj_id == 0x001A04B8 || obj_id == 0x001A04C5 { // Elite Quarters Pickup(s)
+                let pickup = obj.property_data.as_pickup_mut().unwrap();
+                pickup.position[2] = pickup.position[2] + 2.0; // Move up so it's more obvious
+        
+                // The pickup should display hudmemo instead of OP
+                obj.connections.as_mut_vec().push(structs::Connection {
+                    state: structs::ConnectionState::ARRIVED,
+                    message: structs::ConnectionMsg::SET_TO_ZERO,
+                    target_object_id: 0x001A0348,
+                });
+                // The pickup should unlock lift instead of OP
+                obj.connections.as_mut_vec().push(structs::Connection {
+                    state: structs::ConnectionState::ARRIVED,
+                    message: structs::ConnectionMsg::DECREMENT,
+                    target_object_id: 0x001A03D9,
+                });
+                // The pickup should unlock doors instead of OP
+                obj.connections.as_mut_vec().push(structs::Connection {
+                    state: structs::ConnectionState::ARRIVED,
+                    message: structs::ConnectionMsg::SET_TO_ZERO,
+                    target_object_id: 0x001A0328,
+                });
+            } else if obj_id == 0x001A0126 { // Omega Pirate
+                obj.connections.as_mut_vec().retain(|conn| !vec![
+                    0x001A03D9, // elevator shield
+                    0x001A0328, // door unlock relay
+                    ].contains(&(conn.target_object_id & 0x00FFFFFF))
+                );
+            }
+        }
+    }
+
+    Ok(())
+}
+
 fn patch_cutscene_force_phazon_suit<'r>
 (
     _ps: &mut PatcherState,
@@ -7116,35 +7164,6 @@ fn patch_remove_cutscenes(
                         target_object_id,
                     });
                 }
-            } else if obj_id == 0x001A04B8 || obj_id == 0x001A04C5 { // Elite Quarters Pickup(s)
-                let pickup = obj.property_data.as_pickup_mut().unwrap();
-                pickup.position[2] = pickup.position[2] + 2.0; // Move up so it's more obvious
-
-                // The pickup should display hudmemo instead of OP
-                obj.connections.as_mut_vec().push(structs::Connection {
-                    state: structs::ConnectionState::ARRIVED,
-                    message: structs::ConnectionMsg::SET_TO_ZERO,
-                    target_object_id: 0x001A0348,
-                });
-                // The pickup should unlock lift instead of OP
-                obj.connections.as_mut_vec().push(structs::Connection {
-                    state: structs::ConnectionState::ARRIVED,
-                    message: structs::ConnectionMsg::DECREMENT,
-                    target_object_id: 0x001A03D9,
-                });
-                // The pickup should unlock doors instead of OP
-                obj.connections.as_mut_vec().push(structs::Connection {
-                    state: structs::ConnectionState::ARRIVED,
-                    message: structs::ConnectionMsg::SET_TO_ZERO,
-                    target_object_id: 0x001A0328,
-                });
-
-            } else if obj_id == 0x001A0126 { // Omega Pirate
-                obj.connections.as_mut_vec().retain(|conn| !vec![
-                    0x001A03D9, // elevator shield
-                    0x001A0328, // door unlock relay
-                    ].contains(&(conn.target_object_id & 0x00FFFFFF))
-                );
             }
             // unlock the artifact temple forcefield when memory relay is flipped, not when ridley dies
             else if obj_id == 0x00100101 { // ridley
@@ -11510,6 +11529,10 @@ fn patch_qol_game_breaking(
     patcher.add_scly_patch(
         resource_info!("12_mines_eliteboss.MREA").into(),
         move |ps, area| patch_cutscene_force_phazon_suit(ps, area)
+    );
+    patcher.add_scly_patch(
+        resource_info!("12_mines_eliteboss.MREA").into(),
+        move |ps, area| patch_op_death_pickup_spawn(ps, area)
     );
 
     if force_vanilla_layout { return; }
