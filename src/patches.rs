@@ -9628,11 +9628,13 @@ fn patch_final_boss_permadeath<'r>(
             iter::once(custom_asset_ids::WARPING_TO_OTHER_STRG.into())
         );
     }
+
     let layer_count = area.mrea().scly_section_mut().layers.len();
+    let disable_bosses_layer_num = layer_count;
     area.add_layer(b"Disable Bosses Layer\0".as_cstr());
     if mrea_id != 0x1A666C55
     {
-        area.layer_flags.flags &= !(1 << layer_count); // layer disabled by default
+        area.layer_flags.flags &= !(1 << disable_bosses_layer_num); // layer disabled by default
     }
 
     // Allocate list of ids
@@ -9658,9 +9660,9 @@ fn patch_final_boss_permadeath<'r>(
         hudmemo_id = area.new_object_id_from_layer_name("Default");
         player_hint_id = area.new_object_id_from_layer_name("Default");
         unload_subchamber_five_trigger_id = area.new_object_id_from_layer_name("Default");
-        remove_warp_timer_id = area.new_object_id_from_layer_id(1);
+        remove_warp_timer_id = area.new_object_id_from_layer_id(disable_bosses_layer_num);
     } else {
-        remove_boss_timer_id = area.new_object_id_from_layer_id(1);
+        remove_boss_timer_id = area.new_object_id_from_layer_id(disable_bosses_layer_num);
     }
 
     if mrea_id == 0xA7AC009B || mrea_id == 0x1A666C55
@@ -9699,7 +9701,7 @@ fn patch_final_boss_permadeath<'r>(
             .find(|obj| obj.instance_id & 0x00FFFFFF == 0x000B0082)
             .unwrap()
             .clone();
-        layers[1].objects.as_mut_vec().push(essence.clone());
+        layers[disable_bosses_layer_num].objects.as_mut_vec().push(essence.clone());
         layers[0].objects.as_mut_vec().retain(|obj| obj.instance_id & 0x00FFFFFF != 0x000B0082);
         layers[0].objects.as_mut_vec().push(structs::SclyObject {
             instance_id: actor_id,
@@ -9913,7 +9915,7 @@ fn patch_final_boss_permadeath<'r>(
         );
 
         // Deactivate warp while essence is alive
-        layers[1].objects.as_mut_vec().push(
+        layers[disable_bosses_layer_num].objects.as_mut_vec().push(
             structs::SclyObject {
                 instance_id: remove_warp_timer_id,
                 property_data: structs::Timer {
@@ -9959,7 +9961,7 @@ fn patch_final_boss_permadeath<'r>(
 
     // if mrea_id != 0x1A666C55
     {
-        layers[1].objects.as_mut_vec().push(
+        layers[disable_bosses_layer_num].objects.as_mut_vec().push(
             structs::SclyObject {
                 instance_id: remove_boss_timer_id,
                 property_data: structs::Timer {
@@ -9987,7 +9989,7 @@ fn patch_final_boss_permadeath<'r>(
                     property_data: structs::SpecialFunction::layer_change_fn(
                         b"SpecialFunction - Bosses Stay Dead\0".as_cstr(),
                         destinations[i],
-                        1,
+                        disable_bosses_layer_num as u32,
                     ).into(),
                     connections: vec![].into(),
                 }
@@ -10050,6 +10052,17 @@ fn patch_final_boss_permadeath<'r>(
             }
         );
     }
+
+    // make a list of docks
+    // let mut docks: Vec<(u32, [f32;3], [f32;3])> = Vec::new();
+    // for obj in layers[0].objects.as_mut_vec() {
+    //     if obj.property_data.is_dock() {
+    //         let dock = obj.property_data.as_dock();
+    //     }
+    // }
+
+    // // for each dock, make a loading trigger
+
     Ok(())
 }
 
