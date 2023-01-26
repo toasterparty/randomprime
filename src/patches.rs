@@ -4395,27 +4395,32 @@ fn patch_edit_fog<'r>(
     fog: FogConfig,
 ) -> Result<(), String>
 {
-    println!("{}", fog.explicit as u8);
-
     let mut range_delta = [0.0, 0.0];
     if fog.range_delta.is_some() {
         range_delta = [fog.range_delta.as_ref().unwrap()[0], fog.range_delta.as_ref().unwrap()[1]];
     }
 
     let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
-    let obj = layers[0].objects.iter_mut()
-        .find(|obj| obj.property_data.is_distance_fog())
-        .unwrap();
-    
-    let distance_fog = obj.property_data.as_distance_fog_mut().unwrap();
+    for obj in layers[0].objects.as_mut_vec() {
+        if !obj.property_data.is_distance_fog() {
+            continue;
+        }
 
-    distance_fog.mode = fog.mode;
-    distance_fog.color = [fog.color[0], fog.color[1], fog.color[2], fog.color[3]].into();
-    distance_fog.range = [fog.range[0], fog.range[1]].into();
-    distance_fog.color_delta = fog.color_delta.unwrap_or(0.0);
-    distance_fog.range_delta = range_delta.into();
-    distance_fog.explicit = fog.explicit as u8;
-    distance_fog.active = 1;
+        let distance_fog = obj.property_data.as_distance_fog_mut();
+        if distance_fog.is_none() {
+            continue;
+        }
+        let distance_fog = distance_fog.unwrap();
+
+        distance_fog.mode = fog.mode;
+        distance_fog.color = [fog.color[0], fog.color[1], fog.color[2], fog.color[3]].into();
+        distance_fog.range = [fog.range[0], fog.range[1]].into();
+        distance_fog.color_delta = fog.color_delta.unwrap_or(0.0);
+        distance_fog.range_delta = range_delta.into();
+        distance_fog.explicit = fog.explicit as u8;
+        distance_fog.active = 1;
+    }
+
     Ok(())
 }
 
