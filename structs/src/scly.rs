@@ -228,6 +228,7 @@ build_scly_property!(
     CameraHintTrigger,    is_camera_hint_trigger,    as_camera_hint_trigger,    as_camera_hint_trigger_mut,
     Counter,              is_counter,                as_counter,                as_counter_mut,
     DamageableTrigger,    is_damageable_trigger,     as_damageable_trigger,     as_damageable_trigger_mut,
+    DistanceFog,          is_distance_fog,           as_distance_fog,           as_distance_fog_mut,
     Dock,                 is_dock,                   as_dock,                   as_dock_mut,
     Door,                 is_door,                   as_door,                   as_door_mut,
     Effect,               is_effect,                 as_effect,                 as_effect_mut,

@@ -28,6 +28,7 @@ use crate::patch_config::{
     HallOfTheEldersBombSlotCoversConfig,
     BombSlotCover,
     GenericTexture,
+    FogConfig,
 };
 
 use std::{fs::{self, File}, io::{Read}, path::Path};
@@ -96,6 +97,13 @@ struct ModifiableDoorLocation {
     pub dock_number: u32,
     pub dock_position: [f32;3],
     pub dock_scale: [f32;3],
+}
+
+struct AudioOverridePatch<'r> {
+    pub pak: &'r [u8],
+    pub room_id: u32,
+    pub audio_streamer_id: u32,
+    pub file_name: Vec<u8>,
 }
 
 impl From<DoorLocation> for ModifiableDoorLocation {
@@ -548,10 +556,6 @@ fn patch_door<'r>(
     let mrea_id = area.mlvl_area.mrea.to_u32();
     let area_internal_id = area.mlvl_area.internal_id;
 
-    if door_loc.door_force_locations.len() == 0 || door_loc.door_shield_locations.len() == 0 {
-        panic!("Tried to change vulnerability/blast shield of door without a damageable shield in room 0x{:X}", mrea_id);
-    }
-
     // Update dependencies based on the upcoming patch(es)
     let mut deps: Vec<(u32, FourCC)> = Vec::new();
 
@@ -592,10 +596,6 @@ fn patch_door<'r>(
                 _shield_actor_id = obj.connections.as_mut_vec().iter_mut().find(|conn| conn.state == structs::ConnectionState::MAX_REACHED).unwrap().target_object_id;
                 break;
             }
-        }
-
-        if _damageable_trigger_id == 0 || _shield_actor_id == 0 {
-            panic!("Failed to find damageable trigger on door 0x{:X} in room 0x{:X}", door_id, mrea_id);
         }
 
         (_damageable_trigger_id, _shield_actor_id)
@@ -1028,7 +1028,7 @@ fn patch_door<'r>(
         }
 
         // Timer used to deactivate the damageable trigger again shortly after room loads
-        let timer = structs::SclyObject {
+        let mut timer = structs::SclyObject {
             instance_id: timer_id,
             property_data: structs::Timer {
                 name: b"disable-dt\0".as_cstr(),
@@ -1038,19 +1038,28 @@ fn patch_door<'r>(
                 start_immediately: 1,
                 active: 1,
             }.into(),
-            connections: vec![
+            connections: vec![].into(),
+        };
+
+        if damageable_trigger_id != 0 {
+            timer.connections.as_mut_vec().push(
                 structs::Connection {
                     state: structs::ConnectionState::ZERO,
                     message: structs::ConnectionMsg::DEACTIVATE,
                     target_object_id: damageable_trigger_id,
-                },
+                }
+            );
+        }
+
+        if shield_actor_id != 0 {
+            timer.connections.as_mut_vec().push(
                 structs::Connection {
                     state: structs::ConnectionState::ZERO,
                     message: structs::ConnectionMsg::ACTIVATE,
                     target_object_id: shield_actor_id,
-                },
-            ].into(),
-        };
+                }
+            );
+        }
 
         // Create Gibbs and activate on DEAD //
         let effect = structs::SclyObject {
@@ -4387,6 +4396,41 @@ fn add_block<'r>(
     );
 }
 
+fn patch_edit_fog<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    fog: FogConfig,
+) -> Result<(), String>
+{
+    let mut range_delta = [0.0, 0.0];
+    if fog.range_delta.is_some() {
+        range_delta = [fog.range_delta.as_ref().unwrap()[0], fog.range_delta.as_ref().unwrap()[1]];
+    }
+
+    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
+    for obj in layers[0].objects.as_mut_vec() {
+        if !obj.property_data.is_distance_fog() {
+            continue;
+        }
+
+        let distance_fog = obj.property_data.as_distance_fog_mut();
+        if distance_fog.is_none() {
+            continue;
+        }
+        let distance_fog = distance_fog.unwrap();
+
+        distance_fog.mode = fog.mode;
+        distance_fog.color = [fog.color[0], fog.color[1], fog.color[2], fog.color[3]].into();
+        distance_fog.range = [fog.range[0], fog.range[1]].into();
+        distance_fog.color_delta = fog.color_delta.unwrap_or(0.0);
+        distance_fog.range_delta = range_delta.into();
+        distance_fog.explicit = fog.explicit as u8;
+        distance_fog.active = 1;
+    }
+
+    Ok(())
+}
+
 fn patch_add_block<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -6162,6 +6206,54 @@ fn patch_arboretum_invisible_wall(
     Ok(())
 }
 
+fn patch_op_death_pickup_spawn<'r>
+(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layers = &mut scly.layers.as_mut_vec();
+    for layer in layers.iter_mut() {
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+            let obj_id = obj.instance_id&0x00FFFFFF;
+
+            if obj_id == 0x001A04B8 || obj_id == 0x001A04C5 { // Elite Quarters Pickup(s)
+                let pickup = obj.property_data.as_pickup_mut().unwrap();
+                pickup.position[2] = pickup.position[2] + 2.0; // Move up so it's more obvious
+        
+                // The pickup should display hudmemo instead of OP
+                obj.connections.as_mut_vec().push(structs::Connection {
+                    state: structs::ConnectionState::ARRIVED,
+                    message: structs::ConnectionMsg::SET_TO_ZERO,
+                    target_object_id: 0x001A0348,
+                });
+                // The pickup should unlock lift instead of OP
+                obj.connections.as_mut_vec().push(structs::Connection {
+                    state: structs::ConnectionState::ARRIVED,
+                    message: structs::ConnectionMsg::DECREMENT,
+                    target_object_id: 0x001A03D9,
+                });
+                // The pickup should unlock doors instead of OP
+                obj.connections.as_mut_vec().push(structs::Connection {
+                    state: structs::ConnectionState::ARRIVED,
+                    message: structs::ConnectionMsg::SET_TO_ZERO,
+                    target_object_id: 0x001A0328,
+                });
+            } else if obj_id == 0x001A0126 { // Omega Pirate
+                obj.connections.as_mut_vec().retain(|conn| !vec![
+                    0x001A03D9, // elevator shield
+                    0x001A0328, // door unlock relay
+                    ].contains(&(conn.target_object_id & 0x00FFFFFF))
+                );
+            }
+        }
+    }
+
+    Ok(())
+}
+
 fn patch_cutscene_force_phazon_suit<'r>
 (
     _ps: &mut PatcherState,
@@ -6198,6 +6290,37 @@ fn patch_remove_otrs<'r>
     for otr in otrs {
         if remove {
             layers[otr.layer as usize].objects.as_mut_vec().retain(|i| !otr.instance_ids.contains(&i.instance_id));
+        }
+    }
+    Ok(())
+}
+
+fn patch_audio_override<'r>
+(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    id: u32,
+    file_name: &'r Vec<u8>,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layers = &mut scly.layers.as_mut_vec();
+    for layer in layers.iter_mut() {
+        for obj in layer.objects.as_mut_vec() {
+            if obj.instance_id != id {
+                continue;
+            }
+            
+            if !obj.property_data.is_streamed_audio() {
+                panic!("id={} is not streamed audio object", obj.instance_id);
+            }
+
+            let streamed_audio = obj.property_data.as_streamed_audio_mut().unwrap();
+            let file_name: &[u8] = file_name;
+            let file_name = file_name.as_cstr();
+            streamed_audio.audio_file_name = file_name;
+            return Ok(());
         }
     }
     Ok(())
@@ -7084,35 +7207,6 @@ fn patch_remove_cutscenes(
                         target_object_id,
                     });
                 }
-            } else if obj_id == 0x001A04B8 || obj_id == 0x001A04C5 { // Elite Quarters Pickup(s)
-                let pickup = obj.property_data.as_pickup_mut().unwrap();
-                pickup.position[2] = pickup.position[2] + 2.0; // Move up so it's more obvious
-
-                // The pickup should display hudmemo instead of OP
-                obj.connections.as_mut_vec().push(structs::Connection {
-                    state: structs::ConnectionState::ARRIVED,
-                    message: structs::ConnectionMsg::SET_TO_ZERO,
-                    target_object_id: 0x001A0348,
-                });
-                // The pickup should unlock lift instead of OP
-                obj.connections.as_mut_vec().push(structs::Connection {
-                    state: structs::ConnectionState::ARRIVED,
-                    message: structs::ConnectionMsg::DECREMENT,
-                    target_object_id: 0x001A03D9,
-                });
-                // The pickup should unlock doors instead of OP
-                obj.connections.as_mut_vec().push(structs::Connection {
-                    state: structs::ConnectionState::ARRIVED,
-                    message: structs::ConnectionMsg::SET_TO_ZERO,
-                    target_object_id: 0x001A0328,
-                });
-
-            } else if obj_id == 0x001A0126 { // Omega Pirate
-                obj.connections.as_mut_vec().retain(|conn| !vec![
-                    0x001A03D9, // elevator shield
-                    0x001A0328, // door unlock relay
-                    ].contains(&(conn.target_object_id & 0x00FFFFFF))
-                );
             }
             // unlock the artifact temple forcefield when memory relay is flipped, not when ridley dies
             else if obj_id == 0x00100101 { // ridley
@@ -7763,6 +7857,28 @@ fn patch_completion_screen(
         let strings = st.strings.as_mut_vec();
         strings[1] = results_string.to_owned().into();
     }
+    Ok(())
+}
+
+fn patch_arbitrary_strg(
+    res: &mut structs::Resource,
+    replacement_strings: Vec<String>,
+) -> Result<(), String>
+{
+    let strg = res.kind.as_strg_mut().unwrap();
+
+    for st in strg.string_tables.as_mut_vec().iter_mut() {
+        let strings = st.strings.as_mut_vec();
+        strings.clear();
+
+        for mut replacement_string in replacement_strings.clone() {
+            if !replacement_string.ends_with("\0") {
+                replacement_string += "\0";
+            }
+            strings.push(replacement_string.to_owned().into());
+        }
+    }
+    
     Ok(())
 }
 
@@ -9555,11 +9671,13 @@ fn patch_final_boss_permadeath<'r>(
             iter::once(custom_asset_ids::WARPING_TO_OTHER_STRG.into())
         );
     }
+
     let layer_count = area.mrea().scly_section_mut().layers.len();
+    let disable_bosses_layer_num = layer_count;
     area.add_layer(b"Disable Bosses Layer\0".as_cstr());
     if mrea_id != 0x1A666C55
     {
-        area.layer_flags.flags &= !(1 << layer_count); // layer disabled by default
+        area.layer_flags.flags &= !(1 << disable_bosses_layer_num); // layer disabled by default
     }
 
     // Allocate list of ids
@@ -9585,9 +9703,9 @@ fn patch_final_boss_permadeath<'r>(
         hudmemo_id = area.new_object_id_from_layer_name("Default");
         player_hint_id = area.new_object_id_from_layer_name("Default");
         unload_subchamber_five_trigger_id = area.new_object_id_from_layer_name("Default");
-        remove_warp_timer_id = area.new_object_id_from_layer_id(1);
+        remove_warp_timer_id = area.new_object_id_from_layer_id(disable_bosses_layer_num);
     } else {
-        remove_boss_timer_id = area.new_object_id_from_layer_id(1);
+        remove_boss_timer_id = area.new_object_id_from_layer_id(disable_bosses_layer_num);
     }
 
     if mrea_id == 0xA7AC009B || mrea_id == 0x1A666C55
@@ -9626,7 +9744,7 @@ fn patch_final_boss_permadeath<'r>(
             .find(|obj| obj.instance_id & 0x00FFFFFF == 0x000B0082)
             .unwrap()
             .clone();
-        layers[1].objects.as_mut_vec().push(essence.clone());
+        layers[disable_bosses_layer_num].objects.as_mut_vec().push(essence.clone());
         layers[0].objects.as_mut_vec().retain(|obj| obj.instance_id & 0x00FFFFFF != 0x000B0082);
         layers[0].objects.as_mut_vec().push(structs::SclyObject {
             instance_id: actor_id,
@@ -9840,7 +9958,7 @@ fn patch_final_boss_permadeath<'r>(
         );
 
         // Deactivate warp while essence is alive
-        layers[1].objects.as_mut_vec().push(
+        layers[disable_bosses_layer_num].objects.as_mut_vec().push(
             structs::SclyObject {
                 instance_id: remove_warp_timer_id,
                 property_data: structs::Timer {
@@ -9886,7 +10004,7 @@ fn patch_final_boss_permadeath<'r>(
 
     // if mrea_id != 0x1A666C55
     {
-        layers[1].objects.as_mut_vec().push(
+        layers[disable_bosses_layer_num].objects.as_mut_vec().push(
             structs::SclyObject {
                 instance_id: remove_boss_timer_id,
                 property_data: structs::Timer {
@@ -9914,7 +10032,7 @@ fn patch_final_boss_permadeath<'r>(
                     property_data: structs::SpecialFunction::layer_change_fn(
                         b"SpecialFunction - Bosses Stay Dead\0".as_cstr(),
                         destinations[i],
-                        1,
+                        disable_bosses_layer_num as u32,
                     ).into(),
                     connections: vec![].into(),
                 }
@@ -9977,6 +10095,17 @@ fn patch_final_boss_permadeath<'r>(
             }
         );
     }
+
+    // make a list of docks
+    // let mut docks: Vec<(u32, [f32;3], [f32;3])> = Vec::new();
+    // for obj in layers[0].objects.as_mut_vec() {
+    //     if obj.property_data.is_dock() {
+    //         let dock = obj.property_data.as_dock();
+    //     }
+    // }
+
+    // // for each dock, make a loading trigger
+
     Ok(())
 }
 
@@ -11457,6 +11586,10 @@ fn patch_qol_game_breaking(
         resource_info!("12_mines_eliteboss.MREA").into(),
         move |ps, area| patch_cutscene_force_phazon_suit(ps, area)
     );
+    patcher.add_scly_patch(
+        resource_info!("12_mines_eliteboss.MREA").into(),
+        move |ps, area| patch_op_death_pickup_spawn(ps, area)
+    );
 
     if force_vanilla_layout { return; }
 
@@ -12461,6 +12594,51 @@ fn patch_arboretum_sandstone<'a>(patcher: &mut PrimePatcher<'_, 'a>)
 pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
     where T: structs::ProgressNotifier
 {
+    let mut audio_override_patches: Vec<AudioOverridePatch> = Vec::new();
+    for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {
+        let world = World::from_pak(pak_name).unwrap();
+        for room_info in rooms.iter() {
+            let level = config.level_data.get(world.to_json_key());
+            if level.is_none() {
+                continue;
+            }
+
+            let room = level.unwrap().rooms.get(room_info.name.trim());
+            if room.is_none() {
+                continue;
+            }
+
+            let room = room.unwrap();
+            if room.audio_override.is_none() {
+                continue;
+            }
+
+            let audio_override = room.audio_override.as_ref().unwrap();
+            for (id_str, file_name) in audio_override {
+                let id = match id_str.parse::<u32>() {
+                    Ok(n) => n,
+                    Err(_e) => panic!("{} is not a valid number", id_str),
+                };
+
+                let file_name = format!("{}\0", file_name.clone());
+                let file_name = file_name.as_bytes();
+                let file_name: Vec<u8> = file_name.to_vec();
+                // let zero: [u8;1] = [0;1];
+                // let file_name: Vec<u8> = [file_name, &zero].concat();
+                // let file_name = file_name.as_cstr();
+                audio_override_patches.push(
+                    AudioOverridePatch {
+                        pak: pak_name.as_bytes(),
+                        room_id: room_info.room_id.to_u32(),
+                        audio_streamer_id: id,
+                        file_name: file_name,
+                    }
+                );
+            }
+        }
+    }
+    let audio_override_patches = &audio_override_patches;
+
     let mut ct = Vec::new();
     let mut reader = Reader::new(&config.input_iso[..]);
     let mut gc_disc: structs::GcDisc = reader.read(());
@@ -12494,7 +12672,7 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
         return Ok(());
     }
 
-    build_and_run_patches(&mut gc_disc, &config, version)?;
+    build_and_run_patches(&mut gc_disc, &config, version, audio_override_patches)?;
 
     {
         let json_string = serde_json::to_string(&config)
@@ -12681,7 +12859,7 @@ fn export_assets(_gc_disc: &mut structs::GcDisc, config: &PatchConfig)
 }
 
 
-fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, version: Version)
+fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchConfig, version: Version, audio_override_patches: &'r Vec<AudioOverridePatch>)
     -> Result<(), String>
 {
     let morph_ball_size = config.ctwk_config.morph_ball_size.clone().unwrap_or(1.0);
@@ -12795,6 +12973,17 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             lock_on_points: None,
                             escape_sequences: None,
                             repositions: None,
+                            audio_override: None,
+                            delete_ids: None,
+                            disabled_layers: None,
+                            enabled_layers: None,
+                            fog: None,
+                            triggers: None,
+                            hudmemos: None,
+                            xray_fog_distance: None,
+                            enviornmental_effect: None,
+                            initial_enviornmental_effect: None,
+                            initial_thermal_heat_level: None,
                             map_default_state: Some(structs::MapaObjectVisibilityMode::MapStationOrVisit),
                         }
                     );
@@ -12820,6 +13009,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                                 jumbo_scan: None,
                                 destination: None,
                                 show_icon: None,
+                                invisible_and_silent: None,
+                                thermal_only: None,
                             }
                         ]
                     );
@@ -12873,6 +13064,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
     let pickup_hudmemos = &pickup_hudmemos;
     let pickup_scans = &pickup_scans;
     let extra_scans = &extra_scans;
+    let strgs = config.strg.clone();
+    let strgs = &strgs;
 
     let savw_scans_to_add = &savw_scans_to_add;
     let local_savw_scans_to_add = &local_savw_scans_to_add;
@@ -13287,6 +13480,17 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             }
                         }
 
+                        if room.fog.is_some() {
+                            patcher.add_scly_patch(
+                                (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                move |ps, area| patch_edit_fog(
+                                    ps,
+                                    area,
+                                    room.fog.as_ref().unwrap().clone(),
+                                ),
+                            );
+                        }
+
                         if room.blocks.is_some() {
                             for block in room.blocks.as_ref().unwrap() {
                                 patcher.add_scly_patch(
@@ -13414,6 +13618,8 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                             jumbo_scan: None,
                             destination: None,
                             show_icon: None,
+                            invisible_and_silent: None,
+                            thermal_only: None,
                         }
                     } else {
                         pickups[idx].clone() // TODO: cloning is suboptimal
@@ -14596,6 +14802,21 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
         }
     }
 
+    // Edit Strings
+    for (strg, replacement_strings) in strgs {
+        let id = match strg.parse::<u32>() {
+            Ok(n) => n,
+            Err(_e) => panic!("{} is not a valid STRG identifier", strg),
+        };
+
+        for (pak_name, _) in pickup_meta::ROOM_INFO.iter() {
+            patcher.add_resource_patch(
+                (&[pak_name.as_bytes()], id, FourCC::from_bytes(b"STRG")),
+                move |res| patch_arbitrary_strg(res, replacement_strings.clone())
+            );
+        }
+    }
+
     // remove doors
     if config.no_doors {
         for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {
@@ -14604,8 +14825,41 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
                     move |ps, area| patch_remove_doors(ps, area)
                 );
-
             }
+        }
+    }
+
+    // edit music triggers
+    for data in audio_override_patches {
+        patcher.add_scly_patch(
+            (data.pak, data.room_id),
+            move |ps, area| patch_audio_override(ps, area, data.audio_streamer_id, &data.file_name),
+        );
+    }
+
+    // remove arbitrary objects
+    for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {
+        let world = World::from_pak(pak_name).unwrap();
+        for room_info in rooms.iter() {
+            let level = level_data.get(world.to_json_key());
+            if level.is_none() {
+                continue;
+            }
+
+            let room = level.unwrap().rooms.get(room_info.name.trim());
+            if room.is_none() {
+                continue;
+            }
+
+            let room = room.unwrap();
+            if room.delete_ids.is_none() {
+                continue;
+            }
+
+            patcher.add_scly_patch(
+                (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                move |ps, area| patch_remove_ids(ps, area, room.delete_ids.as_ref().unwrap().to_vec())
+            );
         }
     }
 

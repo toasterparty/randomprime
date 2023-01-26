@@ -110,6 +110,8 @@ pub struct PickupConfig
     pub jumbo_scan: Option<bool>,
     pub destination: Option<String>,
     pub show_icon: Option<bool>,
+    pub invisible_and_silent: Option<bool>,
+    pub thermal_only: Option<bool>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
@@ -189,6 +191,8 @@ pub struct PlatformConfig
     pub position: [f32;3],
     pub rotation: Option<[f32;3]>,
     pub alt_platform: Option<bool>,
+    pub xray_only: Option<bool>,
+    pub thermal_only: Option<bool>,
     // pub scale: [f32;3],
 }
 
@@ -305,12 +309,67 @@ pub struct LockOnPoint
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TriggerConfig
+{
+    pub position: [f32;3],
+    pub scale: [f32;3],
+    pub force: Option<[f32;3]>,
+    pub damage_type: Option<String>,
+    pub damage_amount: Option<f32>,
+}
+
+// None = 0,
+// PerspLin = 2,
+// PerspExp = 4,
+// PerspExp2 = 5,
+// PerspRevExp = 6,
+// PerspRevExp2 = 7,
+// OrthoLin = 10,
+// OrthoExp = 12,
+// OrthoExp2 = 13,
+// OrthoRevExp = 14,
+// OrthoRevExp2 = 15,
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct FogConfig
+{
+    pub mode: u32,
+    pub explicit: bool,
+    pub color: [f32;4], // RGBA
+    pub range: [f32;2], // X, Y
+    pub color_delta: Option<f32>,
+    pub range_delta: Option<[f32;2]>,
+    pub keep_original: Option<bool>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RepositionConfig
 {
     pub trigger_position: [f32;3],
     pub trigger_scale: [f32;3],
     pub destination_position: [f32;3],
     pub destination_rotation: f32,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HudmemoConfig
+{
+    pub trigger_position: [f32;3],
+    pub trigger_scale: [f32;3],
+    pub text: String,
+    pub disable_on_enter: Option<bool>, // default - true
+}
+
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub enum EnviornmentalEffect {
+    None,
+    Snow,
+    Rain,
+    Bubbles,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
@@ -332,9 +391,20 @@ pub struct RoomConfig
     pub camera_hints: Option<Vec<CameraHintConfig>>,
     pub blocks: Option<Vec<BlockConfig>>,
     pub lock_on_points: Option<Vec<LockOnPoint>>,
+    pub triggers: Option<Vec<TriggerConfig>>,
+    pub fog: Option<FogConfig>,
     pub ambient_lighting_scale: Option<f32>, // 1.0 is default lighting
+    pub enviornmental_effect: Option<EnviornmentalEffect>,
+    pub initial_enviornmental_effect: Option<f32>,
+    pub initial_thermal_heat_level: Option<f32>,
+    pub xray_fog_distance: Option<f32>,
     pub escape_sequences: Option<Vec<EscapeSequenceConfig>>,
     pub repositions: Option<Vec<RepositionConfig>>,
+    pub hudmemos: Option<Vec<HudmemoConfig>>,
+    pub enabled_layers: Option<Vec<u32>>,
+    pub disabled_layers: Option<Vec<u32>>,
+    pub delete_ids: Option<Vec<u32>>,
+    pub audio_override: Option<HashMap<String, String>>, // key=instance_id, value=/audio/min_phazonL.dsp|/audio/min_phazonR.dsp
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
@@ -489,6 +559,8 @@ pub struct PatchConfig
 
     #[serde(skip_serializing)] // stop racers from peeking at locations
     pub level_data: HashMap<String, LevelConfig>,
+
+    pub strg: HashMap<String, Vec<String>>, // "<decimal asset ID>": <non-null terminated table of strings>
 
     pub starting_room: String,
     pub starting_memo: Option<String>,
@@ -655,15 +727,95 @@ struct PatchConfigPrivate
 
     #[serde(default)]
     level_data: HashMap<String, LevelConfig>,
+    
+    #[serde(default)]
+    strg: HashMap<String, Vec<String>>, // "<decimal asset ID>": <non-null terminated table of strings>
 }
 
 /*** Parse Patcher Input ***/
+
+/// Takes a string of jsonc content and returns a comment free version
+/// which should parse fine as regular json.
+/// Nested block comments are supported.
+/// preserve_locations will replace most comments with spaces, so that JSON parsing
+/// errors should point to the right location.
+pub fn strip_jsonc_comments(jsonc_input: &str, preserve_locations: bool) -> String {
+    let mut json_output = String::new();
+
+    let mut block_comment_depth: u8 = 0;
+    let mut is_in_string: bool = false; // Comments cannot be in strings
+
+    for line in jsonc_input.split('\n') {
+        let mut last_char: Option<char> = None;
+        for cur_char in line.chars() {
+            // Check whether we're in a string
+            if block_comment_depth == 0 && last_char != Some('\\') && cur_char == '"' {
+                is_in_string = !is_in_string;
+            }
+
+            // Check for line comment start
+            if !is_in_string && last_char == Some('/') && cur_char == '/' {
+                last_char = None;
+                if preserve_locations {
+                    json_output.push_str("  ");
+                }
+                break; // Stop outputting or parsing this line
+            }
+            // Check for block comment start
+            if !is_in_string && last_char == Some('/') && cur_char == '*' {
+                block_comment_depth += 1;
+                last_char = None;
+                if preserve_locations {
+                    json_output.push_str("  ");
+                }
+            // Check for block comment end
+            } else if !is_in_string && last_char == Some('*') && cur_char == '/' {
+                if block_comment_depth > 0 {
+                    block_comment_depth -= 1;
+                }
+                last_char = None;
+                if preserve_locations {
+                    json_output.push_str("  ");
+                }
+            // Output last char if not in any block comment
+            } else {
+                if block_comment_depth == 0 {
+                    if let Some(last_char) = last_char {
+                        json_output.push(last_char);
+                    }
+                } else {
+                    if preserve_locations {
+                        json_output.push_str(" ");
+                    }
+                }
+                last_char = Some(cur_char);
+            }
+        }
+
+        // Add last char and newline if not in any block comment
+        if let Some(last_char) = last_char {
+            if block_comment_depth == 0 {
+                json_output.push(last_char);
+            } else if preserve_locations {
+                json_output.push(' ');
+            }
+        }
+
+        // Remove trailing whitespace from line
+        while json_output.ends_with(' ') {
+            json_output.pop();
+        }
+        json_output.push('\n');
+    }
+
+    json_output
+}
 
 impl PatchConfig
 {
     pub fn from_json(json: &str) -> Result<Self, String>
     {
-        let json_config: PatchConfigPrivate = serde_json::from_str(json)
+        let json_config: PatchConfigPrivate = serde_json::from_str(strip_jsonc_comments(json, true).as_str())
             .map_err(|e| format!("JSON parse failed: {}", e))?;
         json_config.parse()
     }
@@ -780,12 +932,11 @@ impl PatchConfig
             let cli_json_config_raw: &str = &fs::read_to_string(json_path)
                 .map_err(|e| format!("Could not read JSON file: {}", e)).unwrap();
 
-            serde_json::from_str(cli_json_config_raw)
+            serde_json::from_str( strip_jsonc_comments(cli_json_config_raw, true).as_str())
                 .map_err(|e| format!("JSON parse failed: {}", e))?
         } else {
             PatchConfigPrivate::default()
         };
-
 
         macro_rules! populate_config_bool {
             ($matches:expr; $($name:expr => $cfg:expr,)*) => {
@@ -1070,6 +1221,7 @@ impl PatchConfigPrivate
             extern_assets_dir: self.extern_assets_dir.clone(),
 
             level_data: self.level_data.clone(),
+            strg: self.strg.clone(),
 
             qol_game_breaking,
             qol_cosmetic,
