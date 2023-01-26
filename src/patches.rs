@@ -99,6 +99,13 @@ struct ModifiableDoorLocation {
     pub dock_scale: [f32;3],
 }
 
+struct AudioOverridePatch<'r> {
+    pub pak: &'r [u8],
+    pub room_id: u32,
+    pub audio_streamer_id: u32,
+    pub file_name: Vec<u8>,
+}
+
 impl From<DoorLocation> for ModifiableDoorLocation {
     fn from(door_loc: DoorLocation) -> Self {
         ModifiableDoorLocation {
@@ -6283,6 +6290,37 @@ fn patch_remove_otrs<'r>
     for otr in otrs {
         if remove {
             layers[otr.layer as usize].objects.as_mut_vec().retain(|i| !otr.instance_ids.contains(&i.instance_id));
+        }
+    }
+    Ok(())
+}
+
+fn patch_audio_override<'r>
+(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    id: u32,
+    file_name: &'r Vec<u8>,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layers = &mut scly.layers.as_mut_vec();
+    for layer in layers.iter_mut() {
+        for obj in layer.objects.as_mut_vec() {
+            if obj.instance_id != id {
+                continue;
+            }
+            
+            if !obj.property_data.is_streamed_audio() {
+                panic!("id={} is not streamed audio object", obj.instance_id);
+            }
+
+            let streamed_audio = obj.property_data.as_streamed_audio_mut().unwrap();
+            let file_name: &[u8] = file_name;
+            let file_name = file_name.as_cstr();
+            streamed_audio.audio_file_name = file_name;
+            return Ok(());
         }
     }
     Ok(())
@@ -12556,6 +12594,51 @@ fn patch_arboretum_sandstone<'a>(patcher: &mut PrimePatcher<'_, 'a>)
 pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
     where T: structs::ProgressNotifier
 {
+    let mut audio_override_patches: Vec<AudioOverridePatch> = Vec::new();
+    for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {
+        let world = World::from_pak(pak_name).unwrap();
+        for room_info in rooms.iter() {
+            let level = config.level_data.get(world.to_json_key());
+            if level.is_none() {
+                continue;
+            }
+
+            let room = level.unwrap().rooms.get(room_info.name.trim());
+            if room.is_none() {
+                continue;
+            }
+
+            let room = room.unwrap();
+            if room.audio_override.is_none() {
+                continue;
+            }
+
+            let audio_override = room.audio_override.as_ref().unwrap();
+            for (id_str, file_name) in audio_override {
+                let id = match id_str.parse::<u32>() {
+                    Ok(n) => n,
+                    Err(_e) => panic!("{} is not a valid number", id_str),
+                };
+
+                let file_name = format!("{}\0", file_name.clone());
+                let file_name = file_name.as_bytes();
+                let file_name: Vec<u8> = file_name.to_vec();
+                // let zero: [u8;1] = [0;1];
+                // let file_name: Vec<u8> = [file_name, &zero].concat();
+                // let file_name = file_name.as_cstr();
+                audio_override_patches.push(
+                    AudioOverridePatch {
+                        pak: pak_name.as_bytes(),
+                        room_id: room_info.room_id.to_u32(),
+                        audio_streamer_id: id,
+                        file_name: file_name,
+                    }
+                );
+            }
+        }
+    }
+    let audio_override_patches = &audio_override_patches;
+
     let mut ct = Vec::new();
     let mut reader = Reader::new(&config.input_iso[..]);
     let mut gc_disc: structs::GcDisc = reader.read(());
@@ -12589,7 +12672,7 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
         return Ok(());
     }
 
-    build_and_run_patches(&mut gc_disc, &config, version)?;
+    build_and_run_patches(&mut gc_disc, &config, version, audio_override_patches)?;
 
     {
         let json_string = serde_json::to_string(&config)
@@ -12776,7 +12859,7 @@ fn export_assets(_gc_disc: &mut structs::GcDisc, config: &PatchConfig)
 }
 
 
-fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, version: Version)
+fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchConfig, version: Version, audio_override_patches: &'r Vec<AudioOverridePatch>)
     -> Result<(), String>
 {
     let morph_ball_size = config.ctwk_config.morph_ball_size.clone().unwrap_or(1.0);
@@ -14744,6 +14827,14 @@ fn build_and_run_patches(gc_disc: &mut structs::GcDisc, config: &PatchConfig, ve
                 );
             }
         }
+    }
+
+    // edit music triggers
+    for data in audio_override_patches {
+        patcher.add_scly_patch(
+            (data.pak, data.room_id),
+            move |ps, area| patch_audio_override(ps, area, data.audio_streamer_id, &data.file_name),
+        );
     }
 
     // remove arbitrary objects

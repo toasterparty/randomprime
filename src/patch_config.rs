@@ -404,7 +404,7 @@ pub struct RoomConfig
     pub enabled_layers: Option<Vec<u32>>,
     pub disabled_layers: Option<Vec<u32>>,
     pub delete_ids: Option<Vec<u32>>,
-    pub audio_override: Option<HashMap<u32, String>>, // key=instance_id, value=/audio/min_phazonL.dsp|/audio/min_phazonR.dsp
+    pub audio_override: Option<HashMap<String, String>>, // key=instance_id, value=/audio/min_phazonL.dsp|/audio/min_phazonR.dsp
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
