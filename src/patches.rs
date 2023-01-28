@@ -2854,10 +2854,20 @@ fn modify_pickups_in_mrea<'r>(
     let mut auto_respawn_layer_idx = 0;
     let mut auto_respawn_special_function_id = 0;
     let mut auto_respawn_timer_id = 0;
-    if respawn {
+    let mut chapel_repo_despawn_timer_id = 0;
+    if respawn || mrea_id == 0x40C548E9 {
         auto_respawn_layer_idx = area.layer_flags.layer_count as usize;
         auto_respawn_special_function_id = area.new_object_id_from_layer_id(0);
-        auto_respawn_timer_id = area.new_object_id_from_layer_id(auto_respawn_layer_idx);
+
+        // Fix chapel IS
+        if mrea_id == 0x40C548E9 {
+            chapel_repo_despawn_timer_id = area.new_object_id_from_layer_id(auto_respawn_layer_idx);
+        }
+
+        if respawn {
+            auto_respawn_timer_id = area.new_object_id_from_layer_id(auto_respawn_layer_idx);
+        }
+
         area.add_layer(b"auto-respawn layer\0".as_cstr());
         area.layer_flags.flags &= !(1 << auto_respawn_layer_idx); // layer disabled by default
     }
@@ -3018,10 +3028,11 @@ fn modify_pickups_in_mrea<'r>(
         special_fn_artifact_layer_change_id = area.new_object_id_from_layer_name("Default");
     }
 
+    // Fix chapel IS
     if mrea_id == 0x40C548E9 {
         trigger_id = area.new_object_id_from_layer_name("Default");
     }
-
+    
     if pickup_type == PickupType::FloatyJump {
         floaty_contraption_id = [
             area.new_object_id_from_layer_id(0),
@@ -3184,32 +3195,57 @@ fn modify_pickups_in_mrea<'r>(
         });
     }
 
-    if respawn {
-        let timer = structs::SclyObject {
-            instance_id: auto_respawn_timer_id,
-            property_data: structs::Timer {
-                name: b"auto-spawn pickup\0".as_cstr(),
-                start_time: 0.001,
-                max_random_add: 0.0,
-                reset_to_zero: 0,
-                start_immediately: 1,
-                active: 1,
-            }.into(),
-            connections: vec![
-                structs::Connection {
-                    state: structs::ConnectionState::ZERO,
-                    message: structs::ConnectionMsg::ACTIVATE,
-                    target_object_id: pickup_location.location.instance_id,
-                },
-            ].into(),
-        };
+    if respawn || mrea_id == 0x40C548E9 {
+        if auto_respawn_timer_id != 0 {
+            let timer = structs::SclyObject {
+                instance_id: auto_respawn_timer_id,
+                property_data: structs::Timer {
+                    name: b"auto-spawn pickup\0".as_cstr(),
+                    start_time: 0.001,
+                    max_random_add: 0.0,
+                    reset_to_zero: 0,
+                    start_immediately: 1,
+                    active: 1,
+                }.into(),
+                connections: vec![
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: pickup_location.location.instance_id,
+                    },
+                ].into(),
+            };
+            layers[auto_respawn_layer_idx].objects.as_mut_vec().push(timer);
+        }
+
+        if chapel_repo_despawn_timer_id != 0 && trigger_id != 0 {
+            let timer = structs::SclyObject {
+                instance_id: chapel_repo_despawn_timer_id,
+                property_data: structs::Timer {
+                    name: b"auto-despawn trigger\0".as_cstr(),
+                    start_time: 0.001,
+                    max_random_add: 0.0,
+                    reset_to_zero: 0,
+                    start_immediately: 1,
+                    active: 1,
+                }.into(),
+                connections: vec![
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: trigger_id,
+                    },
+                ].into(),
+            };
+            layers[auto_respawn_layer_idx].objects.as_mut_vec().push(timer);
+        }
 
         layers[0].objects.as_mut_vec().push(
             structs::SclyObject {
                 instance_id: auto_respawn_special_function_id,
                 connections: vec![].into(),
                 property_data: structs::SpecialFunction::layer_change_fn(
-                    b"auto-respawn layer change\0".as_cstr(),
+                    b"my layer change\0".as_cstr(),
                     area_internal_id,
                     auto_respawn_layer_idx as u32,
                 ).into(),
@@ -3231,19 +3267,17 @@ fn modify_pickups_in_mrea<'r>(
                 target_object_id: auto_respawn_special_function_id,
             }
         );
-
-        layers[auto_respawn_layer_idx].objects.as_mut_vec().push(timer);
     }
 
     // Fix chapel IS
     if mrea_id == 0x40C548E9 {
-        additional_connections.push(
-            structs::Connection {
-                state: structs::ConnectionState::ARRIVED,
-                message: structs::ConnectionMsg::SET_TO_ZERO,
-                target_object_id: 0x000E023A,
-            }
-        );
+        // additional_connections.push(
+        //     structs::Connection {
+        //         state: structs::ConnectionState::ARRIVED,
+        //         message: structs::ConnectionMsg::SET_TO_ZERO,
+        //         target_object_id: 0x000E023A,
+        //     }
+        // );
 
         additional_connections.push(
             structs::Connection {
