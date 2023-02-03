@@ -9636,47 +9636,212 @@ fn patch_ctwk_ball(res: &mut structs::Resource, ctwk_config: &CtwkConfig)
     Ok(())
 }
 
-fn patch_subchamber_five_nintendont_fix<'r>(
+fn patch_subchamber_five_essence_permadeath<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
 )
 -> Result<(), String>
 {
-    let trigger_id = area.new_object_id_from_layer_name("Default");
+    let mrea_id = area.mlvl_area.mrea.to_u32().clone();
+    let layer_count = area.mrea().scly_section_mut().layers.len();
+    let disable_bosses_layer_num = layer_count;
+    if disable_bosses_layer_num != 1 {
+        panic!("Unexpected layer count ({}) when patching final boss permadeath in room 0x{:X}", layer_count, mrea_id);
+    }
+    area.add_layer(b"Disable Bosses Layer\0".as_cstr());
+    area.layer_flags.flags &= !(1 << disable_bosses_layer_num);
+
+    let spawn_point_id = area.new_object_id_from_layer_id(disable_bosses_layer_num);
+    let player_hint_id = area.new_object_id_from_layer_id(disable_bosses_layer_num);
+    let trigger_id = area.new_object_id_from_layer_id(disable_bosses_layer_num);
+    let timer_id = area.new_object_id_from_layer_id(disable_bosses_layer_num);
+    let timer2_id = area.new_object_id_from_layer_id(disable_bosses_layer_num);
     let layers = &mut area.mrea().scly_section_mut().layers.as_mut_vec();
-    let trigger = layers[0].objects.as_mut_vec()
+
+    // Inch the cutscene trigger forwards
+    // Cutscene trigger disabled by default
+    {
+        let trigger = layers[0].objects.as_mut_vec()
         .iter_mut()
         .find(|obj| obj.instance_id & 0x00FFFFFF == 0x000A0017)
         .unwrap();
-    let trigger_data = trigger.property_data.as_trigger_mut().unwrap();
-    let position = trigger_data.position.clone();
-    let scale = trigger_data.scale.clone();
-    trigger_data.position[1] = -265.4421;
+        let trigger_data = trigger.property_data.as_trigger_mut().unwrap();
+        // trigger_data.position[1] = -265.4421;
+        trigger_data.active = 0;
+    }
 
-    layers[0].objects.as_mut_vec().push(
+    layers[disable_bosses_layer_num].objects.as_mut_vec().push(
         structs::SclyObject {
             instance_id: trigger_id,
-            connections: vec![].into(),
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ENTERED,
+                    message: structs::ConnectionMsg::SET_TO_ZERO,
+                    target_object_id: spawn_point_id,
+                },
+                structs::Connection {
+                    state: structs::ConnectionState::ENTERED,
+                    message: structs::ConnectionMsg::INCREMENT,
+                    target_object_id: player_hint_id,
+                },
+                structs::Connection {
+                    state: structs::ConnectionState::ENTERED,
+                    message: structs::ConnectionMsg::SET_TO_MAX,
+                    target_object_id: 0x000A0002, // dock to lair
+                },
+                structs::Connection {
+                    state: structs::ConnectionState::ENTERED,
+                    message: structs::ConnectionMsg::SET_TO_ZERO,
+                    target_object_id: 0x000A0001, // dock to subchamber four
+                },
+            ].into(),
             property_data: structs::SclyProperty::Trigger(
                 Box::new(structs::Trigger {
-                    name: b"push\0".as_cstr(),
-                    position,
-                    scale,
+                    name: b"push into hole\0".as_cstr(),
+                    position: [43.704475, -260.3421, -124.530144].into(),
+                    scale: [46.119999, 3.078979, 31.992004].into(),
                     damage_info: structs::scly_structs::DamageInfo {
                         weapon_type: 0,
                         damage: 0.0,
                         radius: 0.0,
                         knockback_power: 0.0
                     },
-                    force: [0.0, -1000.0, 0.0].into(),
+                    force: [0.0, -200.0, 300.0].into(),
                     flags: 0x2001, // apply force, detect player
                     active: 1,
                     deactivate_on_enter: 0,
-                    deactivate_on_exit: 0,
+                    deactivate_on_exit: 1,
                 })
             ),
         }
     );
+
+    layers[disable_bosses_layer_num].objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: spawn_point_id,
+            connections: vec![].into(),
+            property_data: structs::SclyProperty::SpawnPoint(
+                Box::new(structs::SpawnPoint {
+                    name: b"my spawn point\0".as_cstr(),
+                    position: [42.33, -260.3421, -135.5].into(),
+                    rotation: [0.0, 0.0, 180.0].into(),
+                    power: 0,
+                    ice: 0,
+                    wave: 0,
+                    plasma: 0,
+                    missiles: 0,
+                    scan_visor: 0,
+                    bombs: 0,
+                    power_bombs: 0,
+                    flamethrower: 0,
+                    thermal_visor: 0,
+                    charge: 0,
+                    super_missile: 0,
+                    grapple: 0,
+                    xray: 0,
+                    ice_spreader: 0,
+                    space_jump: 0,
+                    morph_ball: 0,
+                    combat_visor: 0,
+                    boost_ball: 0,
+                    spider_ball: 0,
+                    power_suit: 0,
+                    gravity_suit: 0,
+                    varia_suit: 0,
+                    phazon_suit: 0,
+                    energy_tanks: 0,
+                    unknown0: 0,
+                    health_refill: 0,
+                    unknown1: 0,
+                    wavebuster: 0,
+                    default_spawn: 0,
+                    active: 1,
+                    morphed: 0,
+                })
+            ),
+        }
+    );
+
+    layers[disable_bosses_layer_num].objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: player_hint_id,
+            property_data: structs::PlayerHint {
+
+                name: b"disable controls\0".as_cstr(),
+
+                position: [0.0, 0.0, 0.0].into(),
+                rotation: [0.0, 0.0, 0.0].into(),
+
+                unknown0: 1, // active
+
+                inner_struct: structs::PlayerHintStruct {
+                    unknowns: [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        1, // disable
+                        1, // disable
+                        1, // disable
+                        1, // disable
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                    ].into(),
+                }.into(),
+
+                unknown1: 10, // priority
+            }.into(),
+            connections: vec![].into(),
+        }
+    );
+
+    layers[0].objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: timer_id,
+            property_data: structs::Timer {
+                name: b"enable cutscene trigger\0".as_cstr(),
+                start_time: 0.1,
+                max_random_add: 0.0,
+                reset_to_zero: 0,
+                start_immediately: 1,
+                active: 1,
+            }.into(),
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::ACTIVATE,
+                    target_object_id: 0x000A0017,
+                },
+            ].into(),
+        }
+    );
+
+    layers[disable_bosses_layer_num].objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: timer2_id,
+            property_data: structs::Timer {
+                name: b"disable cutscene trigger\0".as_cstr(),
+                start_time: 0.01,
+                max_random_add: 0.0,
+                reset_to_zero: 0,
+                start_immediately: 1,
+                active: 1,
+            }.into(),
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: timer_id,
+                },
+            ].into(),
+        }
+    );
+
     Ok(())
 }
 
@@ -9707,18 +9872,26 @@ fn patch_final_boss_permadeath<'r>(
     }
 
     let layer_count = area.mrea().scly_section_mut().layers.len();
-    let disable_bosses_layer_num = layer_count;
-    area.add_layer(b"Disable Bosses Layer\0".as_cstr());
-    if mrea_id != 0x1A666C55
-    {
-        area.layer_flags.flags &= !(1 << disable_bosses_layer_num); // layer disabled by default
+    let disable_bosses_layer_num;
+
+    if mrea_id == 0x749DF46 { // subchamber two already has a layer #1 that we can use
+        disable_bosses_layer_num = 1;
+    } else {
+        if layer_count != 1 {
+            panic!("Unexpected layer count ({}) when patching final boss permadeath in room 0x{:X}", layer_count, mrea_id);
+        }
+        area.add_layer(b"Disable Bosses Layer\0".as_cstr());
+        disable_bosses_layer_num = layer_count;
     }
+
+    area.layer_flags.flags |= 1 << disable_bosses_layer_num; // layer enabled by default
+    // area.layer_flags.flags &= !(1 << disable_bosses_layer_num); // uncomment for easy testing
 
     // Allocate list of ids
     let destinations = if mrea_id == 0xA7AC009B {
         vec![3858868330, 3883549607, 3886867740, 3851260989, 3847959174]
     } else {
-        vec![3827358027]
+        vec![3827358027, 3309590160]
     };
 
     let mut actor_id = 0;
@@ -9731,7 +9904,7 @@ fn patch_final_boss_permadeath<'r>(
     let mut change_layer_timer_id = 0;
     let mut special_function_ids = Vec::<u32>::new();
 
-    if mrea_id == 0x1A666C55 {
+    if mrea_id == 0x1A666C55 { // lair
         actor_id = area.new_object_id_from_layer_name("Default");
         trigger_id = area.new_object_id_from_layer_name("Default");
         hudmemo_id = area.new_object_id_from_layer_name("Default");
@@ -9742,7 +9915,7 @@ fn patch_final_boss_permadeath<'r>(
         remove_boss_timer_id = area.new_object_id_from_layer_id(disable_bosses_layer_num);
     }
 
-    if mrea_id == 0xA7AC009B || mrea_id == 0x1A666C55
+    if mrea_id == 0xA7AC009B || mrea_id == 0x1A666C55 // subchamber four or lair
     {
         for _ in 0..destinations.len() {
             special_function_ids.push(area.new_object_id_from_layer_name("Default"));
@@ -9751,35 +9924,21 @@ fn patch_final_boss_permadeath<'r>(
     }
 
     let layers = &mut area.mrea().scly_section_mut().layers.as_mut_vec();
-    let mut objs_to_remove = Vec::<u32>::new();
-    for i in 0..layer_count {
-        for obj in layers[i].objects.as_mut_vec() {
-            if  (
-                    obj.property_data.is_actor() ||
-                    obj.property_data.is_camera() ||
-                    obj.property_data.is_platform() ||
-                    obj.property_data.is_trigger() ||
-                    obj.property_data.is_spawn_point() ||
-                    obj.property_data.object_type() == 0x83
-                )
-                && !vec![
-                    0x00050014, 0x0005000E,
-
-                    ].contains(&obj.instance_id)
-            {
-                objs_to_remove.push(obj.instance_id.clone());
-            }
-        }
-    }
 
     if mrea_id == 0x1A666C55 { // lair
-        let essence = layers[0].objects.as_mut_vec()
-            .iter_mut()
-            .find(|obj| obj.instance_id & 0x00FFFFFF == 0x000B0082)
-            .unwrap()
-            .clone();
-        layers[disable_bosses_layer_num].objects.as_mut_vec().push(essence.clone());
-        layers[0].objects.as_mut_vec().retain(|obj| obj.instance_id & 0x00FFFFFF != 0x000B0082);
+        /* Move Essence */
+        for obj_id in vec![0x000B0082, 0x000B0093, 0x000B008C] {
+            let obj = layers[0].objects.as_mut_vec()
+                .iter_mut()
+                .find(|obj| (obj.instance_id & 0x00FFFFFF) == obj_id);
+            if obj.is_none() {
+                continue;
+            }
+            let obj = obj.unwrap().clone();
+            layers[disable_bosses_layer_num].objects.as_mut_vec().push(obj.clone());
+            layers[0].objects.as_mut_vec().retain(|obj| obj.instance_id & 0x00FFFFFF != obj_id);
+        }
+
         layers[0].objects.as_mut_vec().push(structs::SclyObject {
             instance_id: actor_id,
             property_data: structs::Actor {
@@ -9874,6 +10033,7 @@ fn patch_final_boss_permadeath<'r>(
                connections: vec![].into(),
             }
         );
+
         // Stop the player from moving
         layers[0].objects
             .as_mut_vec()
@@ -10017,41 +10177,41 @@ fn patch_final_boss_permadeath<'r>(
                 ].into(),
             }
         );
-    }
-
-    let mut connections = Vec::new();
-    for target_object_id in objs_to_remove {
-        if target_object_id == 0x0006003D {
-            connections.push(structs::Connection {
-                state: structs::ConnectionState::ZERO,
-                message: structs::ConnectionMsg::ACTIVATE,
-                target_object_id,
-            });
-        } else {
-            connections.push(structs::Connection {
-                state: structs::ConnectionState::ZERO,
-                message: structs::ConnectionMsg::DEACTIVATE,
-                target_object_id,
-            });
-        }
-    }
-
-    // if mrea_id != 0x1A666C55
-    {
-        layers[disable_bosses_layer_num].objects.as_mut_vec().push(
-            structs::SclyObject {
-                instance_id: remove_boss_timer_id,
-                property_data: structs::Timer {
-                    name: b"remove boss\0".as_cstr(),
-                    start_time: 0.1,
-                    max_random_add: 0.0,
-                    reset_to_zero: 0,
-                    start_immediately: 1,
-                    active: 1,
-                }.into(),
-                connections: connections.into(),
+    } else { // not lair
+        let mut objs_to_remove = Vec::<u32>::new();
+        for i in 0..layer_count {
+            for obj in layers[i].objects.as_mut_vec() {
+                if  (
+                    obj.property_data.is_actor() ||
+                    obj.property_data.is_camera() ||
+                    obj.property_data.is_platform() || // TODO: this bit is overkill
+                    obj.property_data.is_trigger() ||
+                    obj.property_data.object_type() == 0x83 ||
+                    obj.property_data.object_type() == 0x84
+                )
+                && !vec![
+                        0x00050014, 0x0005000E,
+                    ].contains(&obj.instance_id)
+                {
+                    objs_to_remove.push(obj.instance_id.clone());
+                }
             }
-        );
+        }
+
+        for obj_id in &objs_to_remove {
+            let obj_id = *obj_id;
+            let obj = layers[0].objects.as_mut_vec()
+                .iter_mut()
+                .find(|obj| (obj.instance_id & 0x00FFFFFF) == obj_id);
+    
+            if obj.is_none() {
+                continue;
+            }
+    
+            let obj = obj.unwrap().clone();
+            layers[disable_bosses_layer_num].objects.as_mut_vec().push(obj.clone());
+            layers[0].objects.as_mut_vec().retain(|obj| obj.instance_id & 0x00FFFFFF != obj_id);
+        }
     }
 
     // Boss deaths
@@ -10073,39 +10233,12 @@ fn patch_final_boss_permadeath<'r>(
             );
         }
 
-        // Add connections to post-death relay
-        for layer_idx in 0..layer_count {
-            for obj in layers[layer_idx].objects.as_mut_vec() {
-                if
-                       obj.instance_id & 0x0000FFFF == 0x00000022
-                    || obj.property_data.object_type() == 0x83
-                    || obj.instance_id & 0x00FFFFFF == 0x000B00EC
-                    || obj.instance_id & 0x00FFFFFF == 0x000B01B0
-                    || obj.instance_id & 0x00FFFFFF == 0x000B01B6
-                { // post-death relay
-                    for i in 0..destinations.len() {
-                        let (state, message) = if (mrea_id == 0x1A666C55) && i == 0 { // lair->lair
-                            (structs::ConnectionState::ZERO, structs::ConnectionMsg::DECREMENT)
-                        } else {
-                            (structs::ConnectionState::ZERO, structs::ConnectionMsg::INCREMENT)
-                        };
-
-                        obj.connections.as_mut_vec().push(structs::Connection {
-                            state,
-                            message,
-                            target_object_id: special_function_ids[i],
-                        });
-                    }
-                }
-            }
-        }
-
         let mut _connections = Vec::new();
         for i in 0..destinations.len() {
-            let (state, message) = if (mrea_id == 0x1A666C55) && (i == 0) { // lair->lair
-                (structs::ConnectionState::ZERO, structs::ConnectionMsg::DECREMENT)
-            } else {
+            let (state, message) = if (mrea_id == 0x1A666C55) && (i == 1) { // lair -> subchamber five
                 (structs::ConnectionState::ZERO, structs::ConnectionMsg::INCREMENT)
+            } else {
+                (structs::ConnectionState::ZERO, structs::ConnectionMsg::DECREMENT)
             };
 
             _connections.push(structs::Connection {
@@ -14624,26 +14757,14 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 resource_info!("03e_crater.MREA").into(),
                 move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
             );
-            // patcher.add_scly_patch(
-            //     resource_info!("03e_f_crater.MREA").into(), // five
-            //     move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
-            // );
             patcher.add_scly_patch(
                 resource_info!("03f_crater.MREA").into(), // lair
                 move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
             );
             patcher.add_scly_patch(
                 resource_info!("03e_f_crater.MREA").into(), // subchamber five
-                move |ps, area| patch_subchamber_five_nintendont_fix(ps, area)
+                move |ps, area| patch_subchamber_five_essence_permadeath(ps, area)
             );
-            patcher.add_scly_patch(
-                resource_info!("03e_f_crater.MREA").into(), // Subchamber five
-                move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![], true),
-            );
-            // patcher.add_scly_patch(
-            //     resource_info!("03f_crater.MREA").into(), // lair
-            //     move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![], false),
-            // );
             patcher.add_scly_patch(
                 resource_info!("03f_crater.MREA").into(), // lair
                 move |ps, area| patch_add_dock_teleport(ps, area,
