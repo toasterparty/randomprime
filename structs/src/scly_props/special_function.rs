@@ -65,4 +65,26 @@ impl<'r> SpecialFunction<'r>
             unknown8: 0xFFFFFFFF,
         }
     }
+
+    pub fn ice_trap_fn(name: CStr<'r>) -> Self
+    {
+        SpecialFunction {
+            name: name,
+            position: [0., 0., 0.].into(),
+            rotation: [0., 0., 0.].into(),
+            type_: 33,
+            unknown0: b"\0".as_cstr(),
+            unknown1: 0.,
+            unknown2: 0.,
+            unknown3: 0.,
+            layer_change_room_id: 0,
+            layer_change_layer_id: u32::MAX,
+            item_id: 0,
+            unknown4: 1,
+            unknown5: 0.,
+            unknown6: 0xFFFFFFFF,
+            unknown7: 0xFFFFFFFF,
+            unknown8: 0xFFFFFFFF,
+        }
+    }
 }

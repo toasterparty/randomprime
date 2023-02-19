@@ -193,6 +193,9 @@ pub mod custom_asset_ids {
         // Pickup dot icon
         MAP_PICKUP_ICON_TXTR: TXTR,
 
+        // Ice trap assets
+        ICE_TRAP_ANCS: ANCS,
+
         // Strings to use if none are specified
         DEFAULT_PICKUP_SCAN_STRGS: STRG,
         DEFAULT_PICKUP_SCANS: SCAN = DEFAULT_PICKUP_SCAN_STRGS.to_u32() + 50,
@@ -376,6 +379,11 @@ pub fn custom_assets<'r>(
         ResId::<res_id::TXTR>::new(0x1D588B22),
     ));
     assets.extend_from_slice(&create_shiny_missile_assets(resources));
+    assets.extend_from_slice(&create_ice_trap_icon_ancs(
+        resources,
+        ResId::<res_id::CMDL>::new(0xA3108E43), // new_ice_parasite_bound.CMDL
+        custom_asset_ids::ICE_TRAP_ANCS,
+    ));
     assets.extend_from_slice(&create_item_scan_strg_pair(
         custom_asset_ids::SHORELINES_POI_SCAN,
         custom_asset_ids::SHORELINES_POI_STRG,
@@ -1296,6 +1304,32 @@ fn create_shiny_missile_assets<'r>(
         )
     };
     [shiny_missile_cmdl, shiny_missile_ancs, shiny_missile_evnt, shiny_missile_anim]
+}
+
+fn create_ice_trap_icon_ancs<'r>(
+    resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+    new_cmdl_id: ResId<res_id::CMDL>,
+    new_ancs_id: ResId<res_id::ANCS>,
+) -> [structs::Resource<'r>; 2]
+{
+    let new_suit_ancs = {
+        let grav_suit_ancs = ResourceData::new(
+            &resources[&resource_info!("Node1_11.ANCS").into()]
+        );
+        let ancs_bytes = grav_suit_ancs.decompress().into_owned();
+        let mut ancs = Reader::new(&ancs_bytes[..]).read::<structs::Ancs>(());
+
+        ancs.char_set.char_info.as_mut_vec()[0].cmdl = new_cmdl_id;
+
+        let mut new_ancs_bytes = vec![];
+        ancs.write_to(&mut new_ancs_bytes).unwrap();
+
+        build_resource(
+            new_ancs_id,
+            structs::ResourceKind::External(new_ancs_bytes, b"ANCS".into())
+        )
+    };
+    [resources[&resource_info!("new_ice_parasite_bound.CMDL").into()].clone(), new_suit_ancs]
 }
 
 fn create_item_scan_strg_pair<'r>(

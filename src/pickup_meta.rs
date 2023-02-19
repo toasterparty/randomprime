@@ -59,6 +59,8 @@ pub enum PickupType
 
     #[serde(skip)]
     FloatyJump = -1,
+    #[serde(skip)]
+    IceTrap = -2,
 }
 
 impl PickupType
@@ -109,6 +111,7 @@ impl PickupType
             PickupType::ArtifactOfNewborn   => "Artifact Of Newborn"  ,
             PickupType::Nothing             => "Nothing"              ,
             PickupType::FloatyJump          => "Floaty Jump"          ,
+            PickupType::IceTrap             => "Ice Trap"                 ,
         }
     }
 
@@ -158,12 +161,16 @@ impl PickupType
             PickupType::ArtifactOfNewborn,
             PickupType::Nothing,
             PickupType::FloatyJump,
+            PickupType::IceTrap,
         ].iter().map(|i| *i)
     }
 
     pub fn kind(&self) -> u32
     {
         if *self == PickupType::FloatyJump {
+            return PickupType::Nothing.kind();
+        }
+        if *self == PickupType::IceTrap {
             return PickupType::Nothing.kind();
         }
 
@@ -274,6 +281,7 @@ pub enum PickupModel
     MissileRefill,
     PowerBombRefill,
     ShinyMissile,
+    IceTrap,
 }
 
 impl PickupModel
@@ -323,6 +331,7 @@ impl PickupModel
             PickupModel::MissileRefill =>       "Missile Refill",
             PickupModel::PowerBombRefill =>     "Power Bomb Refill",
             PickupModel::ShinyMissile =>        "Shiny Missile",
+            PickupModel::IceTrap =>             "Ice Trap",
         }
     }
 
@@ -382,6 +391,7 @@ impl PickupModel
             PickupModel::MissileRefill,
             PickupModel::PowerBombRefill,
             PickupModel::ShinyMissile,
+            PickupModel::IceTrap,
         ].iter().map(|i| *i)
     }
 
@@ -470,7 +480,8 @@ impl PickupModel
             PickupType::ArtifactOfSpirit    => PickupModel::ArtifactOfSpirit,
             PickupType::ArtifactOfNewborn   => PickupModel::ArtifactOfNewborn,
             PickupType::Nothing             => PickupModel::Nothing,
-            PickupType::FloatyJump             => PickupModel::Nothing,
+            PickupType::FloatyJump          => PickupModel::Nothing,
+            PickupType::IceTrap             => PickupModel::IceTrap,
         }
     }
 }
