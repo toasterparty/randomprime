@@ -2787,6 +2787,31 @@ fn set_room_map_default_state(
     Ok(())
 }
 
+fn add_player_freeze_assets<'r>(file: &mut structs::FstEntryFile<'r>, resources: &HashMap<(u32, FourCC), structs::Resource<'r>>)
+    -> Result<(), String>
+{
+    let pak = match file {
+        structs::FstEntryFile::Pak(pak) => pak,
+        _ => unreachable!(),
+    };
+
+    const ASSETS: &[ResourceInfo] = &[
+        resource_info!("breakFreezeVisor.PART"),
+        resource_info!("Frost1TXTR.TXTR"),
+        resource_info!("75DAC95C.PART"),
+        resource_info!("zorch1_snow3.TXTR"),
+        resource_info!("C28C7348.PART"),
+    ];
+
+    // append at the end of the pak
+    let mut cursor = pak.resources.cursor();
+    while cursor.cursor_advancer().peek().is_some() {}
+    for asset in ASSETS.iter() {
+        cursor.insert_after(iter::once(resources[&(*asset).into()].clone()));
+    }
+    Ok(())
+}
+
 fn add_map_pickup_icon_txtr(file: &mut structs::FstEntryFile<'_>)
     -> Result<(), String>
 {
@@ -13455,6 +13480,12 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     let file_select_play_game_fmv = gc_disc.find_file(&n).unwrap().file().unwrap().clone();
 
     let mut patcher = PrimePatcher::new();
+
+    // Add the freeze effect assets required by CPlayer::Freeze()
+    patcher.add_file_patch(
+        b"GGuiSys.pak",
+        |file| add_player_freeze_assets(file, &game_resources),
+    );
 
     // Add the pickup icon
     patcher.add_file_patch(
