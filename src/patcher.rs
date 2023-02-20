@@ -25,7 +25,7 @@ struct MreaKey<'r>
 type SclyPatch<'r, 's> = dyn FnMut(&mut PatcherState, &mut MlvlArea<'r, '_, '_, '_>) -> Result<(), String> + 's;
 pub struct PrimePatcher<'r, 's>
 {
-    file_patches: HashMap<&'s [u8], Box<dyn FnMut(&mut FstEntryFile<'r>) -> Result<(), String> + 's>>,
+    file_patches: HashMap<&'s [u8], Vec<Box<dyn FnMut(&mut FstEntryFile<'r>) -> Result<(), String> + 's>>>,
     // TODO: Come up with a better data structure for this. A per PAK list of patches, for example.
     resource_patches: Vec<(ResourceKey<'s>, Box<dyn FnMut(&mut Resource<'r>) -> Result<(), String> + 's>)>,
     scly_patches: Vec<(MreaKey<'s>, Vec<Box<SclyPatch<'r, 's>>>)>,
@@ -52,7 +52,11 @@ impl<'r, 's> PrimePatcher<'r, 's>
     pub fn add_file_patch<F>(&mut self, name: &'s [u8], f: F)
         where F: FnMut(&mut FstEntryFile<'r>) -> Result<(), String> + 's
     {
-        self.file_patches.insert(name, Box::new(f));
+        if self.file_patches.contains_key(name) {
+            self.file_patches.get_mut(name).unwrap().push(Box::new(f));
+        } else {
+            self.file_patches.insert(name, vec![Box::new(f)]);
+        }
     }
 
     pub fn add_resource_patch<F>(
@@ -96,9 +100,11 @@ impl<'r, 's> PrimePatcher<'r, 's>
             .filter(|(path, _)| files_to_patch.contains(&path[..]));
 
         for (name, fst_entry) in files {
-            if let Some(patch) = self.file_patches.get_mut(&name[..]) {
+            if let Some(patches) = self.file_patches.get_mut(&name[..]) {
                 fst_entry.guess_kind();
-                patch(&mut fst_entry.file_mut().unwrap())?
+                for patch in patches.iter_mut() {
+                    (*patch)(&mut fst_entry.file_mut().unwrap())?
+                }
             }
 
             let pak_patch_exists = self.resource_patches.iter()
