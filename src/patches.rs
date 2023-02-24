@@ -2013,18 +2013,29 @@ fn patch_superheated_room<'r>(
     Ok(())
 }
 
-fn is_water<'r>(obj: &structs::SclyObject<'r>) -> bool {
-    let water = obj.property_data.as_water();
-    water.is_some()
-}
-
-fn is_underwater_sound<'r>(obj: &structs::SclyObject<'r>) -> bool {
-    let sound = obj.property_data.as_sound();
-    if sound.is_none() {
-        false // non-sounds are never underwater sounds
-    } else {
-        sound.unwrap().name.to_str().ok().unwrap().to_string().to_lowercase().contains("underwater") // we define underwater sounds by their name
+fn is_water_related<'r>(obj: &structs::SclyObject<'r>) -> bool {
+    if obj.property_data.is_water() {
+        return true;
     }
+
+    if obj.property_data.object_type() == 0x54 {
+        return true; // Jelzap
+    }
+
+    if obj.property_data.object_type() == 0x4F {
+        return true; // Fish Cloud
+    }
+
+    if obj.property_data.is_sound() {
+        return obj.property_data.as_sound().unwrap().name.to_str().ok().unwrap().to_string().to_lowercase().contains("underwater");
+    }
+
+    if obj.property_data.is_effect() {
+        let name = obj.property_data.as_effect().unwrap().name.to_str().ok().unwrap().to_string().to_lowercase();
+        return name.contains("bubbles") || name.contains("waterfall");
+    }
+
+    return false;
 }
 
 fn patch_remove_water<'r>(
@@ -2037,9 +2048,7 @@ fn patch_remove_water<'r>(
     let layer_count = scly.layers.len();
     for i in 0..layer_count {
         let layer = &mut scly.layers.as_mut_vec()[i];
-        layer.objects.as_mut_vec().retain(|obj| !is_water(obj));
-        layer.objects.as_mut_vec().retain(|obj| !is_underwater_sound(obj));
-        // TODO: remove fish and bubbles
+        layer.objects.as_mut_vec().retain(|obj| !is_water_related(obj));
     }
 
     Ok(())
