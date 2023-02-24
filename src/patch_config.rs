@@ -589,6 +589,7 @@ pub struct PatchConfig
     pub disable_item_loss: bool,
     pub starting_visor: Visor,
     pub starting_beam: Beam,
+    pub escape_sequence_counts_up: bool,
 
     pub artifact_hint_behavior: ArtifactHintBehavior,
 
@@ -671,6 +672,7 @@ struct GameConfig
     disable_item_loss: Option<bool>,
     starting_visor: Option<String>,
     starting_beam: Option<String>,
+    escape_sequence_counts_up: Option<bool>,
 
     etank_capacity: Option<u32>,
     item_max_capacity: Option<HashMap<String,u32>>,
@@ -1284,6 +1286,7 @@ impl PatchConfigPrivate
             item_loss_items: self.game_config.item_loss_items.clone()
             .unwrap_or_else(|| StartingItems::from_u64(1)),
             disable_item_loss: self.game_config.disable_item_loss.unwrap_or(true),
+            escape_sequence_counts_up: self.game_config.escape_sequence_counts_up.unwrap_or(false),
             starting_visor,
             starting_beam,
 

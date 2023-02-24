@@ -8104,6 +8104,7 @@ fn patch_dol<'r>(
     remove_ball_color: bool,
     smoother_teleports: bool,
     skip_splash_screens: bool,
+    escape_sequence_counts_up: bool,
 ) -> Result<(), String>
 {
     if version == Version::NtscUTrilogy || version == Version::NtscJTrilogy || version == Version::PalTrilogy {
@@ -8155,32 +8156,33 @@ fn patch_dol<'r>(
     });
     dol_patcher.ppcasm_patch(&normal_is_default_patch)?;
 
-    // Escape Sequence timers should count up
-    // NTSC-U (0x80044f24 - 0x80044ef4)
-    let escape_seq_timer_count_up_patch = ppcasm!(symbol_addr!("UpdateEscapeSequenceTimer__13CStateManagerFf", version) + 0x30, {
+    if escape_sequence_counts_up {
+        // Escape Sequences count up
+        // NTSC-U (0x80044f24 - 0x80044ef4)
+        let escape_seq_timer_count_up_patch = ppcasm!(symbol_addr!("UpdateEscapeSequenceTimer__13CStateManagerFf", version) + 0x30, {
             fadds   f2, f2, f1;
-    });
-    dol_patcher.ppcasm_patch(&escape_seq_timer_count_up_patch)?;
+        });
+        dol_patcher.ppcasm_patch(&escape_seq_timer_count_up_patch)?;
 
-    // Escape Sequences don't check for rumbling
-    // NTSC-U (0x80044fa8 - 0x80044ef4) => b (0x80045058 - 0x80044ef4)
-    let remove_escape_sequence_rumble_patch = ppcasm!(symbol_addr!("UpdateEscapeSequenceTimer__13CStateManagerFf", version) + 0xb4, {
-            b       { symbol_addr!("UpdateEscapeSequenceTimer__13CStateManagerFf", version) + 0x164 };
-    });
-    dol_patcher.ppcasm_patch(&remove_escape_sequence_rumble_patch)?;
+        // Escape Sequences don't check for rumbling
+        // NTSC-U (0x80044fa8 - 0x80044ef4) => b (0x80045058 - 0x80044ef4)
+        let remove_escape_sequence_rumble_patch = ppcasm!(symbol_addr!("UpdateEscapeSequenceTimer__13CStateManagerFf", version) + 0xb4, {
+                b       { symbol_addr!("UpdateEscapeSequenceTimer__13CStateManagerFf", version) + 0x164 };
+        });
+        dol_patcher.ppcasm_patch(&remove_escape_sequence_rumble_patch)?;
 
-    // Never hide the escape sequence timer
-    // NTSC-U (0x80066e78 - 0x80066380)
-    let patch_offset = if version == Version::Pal || version == Version::NtscJ {
-        0xb84
-    } else {
-        0xaf8
-    };
-    let remove_escape_sequence_rumble_patch = ppcasm!(symbol_addr!("Update__9CSamusHudFfRC13CStateManagerUibb", version) + patch_offset, {
-            nop
-    });
-    dol_patcher.ppcasm_patch(&remove_escape_sequence_rumble_patch)?;
-
+        // Never hide the escape sequence timer
+        // NTSC-U (0x80066e78 - 0x80066380)
+        let patch_offset = if version == Version::Pal || version == Version::NtscJ {
+            0xb84
+        } else {
+            0xaf8
+        };
+        let remove_escape_sequence_rumble_patch = ppcasm!(symbol_addr!("Update__9CSamusHudFfRC13CStateManagerUibb", version) + patch_offset, {
+                nop
+        });
+        dol_patcher.ppcasm_patch(&remove_escape_sequence_rumble_patch)?;
+    }
     // byte pattern to find GetIsFusionEnabled__12CPlayerStateFv
     // 88030000 5403dffe 7c0300d0
     if config.force_fusion {
@@ -14429,6 +14431,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 remove_ball_color,
                 true,
                 config.skip_splash_screens,
+                config.escape_sequence_counts_up,
             )
         );
 
@@ -14454,6 +14457,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 remove_ball_color,
                 false,
                 config.skip_splash_screens,
+                config.escape_sequence_counts_up,
             )
         );
     }
