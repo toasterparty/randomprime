@@ -3510,6 +3510,7 @@ fn modify_pickups_in_mrea<'r>(
             0x00190584, 0x0019039C, // research lab hydra
             0x001F025C, // mqb tank
             0x000D03D9, // Phazon Elite
+            0x002929FE, // watery hall lore
         ];
         for layer in layers.iter_mut() {
             if mrea_id == 0x2398E906 {
