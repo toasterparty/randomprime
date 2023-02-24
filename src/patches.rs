@@ -2013,9 +2013,16 @@ fn patch_superheated_room<'r>(
     Ok(())
 }
 
-fn is_water_related<'r>(obj: &structs::SclyObject<'r>) -> bool {
+fn is_water_related<'r>(
+    obj: &structs::SclyObject<'r>,
+    keep_water_related: bool,
+) -> bool {
     if obj.property_data.is_water() {
         return true;
+    }
+
+    if keep_water_related {
+        return false;
     }
 
     if obj.property_data.object_type() == 0x54 {
@@ -2041,6 +2048,7 @@ fn is_water_related<'r>(obj: &structs::SclyObject<'r>) -> bool {
 fn patch_remove_water<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    keep_water_related: bool,
 )
 -> Result<(), String>
 {
@@ -2048,7 +2056,7 @@ fn patch_remove_water<'r>(
     let layer_count = scly.layers.len();
     for i in 0..layer_count {
         let layer = &mut scly.layers.as_mut_vec()[i];
-        layer.objects.as_mut_vec().retain(|obj| !is_water_related(obj));
+        layer.objects.as_mut_vec().retain(|obj| !is_water_related(obj, keep_water_related));
     }
 
     Ok(())
@@ -13933,7 +13941,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                         if room.remove_water.clone().unwrap_or(false) || submerge {
                             patcher.add_scly_patch(
                                 (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                move |_ps, area| patch_remove_water(_ps, area),
+                                move |_ps, area| patch_remove_water(_ps, area, submerge),
                             );
                         }
 
