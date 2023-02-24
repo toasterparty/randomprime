@@ -15415,15 +15415,15 @@ fn patch_hall_of_the_elders_bomb_slot_covers(
     const PLASMA_ACTOR_NAME: &'static str = "Actor -membrane Slot3 Orange\0";
 
     if let Some(cover) = bomb_slot_covers.wave {
-        patch_slot_cover(patcher, WAVE_ACTOR_NAME, cover);
+        patch_slot_cover(patcher, WAVE_ACTOR_NAME, cover, 0x003401AF);
     }
 
     if let Some(cover) = bomb_slot_covers.ice {
-        patch_slot_cover(patcher, ICE_ACTOR_NAME, cover);
+        patch_slot_cover(patcher, ICE_ACTOR_NAME, cover, 0x003401AB);
     }
 
     if let Some(cover) = bomb_slot_covers.plasma {
-        patch_slot_cover(patcher, PLASMA_ACTOR_NAME, cover);
+        patch_slot_cover(patcher, PLASMA_ACTOR_NAME, cover, 0x003401AD);
     }
 }
 
@@ -15431,6 +15431,7 @@ fn patch_slot_cover<'a>(
     patcher: &mut PrimePatcher<'_, 'a>,
     actor_name: &'a str,
     cover: BombSlotCover,
+    poi_id: u32,
 ) {
     const WAVE_CMDL_ID: u32 = 0x896a6BD3;
     const ICE_CMDL_ID: u32 = 0x675822C5;
@@ -15445,6 +15446,22 @@ fn patch_slot_cover<'a>(
             let layer = &mut scly.layers.as_mut_vec()[0]; // Default
 
             for obj in layer.objects.iter_mut() {
+                if let Some(poi) = obj.property_data.as_point_of_interest_mut() {
+                    if obj.instance_id & 0x00FFFFFF == poi_id {
+                        match cover {
+                            BombSlotCover::Wave => {
+                                poi.scan_param.scan = ResId::<res_id::SCAN>::new(0x88B9CA1D);
+                            }
+                            BombSlotCover::Ice => {
+                                poi.scan_param.scan = ResId::<res_id::SCAN>::new(0x2E45E522);
+                            }
+                            BombSlotCover::Plasma => {
+                                poi.scan_param.scan = ResId::<res_id::SCAN>::new(0x6C33B650);
+                            }
+                        };
+                    }
+                }
+
                 if let Some(actor) = obj.property_data.as_actor_mut() {
                     if actor.name == actor_name.clone().as_bytes().as_cstr() {
                         actor.damage_vulnerability.wave = TypeVulnerability::Reflect as u32;
