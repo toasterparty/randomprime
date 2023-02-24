@@ -11471,8 +11471,20 @@ fn patch_ridley_scale<'r>(
                 0x00100377,
                 0x001003C3,
                 0x001003E1,
+                0x00070098,
+                0x0000036D,
+                0x00000372,
+                0x00000379,
+                0x00000382,
+                0x0000039F,
+                0x0000036B,                
             ].contains(&(obj.instance_id & 0x00FFFFFF)) {
                 let boss = obj.property_data.as_actor_mut().unwrap();
+                boss.scale[0] *= scale;
+                boss.scale[1] *= scale;
+                boss.scale[2] *= scale;
+            } else if obj.property_data.is_platform() && obj.instance_id & 0x00FFFFFF == 0x000202A3 {
+                let boss = obj.property_data.as_platform_mut().unwrap();
                 boss.scale[0] *= scale;
                 boss.scale[1] *= scale;
                 boss.scale[2] *= scale;
@@ -15074,6 +15086,18 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         {
             patcher.add_scly_patch(
                 resource_info!("07_stonehenge.MREA").into(),
+                move |_ps, area| patch_ridley_scale(_ps, area, version, scale)
+            );
+            patcher.add_scly_patch(
+                resource_info!("01_ice_plaza.MREA").into(),
+                move |_ps, area| patch_ridley_scale(_ps, area, version, scale)
+            );
+            patcher.add_scly_patch(
+                resource_info!("09_intro_ridley_chamber.MREA").into(),
+                move |_ps, area| patch_ridley_scale(_ps, area, version, scale)
+            );
+            patcher.add_scly_patch(
+                resource_info!("01_intro_hanger.MREA").into(),
                 move |_ps, area| patch_ridley_scale(_ps, area, version, scale)
             );
         }
