@@ -5738,12 +5738,12 @@ fn patch_research_lab_aether_exploding_wall_2<'r>(
     let scly = area.mrea().scly_section_mut();
     let layer = &mut scly.layers.as_mut_vec()[0];
 
-    // Alert Edward via trigger in lower area instead of relying on gameplay
+    // break wall via trigger in lower area instead of relying on gameplay
     let trigger = layer.objects.iter_mut().find(|obj| obj.instance_id&0x00FFFFFF == 0x003302CE).unwrap();
     trigger.connections.as_mut_vec().push(structs::Connection {
         state: structs::ConnectionState::ENTERED,
         message: structs::ConnectionMsg::RESET_AND_START,
-        target_object_id: 0x003300D7, // Timer to ALERT Edward
+        target_object_id: 0x0033005D, // Timer to break wall
     });
 
     Ok(())
@@ -10061,7 +10061,6 @@ fn patch_final_boss_permadeath<'r>(
     let mut player_hint_id = 0;
     let mut unload_subchamber_five_trigger_id = 0;
     let mut remove_warp_timer_id = 0;
-    let mut remove_boss_timer_id = 0;
     let mut change_layer_timer_id = 0;
     let mut special_function_ids = Vec::<u32>::new();
 
@@ -10072,8 +10071,6 @@ fn patch_final_boss_permadeath<'r>(
         player_hint_id = area.new_object_id_from_layer_name("Default");
         unload_subchamber_five_trigger_id = area.new_object_id_from_layer_name("Default");
         remove_warp_timer_id = area.new_object_id_from_layer_id(disable_bosses_layer_num);
-    } else {
-        remove_boss_timer_id = area.new_object_id_from_layer_id(disable_bosses_layer_num);
     }
 
     if mrea_id == 0xA7AC009B || mrea_id == 0x1A666C55 // subchamber four or lair
