@@ -6474,6 +6474,7 @@ fn patch_spawn_point_position<'r>(
     new_position: [f32; 3],
     relative_position: bool,
     force_default: bool,
+    move_all: bool,
 )
 -> Result<(), String>
 {
@@ -6483,11 +6484,11 @@ fn patch_spawn_point_position<'r>(
     for i in 0..layer_count {
         let layer = &mut scly.layers.as_mut_vec()[i];
         for obj in layer.objects.as_mut_vec().iter_mut() {
-            if !obj.property_data.is_spawn_point() {continue;}
-            if obj.instance_id & 0xFF000000 == 0xDE000000 { continue; } // don't move spawn points placed by this program
+            if !obj.property_data.is_spawn_point() { continue; } // not a spawn point 
+            if obj.instance_id&0x0000FFFF >= 0x00008000 { continue; } // don't move spawn points placed by this program
 
             let spawn_point = obj.property_data.as_spawn_point_mut().unwrap();
-            if spawn_point.default_spawn == 0 && !force_default {
+            if spawn_point.default_spawn == 0 && !force_default && !move_all {
                 continue;
             }
 
@@ -6503,7 +6504,9 @@ fn patch_spawn_point_position<'r>(
                 spawn_point.default_spawn = 1;
             }
 
-            break; // only patch one spawn point
+            if !move_all {
+                break; // only patch one spawn point
+            }
         }
     }
 
@@ -11877,19 +11880,19 @@ fn patch_qol_game_breaking(
     // randomizer-induced bugfixes
     patcher.add_scly_patch(
         resource_info!("1a_morphballtunnel.MREA").into(),
-        move |ps, area| patch_spawn_point_position(ps, area, [124.53, -79.78, 22.84], false, false)
+        move |ps, area| patch_spawn_point_position(ps, area, [124.53, -79.78, 22.84], false, false, false)
     );
     patcher.add_scly_patch(
         resource_info!("05_bathhall.MREA").into(),
-        move |ps, area| patch_spawn_point_position(ps, area, [210.512, -82.424, 19.2174], false, false)
+        move |ps, area| patch_spawn_point_position(ps, area, [210.512, -82.424, 19.2174], false, false, false)
     );
     patcher.add_scly_patch(
         resource_info!("00_mines_savestation_b.MREA").into(),
-        move |ps, area| patch_spawn_point_position(ps, area, [216.7245, 4.4046, -139.8873], false, true)
+        move |ps, area| patch_spawn_point_position(ps, area, [216.7245, 4.4046, -139.8873], false, true, false)
     );
     patcher.add_scly_patch(
         resource_info!("00_mines_savestation_b.MREA").into(),
-        move |ps, area| patch_spawn_point_position(ps, area, [216.7245, 4.4046, -139.8873], false, true)
+        move |ps, area| patch_spawn_point_position(ps, area, [216.7245, 4.4046, -139.8873], false, true, false)
     );
     // Turrets in Vent Shaft Section B always spawn
     patcher.add_scly_patch(
@@ -11898,12 +11901,12 @@ fn patch_qol_game_breaking(
     );
     if small_samus {
         patcher.add_scly_patch(
-            resource_info!("01_over_mainplaza.MREA").into(),
-            move |_ps, area| patch_spawn_point_position(_ps, area, [0.0, 0.0, 0.5], true, false)
+            resource_info!("01_over_mainplaza.MREA").into(), // landing site
+            move |_ps, area| patch_spawn_point_position(_ps, area, [0.0, 0.0, 0.5], true, true, true)
         );
         patcher.add_scly_patch(
-            resource_info!("0_elev_lava_b.MREA").into(),
-            move |_ps, area| patch_spawn_point_position(_ps, area, [0.0, 0.0, 0.7], true, false)
+            resource_info!("0_elev_lava_b.MREA").into(), // suntower elevator
+            move |_ps, area| patch_spawn_point_position(_ps, area, [0.0, 0.0, 0.7], true, false, false)
         );
     }
     // EQ Cutscene always Phazon Suit (avoids multiworld crash when player receives a suit during the fight)
@@ -13767,7 +13770,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                         if room.spawn_position_override.is_some() {
                             patcher.add_scly_patch(
                                 (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                move |_ps, area| patch_spawn_point_position(_ps, area, room.spawn_position_override.unwrap(), false, false),
+                                move |_ps, area| patch_spawn_point_position(_ps, area, room.spawn_position_override.unwrap(), false, false, false),
                             );
                         }
 
@@ -14946,11 +14949,11 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     // not only is this game-breaking, but it's nonsensical and counterintuitive, always fix //
     patcher.add_scly_patch(
         resource_info!("00i_mines_connect.MREA").into(), // Dynamo Access (Mines)
-        move |ps, area| patch_spawn_point_position(ps, area, [0.0, 0.0, 0.0], true, false)
+        move |ps, area| patch_spawn_point_position(ps, area, [0.0, 0.0, 0.0], true, false, false)
     );
     patcher.add_scly_patch(
         resource_info!("12_mines_eliteboss.MREA").into(), // Elite Quarters
-        move |ps, area| patch_spawn_point_position(ps, area, [0.0, 0.0, 0.0], true, false)
+        move |ps, area| patch_spawn_point_position(ps, area, [0.0, 0.0, 0.0], true, false, false)
     );
 
     if config.qol_cosmetic {
