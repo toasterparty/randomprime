@@ -5754,15 +5754,25 @@ fn patch_research_lab_aether_exploding_wall_2<'r>(
     -> Result<(), String>
 {
     let scly = area.mrea().scly_section_mut();
-    let layer = &mut scly.layers.as_mut_vec()[0];
+    let layer = &mut scly.layers.as_mut_vec()[1];
 
     // break wall via trigger in lower area instead of relying on gameplay
-    let trigger = layer.objects.iter_mut().find(|obj| obj.instance_id&0x00FFFFFF == 0x003302CE).unwrap();
-    trigger.connections.as_mut_vec().push(structs::Connection {
-        state: structs::ConnectionState::ENTERED,
-        message: structs::ConnectionMsg::RESET_AND_START,
-        target_object_id: 0x0033005D, // Timer to break wall
-    });
+    let trigger = layer.objects.iter_mut().find(|obj| obj.instance_id&0x00FFFFFF == 0x00330219).unwrap();
+    trigger.connections.as_mut_vec().push(
+        structs::Connection {
+            state: structs::ConnectionState::ENTERED,
+            message: structs::ConnectionMsg::RESET_AND_START,
+            target_object_id: 0x0033005D, // Timer to break wall
+        }
+    );
+
+    trigger.connections.as_mut_vec().push(
+        structs::Connection {
+            state: structs::ConnectionState::ENTERED,
+            message: structs::ConnectionMsg::DEACTIVATE,
+            target_object_id: 0x0033007C, // Edward
+        }
+    );
 
     Ok(())
 }
