@@ -7541,6 +7541,38 @@ fn patch_heat_damage_per_sec<'a>(patcher: &mut PrimePatcher<'_, 'a>, heat_damage
     }
 }
 
+fn patch_poison_damage_per_sec<'a>(patcher: &mut PrimePatcher<'_, 'a>, poison_damage_per_sec: f32)
+{
+    const ROOMS_WITH_POISONED_WATER: &[ResourceInfo] = &[
+        resource_info!("08_courtyard.MREA"),      // Chozo Ruins - Arboretum
+        resource_info!("15_energycores.MREA"),    // Chozo Ruins - Energy Core
+        resource_info!("10_coreentrance.MREA"),   // Chozo Ruins - Gathering Hall
+        resource_info!("19_hive_totem.MREA"),     // Chozo Ruins - Hive Totem
+        resource_info!("06_grapplegallery.MREA"), // Chozo Ruins - Magma Pool (In case the poison layer ever gets used)
+        resource_info!("0p_connect_tunnel.MREA"), // Chozo Ruins - Meditation Fountain
+        resource_info!("05_bathhall.MREA"),       // Chozo Ruins - Ruined Fountain
+        resource_info!("03_monkey_upper.MREA"),   // Chozo Ruins - Ruined Gallery
+        resource_info!("22_Flaahgra.MREA"),       // Chozo Ruins - Sunchamber
+        resource_info!("04_monkey_hallway.MREA"), // Chozo Ruins - Totem Access
+        resource_info!("11_wateryhall.MREA"),     // Chozo Ruins - Watery Hall
+        resource_info!("0e_connect_tunnel.MREA"), // Chozo Ruins - Watery Hall Access
+    ];
+
+    for room_with_poisoned_water in ROOMS_WITH_POISONED_WATER.iter() {
+        patcher.add_scly_patch((*room_with_poisoned_water).into(), move |_ps, area| {
+            let scly = area.mrea().scly_section_mut();
+            let layers = scly.layers.as_mut_vec();
+            for layer in layers {
+                layer.objects.iter_mut()
+                     .filter_map(|obj| obj.property_data.as_water_mut())
+                     .filter(|sf| sf.damage_info.weapon_type == 10) // Is Poison Water
+                     .for_each(|sf| sf.damage_info.damage = poison_damage_per_sec);
+            }
+            Ok(())
+        });
+    }
+}
+
 fn patch_save_station_for_warp_to_start<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -14916,6 +14948,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     }
 
     patch_heat_damage_per_sec(&mut patcher, config.heat_damage_per_sec);
+    patch_poison_damage_per_sec(&mut patcher, config.poison_damage_per_sec);
 
     // Always patch out the white flash for photosensitive epileptics
     if version == Version::NtscU0_00 {
