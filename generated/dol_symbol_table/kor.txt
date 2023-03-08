@@ -1,5 +1,6 @@
 0x80003278 __init_registers
 0x80003490 memcpy
+0x80011248 UpdatePhazonDamage__7CPlayerFfR13CStateManager
 0x80015a64 wstring_l__4rstlFPCw
 0x80015d88 Freeze__7CPlayerFR13CStateManagerUiUsUi
 0x800176e0 SetSpawnedMorphBallState__7CPlayerFQ27CPlayer21EPlayerMorphBallStateR13CStateManager
@@ -99,6 +100,7 @@
 0x805a8914 g_MainStringTable
 0x805a8918 g_Main
 0x805a8920 g_GameState
+0x805a9b20 g_maxPhazonLagBeforeDamaging
 0x805aa50c g_EtankCapacity
 0x805ae8a0 sda_register
 0x805b1a00 toc_register
