@@ -29,6 +29,7 @@ use crate::patch_config::{
     BombSlotCover,
     GenericTexture,
     FogConfig,
+    PhazonDamageModifier,
 };
 
 use std::{fs::{self, File}, io::{Read}, path::Path};
@@ -8894,6 +8895,45 @@ fn patch_dol<'r>(
 
     if let Some(update_hint_state_replacement) = &config.update_hint_state_replacement {
         dol_patcher.patch(symbol_addr!("UpdateHintState__13CStateManagerFf", version), Cow::from(update_hint_state_replacement.clone()))?;
+    }
+
+    // Default value is 0.2 on US version and 0.65 on PAL version
+    // So on PAL version the damages kicks in way faster than on US
+    // and since we know that phazon damage is growing up the more time
+    // we spend in phazon, so it explains why PAL makes Early Newborn impossible
+    let max_phazon_damage_lag_before_damaging_patch = ppcasm!(symbol_addr!("g_maxPhazonLagBeforeDamaging", version), {
+        .float 0.2;
+    });
+    dol_patcher.ppcasm_patch(&max_phazon_damage_lag_before_damaging_patch)?;
+
+    if config.phazon_damage_modifier != PhazonDamageModifier::Default {
+        let phazon_damage_per_sec_patch = ppcasm!(symbol_addr!("g_maxPhazonLagBeforeDamaging", version) + 4, {
+            .float config.phazon_damage_per_sec;
+        });
+        dol_patcher.ppcasm_patch(&phazon_damage_per_sec_patch)?;
+
+        let linear_phazon_damage_offset = if version == Version::Pal && version == Version::NtscJ {
+            0x558
+        } else {
+            0x3ec
+        };
+        let linear_phazon_damage_patch = ppcasm!(symbol_addr!("UpdatePhazonDamage__7CPlayerFfR13CStateManager", version) + linear_phazon_damage_offset, {
+            fmr f2, f0;
+        });
+        dol_patcher.ppcasm_patch(&linear_phazon_damage_patch)?;
+
+        if config.phazon_damage_modifier == PhazonDamageModifier::Linear {
+            let remove_phazon_damage_delay_offset = if version == Version::Pal && version == Version::NtscJ {
+                0x534
+            } else {
+                0x3c8
+            };
+            let remove_phazon_damage_delay_patch = ppcasm!(symbol_addr!("UpdatePhazonDamage__7CPlayerFfR13CStateManager", version) + remove_phazon_damage_delay_offset, {
+                nop;
+                nop;
+            });
+            dol_patcher.ppcasm_patch(&remove_phazon_damage_delay_patch)?;
+        }
     }
 
     // Add rel loader to the binary

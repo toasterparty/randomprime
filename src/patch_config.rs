@@ -519,6 +519,15 @@ pub enum BombSlotCover {
     Plasma,
 }
 
+#[derive(PartialEq, Debug, Serialize, Deserialize, Copy, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub enum PhazonDamageModifier
+{
+    Default,
+    LinearDelayed, // Default but the damages don't increase over time
+    Linear,        // Starts directly and deals linear damages
+}
+
 #[derive(Debug, Serialize)]
 pub struct PatchConfig
 {
@@ -576,6 +585,8 @@ pub struct PatchConfig
     pub nonvaria_heat_damage: bool,
     pub heat_damage_per_sec: f32,
     pub poison_damage_per_sec: f32,
+    pub phazon_damage_per_sec: f32,
+    pub phazon_damage_modifier: PhazonDamageModifier,
     pub staggered_suit_damage: bool,
     pub item_max_capacity: HashMap<PickupType, u32>,
     // Use RoomConfig::map_default_state instead of global map_default_state
@@ -665,6 +676,8 @@ struct GameConfig
     staggered_suit_damage: Option<bool>,
     heat_damage_per_sec: Option<f32>,
     poison_damage_per_sec: Option<f32>,
+    phazon_damage_per_sec: Option<f32>,
+    phazon_damage_modifier: Option<String>,
     auto_enabled_elevators: Option<bool>,
     multiworld_dol_patches: Option<bool>,
     update_hint_state_replacement: Option<Vec<u8>>,
@@ -886,6 +899,14 @@ impl PatchConfig
                 .long("poison-damage-per-sec")
                 .help("Set the poison damage per seconds spent in poison water")
                 .takes_value(true))
+            .arg(Arg::with_name("phazon damage per sec")
+                .long("phazon-damage-per-sec")
+                .help("Set the phazon damage per seconds spent in phazon (Applies only when using linear damages)")
+                .takes_value(true))
+            .arg(Arg::with_name("phazon damage modifier")
+                .long("phazon-damage-modifier")
+                .help("Change the phazon damage modifier (Either default, linear or linear_delayed)")
+                .takes_value(true))
             .arg(Arg::with_name("staggered suit damage")
                 .long("staggered-suit-damage")
                 .help(concat!("The suit damage reduction is determinted by the number of suits ",
@@ -996,6 +1017,9 @@ impl PatchConfig
         if let Some(qol_cutscenes) = matches.value_of("qol cutscenes") {
             patch_config.preferences.qol_cutscenes = Some(qol_cutscenes.to_string());
         }
+        if let Some(phazon_dmg_mod) = matches.value_of("phazon damage modifier") {
+            patch_config.game_config.phazon_damage_modifier = Some(phazon_dmg_mod.to_string());
+        }
 
         // integer/float
         if let Some(s) = matches.value_of("seed") {
@@ -1006,6 +1030,9 @@ impl PatchConfig
         }
         if let Some(damage) = matches.value_of("poison damage per sec") {
             patch_config.game_config.poison_damage_per_sec = Some(damage.parse::<f32>().unwrap());
+        }
+        if let Some(damage) = matches.value_of("phazon damage per sec") {
+            patch_config.game_config.phazon_damage_per_sec = Some(damage.parse::<f32>().unwrap());
         }
         if let Some(etank_capacity) = matches.value_of("etank capacity") {
             patch_config.game_config.etank_capacity = Some(etank_capacity.parse::<u32>().unwrap());
@@ -1108,7 +1135,7 @@ impl PatchConfigPrivate
                     map_default_state_string
                 ))?,
             }
-       };
+        };
 
         let flaahgra_music_files = self.preferences.trilogy_disc_path.as_ref()
             .map(|path| extract_flaahgra_music_files(path))
@@ -1219,6 +1246,23 @@ impl PatchConfigPrivate
             }
         };
 
+        let phazon_damage_modifier = {
+            let map_default_state_string = self.preferences.map_default_state
+                                            .as_deref()
+                                            .unwrap_or("default")
+                                            .trim()
+                                            .to_lowercase();
+            match &map_default_state_string[..] {
+                "default" => PhazonDamageModifier::Default,
+                "linear_delayed" => PhazonDamageModifier::LinearDelayed,
+                "linear" => PhazonDamageModifier::Linear,
+                _ => Err(format!(
+                    "Unhandled map default state - '{}'",
+                    map_default_state_string
+                ))?,
+            }
+        };
+
         Ok(PatchConfig {
             run_mode,
             logbook_filename: self.logbook_filename.clone(),
@@ -1284,6 +1328,8 @@ impl PatchConfigPrivate
             staggered_suit_damage: self.game_config.staggered_suit_damage.unwrap_or(false),
             heat_damage_per_sec: self.game_config.heat_damage_per_sec.unwrap_or(10.0),
             poison_damage_per_sec: self.game_config.poison_damage_per_sec.unwrap_or(0.11),
+            phazon_damage_per_sec: self.game_config.phazon_damage_per_sec.unwrap_or(0.964),
+            phazon_damage_modifier,
             auto_enabled_elevators: self.game_config.auto_enabled_elevators.unwrap_or(false),
             multiworld_dol_patches: self.game_config.multiworld_dol_patches.unwrap_or(false),
             update_hint_state_replacement: self.game_config.update_hint_state_replacement.clone(),

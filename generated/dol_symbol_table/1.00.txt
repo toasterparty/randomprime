@@ -14342,6 +14342,7 @@
 0x805a8c34 g_MainStringTable
 0x805a8c38 g_Main
 0x805a8c40 g_GameState
+0x805a9e40 g_maxPhazonLagBeforeDamaging
 0x805aa82c g_EtankCapacity
 0x805aebc0 sda_register
 0x805b1d20 toc_register

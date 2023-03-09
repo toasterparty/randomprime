@@ -35,6 +35,7 @@
 0x800110d4 IsEnergyLow__7CPlayerCFRC13CStateManager
 0x80011708 SetPlayerHitWallDuringMove__7CPlayerFv
 0x80011720 ApplySubmergedPitchBend__7CPlayerFR10CSfxHandle
+0x80011768 UpdatePhazonDamage__7CPlayerFfR13CStateManager
 0x80012290 IncrementPhazon__7CPlayerFv
 0x800123d8 SetControlDirectionInterpolation__7CPlayerFf
 0x80012644 GetDamageVulnerability__7CPlayerCFRC9CVector3fRC9CVector3fRC11CDamageInfo
@@ -2809,6 +2810,7 @@
 0x8046ad38 g_MainStringTable
 0x8046ad3c g_Main
 0x8046ad44 g_GameState
+0x8046bf78 g_maxPhazonLagBeforeDamaging
 0x8046c99c g_EtankCapacity
 0x80470c60 sda_register
 0x80473e60 toc_register

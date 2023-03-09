@@ -91,6 +91,7 @@
 0x800111d0 __ct__16CPlayerCameraBobFRC16CPlayerCameraBob
 0x80011440 SetPlayerHitWallDuringMove__7CPlayerFv
 0x80011458 ApplySubmergedPitchBend__7CPlayerFR10CSfxHandle
+0x800114a0 UpdatePhazonDamage__7CPlayerFfR13CStateManager
 0x80011abc UpdatePhazonCameraShake__7CPlayerFfR13CStateManager
 0x80011c10 DecrementPhazon__7CPlayerFv
 0x80011c28 IncrementPhazon__7CPlayerFv
@@ -7016,6 +7017,7 @@
 0x805a9cd4 g_MainStringTable
 0x805a9cd8 g_Main
 0x805a9ce0 g_GameState
+0x805aaf00 g_maxPhazonLagBeforeDamaging
 0x805ab8ec g_EtankCapacity
 0x805afc40 sda_register
 0x805b2de0 toc_register
