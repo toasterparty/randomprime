@@ -1247,7 +1247,7 @@ impl PatchConfigPrivate
         };
 
         let phazon_damage_modifier = {
-            let map_default_state_string = self.preferences.map_default_state
+            let map_default_state_string = self.game_config.phazon_damage_modifier
                                             .as_deref()
                                             .unwrap_or("default")
                                             .trim()
@@ -1257,7 +1257,7 @@ impl PatchConfigPrivate
                 "linear_delayed" => PhazonDamageModifier::LinearDelayed,
                 "linear" => PhazonDamageModifier::Linear,
                 _ => Err(format!(
-                    "Unhandled map default state - '{}'",
+                    "Unhandled phazon damage modifier - '{}'",
                     map_default_state_string
                 ))?,
             }
