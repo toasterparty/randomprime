@@ -198,7 +198,7 @@ pub struct PatternedInfo
     pub turn_speed: f32,
     pub detection_range: f32,
     pub detection_height_range: f32,
-    pub dectection_angle: f32,
+    pub detection_angle: f32,
     pub min_attack_range: f32,
     pub max_attack_range: f32,
     pub average_attack_time: f32,

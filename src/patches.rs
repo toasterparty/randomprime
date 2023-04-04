@@ -10739,6 +10739,150 @@ fn patch_remove_blast_shields<'r>(
     Ok(())
 }
 
+/* Script Object Property Helpers */
+
+fn set_position(obj: &mut structs::SclyObject, value: [f32; 3], relative: bool) {
+    if !obj.property_data.supports_position() {
+        return;
+    }
+
+    if relative {
+        let x = obj.property_data.get_position();
+        obj.property_data.set_position(
+            [
+                x[0] + value[0],
+                x[1] + value[1],
+                x[2] + value[2],
+            ]
+        );
+    } else {
+        obj.property_data.set_position(value);
+    }
+}
+
+fn set_rotation(obj: &mut structs::SclyObject, value: [f32; 3], relative: bool) {
+    if !obj.property_data.supports_rotation() {
+        return;
+    }
+
+    if relative {
+        let x = obj.property_data.get_rotation();
+        obj.property_data.set_rotation(
+            [
+                x[0] + value[0],
+                x[1] + value[1],
+                x[2] + value[2],
+            ]
+        );
+    } else {
+        obj.property_data.set_rotation(value);
+    }
+}
+
+fn set_scale(obj: &mut structs::SclyObject, value: [f32; 3], relative: bool) {
+    if !obj.property_data.supports_scale() {
+        return;
+    }
+
+    if relative {
+        let x = obj.property_data.get_scale();
+        obj.property_data.set_scale(
+            [
+                x[0] * value[0],
+                x[1] * value[1],
+                x[2] * value[2],
+            ]
+        );
+    } else {
+        obj.property_data.set_scale(value);
+    }
+}
+
+fn get_patterned_info(obj: &mut structs::SclyObject) -> Option<structs::scly_structs::PatternedInfo> {
+    if !obj.property_data.supports_patterned_info() {
+        return None;
+    }
+
+    return Some(obj.property_data.get_patterned_info());
+}
+
+fn set_patterned_info(obj: &mut structs::SclyObject, value: structs::scly_structs::PatternedInfo) {
+    obj.property_data.set_patterned_info(value);
+}
+
+fn set_patterned_health(obj: &mut structs::SclyObject, value: f32) {
+    match get_patterned_info(obj) {
+        Some(mut x) => {
+            x.health_info.health *= value;
+            set_patterned_info(obj, x);
+        },
+        None => {},
+    }
+}
+
+fn set_patterned_speed(obj: &mut structs::SclyObject, value: f32) {
+    match get_patterned_info(obj) {
+        Some(mut x) => {
+            x.speed *= value;
+            x.turn_speed *= value;
+            x.average_attack_time *= 1.0/value;
+            // x.attack_time_variation *= 1.0/value;
+            x.damage_wait_time *= 1.0/value;
+            set_patterned_info(obj, x);
+        },
+        None => {},
+    }
+}
+
+fn set_patterned_size(obj: &mut structs::SclyObject, value: f32) {
+    match get_patterned_info(obj) {
+        Some(mut x) => {
+            x.mass *= value;
+            x.half_extent *= value;
+            x.height *= value;
+            x.step_up_height *= value;
+            x.min_attack_range *= value;
+            set_patterned_info(obj, x);
+        },
+        None => {},
+    }
+}
+
+fn set_patterned_detection_range(obj: &mut structs::SclyObject, value: f32) {
+    match get_patterned_info(obj) {
+        Some(mut x) => {
+            x.detection_range *= value;
+            x.detection_height_range *= value;
+            x.detection_angle *= value;
+            x.player_leash_radius *= value;
+            // x.player_leash_time *= value;
+            x.leash_radius *= value;
+            set_patterned_info(obj, x);
+        },
+        None => {},
+    }
+}
+
+fn set_patterned_attack_range(obj: &mut structs::SclyObject, value: f32) {
+    match get_patterned_info(obj) {
+        Some(mut x) => {
+            x.max_attack_range *= value;
+            set_patterned_info(obj, x);
+        },
+        None => {},
+    }
+}
+
+fn set_patterned_damage(obj: &mut structs::SclyObject, value: f32) {
+    match get_patterned_info(obj) {
+        Some(mut x) => {
+            x.x_damage *= value;
+            set_patterned_info(obj, x);
+        },
+        None => {},
+    }
+}
+
 fn patch_remove_control_disabler<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,

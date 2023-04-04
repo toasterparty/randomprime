@@ -8,23 +8,70 @@ use std::borrow::Cow;
 use std::fmt;
 
 use crate::scly_props;
+use crate::scly_structs::{PatternedInfo, DamageInfo, DamageVulnerability};
 
 #[macro_export]
 macro_rules! impl_position {
     () => {
         const SUPPORTS_POSITION: bool = true;
 
-        fn impl_get_position(&self) -> GenericArray<f32, U3>
-        {
+        fn impl_get_position(&self) -> GenericArray<f32, U3> {
             self.position
         }
     
-        fn impl_set_position(&mut self, pos: GenericArray<f32, U3>)
-        {
-            self.position = pos;
+        fn impl_set_position(&mut self, x: GenericArray<f32, U3>) {
+            self.position = x;
         }
     };
 }
+
+#[macro_export]
+macro_rules! impl_rotation {
+    () => {
+        const SUPPORTS_ROTATION: bool = true;
+
+        fn impl_get_rotation(&self) -> GenericArray<f32, U3> {
+            self.rotation
+        }
+    
+        fn impl_set_rotation(&mut self, x: GenericArray<f32, U3>) {
+            self.rotation = x;
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! impl_scale {
+    () => {
+        const SUPPORTS_SCALE: bool = true;
+
+        fn impl_get_scale(&self) -> GenericArray<f32, U3> {
+            self.scale
+        }
+    
+        fn impl_set_scale(&mut self, x: GenericArray<f32, U3>) {
+            self.scale = x;
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! impl_patterned_info {
+    () => {
+        const SUPPORTS_PATTERNED_INFO: bool = true;
+
+        fn impl_get_patterned_info(&self) -> PatternedInfo {
+            self.patterned_info
+        }
+    
+        fn impl_set_patterned_info(&mut self, x: PatternedInfo) {
+            self.patterned_info = x;
+        }
+    };
+}
+
+// damage_infos handled case-by-case
+// vulnerabilities handled case-by-case
 
 #[auto_struct(Readable, Writable)]
 #[derive(Debug, Clone)]
@@ -134,8 +181,7 @@ macro_rules! build_scly_property {
 
             pub fn get_position(&mut self) -> [f32;3]
             {
-                self.guess_kind();
-
+                self.guess_kind(); // TODO: shouldn't need mutability for read
                 match *self {
                     SclyProperty::Unknown { object_type, .. } => panic!("0x{:X} doesn't support position (get)", object_type),
                     $(
@@ -150,7 +196,6 @@ macro_rules! build_scly_property {
             pub fn set_position(&mut self, pos: [f32;3])
             {
                 self.guess_kind();
-
                 match *self {
                     SclyProperty::Unknown { object_type, .. } => panic!("0x{:X} doesn't support position (set)", object_type),
                     $(
@@ -161,14 +206,120 @@ macro_rules! build_scly_property {
                 }
             }
 
-            pub fn set_position_relative(&mut self, offset: [f32;3]) {
-                let mut x = self.get_position();
-                x[0] += offset[0];
-                x[1] += offset[1];
-                x[2] += offset[2];
-                self.set_position(x);
-            }
+            /* Rotation */
     
+            pub fn supports_rotation(&self) -> bool {
+                let object_type = self.object_type();
+                #[allow(unreachable_patterns)] // ridley throws a warning because we have both PAL and NTSC ridley definitions
+                match object_type {
+                    $(<scly_props::$name as SclyPropertyData>::OBJECT_TYPE => <scly_props::$name as SclyPropertyData>::SUPPORTS_ROTATION,)*
+                    _ => false,
+                }
+            }
+
+            pub fn get_rotation(&mut self) -> [f32;3]
+            {
+                self.guess_kind();
+                match *self {
+                    SclyProperty::Unknown { object_type, .. } => panic!("0x{:X} doesn't support rotation (get)", object_type),
+                    $(
+                        SclyProperty::$name(_) => {
+                            let prop = self.$accessor();
+                            prop.unwrap().impl_get_rotation().into()
+                        },
+                    )*
+                }
+            }
+
+            pub fn set_rotation(&mut self, pos: [f32;3])
+            {
+                self.guess_kind();
+                match *self {
+                    SclyProperty::Unknown { object_type, .. } => panic!("0x{:X} doesn't support rotation (set)", object_type),
+                    $(
+                        SclyProperty::$name(_) => {
+                            self.$accessor_mut().unwrap().impl_set_rotation(pos.into());
+                        },
+                    )*
+                }
+            }
+
+            /* Scale */
+
+            pub fn supports_scale(&self) -> bool {
+                let object_type = self.object_type();
+                #[allow(unreachable_patterns)] // ridley throws a warning because we have both PAL and NTSC ridley definitions
+                match object_type {
+                    $(<scly_props::$name as SclyPropertyData>::OBJECT_TYPE => <scly_props::$name as SclyPropertyData>::SUPPORTS_SCALE,)*
+                    _ => false,
+                }
+            }
+
+            pub fn get_scale(&mut self) -> [f32;3]
+            {
+                self.guess_kind();
+                match *self {
+                    SclyProperty::Unknown { object_type, .. } => panic!("0x{:X} doesn't support scale (get)", object_type),
+                    $(
+                        SclyProperty::$name(_) => {
+                            let prop = self.$accessor();
+                            prop.unwrap().impl_get_scale().into()
+                        },
+                    )*
+                }
+            }
+
+            pub fn set_scale(&mut self, pos: [f32;3])
+            {
+                self.guess_kind();
+                match *self {
+                    SclyProperty::Unknown { object_type, .. } => panic!("0x{:X} doesn't support scale (set)", object_type),
+                    $(
+                        SclyProperty::$name(_) => {
+                            self.$accessor_mut().unwrap().impl_set_scale(pos.into());
+                        },
+                    )*
+                }
+            }
+
+            /* Patterned Info */
+
+            pub fn supports_patterned_info(&self) -> bool {
+                let object_type = self.object_type();
+                #[allow(unreachable_patterns)] // ridley throws a warning because we have both PAL and NTSC ridley definitions
+                match object_type {
+                    $(<scly_props::$name as SclyPropertyData>::OBJECT_TYPE => <scly_props::$name as SclyPropertyData>::SUPPORTS_PATTERNED_INFO,)*
+                    _ => false,
+                }
+            }
+
+            pub fn get_patterned_info(&mut self) -> PatternedInfo
+            {
+                self.guess_kind();
+                match *self {
+                    SclyProperty::Unknown { object_type, .. } => panic!("0x{:X} doesn't support patterned_info (get)", object_type),
+                    $(
+                        SclyProperty::$name(_) => {
+                            let prop = self.$accessor();
+                            prop.unwrap().impl_get_patterned_info()
+                        },
+                    )*
+                }
+            }
+
+            pub fn set_patterned_info(&mut self, x: PatternedInfo)
+            {
+                self.guess_kind();
+                match *self {
+                    SclyProperty::Unknown { object_type, .. } => panic!("0x{:X} doesn't support patterned_info (set)", object_type),
+                    $(
+                        SclyProperty::$name(_) => {
+                            self.$accessor_mut().unwrap().impl_set_patterned_info(x);
+                        },
+                    )*
+                }
+            }
+
             pub fn guess_kind(&mut self)
             {
                 if self.object_type() == 0x10 { // camera hint (TODO)
@@ -350,9 +501,67 @@ pub trait SclyPropertyData
         panic!("Script object type 0x{:X} does not implement the 'position' property", Self::OBJECT_TYPE)
 }
 
-    fn impl_set_position(&mut self, _pos: GenericArray<f32, U3>) {
+    fn impl_set_position(&mut self, _: GenericArray<f32, U3>) {
         panic!("Script object type 0x{:X} does not implement the 'position' property", Self::OBJECT_TYPE)
     }
+
+    /* Rotation */
+    const SUPPORTS_ROTATION: bool = false;
+
+    fn impl_get_rotation(&self) -> GenericArray<f32, U3> {
+        panic!("Script object type 0x{:X} does not implement the 'rotation' property", Self::OBJECT_TYPE)
+}
+
+    fn impl_set_rotation(&mut self, _: GenericArray<f32, U3>) {
+        panic!("Script object type 0x{:X} does not implement the 'rotation' property", Self::OBJECT_TYPE)
+    }
+
+    /* Scale */
+    const SUPPORTS_SCALE: bool = false;
+
+    fn impl_get_scale(&self) -> GenericArray<f32, U3>
+    {
+        panic!("Script object type 0x{:X} does not implement the 'scale' property", Self::OBJECT_TYPE)
+    }
+
+    fn impl_set_scale(&mut self, _: GenericArray<f32, U3>)
+    {
+        panic!("Script object type 0x{:X} does not implement the 'scale' property", Self::OBJECT_TYPE)
+    }
+
+    /* Patterned Info */
+    const SUPPORTS_PATTERNED_INFO: bool = false;
+
+    fn impl_get_patterned_info(&self) -> PatternedInfo {
+        panic!("Script object type 0x{:X} does not implement the 'Patterned Info' property", Self::OBJECT_TYPE)
+    }
+
+    fn impl_set_patterned_info(&mut self, _: PatternedInfo) {
+        panic!("Script object type 0x{:X} does not implement the 'Patterned Info' property", Self::OBJECT_TYPE)
+    }
+
+    /* Damage Infos */
+    const SUPPORTS_DAMAGE_INFOS: bool = false;
+
+    fn impl_get_damage_infos(&self) -> Vec<DamageInfo> {
+        panic!("Script object type 0x{:X} does not implement the 'Damage Infos' property", Self::OBJECT_TYPE)
+    }
+
+    fn impl_set_damage_infos(&mut self, _: Vec<DamageInfo>) {
+        panic!("Script object type 0x{:X} does not implement the 'Damage Infos' property", Self::OBJECT_TYPE)
+    }
+
+    /* Vulnerabilities */
+    const SUPPORTS_VULNERABILITIES: bool = false;
+
+    fn impl_get_vulnerabilities(&self) -> Vec<DamageVulnerability> {
+        panic!("Script object type 0x{:X} does not implement the 'Vulnerabilities' property", Self::OBJECT_TYPE)
+    }
+
+    fn impl_set_vulnerabilities(&mut self, _: Vec<DamageVulnerability>) {
+        panic!("Script object type 0x{:X} does not implement the 'Vulnerabilities' property", Self::OBJECT_TYPE)
+    }
+
 }
 
 #[auto_struct(Readable, FixedSize, Writable)]

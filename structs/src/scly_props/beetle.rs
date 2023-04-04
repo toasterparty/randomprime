@@ -21,7 +21,10 @@ pub struct Beetle<'r>
     pub dont_care: GenericArray<u8, U734>,
 }
 
+use crate::{impl_position, impl_rotation};
 impl<'r> SclyPropertyData for Beetle<'r>
 {
     const OBJECT_TYPE: u8 = 0x16;
+    impl_position!();
+    impl_rotation!();
 }
