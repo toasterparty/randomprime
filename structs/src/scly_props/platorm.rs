@@ -42,7 +42,9 @@ pub struct Platform<'r>
     pub unknown7: u32,
 }
 
+use crate::impl_position;
 impl<'r> SclyPropertyData for Platform<'r>
 {
+    impl_position!();
     const OBJECT_TYPE: u8 = 0x8;
 }

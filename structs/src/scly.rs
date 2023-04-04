@@ -1,6 +1,7 @@
 use auto_struct_macros::auto_struct;
 
-use reader_writer::{FourCC, LCow, RoArray, LazyArray, Readable, Reader, Writable};
+use reader_writer::{FourCC, LCow, RoArray, LazyArray, Readable, Reader, Writable, generic_array::GenericArray};
+use reader_writer::typenum::*;
 
 use std::io;
 use std::borrow::Cow;
@@ -8,6 +9,22 @@ use std::fmt;
 
 use crate::scly_props;
 
+#[macro_export]
+macro_rules! impl_position {
+    () => {
+        const SUPPORTS_POSITION: bool = true;
+
+        fn impl_get_position(&self) -> GenericArray<f32, U3>
+        {
+            self.position
+        }
+    
+        fn impl_set_position(&mut self, pos: GenericArray<f32, U3>)
+        {
+            self.position = pos;
+        }
+    };
+}
 
 #[auto_struct(Readable, Writable)]
 #[derive(Debug, Clone)]
@@ -104,8 +121,60 @@ macro_rules! build_scly_property {
                 }
             }
 
+            /* Position */
+
+            pub fn supports_position(&self) -> bool {
+                let object_type = self.object_type();
+                #[allow(unreachable_patterns)] // ridley throws a warning because we have both PAL and NTSC ridley definitions
+                match object_type {
+                    $(<scly_props::$name as SclyPropertyData>::OBJECT_TYPE => <scly_props::$name as SclyPropertyData>::SUPPORTS_POSITION,)*
+                    _ => false,
+                }
+            }
+
+            pub fn get_position(&mut self) -> [f32;3]
+            {
+                self.guess_kind();
+
+                match *self {
+                    SclyProperty::Unknown { object_type, .. } => panic!("0x{:X} doesn't support position (get)", object_type),
+                    $(
+                        SclyProperty::$name(_) => {
+                            let prop = self.$accessor();
+                            prop.unwrap().impl_get_position().into()
+                        },
+                    )*
+                }
+            }
+
+            pub fn set_position(&mut self, pos: [f32;3])
+            {
+                self.guess_kind();
+
+                match *self {
+                    SclyProperty::Unknown { object_type, .. } => panic!("0x{:X} doesn't support position (set)", object_type),
+                    $(
+                        SclyProperty::$name(_) => {
+                            self.$accessor_mut().unwrap().impl_set_position(pos.into());
+                        },
+                    )*
+                }
+            }
+
+            pub fn set_position_relative(&mut self, offset: [f32;3]) {
+                let mut x = self.get_position();
+                x[0] += offset[0];
+                x[1] += offset[1];
+                x[2] += offset[2];
+                self.set_position(x);
+            }
+    
             pub fn guess_kind(&mut self)
             {
+                if self.object_type() == 0x10 { // camera hint (TODO)
+                    return;
+                }
+
                 let (mut reader, object_type) = match *self {
                     SclyProperty::Unknown { ref data, object_type }
                         => (data.clone(), object_type),
@@ -273,8 +342,18 @@ build_scly_property!(
 pub trait SclyPropertyData
 {
     const OBJECT_TYPE: u8;
+
+    /* Position */
+    const SUPPORTS_POSITION: bool = false;
+
+    fn impl_get_position(&self) -> GenericArray<f32, U3> {
+        panic!("Script object type 0x{:X} does not implement the 'position' property", Self::OBJECT_TYPE)
 }
 
+    fn impl_set_position(&mut self, _pos: GenericArray<f32, U3>) {
+        panic!("Script object type 0x{:X} does not implement the 'position' property", Self::OBJECT_TYPE)
+    }
+}
 
 #[auto_struct(Readable, FixedSize, Writable)]
 #[derive(Debug, Clone)]
