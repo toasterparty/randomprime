@@ -9,7 +9,7 @@ use crate::SclyPropertyData;
 #[derive(Debug, Clone)]
 pub struct CameraFilterKeyframe<'r>
 {
-    #[auto_struct(expect = 13)]
+    #[auto_struct(expect = 10)]
     pub prop_count: u32,
 
     pub name: CStr<'r>,

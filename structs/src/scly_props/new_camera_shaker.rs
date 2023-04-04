@@ -10,7 +10,7 @@ use crate::SclyPropertyData;
 #[derive(Debug, Clone)]
 pub struct NewCameraShaker<'r>
 {
-    #[auto_struct(expect = 15)]
+    #[auto_struct(expect = 8)]
     pub prop_count: u32,
 
     pub name: CStr<'r>,

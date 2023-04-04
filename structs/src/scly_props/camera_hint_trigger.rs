@@ -11,7 +11,7 @@ use crate::SclyPropertyData;
 #[derive(Debug, Clone)]
 pub struct CameraHintTrigger<'r>
 {
-    #[auto_struct(expect = 9)]
+    #[auto_struct(expect = 7)]
     prop_count: u32,
 
     pub name: CStr<'r>,
