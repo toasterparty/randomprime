@@ -45,7 +45,10 @@ pub struct GrapplePoint<'r>
     pub grapple_params: GrappleParams,
 }
 
+use crate::{impl_position, impl_rotation};
 impl<'r> SclyPropertyData for GrapplePoint<'r>
 {
     const OBJECT_TYPE: u8 = 0x30;
+    impl_position!();
+    impl_rotation!();
 }

@@ -37,9 +37,12 @@ pub struct SpecialFunction<'r>
     pub unknown8: u32,
 }
 
+use crate::{impl_position, impl_rotation};
 impl<'r> SclyPropertyData for SpecialFunction<'r>
 {
     const OBJECT_TYPE: u8 = 0x3A;
+    impl_position!();
+    impl_rotation!();
 }
 
 impl<'r> SpecialFunction<'r>

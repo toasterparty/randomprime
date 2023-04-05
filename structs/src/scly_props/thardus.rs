@@ -4,7 +4,7 @@ use reader_writer::CStr;
 use reader_writer::typenum::*;
 use reader_writer::generic_array::GenericArray;
 use crate::{SclyPropertyData};
-use crate::scly_props::structs::{ActorParameters, PatternedInfo};
+use crate::scly_props::structs::{ActorParameters, PatternedInfo, DamageInfo, DamageVulnerability, HealthInfo};
 
 #[auto_struct(Readable, Writable)]
 #[derive(Debug, Clone)]
@@ -27,7 +27,48 @@ pub struct Thardus<'r>
     pub asset_ids2: GenericArray<u32, U6>,
 }
 
+use crate::{impl_position, impl_rotation, impl_scale, impl_patterned_info};
 impl<'r> SclyPropertyData for Thardus<'r>
 {
     const OBJECT_TYPE: u8 = 0x58;
+    impl_position!();
+    impl_rotation!();
+    impl_scale!();
+    impl_patterned_info!();
+
+    const SUPPORTS_DAMAGE_INFOS: bool = true;
+
+    fn impl_get_damage_infos(&self) -> Vec<DamageInfo> {
+        vec![
+            self.patterned_info.contact_damage.clone(),
+        ]
+    }
+
+    fn impl_set_damage_infos(&mut self, x: Vec<DamageInfo>) {
+        self.patterned_info.contact_damage = x[0].clone();
+    }
+
+    const SUPPORTS_VULNERABILITIES: bool = true;
+
+    fn impl_get_vulnerabilities(&self) -> Vec<DamageVulnerability> {
+        vec![
+            self.patterned_info.damage_vulnerability.clone(),
+        ]
+    }
+
+    fn impl_set_vulnerabilities(&mut self, x: Vec<DamageVulnerability>) {
+        self.patterned_info.damage_vulnerability = x[0].clone();
+    }
+
+    const SUPPORTS_HEALTH_INFOS: bool = true;
+
+    fn impl_get_health_infos(&self) -> Vec<HealthInfo> {
+        vec![
+            self.patterned_info.health_info.clone()
+        ]
+    }
+
+    fn impl_set_health_infos(&mut self, x: Vec<HealthInfo>) {
+        self.patterned_info.health_info = x[0].clone();
+    }
 }

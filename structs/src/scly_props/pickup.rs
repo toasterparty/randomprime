@@ -41,7 +41,12 @@ pub struct Pickup<'r>
     pub part: ResId<PART>,
 }
 
+use crate::{impl_position, impl_rotation, impl_scale};
 impl<'r> SclyPropertyData for Pickup<'r>
 {
     const OBJECT_TYPE: u8 = 0x11;
+
+    impl_position!();
+    impl_rotation!();
+    impl_scale!();
 }

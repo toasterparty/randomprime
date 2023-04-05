@@ -19,13 +19,18 @@ pub struct MetroidPrimeStage1<'r>
     pub position: GenericArray<f32, U3>,
     pub rotation: GenericArray<f32, U3>,
     pub scale: GenericArray<f32, U3>,
-    pub dont_care0: GenericArray<u8, U900>,
+    pub dont_care0: GenericArray<u8, U900>, // TODO: effort
     pub dont_care1: GenericArray<u8, U900>,
     pub dont_care2: GenericArray<u8, U900>,
     pub dont_care3: GenericArray<u8, U172>,
 }
 
+use crate::{impl_position, impl_rotation, impl_scale, impl_patterned_info};
 impl<'r> SclyPropertyData for MetroidPrimeStage1<'r>
 {
     const OBJECT_TYPE: u8 = 0x84;
+
+    impl_position!();
+    impl_rotation!();
+    impl_scale!();
 }

@@ -22,7 +22,11 @@ pub struct Dock<'r>
     pub load_connected: u8,
 }
 
+use crate::{impl_position, impl_scale};
 impl<'r> SclyPropertyData for Dock<'r>
 {
     const OBJECT_TYPE: u8 = 0x0B;
+
+    impl_position!();
+    impl_scale!();
 }

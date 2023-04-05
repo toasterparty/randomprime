@@ -18,10 +18,15 @@ pub struct ElitePirate<'r>
     pub rotation: GenericArray<f32, U3>,
     pub scale: GenericArray<f32, U3>,
 
-    pub dont_care: GenericArray<u8, U745>,
+    pub dont_care: GenericArray<u8, U745>, // TODO: effort
 }
 
+use crate::{impl_position, impl_rotation, impl_scale, impl_patterned_info};
 impl<'r> SclyPropertyData for ElitePirate<'r>
 {
     const OBJECT_TYPE: u8 = 0x26;
+
+    impl_position!();
+    impl_rotation!();
+    impl_scale!();
 }

@@ -18,10 +18,14 @@ pub struct RidleyV2<'r>
     pub rotation: GenericArray<f32, U3>,
     pub scale: GenericArray<f32, U3>,
 
-    pub dont_care: GenericArray<u8, U901>,
+    pub dont_care: GenericArray<u8, U901>, // TODO: effort
 }
 
+use crate::{impl_position, impl_rotation, impl_scale, impl_patterned_info};
 impl<'r> SclyPropertyData for RidleyV2<'r>
 {
     const OBJECT_TYPE: u8 = 0x7B;
+    impl_position!();
+    impl_rotation!();
+    impl_scale!();
 }

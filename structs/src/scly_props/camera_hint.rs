@@ -93,6 +93,7 @@ pub struct CameraHint<'r>
     pub control_interp_dur: f32,
 }
 
+// cannot implement position/rotation until the size of this struct is corrected
 impl<'r> SclyPropertyData for CameraHint<'r>
 {
     const OBJECT_TYPE: u8 = 0x10;

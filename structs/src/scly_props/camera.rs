@@ -24,7 +24,11 @@ pub struct Camera<'r>
     pub unknown3: u8,
 }
 
+use crate::{impl_position, impl_rotation};
 impl<'r> SclyPropertyData for Camera<'r>
 {
     const OBJECT_TYPE: u8 = 0x0C;
+
+    impl_position!();
+    impl_rotation!();
 }

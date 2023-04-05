@@ -10810,16 +10810,6 @@ fn set_patterned_info(obj: &mut structs::SclyObject, value: structs::scly_struct
     obj.property_data.set_patterned_info(value);
 }
 
-fn set_patterned_health(obj: &mut structs::SclyObject, value: f32) {
-    match get_patterned_info(obj) {
-        Some(mut x) => {
-            x.health_info.health *= value;
-            set_patterned_info(obj, x);
-        },
-        None => {},
-    }
-}
-
 fn set_patterned_speed(obj: &mut structs::SclyObject, value: f32) {
     match get_patterned_info(obj) {
         Some(mut x) => {
@@ -10867,16 +10857,6 @@ fn set_patterned_attack_range(obj: &mut structs::SclyObject, value: f32) {
     match get_patterned_info(obj) {
         Some(mut x) => {
             x.max_attack_range *= value;
-            set_patterned_info(obj, x);
-        },
-        None => {},
-    }
-}
-
-fn set_patterned_damage(obj: &mut structs::SclyObject, value: f32) {
-    match get_patterned_info(obj) {
-        Some(mut x) => {
-            x.x_damage *= value;
             set_patterned_info(obj, x);
         },
         None => {},
@@ -10983,6 +10963,41 @@ fn set_health_info(obj: &mut structs::SclyObject, value: structs::scly_structs::
     }
     x[idx] = value;
     set_health_infos(obj, x);
+}
+
+fn set_health(obj: &mut structs::SclyObject, value: f32) {
+    let mut health_infos = get_health_infos(obj);
+    if health_infos.len() == 0 {
+        return;
+    }
+
+    for i in 0..health_infos.len() {
+        health_infos[i].health *= value;
+    }
+
+    set_health_infos(obj, health_infos);
+}
+
+fn set_damage(obj: &mut structs::SclyObject, value: f32) {
+    match get_patterned_info(obj) {
+        Some(mut x) => {
+            x.x_damage *= value;
+            set_patterned_info(obj, x);
+        },
+        None => {},
+    }
+
+    let mut damage_infos = get_damage_infos(obj);
+    if damage_infos.len() == 0 {
+        return;
+    }
+
+    for i in 0..damage_infos.len() {
+        damage_infos[i].damage *= value;
+        damage_infos[i].knockback_power *= value;
+    }
+
+    set_damage_infos(obj, damage_infos);
 }
 
 fn patch_remove_control_disabler<'r>(

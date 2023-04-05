@@ -18,13 +18,15 @@ pub struct Beetle<'r>
     pub rotation: GenericArray<f32, U3>,
     pub scale: GenericArray<f32, U3>,
 
-    pub dont_care: GenericArray<u8, U734>,
+    pub dont_care: GenericArray<u8, U734>, // TODO: effort
 }
 
-use crate::{impl_position, impl_rotation};
+use crate::{impl_position, impl_rotation, impl_scale, impl_patterned_info};
 impl<'r> SclyPropertyData for Beetle<'r>
 {
     const OBJECT_TYPE: u8 = 0x16;
+
     impl_position!();
     impl_rotation!();
+    impl_scale!();
 }

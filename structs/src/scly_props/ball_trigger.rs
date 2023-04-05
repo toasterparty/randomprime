@@ -15,8 +15,8 @@ pub struct BallTrigger<'r>
     prop_count: u32,
 
     pub name: CStr<'r>,
-    pub location: GenericArray<f32, U3>,
-    pub volume: GenericArray<f32, U3>,
+    pub position: GenericArray<f32, U3>,
+    pub scale: GenericArray<f32, U3>,
     pub active: u8,
     pub force: f32,
     pub min_angle: f32,
@@ -25,7 +25,11 @@ pub struct BallTrigger<'r>
     pub stop_player: u8,
 }
 
+use crate::{impl_position, impl_scale};
 impl<'r> SclyPropertyData for BallTrigger<'r>
 {
     const OBJECT_TYPE: u8 = 0x48;
+
+    impl_position!();
+    impl_scale!();
 }

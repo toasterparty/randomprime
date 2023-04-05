@@ -17,10 +17,14 @@ pub struct OmegaPirate<'r>
     pub position: GenericArray<f32, U3>,
     pub rotation: GenericArray<f32, U3>,
     pub scale: GenericArray<f32, U3>,
-    pub dont_care: GenericArray<u8, U757>,
+    pub dont_care: GenericArray<u8, U757>, // TODO: effort
 }
 
+use crate::{impl_position, impl_rotation, impl_scale, impl_patterned_info};
 impl<'r> SclyPropertyData for OmegaPirate<'r>
 {
     const OBJECT_TYPE: u8 = 0x86;
+    impl_position!();
+    impl_rotation!();
+    impl_scale!();
 }
