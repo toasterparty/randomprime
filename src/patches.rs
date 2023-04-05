@@ -10883,6 +10883,74 @@ fn set_patterned_damage(obj: &mut structs::SclyObject, value: f32) {
     }
 }
 
+fn get_damage_infos(obj: &mut structs::SclyObject) -> Vec<structs::scly_structs::DamageInfo> {
+    if !obj.property_data.supports_damage_infos() {
+        Vec::new()
+    } else {
+        obj.property_data.get_damage_infos()
+    }
+}
+
+fn get_damage_info(obj: &mut structs::SclyObject, idx: usize) -> Option<structs::scly_structs::DamageInfo> {
+    let x = get_damage_infos(obj);
+    if idx >= x.len() {
+        return None;
+    }
+
+    Some(x[idx].clone())
+}
+
+fn set_damage_infos(obj: &mut structs::SclyObject, value: Vec<structs::scly_structs::DamageInfo>) {
+    if !obj.property_data.supports_damage_infos() {
+        return;
+    }
+
+    obj.property_data.set_damage_infos(value);
+}
+
+fn set_damage_info(obj: &mut structs::SclyObject, value: structs::scly_structs::DamageInfo, idx: usize) {
+    let mut x = get_damage_infos(obj);
+    if idx >= x.len() {
+        return;
+    }
+    x[idx] = value;
+    set_damage_infos(obj, x);
+}
+
+fn get_vulnerabilities(obj: &mut structs::SclyObject) -> Vec<structs::scly_structs::DamageVulnerability> {
+    if !obj.property_data.supports_vulnerabilities() {
+        Vec::new()
+    } else {
+        obj.property_data.get_vulnerabilities()
+    }
+}
+
+fn get_vulnerability(obj: &mut structs::SclyObject, idx: usize) -> Option<structs::scly_structs::DamageVulnerability> {
+    let x = get_vulnerabilities(obj);
+    if idx >= x.len() {
+        return None;
+    }
+
+    Some(x[idx].clone())
+}
+
+fn set_vulnerabilities(obj: &mut structs::SclyObject, value: Vec<structs::scly_structs::DamageVulnerability>) {
+    if !obj.property_data.supports_vulnerabilities() {
+        return;
+    }
+
+    obj.property_data.set_vulnerabilities(value);
+}
+
+fn set_vulnerability(obj: &mut structs::SclyObject, value: structs::scly_structs::DamageVulnerability, idx: usize) {
+    let mut x = get_vulnerabilities(obj);
+    if idx >= x.len() {
+        return;
+    }
+    x[idx] = value;
+    set_vulnerabilities(obj, x);
+}
+
 fn patch_remove_control_disabler<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,

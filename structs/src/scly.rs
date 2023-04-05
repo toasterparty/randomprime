@@ -320,6 +320,82 @@ macro_rules! build_scly_property {
                 }
             }
 
+            /* Damage Infos */
+
+            pub fn supports_damage_infos(&self) -> bool {
+                let object_type = self.object_type();
+                #[allow(unreachable_patterns)] // ridley throws a warning because we have both PAL and NTSC ridley definitions
+                match object_type {
+                    $(<scly_props::$name as SclyPropertyData>::OBJECT_TYPE => <scly_props::$name as SclyPropertyData>::SUPPORTS_DAMAGE_INFOS,)*
+                    _ => false,
+                }
+            }
+
+            pub fn get_damage_infos(&mut self) -> Vec<DamageInfo>
+            {
+                self.guess_kind();
+                match *self {
+                    SclyProperty::Unknown { object_type, .. } => panic!("0x{:X} doesn't support damage_infos (get)", object_type),
+                    $(
+                        SclyProperty::$name(_) => {
+                            let prop = self.$accessor();
+                            prop.unwrap().impl_get_damage_infos()
+                        },
+                    )*
+                }
+            }
+
+            pub fn set_damage_infos(&mut self, x: Vec<DamageInfo>)
+            {
+                self.guess_kind();
+                match *self {
+                    SclyProperty::Unknown { object_type, .. } => panic!("0x{:X} doesn't support damage_infos (set)", object_type),
+                    $(
+                        SclyProperty::$name(_) => {
+                            self.$accessor_mut().unwrap().impl_set_damage_infos(x);
+                        },
+                    )*
+                }
+            }
+
+            /* Vulnerabilities */
+
+            pub fn supports_vulnerabilities(&self) -> bool {
+                let object_type = self.object_type();
+                #[allow(unreachable_patterns)] // ridley throws a warning because we have both PAL and NTSC ridley definitions
+                match object_type {
+                    $(<scly_props::$name as SclyPropertyData>::OBJECT_TYPE => <scly_props::$name as SclyPropertyData>::SUPPORTS_VULNERABILITIES,)*
+                    _ => false,
+                }
+            }
+
+            pub fn get_vulnerabilities(&mut self) -> Vec<DamageVulnerability>
+            {
+                self.guess_kind();
+                match *self {
+                    SclyProperty::Unknown { object_type, .. } => panic!("0x{:X} doesn't support vulnerabilities (get)", object_type),
+                    $(
+                        SclyProperty::$name(_) => {
+                            let prop = self.$accessor();
+                            prop.unwrap().impl_get_vulnerabilities()
+                        },
+                    )*
+                }
+            }
+
+            pub fn set_vulnerabilities(&mut self, x: Vec<DamageVulnerability>)
+            {
+                self.guess_kind();
+                match *self {
+                    SclyProperty::Unknown { object_type, .. } => panic!("0x{:X} doesn't support vulnerabilities (set)", object_type),
+                    $(
+                        SclyProperty::$name(_) => {
+                            self.$accessor_mut().unwrap().impl_set_vulnerabilities(x);
+                        },
+                    )*
+                }
+            }
+
             pub fn guess_kind(&mut self)
             {
                 if self.object_type() == 0x10 { // camera hint (TODO)
