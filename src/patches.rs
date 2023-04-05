@@ -10951,6 +10951,40 @@ fn set_vulnerability(obj: &mut structs::SclyObject, value: structs::scly_structs
     set_vulnerabilities(obj, x);
 }
 
+fn get_health_infos(obj: &mut structs::SclyObject) -> Vec<structs::scly_structs::HealthInfo> {
+    if !obj.property_data.supports_health_infos() {
+        Vec::new()
+    } else {
+        obj.property_data.get_health_infos()
+    }
+}
+
+fn get_health_info(obj: &mut structs::SclyObject, idx: usize) -> Option<structs::scly_structs::HealthInfo> {
+    let x = get_health_infos(obj);
+    if idx >= x.len() {
+        return None;
+    }
+
+    Some(x[idx].clone())
+}
+
+fn set_health_infos(obj: &mut structs::SclyObject, value: Vec<structs::scly_structs::HealthInfo>) {
+    if !obj.property_data.supports_health_infos() {
+        return;
+    }
+
+    obj.property_data.set_health_infos(value);
+}
+
+fn set_health_info(obj: &mut structs::SclyObject, value: structs::scly_structs::HealthInfo, idx: usize) {
+    let mut x = get_health_infos(obj);
+    if idx >= x.len() {
+        return;
+    }
+    x[idx] = value;
+    set_health_infos(obj, x);
+}
+
 fn patch_remove_control_disabler<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,

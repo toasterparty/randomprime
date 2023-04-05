@@ -8,7 +8,7 @@ use std::borrow::Cow;
 use std::fmt;
 
 use crate::scly_props;
-use crate::scly_structs::{PatternedInfo, DamageInfo, DamageVulnerability};
+use crate::scly_structs::{PatternedInfo, DamageInfo, DamageVulnerability, HealthInfo};
 
 #[macro_export]
 macro_rules! impl_position {
@@ -61,7 +61,7 @@ macro_rules! impl_patterned_info {
         const SUPPORTS_PATTERNED_INFO: bool = true;
 
         fn impl_get_patterned_info(&self) -> PatternedInfo {
-            self.patterned_info
+            self.patterned_info.clone()
         }
     
         fn impl_set_patterned_info(&mut self, x: PatternedInfo) {
@@ -396,6 +396,44 @@ macro_rules! build_scly_property {
                 }
             }
 
+            /* Health Infos */
+
+            pub fn supports_health_infos(&self) -> bool {
+                let object_type = self.object_type();
+                #[allow(unreachable_patterns)] // ridley throws a warning because we have both PAL and NTSC ridley definitions
+                match object_type {
+                    $(<scly_props::$name as SclyPropertyData>::OBJECT_TYPE => <scly_props::$name as SclyPropertyData>::SUPPORTS_HEALTH_INFOS,)*
+                    _ => false,
+                }
+            }
+
+            pub fn get_health_infos(&mut self) -> Vec<HealthInfo>
+            {
+                self.guess_kind();
+                match *self {
+                    SclyProperty::Unknown { object_type, .. } => panic!("0x{:X} doesn't support health infos (get)", object_type),
+                    $(
+                        SclyProperty::$name(_) => {
+                            let prop = self.$accessor();
+                            prop.unwrap().impl_get_health_infos()
+                        },
+                    )*
+                }
+            }
+
+            pub fn set_health_infos(&mut self, x: Vec<HealthInfo>)
+            {
+                self.guess_kind();
+                match *self {
+                    SclyProperty::Unknown { object_type, .. } => panic!("0x{:X} doesn't support health infos (set)", object_type),
+                    $(
+                        SclyProperty::$name(_) => {
+                            self.$accessor_mut().unwrap().impl_set_health_infos(x);
+                        },
+                    )*
+                }
+            }
+
             pub fn guess_kind(&mut self)
             {
                 if self.object_type() == 0x10 { // camera hint (TODO)
@@ -638,6 +676,16 @@ pub trait SclyPropertyData
         panic!("Script object type 0x{:X} does not implement the 'Vulnerabilities' property", Self::OBJECT_TYPE)
     }
 
+    /* Health Infos */
+    const SUPPORTS_HEALTH_INFOS: bool = false;
+
+    fn impl_get_health_infos(&self) -> Vec<HealthInfo> {
+        panic!("Script object type 0x{:X} does not implement the 'Vulnerabilities' property", Self::OBJECT_TYPE)
+    }
+
+    fn impl_set_health_infos(&mut self, _: Vec<HealthInfo>) {
+        panic!("Script object type 0x{:X} does not implement the 'Vulnerabilities' property", Self::OBJECT_TYPE)
+    }
 }
 
 #[auto_struct(Readable, FixedSize, Writable)]
