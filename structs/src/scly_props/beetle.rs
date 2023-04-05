@@ -4,7 +4,7 @@ use reader_writer::CStr;
 use reader_writer::typenum::*;
 use reader_writer::generic_array::GenericArray;
 use crate::{SclyPropertyData};
-use crate::scly_structs::{*};
+use crate::scly_structs::*;
 
 #[auto_struct(Readable, Writable)]
 #[derive(Debug, Clone)]

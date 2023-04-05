@@ -70,6 +70,57 @@ macro_rules! impl_patterned_info {
     };
 }
 
+#[macro_export]
+macro_rules! impl_patterned_info_with_auxillary {
+    () => {
+        const SUPPORTS_PATTERNED_INFO: bool = true;
+
+        fn impl_get_patterned_info(&self) -> PatternedInfo {
+            self.patterned_info.clone()
+        }
+    
+        fn impl_set_patterned_info(&mut self, x: PatternedInfo) {
+            self.patterned_info = x;
+        }
+
+        const SUPPORTS_DAMAGE_INFOS: bool = true;
+
+        fn impl_get_damage_infos(&self) -> Vec<DamageInfo> {
+            vec![
+                self.patterned_info.contact_damage.clone(),
+            ]
+        }
+    
+        fn impl_set_damage_infos(&mut self, x: Vec<DamageInfo>) {
+            self.patterned_info.contact_damage = x[0].clone();
+        }
+    
+        const SUPPORTS_VULNERABILITIES: bool = true;
+    
+        fn impl_get_vulnerabilities(&self) -> Vec<DamageVulnerability> {
+            vec![
+                self.patterned_info.damage_vulnerability.clone(),
+            ]
+        }
+    
+        fn impl_set_vulnerabilities(&mut self, x: Vec<DamageVulnerability>) {
+            self.patterned_info.damage_vulnerability = x[0].clone();
+        }
+    
+        const SUPPORTS_HEALTH_INFOS: bool = true;
+    
+        fn impl_get_health_infos(&self) -> Vec<HealthInfo> {
+            vec![
+                self.patterned_info.health_info.clone()
+            ]
+        }
+    
+        fn impl_set_health_infos(&mut self, x: Vec<HealthInfo>) {
+            self.patterned_info.health_info = x[0].clone();
+        }
+    };
+}
+
 // damage_infos handled case-by-case
 // vulnerabilities handled case-by-case
 
@@ -445,6 +496,9 @@ macro_rules! build_scly_property {
                         => (data.clone(), object_type),
                     _ => return,
                 };
+
+                let old_len = self.size();
+
                 *self = if false {
                     return
                 } $(else if object_type == <scly_props::$name as SclyPropertyData>::OBJECT_TYPE {
@@ -452,6 +506,14 @@ macro_rules! build_scly_property {
                 })* else {
                     return
                 };
+
+                if self.size() != old_len {
+                    if self.size() < old_len {
+                        panic!("scly object type=0x{:X} was an unexpected size. We expected {} bytes, in reality the object is {} bytes.\nFix this by adding the following line to the defining struct:\n    pub dont_care: GenericArray<u8, U{}>,\n", object_type, self.size(), old_len, old_len - self.size());
+                    } else {
+                        panic!("scly object type=0x{:X} was an unexpected size. We expected {} bytes, in reality the object is {} bytes.", object_type, self.size(), old_len);
+                    }
+                }
             }
 
             $(
@@ -492,8 +554,6 @@ macro_rules! build_scly_property {
                         return None
                     }
                     *self = SclyProperty::$name(data.read(()));
-
-                    // println!("type=0x{:X} is {} bytes big", object_type, self.size());
 
                     match *self {
                         SclyProperty::$name(ref mut inst) => return Some(inst),
