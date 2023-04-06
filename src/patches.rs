@@ -10800,60 +10800,58 @@ fn set_scale(obj: &mut structs::SclyObject, value: [f32; 3], relative: bool) {
 
 fn get_patterned_infos(obj: &mut structs::SclyObject) -> Vec<structs::scly_structs::PatternedInfo> {
     if !obj.property_data.supports_patterned_infos() {
-        return Vec::new();
+        Vec::new()
+    } else {
+        obj.property_data.get_patterned_infos()
     }
-
-    return obj.property_data.get_patterned_infos();
 }
 
 fn set_patterned_infos(obj: &mut structs::SclyObject, value: Vec<structs::scly_structs::PatternedInfo>) {
+    if value.len() > 0 {
     obj.property_data.set_patterned_infos(value);
 }
+}
 
-fn set_patterned_speed(obj: &mut structs::SclyObject, value: f32) {
-    let mut infos = get_patterned_infos(obj);
-    if infos.len() <= 0 {
-        return;
+fn should_skip(current: usize, check: Option<usize>) -> bool {
+    match check {
+        Some(x) => x != current,
+        None => false,
+    }
     }
 
-    for i in 0..infos.len() {
-        let x = &mut infos[i];
+fn set_patterned_speed(obj: &mut structs::SclyObject, value: f32, index: Option<usize>) {
+    let mut data = get_patterned_infos(obj);
+    for i in 0..data.len() {
+        if should_skip(i, index) { continue; }
+        let x = &mut data[i];
             x.speed *= value;
             x.turn_speed *= value;
             x.average_attack_time *= 1.0/value;
             // x.attack_time_variation *= 1.0/value;
             x.damage_wait_time *= 1.0/value;
     }
-
-    set_patterned_infos(obj, infos);
+    set_patterned_infos(obj, data);
 }
 
-fn set_patterned_size(obj: &mut structs::SclyObject, value: f32) {
-    let mut infos = get_patterned_infos(obj);
-    if infos.len() <= 0 {
-        return;
-    }
-
-    for i in 0..infos.len() {
-        let x = &mut infos[i];
+fn set_patterned_size(obj: &mut structs::SclyObject, value: f32, index: Option<usize>) {
+    let mut data = get_patterned_infos(obj);
+    for i in 0..data.len() {
+        if should_skip(i, index) { continue; }
+        let x = &mut data[i];
             x.mass *= value;
             x.half_extent *= value;
             x.height *= value;
             x.step_up_height *= value;
             x.min_attack_range *= value;
     }
-
-    set_patterned_infos(obj, infos);
+    set_patterned_infos(obj, data);
 }
 
-fn set_patterned_detection_range(obj: &mut structs::SclyObject, value: f32) {
-    let mut infos = get_patterned_infos(obj);
-    if infos.len() <= 0 {
-        return;
-    }
-
-    for i in 0..infos.len() {
-        let x = &mut infos[i];
+fn set_detection_range(obj: &mut structs::SclyObject, value: f32, index: Option<usize>) {
+    let mut data = get_patterned_infos(obj);
+    for i in 0..data.len() {
+        if should_skip(i, index) { continue; }
+        let x = &mut data[i];
             x.detection_range *= value;
             x.detection_height_range *= value;
             x.detection_angle *= value;
@@ -10861,22 +10859,17 @@ fn set_patterned_detection_range(obj: &mut structs::SclyObject, value: f32) {
             // x.player_leash_time *= value;
             x.leash_radius *= value;
     }
-
-    set_patterned_infos(obj, infos);
+    set_patterned_infos(obj, data);
 }
 
-fn set_patterned_attack_range(obj: &mut structs::SclyObject, value: f32) {
-    let mut infos = get_patterned_infos(obj);
-    if infos.len() <= 0 {
-        return;
-    }
-
-    for i in 0..infos.len() {
-        let x = &mut infos[i];
+fn set_attack_range(obj: &mut structs::SclyObject, value: f32, index: Option<usize>) {
+    let mut data = get_patterned_infos(obj);
+    for i in 0..data.len() {
+        if should_skip(i, index) { continue; }
+        let x = &mut data[i];
             x.max_attack_range *= value;
     }
-
-    set_patterned_infos(obj, infos);
+    set_patterned_infos(obj, data);
 }
 
 fn get_damage_infos(obj: &mut structs::SclyObject) -> Vec<structs::scly_structs::DamageInfo> {
@@ -10887,30 +10880,10 @@ fn get_damage_infos(obj: &mut structs::SclyObject) -> Vec<structs::scly_structs:
     }
 }
 
-fn get_damage_info(obj: &mut structs::SclyObject, idx: usize) -> Option<structs::scly_structs::DamageInfo> {
-    let x = get_damage_infos(obj);
-    if idx >= x.len() {
-        return None;
-    }
-
-    Some(x[idx].clone())
-}
-
 fn set_damage_infos(obj: &mut structs::SclyObject, value: Vec<structs::scly_structs::DamageInfo>) {
-    if !obj.property_data.supports_damage_infos() {
-        return;
-    }
-
+    if value.len() > 0 {
     obj.property_data.set_damage_infos(value);
 }
-
-fn set_damage_info(obj: &mut structs::SclyObject, value: structs::scly_structs::DamageInfo, idx: usize) {
-    let mut x = get_damage_infos(obj);
-    if idx >= x.len() {
-        return;
-    }
-    x[idx] = value;
-    set_damage_infos(obj, x);
 }
 
 fn get_vulnerabilities(obj: &mut structs::SclyObject) -> Vec<structs::scly_structs::DamageVulnerability> {
@@ -10921,30 +10894,19 @@ fn get_vulnerabilities(obj: &mut structs::SclyObject) -> Vec<structs::scly_struc
     }
 }
 
-fn get_vulnerability(obj: &mut structs::SclyObject, idx: usize) -> Option<structs::scly_structs::DamageVulnerability> {
-    let x = get_vulnerabilities(obj);
-    if idx >= x.len() {
-        return None;
-    }
-
-    Some(x[idx].clone())
-}
-
 fn set_vulnerabilities(obj: &mut structs::SclyObject, value: Vec<structs::scly_structs::DamageVulnerability>) {
-    if !obj.property_data.supports_vulnerabilities() {
-        return;
-    }
-
+    if value.len() > 0 {
     obj.property_data.set_vulnerabilities(value);
 }
+}
 
-fn set_vulnerability(obj: &mut structs::SclyObject, value: structs::scly_structs::DamageVulnerability, idx: usize) {
-    let mut x = get_vulnerabilities(obj);
-    if idx >= x.len() {
-        return;
+fn set_vulnerability(obj: &mut structs::SclyObject, value: DoorType, index: Option<usize>) {
+    let mut data = get_vulnerabilities(obj);
+    for i in 0..data.len() {
+        if should_skip(i, index) { continue; }
+        data[i] = value.vulnerability();
     }
-    x[idx] = value;
-    set_vulnerabilities(obj, x);
+    set_vulnerabilities(obj, data);
 }
 
 fn get_health_infos(obj: &mut structs::SclyObject) -> Vec<structs::scly_structs::HealthInfo> {
@@ -10955,67 +10917,35 @@ fn get_health_infos(obj: &mut structs::SclyObject) -> Vec<structs::scly_structs:
     }
 }
 
-fn get_health_info(obj: &mut structs::SclyObject, idx: usize) -> Option<structs::scly_structs::HealthInfo> {
-    let x = get_health_infos(obj);
-    if idx >= x.len() {
-        return None;
-    }
-
-    Some(x[idx].clone())
-}
-
 fn set_health_infos(obj: &mut structs::SclyObject, value: Vec<structs::scly_structs::HealthInfo>) {
-    if !obj.property_data.supports_health_infos() {
-        return;
-    }
-
+    if value.len() > 0 {
     obj.property_data.set_health_infos(value);
 }
-
-fn set_health_info(obj: &mut structs::SclyObject, value: structs::scly_structs::HealthInfo, idx: usize) {
-    let mut x = get_health_infos(obj);
-    if idx >= x.len() {
-        return;
     }
 
-    x[idx] = value;
-    set_health_infos(obj, x);
-}
-
-fn set_health(obj: &mut structs::SclyObject, value: f32) {
+fn set_health(obj: &mut structs::SclyObject, value: f32, index: Option<usize>) {
     let mut health_infos = get_health_infos(obj);
-    if health_infos.len() == 0 {
-        return;
-    }
-
     for i in 0..health_infos.len() {
+        if should_skip(i, index) { continue; }
         health_infos[i].health *= value;
     }
-
     set_health_infos(obj, health_infos);
 }
 
 fn set_damage(obj: &mut structs::SclyObject, value: f32) {
     let mut infos = get_patterned_infos(obj);
-    if infos.len() <= 0 {
-        return;
-    }
-
     for i in 0..infos.len() {
         let x = &mut infos[i];
             x.x_damage *= value;
     }
-
     set_patterned_infos(obj, infos);
 
     let mut damage_infos = get_damage_infos(obj);
-    if damage_infos.len() > 0 {
     for i in 0..damage_infos.len() {
         damage_infos[i].damage *= value;
         damage_infos[i].knockback_power *= value;
     }
     set_damage_infos(obj, damage_infos);
-    }
 }
 
 fn patch_remove_control_disabler<'r>(

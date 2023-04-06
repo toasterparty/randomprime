@@ -190,7 +190,7 @@ pub struct HealthInfo
 #[derive(Debug, Clone)]
 pub struct PatternedInfo
 {
-    #[auto_struct(derive = 38)]
+    #[auto_struct(expect = 38)]
     prop_count: u32,
 
     pub mass: f32,
@@ -231,4 +231,28 @@ pub struct PatternedInfo
     pub particle1_scale: GenericArray<f32, U3>,
     pub particle1: ResId<PART>,
     pub ice_shatter_sfx: u32,
+}
+
+#[auto_struct(Readable, Writable, FixedSize)]
+#[derive(Debug, Clone)]
+pub struct BeamInfo {
+    #[auto_struct(expect = 16)]
+    prop_count: u32,
+
+    pub beam_attributes: u32,
+    pub part1: u32,
+    pub part2: u32,
+    pub txtr1: u32,
+    pub txtr2: u32,
+    pub length: f32,
+    pub radius: f32,
+    pub expansion_speed: f32,
+    pub lifetime: f32,
+    pub pulse_speed: f32,
+    pub shutdown_time: f32,
+    pub contact_fx_scale: f32,
+    pub pulse_fx_scale: f32,
+    pub travel_speed: f32,
+    pub inner_color: GenericArray<f32, U4>,
+    pub outter_color: GenericArray<f32, U4>,
 }

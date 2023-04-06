@@ -58,14 +58,16 @@ macro_rules! impl_scale {
 #[macro_export]
 macro_rules! impl_patterned_info {
     () => {
-        const SUPPORTS_PATTERNED_INFO: bool = true;
+        const SUPPORTS_PATTERNED_INFOS: bool = true;
 
-        fn impl_get_patterned_info(&self) -> PatternedInfo {
-            self.patterned_info.clone()
+        fn impl_get_patterned_infos(&self) -> Vec<PatternedInfo> {
+            vec![
+                self.patterned_info.clone()
+            ]
         }
     
-        fn impl_set_patterned_info(&mut self, x: PatternedInfo) {
-            self.patterned_info = x;
+        fn impl_set_patterned_infos(&mut self, x: Vec<PatternedInfo>) {
+            self.patterned_info = x[0].clone();
         }
     };
 }
@@ -73,14 +75,16 @@ macro_rules! impl_patterned_info {
 #[macro_export]
 macro_rules! impl_patterned_info_with_auxillary {
     () => {
-        const SUPPORTS_PATTERNED_INFO: bool = true;
+        const SUPPORTS_PATTERNED_INFOS: bool = true;
 
-        fn impl_get_patterned_info(&self) -> PatternedInfo {
-            self.patterned_info.clone()
+        fn impl_get_patterned_infos(&self) -> Vec<PatternedInfo> {
+            vec![
+                self.patterned_info.clone()
+            ]
         }
     
-        fn impl_set_patterned_info(&mut self, x: PatternedInfo) {
-            self.patterned_info = x;
+        fn impl_set_patterned_infos(&mut self, x: Vec<PatternedInfo>) {
+            self.patterned_info = x[0].clone();
         }
 
         const SUPPORTS_DAMAGE_INFOS: bool = true;
@@ -335,37 +339,37 @@ macro_rules! build_scly_property {
 
             /* Patterned Info */
 
-            pub fn supports_patterned_info(&self) -> bool {
+            pub fn supports_patterned_infos(&self) -> bool {
                 let object_type = self.object_type();
                 #[allow(unreachable_patterns)] // ridley throws a warning because we have both PAL and NTSC ridley definitions
                 match object_type {
-                    $(<scly_props::$name as SclyPropertyData>::OBJECT_TYPE => <scly_props::$name as SclyPropertyData>::SUPPORTS_PATTERNED_INFO,)*
+                    $(<scly_props::$name as SclyPropertyData>::OBJECT_TYPE => <scly_props::$name as SclyPropertyData>::SUPPORTS_PATTERNED_INFOS,)*
                     _ => false,
                 }
             }
 
-            pub fn get_patterned_info(&mut self) -> PatternedInfo
+            pub fn get_patterned_infos(&mut self) -> Vec<PatternedInfo>
             {
                 self.guess_kind();
                 match *self {
-                    SclyProperty::Unknown { object_type, .. } => panic!("0x{:X} doesn't support patterned_info (get)", object_type),
+                    SclyProperty::Unknown { object_type, .. } => panic!("0x{:X} doesn't support patterned_infos (get)", object_type),
                     $(
                         SclyProperty::$name(_) => {
                             let prop = self.$accessor();
-                            prop.unwrap().impl_get_patterned_info()
+                            prop.unwrap().impl_get_patterned_infos()
                         },
                     )*
                 }
             }
 
-            pub fn set_patterned_info(&mut self, x: PatternedInfo)
+            pub fn set_patterned_infos(&mut self, x: Vec<PatternedInfo>)
             {
                 self.guess_kind();
                 match *self {
-                    SclyProperty::Unknown { object_type, .. } => panic!("0x{:X} doesn't support patterned_info (set)", object_type),
+                    SclyProperty::Unknown { object_type, .. } => panic!("0x{:X} doesn't support patterned_infos (set)", object_type),
                     $(
                         SclyProperty::$name(_) => {
-                            self.$accessor_mut().unwrap().impl_set_patterned_info(x);
+                            self.$accessor_mut().unwrap().impl_set_patterned_infos(x);
                         },
                     )*
                 }
@@ -703,14 +707,14 @@ pub trait SclyPropertyData
         panic!("Script object type 0x{:X} does not implement the 'scale' property", Self::OBJECT_TYPE)
     }
 
-    /* Patterned Info */
-    const SUPPORTS_PATTERNED_INFO: bool = false;
+    /* Patterned Infos */
+    const SUPPORTS_PATTERNED_INFOS: bool = false;
 
-    fn impl_get_patterned_info(&self) -> PatternedInfo {
+    fn impl_get_patterned_infos(&self) -> Vec<PatternedInfo> {
         panic!("Script object type 0x{:X} does not implement the 'Patterned Info' property", Self::OBJECT_TYPE)
     }
 
-    fn impl_set_patterned_info(&mut self, _: PatternedInfo) {
+    fn impl_set_patterned_infos(&mut self, _: Vec<PatternedInfo>) {
         panic!("Script object type 0x{:X} does not implement the 'Patterned Info' property", Self::OBJECT_TYPE)
     }
 

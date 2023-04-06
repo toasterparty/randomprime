@@ -50,9 +50,6 @@ pub struct RidleyV1<'r>
 #[derive(Debug, Clone)]
 pub struct RidleyStruct1
 {
-    // #[auto_struct(derive = 0)]
-    // prop_count: u32,
-
     pub dont_care: GenericArray<u32, U15>,
     pub color1: GenericArray<f32, U4>,
     pub color2: GenericArray<f32, U4>,
@@ -62,9 +59,6 @@ pub struct RidleyStruct1
 #[derive(Debug, Clone)]
 pub struct RidleyStruct2
 {
-    // #[auto_struct(derive = 0)]
-    // prop_count: u32,
-
     pub dont_care: GenericArray<u32, U8>,
     pub unknown: u8,
 }
