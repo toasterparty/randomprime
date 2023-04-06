@@ -10798,69 +10798,85 @@ fn set_scale(obj: &mut structs::SclyObject, value: [f32; 3], relative: bool) {
     }
 }
 
-fn get_patterned_info(obj: &mut structs::SclyObject) -> Option<structs::scly_structs::PatternedInfo> {
-    if !obj.property_data.supports_patterned_info() {
-        return None;
+fn get_patterned_infos(obj: &mut structs::SclyObject) -> Vec<structs::scly_structs::PatternedInfo> {
+    if !obj.property_data.supports_patterned_infos() {
+        return Vec::new();
     }
 
-    return Some(obj.property_data.get_patterned_info());
+    return obj.property_data.get_patterned_infos();
 }
 
-fn set_patterned_info(obj: &mut structs::SclyObject, value: structs::scly_structs::PatternedInfo) {
-    obj.property_data.set_patterned_info(value);
+fn set_patterned_infos(obj: &mut structs::SclyObject, value: Vec<structs::scly_structs::PatternedInfo>) {
+    obj.property_data.set_patterned_infos(value);
 }
 
 fn set_patterned_speed(obj: &mut structs::SclyObject, value: f32) {
-    match get_patterned_info(obj) {
-        Some(mut x) => {
+    let mut infos = get_patterned_infos(obj);
+    if infos.len() <= 0 {
+        return;
+    }
+
+    for i in 0..infos.len() {
+        let x = &mut infos[i];
             x.speed *= value;
             x.turn_speed *= value;
             x.average_attack_time *= 1.0/value;
             // x.attack_time_variation *= 1.0/value;
             x.damage_wait_time *= 1.0/value;
-            set_patterned_info(obj, x);
-        },
-        None => {},
     }
+
+    set_patterned_infos(obj, infos);
 }
 
 fn set_patterned_size(obj: &mut structs::SclyObject, value: f32) {
-    match get_patterned_info(obj) {
-        Some(mut x) => {
+    let mut infos = get_patterned_infos(obj);
+    if infos.len() <= 0 {
+        return;
+    }
+
+    for i in 0..infos.len() {
+        let x = &mut infos[i];
             x.mass *= value;
             x.half_extent *= value;
             x.height *= value;
             x.step_up_height *= value;
             x.min_attack_range *= value;
-            set_patterned_info(obj, x);
-        },
-        None => {},
     }
+
+    set_patterned_infos(obj, infos);
 }
 
 fn set_patterned_detection_range(obj: &mut structs::SclyObject, value: f32) {
-    match get_patterned_info(obj) {
-        Some(mut x) => {
+    let mut infos = get_patterned_infos(obj);
+    if infos.len() <= 0 {
+        return;
+    }
+
+    for i in 0..infos.len() {
+        let x = &mut infos[i];
             x.detection_range *= value;
             x.detection_height_range *= value;
             x.detection_angle *= value;
             x.player_leash_radius *= value;
             // x.player_leash_time *= value;
             x.leash_radius *= value;
-            set_patterned_info(obj, x);
-        },
-        None => {},
     }
+
+    set_patterned_infos(obj, infos);
 }
 
 fn set_patterned_attack_range(obj: &mut structs::SclyObject, value: f32) {
-    match get_patterned_info(obj) {
-        Some(mut x) => {
-            x.max_attack_range *= value;
-            set_patterned_info(obj, x);
-        },
-        None => {},
+    let mut infos = get_patterned_infos(obj);
+    if infos.len() <= 0 {
+        return;
     }
+
+    for i in 0..infos.len() {
+        let x = &mut infos[i];
+            x.max_attack_range *= value;
+    }
+
+    set_patterned_infos(obj, infos);
 }
 
 fn get_damage_infos(obj: &mut structs::SclyObject) -> Vec<structs::scly_structs::DamageInfo> {
@@ -10961,6 +10977,7 @@ fn set_health_info(obj: &mut structs::SclyObject, value: structs::scly_structs::
     if idx >= x.len() {
         return;
     }
+
     x[idx] = value;
     set_health_infos(obj, x);
 }
@@ -10979,25 +10996,26 @@ fn set_health(obj: &mut structs::SclyObject, value: f32) {
 }
 
 fn set_damage(obj: &mut structs::SclyObject, value: f32) {
-    match get_patterned_info(obj) {
-        Some(mut x) => {
-            x.x_damage *= value;
-            set_patterned_info(obj, x);
-        },
-        None => {},
-    }
-
-    let mut damage_infos = get_damage_infos(obj);
-    if damage_infos.len() == 0 {
+    let mut infos = get_patterned_infos(obj);
+    if infos.len() <= 0 {
         return;
     }
 
+    for i in 0..infos.len() {
+        let x = &mut infos[i];
+            x.x_damage *= value;
+    }
+
+    set_patterned_infos(obj, infos);
+
+    let mut damage_infos = get_damage_infos(obj);
+    if damage_infos.len() > 0 {
     for i in 0..damage_infos.len() {
         damage_infos[i].damage *= value;
         damage_infos[i].knockback_power *= value;
     }
-
     set_damage_infos(obj, damage_infos);
+    }
 }
 
 fn patch_remove_control_disabler<'r>(
