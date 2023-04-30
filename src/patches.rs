@@ -8156,6 +8156,7 @@ fn patch_dol<'r>(
     smoother_teleports: bool,
     skip_splash_screens: bool,
     escape_sequence_counts_up: bool,
+    enable_ice_traps: bool,
 ) -> Result<(), String>
 {
     if version == Version::NtscUTrilogy || version == Version::NtscJTrilogy || version == Version::PalTrilogy {
@@ -9390,117 +9391,119 @@ fn patch_dol<'r>(
         new_text_section.extend(spring_ball_cooldown_reset_on_morph_patch.encoded_bytes());
     }
 
-    let switch_case_ice_trap_patch = ppcasm!(symbol_addr!("Case0_Switch_AcceptScriptMsg_CScriptSpecialFunction", version) + 33 * 4, {
-            .long     new_text_section_end;
-    });
-    dol_patcher.ppcasm_patch(&switch_case_ice_trap_patch)?;
-
-    if version == Version::NtscJ || version == Version::Pal {
-        let ice_trap_special_func_patch = ppcasm!(new_text_section_end, {
-                // backup return to case 0
-                lwz       r16, 0x0(r3);
-                // if message not Action then return
-                cmpwi     r29, 19;
-                bne       { new_text_section_end + 0x8c };
-                // backup "this" pointer
-                mr        r14, r3;
-                mr        r15, r5;
-
-                // function body
-                lwz       r3, 0x84c(r25);
-                mr        r4, r25;
-                lis       r5, 0x6FC0;
-                ori       r5, r5, 0x3D46;
-                li        r6, 0xC34;
-                lis       r7, 0x2B75;
-                ori       r7, r7, 0x7945;
-                bl        { symbol_addr!("Freeze__7CPlayerFR13CStateManagerUiUsUi", version) };
-                lis       r5, data@h;
-                addi      r5, r5, data@l;
-                lfs       f14, 0x0(r5);
-                lwz       r5, 0x8b8(r25);
-                lwz       r5, 0x0(r5);
-                lfs       f15, 0x0c(r5);
-                fsubs     f15, f15, f14;
-                stfs      f15, 0x0c(r5);
-                fcmpu     cr0, f15, f28;
-                bgt       { new_text_section_end + 0x68 };
-                lwz       r4, 0x0(r5);
-                andis     r4, r4, 0x7fff;
-                stw       r4, 0x0(r5);
-
-                // restore registers
-                fmr       f14, f28;
-                fmr       f15, f28;
-                mr        r3, r14;
-                andi      r14, r14, 0;
-                mr        r4, r28;
-                mr        r5, r15;
-                andi      r15, r15, 0;
-                mr        r6, r25;
-                mr        r7, r25;
-                mtlr      r16;
-                andi      r16, r16, 0;
-                blr;
-            data:
-                .float    75.0;
+    if enable_ice_traps {
+        let switch_case_ice_trap_patch = ppcasm!(symbol_addr!("Case0_Switch_AcceptScriptMsg_CScriptSpecialFunction", version) + 33 * 4, {
+                .long     new_text_section_end;
         });
+        dol_patcher.ppcasm_patch(&switch_case_ice_trap_patch)?;
 
-        new_text_section_end = new_text_section_end + ice_trap_special_func_patch.encoded_bytes().len() as u32;
-        new_text_section.extend(ice_trap_special_func_patch.encoded_bytes());
-    } else {
-        let ice_trap_special_func_patch = ppcasm!(new_text_section_end, {
-                // backup return to case 0
-                lwz       r16, 0x0(r3);
-                // if message not Action then return
-                cmpwi     r28, 19;
-                bne       { new_text_section_end + 0x8c };
-                // backup "this" pointer
-                mr        r14, r3;
-                mr        r15, r5;
+        if version == Version::NtscJ || version == Version::Pal {
+            let ice_trap_special_func_patch = ppcasm!(new_text_section_end, {
+                    // backup return to case 0
+                    lwz       r16, 0x0(r3);
+                    // if message not Action then return
+                    cmpwi     r29, 19;
+                    bne       { new_text_section_end + 0x8c };
+                    // backup "this" pointer
+                    mr        r14, r3;
+                    mr        r15, r5;
 
-                // function body
-                lwz       r3, 0x84c(r25);
-                mr        r4, r25;
-                lis       r5, 0x6FC0;
-                ori       r5, r5, 0x3D46;
-                li        r6, 0xC34;
-                lis       r7, 0x2B75;
-                ori       r7, r7, 0x7945;
-                bl        { symbol_addr!("Freeze__7CPlayerFR13CStateManagerUiUsUi", version) };
-                lis       r5, data@h;
-                addi      r5, r5, data@l;
-                lfs       f14, 0x0(r5);
-                lwz       r5, 0x8b8(r25);
-                lwz       r5, 0x0(r5);
-                lfs       f15, 0x0c(r5);
-                fsubs     f15, f15, f14;
-                stfs      f15, 0x0c(r5);
-                fcmpu     cr0, f15, f28;
-                bgt       { new_text_section_end + 0x68 };
-                lwz       r4, 0x0(r5);
-                andis     r4, r4, 0x7fff;
-                stw       r4, 0x0(r5);
+                    // function body
+                    lwz       r3, 0x84c(r25);
+                    mr        r4, r25;
+                    lis       r5, 0x6FC0;
+                    ori       r5, r5, 0x3D46;
+                    li        r6, 0xC34;
+                    lis       r7, 0x2B75;
+                    ori       r7, r7, 0x7945;
+                    bl        { symbol_addr!("Freeze__7CPlayerFR13CStateManagerUiUsUi", version) };
+                    lis       r5, data@h;
+                    addi      r5, r5, data@l;
+                    lfs       f14, 0x0(r5);
+                    lwz       r5, 0x8b8(r25);
+                    lwz       r5, 0x0(r5);
+                    lfs       f15, 0x0c(r5);
+                    fsubs     f15, f15, f14;
+                    stfs      f15, 0x0c(r5);
+                    fcmpu     cr0, f15, f28;
+                    bgt       { new_text_section_end + 0x68 };
+                    lwz       r4, 0x0(r5);
+                    andis     r4, r4, 0x7fff;
+                    stw       r4, 0x0(r5);
 
-                // restore registers
-                fmr       f14, f28;
-                fmr       f15, f28;
-                mr        r3, r14;
-                andi      r14, r14, 0;
-                mr        r4, r28;
-                mr        r5, r15;
-                andi      r15, r15, 0;
-                mr        r6, r25;
-                mr        r7, r25;
-                mtlr      r16;
-                andi      r16, r16, 0;
-                blr;
-            data:
-                .float    75.0;
-        });
+                    // restore registers
+                    fmr       f14, f28;
+                    fmr       f15, f28;
+                    mr        r3, r14;
+                    andi      r14, r14, 0;
+                    mr        r4, r28;
+                    mr        r5, r15;
+                    andi      r15, r15, 0;
+                    mr        r6, r25;
+                    mr        r7, r25;
+                    mtlr      r16;
+                    andi      r16, r16, 0;
+                    blr;
+                data:
+                    .float    75.0;
+            });
 
-        new_text_section_end = new_text_section_end + ice_trap_special_func_patch.encoded_bytes().len() as u32;
-        new_text_section.extend(ice_trap_special_func_patch.encoded_bytes());
+            new_text_section_end = new_text_section_end + ice_trap_special_func_patch.encoded_bytes().len() as u32;
+            new_text_section.extend(ice_trap_special_func_patch.encoded_bytes());
+        } else {
+            let ice_trap_special_func_patch = ppcasm!(new_text_section_end, {
+                    // backup return to case 0
+                    lwz       r16, 0x0(r3);
+                    // if message not Action then return
+                    cmpwi     r28, 19;
+                    bne       { new_text_section_end + 0x8c };
+                    // backup "this" pointer
+                    mr        r14, r3;
+                    mr        r15, r5;
+
+                    // function body
+                    lwz       r3, 0x84c(r25);
+                    mr        r4, r25;
+                    lis       r5, 0x6FC0;
+                    ori       r5, r5, 0x3D46;
+                    li        r6, 0xC34;
+                    lis       r7, 0x2B75;
+                    ori       r7, r7, 0x7945;
+                    bl        { symbol_addr!("Freeze__7CPlayerFR13CStateManagerUiUsUi", version) };
+                    lis       r5, data@h;
+                    addi      r5, r5, data@l;
+                    lfs       f14, 0x0(r5);
+                    lwz       r5, 0x8b8(r25);
+                    lwz       r5, 0x0(r5);
+                    lfs       f15, 0x0c(r5);
+                    fsubs     f15, f15, f14;
+                    stfs      f15, 0x0c(r5);
+                    fcmpu     cr0, f15, f28;
+                    bgt       { new_text_section_end + 0x68 };
+                    lwz       r4, 0x0(r5);
+                    andis     r4, r4, 0x7fff;
+                    stw       r4, 0x0(r5);
+
+                    // restore registers
+                    fmr       f14, f28;
+                    fmr       f15, f28;
+                    mr        r3, r14;
+                    andi      r14, r14, 0;
+                    mr        r4, r28;
+                    mr        r5, r15;
+                    andi      r15, r15, 0;
+                    mr        r6, r25;
+                    mr        r7, r25;
+                    mtlr      r16;
+                    andi      r16, r16, 0;
+                    blr;
+                data:
+                    .float    75.0;
+            });
+
+            new_text_section_end = new_text_section_end + ice_trap_special_func_patch.encoded_bytes().len() as u32;
+            new_text_section.extend(ice_trap_special_func_patch.encoded_bytes());
+        }
     }
 
     let bytes_needed = ((new_text_section.len() + 31) & !31) - new_text_section.len();
@@ -13805,10 +13808,12 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     let mut patcher = PrimePatcher::new();
 
     // Add the freeze effect assets required by CPlayer::Freeze()
-    patcher.add_file_patch(
-        b"GGuiSys.pak",
-        |file| add_player_freeze_assets(file, &game_resources),
-    );
+    if config.enable_ice_traps {
+        patcher.add_file_patch(
+            b"GGuiSys.pak",
+            |file| add_player_freeze_assets(file, &game_resources),
+        );
+    }
 
     // Add the pickup icon
     patcher.add_file_patch(
@@ -14306,6 +14311,10 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                     }
                 };
 
+                if !config.enable_ice_traps && PickupType::from_str(&pickup.pickup_type) == PickupType::IceTrap {
+                    panic!("EnableIceTraps must be true if you are placing Ice Trap pickups");
+                }
+
                 // modify pickup, connections, hudmemo etc.
                 patcher.add_scly_patch(
                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
@@ -14366,6 +14375,10 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                         true
                     }
                 };
+
+                if !config.enable_ice_traps && PickupType::from_str(&pickup.pickup_type) == PickupType::IceTrap {
+                    panic!("EnableIceTraps must be true if you are placing Ice Trap pickups");
+                }
 
                 patcher.add_scly_patch(
                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
@@ -14731,6 +14744,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 true,
                 config.skip_splash_screens,
                 config.escape_sequence_counts_up,
+                config.enable_ice_traps,
             )
         );
 
@@ -14757,6 +14771,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 false,
                 config.skip_splash_screens,
                 config.escape_sequence_counts_up,
+                config.enable_ice_traps,
             )
         );
     }
