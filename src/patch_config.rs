@@ -602,6 +602,7 @@ pub struct PatchConfig
     pub starting_visor: Visor,
     pub starting_beam: Beam,
     pub escape_sequence_counts_up: bool,
+    pub enable_ice_traps: bool,
 
     pub artifact_hint_behavior: ArtifactHintBehavior,
 
@@ -688,6 +689,7 @@ struct GameConfig
     starting_visor: Option<String>,
     starting_beam: Option<String>,
     escape_sequence_counts_up: Option<bool>,
+    enable_ice_traps: Option<bool>,
 
     etank_capacity: Option<u32>,
     item_max_capacity: Option<HashMap<String,u32>>,
@@ -1343,6 +1345,7 @@ impl PatchConfigPrivate
             .unwrap_or_else(|| StartingItems::from_u64(1)),
             disable_item_loss: self.game_config.disable_item_loss.unwrap_or(true),
             escape_sequence_counts_up: self.game_config.escape_sequence_counts_up.unwrap_or(false),
+            enable_ice_traps: self.game_config.enable_ice_traps.unwrap_or(false),
             starting_visor,
             starting_beam,
 
