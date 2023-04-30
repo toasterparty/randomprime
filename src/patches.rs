@@ -13599,10 +13599,12 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     let mut patcher = PrimePatcher::new();
 
     // Add the freeze effect assets required by CPlayer::Freeze()
-    patcher.add_file_patch(
-        b"GGuiSys.pak",
-        |file| add_player_freeze_assets(file, &game_resources),
-    );
+    if config.enable_ice_traps {
+        patcher.add_file_patch(
+            b"GGuiSys.pak",
+            |file| add_player_freeze_assets(file, &game_resources),
+        );
+    }
 
     // Add the pickup icon
     patcher.add_file_patch(
