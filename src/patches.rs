@@ -6987,6 +6987,61 @@ fn patch_debug_trigger_2(
     Ok(())
 }
 
+fn patch_add_pb_refill(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32, // on zero, refill PBs
+)
+    -> Result<(), String>
+{
+    let mrea_id = area.mlvl_area.mrea.to_u32().clone();
+    let special_function_id = area.new_object_id_from_layer_id(0);
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    let obj = layer.objects.as_mut_vec().iter_mut()
+        .find(|obj| obj.instance_id & 0x00FFFFFF == id & 0x00FFFFFF);
+    
+    if obj.is_none()
+    {
+        panic!("0x{:X} isn't a valid instance id in room 0x{:X}", id, mrea_id)
+    }
+
+    let obj = obj.unwrap();
+    obj.connections.as_mut_vec().push(structs::Connection {
+            state: structs::ConnectionState::ZERO,
+            message: structs::ConnectionMsg::ACTION,
+            target_object_id: special_function_id,
+        }
+    );
+
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: special_function_id,
+            property_data: structs::SpecialFunction {
+                name: b"myspecialfun\0".as_cstr(),
+                position: [0., 0., 0.].into(),
+                rotation: [0., 0., 0.].into(),
+                type_: 29, // power bomb station
+                unknown0: b"\0".as_cstr(),
+                unknown1: 0.0,
+                unknown2: 0.0,
+                unknown3: 0.0,
+                layer_change_room_id: 0xFFFFFFFF,
+                layer_change_layer_id: 0xFFFFFFFF,
+                item_id: 0,
+                unknown4: 1, // active
+                unknown5: 0.0,
+                unknown6: 0xFFFFFFFF,
+                unknown7: 0xFFFFFFFF,
+                unknown8: 0xFFFFFFFF,
+            }.into(),
+            connections: vec![].into(),
+        }
+    );
+
+    Ok(())
+}
+
 // Removes all cameras and spawn point repositions in the area
 // igoring any provided exlcuded script objects.
 // Additionally, shortens any specified timers to 0-ish seconds
@@ -13785,6 +13840,21 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         patcher.add_scly_patch(
             resource_info!("07_mines_electric.MREA").into(),
             move |ps, area| patch_debug_trigger_2(ps, area),
+        );
+    }
+
+    if config.missile_station_pb_refill {
+        patcher.add_scly_patch(
+            resource_info!("17_chozo_bowling.MREA").into(), // HoTE
+            move |ps, area| patch_add_pb_refill(ps, area, 0x0034025E),
+        );
+        patcher.add_scly_patch(
+            resource_info!("00_mines_savestation_b.MREA").into(), // Mines Missile Station
+            move |ps, area| patch_add_pb_refill(ps, area, 0x002600C6),
+        );
+        patcher.add_scly_patch(
+            resource_info!("missilerechargestation_crater.MREA").into(), // Crater Missile Station
+            move |ps, area| patch_add_pb_refill(ps, area, 0x00030014),
         );
     }
 
