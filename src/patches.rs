@@ -8212,6 +8212,7 @@ fn patch_dol<'r>(
     skip_splash_screens: bool,
     escape_sequence_counts_up: bool,
     enable_ice_traps: bool,
+    uuid: Option<[u8;16]>,
 ) -> Result<(), String>
 {
     if version == Version::NtscUTrilogy || version == Version::NtscJTrilogy || version == Version::PalTrilogy {
@@ -8249,6 +8250,29 @@ fn patch_dol<'r>(
     };
 
     let mut dol_patcher = DolPatcher::new(reader);
+
+    if uuid.is_some()
+    {
+        let uuid = uuid.unwrap();
+
+        // e.g. "!#$MetroidBuildInfo!#$ Build v1.088 10/29/2002 2:21:25"
+        let build_info_address: u32 = match version {
+            Version::NtscU0_00    => 0x803cc588,
+            Version::NtscU0_01    => 0x803cc768,
+            Version::NtscU0_02    => 0x803cd648,
+            Version::NtscK        => 0x803cc688,
+            Version::NtscJ        => 0x803b86cc,
+            Version::Pal          => 0x803b6924,
+            _ => panic!("This version of the game does not support etching a UUID into the dol"),
+        };
+
+        // Leave the start alone for easier pattern matching
+        let build_info_address = build_info_address + "!#$Met".len() as u32;
+
+        // Replace characters with raw bytes
+        dol_patcher.patch(build_info_address, uuid.to_vec().clone().into())?;
+    }
+
     if version == Version::Pal || version == Version::NtscJ {
         dol_patcher
             .patch(symbol_addr!("aMetroidprime", version), b"randomprime\0"[..].into())?;
@@ -14606,6 +14630,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 config.skip_splash_screens,
                 config.escape_sequence_counts_up,
                 config.enable_ice_traps,
+                config.uuid,
             )
         );
 
@@ -14633,6 +14658,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 config.skip_splash_screens,
                 config.escape_sequence_counts_up,
                 config.enable_ice_traps,
+                config.uuid,
             )
         );
     }

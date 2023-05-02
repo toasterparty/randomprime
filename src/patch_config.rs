@@ -536,6 +536,7 @@ pub struct PatchConfig
     pub export_asset_dir: Option<String>,
     pub extern_assets_dir: Option<String>,
     pub seed: u64,
+    pub uuid: Option<[u8;16]>,
 
     pub force_vanilla_layout: bool,
 
@@ -736,6 +737,7 @@ struct PatchConfigPrivate
     force_vanilla_layout: Option<bool>,
     extern_assets_dir: Option<String>,
     seed: Option<u64>,
+    uuid: Option<[u8;16]>,
 
     #[serde(default)]
     preferences: Preferences,
@@ -1277,6 +1279,7 @@ impl PatchConfigPrivate
             force_vanilla_layout,
 
             seed: self.seed.unwrap_or(123),
+            uuid: self.uuid.clone(),
             extern_assets_dir: self.extern_assets_dir.clone(),
 
             level_data: self.level_data.clone(),
