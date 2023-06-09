@@ -6499,6 +6499,51 @@ fn patch_add_connections<'r>
     Ok(())
 }
 
+fn patch_remove_connection<'r>(
+    layers: &mut Vec<SclyLayer>,
+    connection: &ConnectionConfig,
+)
+{
+    for layer in layers.iter_mut() {
+        let sender = layer.objects
+            .as_mut_vec()
+            .iter_mut()
+            .find(|obj| obj.instance_id&0x00FFFFFF == connection.sender_id);
+
+        if sender.is_none() {
+            continue;
+        }
+
+        let sender = sender.unwrap();
+        sender.connections.as_mut_vec().retain(|c|
+            c.target_object_id&0x00FFFFFF != connection.target_id ||
+            c.state != structs::ConnectionState(connection.state as u32) ||
+            c.message != structs::ConnectionMsg(connection.message as u32)
+        );
+        return;
+    }
+
+    panic!("Could not find object 0x{:X} when adding a script connection", connection.sender_id);
+}
+
+fn patch_remove_connections<'r>
+(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    connections: &Vec<ConnectionConfig>,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layers = scly.layers.as_mut_vec();
+
+    for connection in connections {
+        patch_remove_connection(layers, connection);
+    }
+
+    Ok(())
+}
+
 fn patch_remove_doors<'r>
 (
     _ps: &mut PatcherState,
@@ -13556,6 +13601,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             initial_thermal_heat_level: None,
                             map_default_state: Some(structs::MapaObjectVisibilityMode::MapStationOrVisit),
                             add_connections: None,
+                            remove_connections: None,
                         }
                     );
                 }
@@ -15477,6 +15523,18 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         patcher.add_scly_patch(
             *room,
             move |ps, area| patch_add_connections(ps, area, connections)
+        );
+    }
+
+    for (room, room_config) in other_patches {
+        if room_config.remove_connections.is_none() {
+            continue;
+        }
+
+        let connections = room_config.remove_connections.as_ref().unwrap();
+        patcher.add_scly_patch(
+            *room,
+            move |ps, area| patch_remove_connections(ps, area, connections)
         );
     }
 
