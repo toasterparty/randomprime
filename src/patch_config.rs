@@ -372,6 +372,68 @@ pub enum EnviornmentalEffect {
     Bubbles,
 }
 
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, Eq, PartialEq)]
+#[allow(non_camel_case_types)]
+pub enum ConnectionState {
+    ACTIVE = 0x0,
+    ARRIVED = 0x1,
+    CLOSED = 0x2,
+    ENTERED = 0x3,
+    EXITED = 0x4,
+    INACTIVE = 0x5,
+    INSIDE = 0x6,
+    MAX_REACHED = 0x7,
+    OPEN = 0x8,
+    ZERO = 0x9,
+    ATTACK = 0xA,
+    RETREAT = 0xC,
+    PATROL = 0xD,
+    DEAD = 0xE,
+    CAMERA_PATH = 0xF,
+    CAMERA_TARGET = 0x10,
+    PLAY = 0x12,
+    DEATH_RATTLE = 0x14,
+    DAMAGE = 0x16,
+    MODIFY = 0x19,
+    SCAN_DONE = 0x1C,
+    REFLECTED_DAMAGE = 0x1F,
+    INHERIT_BOUNDS = 0x20,
+}
+
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, Eq, PartialEq)]
+#[allow(non_camel_case_types)]
+pub enum ConnectionMsg {
+    ACTIVATE = 0x1,
+    CLOSE = 0x3,
+    DEACTIVATE = 0x4,
+    DECREMENT = 0x5,
+    FOLLOW = 0x6,
+    INCREMENT = 0x7,
+    NEXT = 0x8,
+    OPEN = 0x9,
+    RESET = 0xA,
+    RESET_AND_START = 0xB,
+    SET_TO_MAX = 0xC,
+    SET_TO_ZERO = 0xD,
+    START = 0xE,
+    STOP = 0xF,
+    STOP_AND_RESET = 0x10,
+    TOGGLE_ACTIVE = 0x11,
+    ACTION = 0x13,
+    PLAY = 0x14,
+    ALERT = 0x15,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ConnectionConfig
+{
+    pub sender_id: u32,
+    pub target_id: u32,
+    pub state: ConnectionState,
+    pub message: ConnectionMsg,
+}
+
 #[derive(Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RoomConfig
@@ -405,6 +467,7 @@ pub struct RoomConfig
     pub disabled_layers: Option<Vec<u32>>,
     pub delete_ids: Option<Vec<u32>>,
     pub audio_override: Option<HashMap<String, String>>, // key=instance_id, value=/audio/min_phazonL.dsp|/audio/min_phazonR.dsp
+    pub add_connections: Option<Vec<ConnectionConfig>>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]

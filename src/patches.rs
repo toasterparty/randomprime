@@ -30,6 +30,7 @@ use crate::patch_config::{
     GenericTexture,
     FogConfig,
     PhazonDamageModifier,
+    ConnectionConfig,
 };
 
 use std::{fs::{self, File}, io::{Read}, path::Path};
@@ -43,7 +44,7 @@ use crate::{
     elevators::{Elevator, SpawnRoom, SpawnRoomData, World, is_elevator},
     gcz_writer::GczWriter,
     mlvl_wrapper,
-    pickup_meta::{self, PickupType, PickupModel, DoorLocation, ObjectsToRemove, ScriptObjectLocation },
+    pickup_meta::{self, PickupType, PickupModel, DoorLocation, ObjectsToRemove, ScriptObjectLocation},
     door_meta::{DoorType, BlastShieldType},
     patcher::{PatcherState, PrimePatcher},
     starting_items::StartingItems,
@@ -75,7 +76,7 @@ use reader_writer::{
     // Readable,
     Writable,
 };
-use structs::{MapState, res_id, ResId, scly_structs::TypeVulnerability};
+use structs::{MapState, res_id, ResId, scly_structs::TypeVulnerability, SclyLayer};
 
 use std::{
     borrow::Cow,
@@ -6450,6 +6451,51 @@ fn patch_remove_ids<'r>
     for layer in layers.iter_mut() {
         layer.objects.as_mut_vec().retain(|obj| !remove_ids.contains(&(obj.instance_id&0x00FFFFFF)));
     }
+    Ok(())
+}
+
+fn patch_add_connection<'r>(
+    layers: &mut Vec<SclyLayer>,
+    connection: &ConnectionConfig,
+)
+{
+    for layer in layers.iter_mut() {
+        let sender = layer.objects
+            .as_mut_vec()
+            .iter_mut()
+            .find(|obj| obj.instance_id&0x00FFFFFF == connection.sender_id);
+
+        if sender.is_some() {
+            let sender = sender.unwrap();
+            sender.connections.as_mut_vec().push(
+                structs::Connection {
+                    state: structs::ConnectionState(connection.state as u32),
+                    message: structs::ConnectionMsg(connection.message as u32),
+                    target_object_id: connection.target_id,
+                },
+            );
+            return;
+        }
+    }
+
+    panic!("Could not find object 0x{:X} when adding a script connection", connection.sender_id);
+}
+
+fn patch_add_connections<'r>
+(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    connections: &Vec<ConnectionConfig>,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layers = scly.layers.as_mut_vec();
+
+    for connection in connections {
+        patch_add_connection(layers, connection);
+    }
+
     Ok(())
 }
 
@@ -13509,6 +13555,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             initial_enviornmental_effect: None,
                             initial_thermal_heat_level: None,
                             map_default_state: Some(structs::MapaObjectVisibilityMode::MapStationOrVisit),
+                            add_connections: None,
                         }
                     );
                 }
@@ -13594,6 +13641,27 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     let savw_scans_to_add = &savw_scans_to_add;
     let local_savw_scans_to_add = &local_savw_scans_to_add;
     let savw_scan_logbook_category = &savw_scan_logbook_category;
+
+    // simplify iteration of additional patches
+    let mut other_patches: Vec<((&[u8], u32), &RoomConfig)> = Vec::new();
+    for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {
+        let world = World::from_pak(pak_name).unwrap();
+        for room_info in rooms.iter() {
+            let level = level_data.get(world.to_json_key());
+            if level.is_none() {
+                continue;
+            }
+
+            let room_config = level.unwrap().rooms.get(room_info.name.trim());
+            if room_config.is_none() {
+                continue;
+            }
+
+            let room_config = room_config.unwrap();
+            other_patches.push(((pak_name.as_bytes(), room_info.room_id.to_u32()), room_config));
+        }
+    }
+    let other_patches = &other_patches;
 
     // Remove unused artifacts from logbook
     let mut savw_to_remove_from_logbook: Vec<u32> = Vec::new();
@@ -15399,30 +15467,30 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         );
     }
 
-    // remove arbitrary objects
-    for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {
-        let world = World::from_pak(pak_name).unwrap();
-        for room_info in rooms.iter() {
-            let level = level_data.get(world.to_json_key());
-            if level.is_none() {
-                continue;
-            }
-
-            let room = level.unwrap().rooms.get(room_info.name.trim());
-            if room.is_none() {
-                continue;
-            }
-
-            let room = room.unwrap();
-            if room.delete_ids.is_none() {
-                continue;
-            }
-
-            patcher.add_scly_patch(
-                (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                move |ps, area| patch_remove_ids(ps, area, room.delete_ids.as_ref().unwrap().to_vec())
-            );
+    // add arbitrary connections
+    for (room, room_config) in other_patches {
+        if room_config.add_connections.is_none() {
+            continue;
         }
+
+        let connections = room_config.add_connections.as_ref().unwrap();
+        patcher.add_scly_patch(
+            *room,
+            move |ps, area| patch_add_connections(ps, area, connections)
+        );
+    }
+
+    // remove arbitrary objects
+    for (room, room_config) in other_patches.iter() {
+        if room_config.delete_ids.is_none() {
+            continue;
+        }
+
+        let delete_ids = room_config.delete_ids.as_ref().unwrap().to_vec();
+        patcher.add_scly_patch(
+            *room,
+            move |ps, area| patch_remove_ids(ps, area, delete_ids.clone())
+        );
     }
 
     if config.suit_colors.is_some() {
