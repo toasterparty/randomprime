@@ -4274,6 +4274,49 @@ fn patch_post_pq_frigate(
     Ok(())
 }
 
+fn id_in_use(
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
+) -> bool
+{
+    let scly = area.mrea().scly_section();
+    for layer in scly.layers.iter() {
+        if layer.objects.iter().any(|obj| obj.instance_id&0x00FFFFFF == id&0x00FFFFFF)
+        {
+            return true;
+        }
+    }
+
+    false
+}
+
+fn patch_add_relay<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
+)
+    -> Result<(), String>
+{
+    if id_in_use(area, id) {
+        panic!("id 0x{:X} already in use", id);
+    }
+
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: id,
+            property_data: structs::Relay {
+                    name: b"my relay\0".as_cstr(),
+                    active: 1,
+                }.into(),
+            connections: vec![].into(),
+        },
+    );
+
+    Ok(())
+}
+
 fn patch_add_platform<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -6463,7 +6506,7 @@ fn patch_add_connection<'r>(
         let sender = layer.objects
             .as_mut_vec()
             .iter_mut()
-            .find(|obj| obj.instance_id&0x00FFFFFF == connection.sender_id);
+            .find(|obj| obj.instance_id&0x00FFFFFF == connection.sender_id&0x00FFFFFF);
 
         if sender.is_some() {
             let sender = sender.unwrap();
@@ -13602,6 +13645,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             map_default_state: Some(structs::MapaObjectVisibilityMode::MapStationOrVisit),
                             add_connections: None,
                             remove_connections: None,
+                            relays: None,
                         }
                     );
                 }
@@ -14119,6 +14163,19 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         platform.position,
                                         platform.rotation.unwrap_or([0.0, 0.0, 0.0]),
                                         platform.alt_platform.unwrap_or(false),
+                                    ),
+                                );
+                            }
+                        }
+
+                        if room.relays.is_some() {
+                            for relay_id in room.relays.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_relay(
+                                        ps,
+                                        area,
+                                        *relay_id,
                                     ),
                                 );
                             }

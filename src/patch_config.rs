@@ -469,6 +469,7 @@ pub struct RoomConfig
     pub audio_override: Option<HashMap<String, String>>, // key=instance_id, value=/audio/min_phazonL.dsp|/audio/min_phazonR.dsp
     pub add_connections: Option<Vec<ConnectionConfig>>,
     pub remove_connections: Option<Vec<ConnectionConfig>>,
+    pub relays: Option<Vec<u32>>, // instance id of new relay
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
