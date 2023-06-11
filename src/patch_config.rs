@@ -470,6 +470,7 @@ pub struct RoomConfig
     pub add_connections: Option<Vec<ConnectionConfig>>,
     pub remove_connections: Option<Vec<ConnectionConfig>>,
     pub relays: Option<Vec<u32>>, // instance id of new relay
+    pub cutscene_skip_fns: Option<Vec<u32>>, // instance id of new special function
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
