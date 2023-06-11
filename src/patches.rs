@@ -31,6 +31,7 @@ use crate::patch_config::{
     FogConfig,
     PhazonDamageModifier,
     ConnectionConfig,
+    TimerConfig,
 };
 
 use std::{fs::{self, File}, io::{Read}, path::Path};
@@ -4290,6 +4291,38 @@ fn id_in_use(
     false
 }
 
+
+fn patch_add_timer<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    timer_config: TimerConfig,
+)
+    -> Result<(), String>
+{
+    if id_in_use(area, timer_config.id) {
+        panic!("id 0x{:X} already in use", timer_config.id);
+    }
+
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: timer_config.id,
+            property_data: structs::Timer {
+                name: b"my timer\0".as_cstr(),
+                start_time: timer_config.time,
+                max_random_add: timer_config.max_random_add.unwrap_or(0.0),
+                reset_to_zero: timer_config.reset_to_zero.unwrap_or(false) as u8,
+                start_immediately: timer_config.start_immediately.unwrap_or(false) as u8,
+                active: 1,
+            }.into(),
+            connections: vec![].into(),
+        },
+    );
+
+    Ok(())
+}
+
 fn patch_add_cutscene_skip_fn<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
@@ -4330,7 +4363,6 @@ fn patch_add_cutscene_skip_fn<'r>(
 
     Ok(())
 }
-
 
 fn patch_add_relay<'r>(
     _ps: &mut PatcherState,
@@ -13689,6 +13721,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             remove_connections: None,
                             relays: None,
                             cutscene_skip_fns: None,
+                            timers: None,
                         }
                     );
                 }
@@ -14232,6 +14265,19 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         ps,
                                         area,
                                         *special_fn_id,
+                                    ),
+                                );
+                            }
+                        }
+
+                        if room.timers.is_some() {
+                            for timer in room.timers.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_timer(
+                                        ps,
+                                        area,
+                                        timer.clone(),
                                     ),
                                 );
                             }

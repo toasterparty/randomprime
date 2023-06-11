@@ -434,6 +434,17 @@ pub struct ConnectionConfig
     pub message: ConnectionMsg,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TimerConfig
+{
+    pub id: u32,
+    pub time: f32,
+    pub max_random_add: Option<f32>,
+    pub reset_to_zero: Option<bool>,
+    pub start_immediately: Option<bool>,
+}
+
 #[derive(Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RoomConfig
@@ -471,6 +482,7 @@ pub struct RoomConfig
     pub remove_connections: Option<Vec<ConnectionConfig>>,
     pub relays: Option<Vec<u32>>, // instance id of new relay
     pub cutscene_skip_fns: Option<Vec<u32>>, // instance id of new special function
+    pub timers: Option<Vec<TimerConfig>>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
