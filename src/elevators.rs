@@ -583,7 +583,7 @@ macro_rules! decl_spawn_rooms {
                 for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() { // for each pak
                     for room_info in rooms.iter() { // for each room in the pak
                         if self.spawn_room_data().mrea == room_info.room_id.to_u32() {
-                            return room_info.name;
+                            return room_info.name();
                         }
                     }
                 }
@@ -631,27 +631,14 @@ impl SpawnRoomData
 
             let mut idx: u32 = 0;
             for room_info in rooms.iter() { // for each room in the pak
-                if room_info.name.to_lowercase().trim() == room_name { // trim both because "west tower " has an extra space in it
-
+                if room_info.name().to_lowercase().trim() == room_name { // trim both because "west tower " has an extra space in it
                     return SpawnRoomData {
                         pak_name,
                         mlvl: world.mlvl(),
                         mrea: room_info.room_id.to_u32(),
                         mrea_idx: idx,
                         room_id: 0,
-                        name: room_info.name,
-                    };
-                }
-
-                // special handing for second unique room with identical name STRG
-                if "connection elevator to deck beta (2)" == room_name && room_info.room_id.to_u32() == 0x6ED3231B {
-                    return SpawnRoomData {
-                        pak_name,
-                        mlvl: world.mlvl(),
-                        mrea: room_info.room_id.to_u32(),
-                        mrea_idx: idx,
-                        room_id: 0,
-                        name: room_info.name,
+                        name: room_info.name(),
                     };
                 }
                 idx = idx + 1;

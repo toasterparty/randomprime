@@ -13335,7 +13335,7 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
                 continue;
             }
 
-            let room = level.unwrap().rooms.get(room_info.name.trim());
+            let room = level.unwrap().rooms.get(room_info.name().trim());
             if room.is_none() {
                 continue;
             }
@@ -13685,7 +13685,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
             items.push(PickupType::EnergyTank);
 
             for room_info in rooms.iter() {
-                let key = room_info.name.trim();
+                let key = room_info.name().trim();
                 if level.rooms.get(key).is_none() {
                     level.rooms.insert(key.to_string(), RoomConfig {
                             pickups: Some(vec![]),
@@ -13818,7 +13818,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 continue;
             }
 
-            let room_config = level.unwrap().rooms.get(room_info.name.trim());
+            let room_config = level.unwrap().rooms.get(room_info.name().trim());
             if room_config.is_none() {
                 continue;
             }
@@ -14185,7 +14185,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
 
                 let level = level_data.get(world.to_json_key());
                 if level.is_some() {
-                    let room = level.unwrap().rooms.get(room_info.name.trim());
+                    let room = level.unwrap().rooms.get(room_info.name().trim());
                     if room.is_some() {
                         let room = room.clone().unwrap();
                         if room.pickups.is_some() {
@@ -14658,7 +14658,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                     }
 
                     if local_dl.door_location.is_none() {
-                        panic!("Tried to modify shield of door in {} on a dock which does not have a door", room_info.name);
+                        panic!("Tried to modify shield of door in {} on a dock which does not have a door", room_info.name());
                     }
 
                     // Patch door color and blast shield //
@@ -14747,14 +14747,14 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 }
 
                 if maybe_door_location.is_none() {
-                    panic!("Could not find dock #{} in '{}'", dock_num, room_info.name);
+                    panic!("Could not find dock #{} in '{}'", dock_num, room_info.name());
                 }
                 let door_location = maybe_door_location.unwrap();
 
                 // If specified, patch this door's connection
                 if door_config.destination.is_some() {
                     if door_location.door_location.is_none() {
-                        panic!("Tried to shuffle door destination in {} on a dock which does not have a door", room_info.name);
+                        panic!("Tried to shuffle door destination in {} on a dock which does not have a door", room_info.name());
                     }
 
                     // Get the resource info for premade scan point with destination info
@@ -14769,7 +14769,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                     // Get info about the destination room
                     let destination = door_config.destination.clone().unwrap();
                     let destination_room = SpawnRoomData::from_str(format!("{}:{}", world.to_str(), destination.room_name).as_str());
-                    let source_room = SpawnRoomData::from_str(format!("{}:{}", world.to_str(), room_info.name).as_str());
+                    let source_room = SpawnRoomData::from_str(format!("{}:{}", world.to_str(), room_info.name()).as_str());
 
                     if destination_room.mrea == source_room.mrea {
                         panic!("Dock destination cannot be in same room");

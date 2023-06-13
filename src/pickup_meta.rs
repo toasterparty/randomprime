@@ -535,7 +535,7 @@ pub struct ScriptObjectLocation
 pub struct RoomInfo
 {
     pub room_id: ResId<res_id::MREA>,
-    pub name: &'static str,
+    name: &'static str, // use name() for handling of the duplicate Connection Elevator to Deck Beta
     pub name_id: ResId<res_id::STRG>,
     pub mapa_id: ResId<res_id::MAPA>,
     pub pickup_locations: &'static [PickupLocation],
@@ -553,19 +553,6 @@ pub struct ObjectsToRemove
 
 impl RoomInfo
 {
-    pub fn from_str(string: &str) -> Self
-    {
-        for (_, rooms) in ROOM_INFO.iter() {
-            for room_info in rooms.iter() {
-                if room_info.name == string {
-                    return *room_info;
-                }
-            }
-        }
-
-        panic!("Could not find room {}", string)
-    }
-
     pub fn index(&self) -> usize
     {
         let mut i = 0;
@@ -579,6 +566,14 @@ impl RoomInfo
         }
 
         panic!("Could not find room {}", self.name)
+    }
+
+    pub fn name(&self) -> &'static str
+    {
+        match self.room_id.to_u32() {
+            0x6ED3231B => "Connection Elevator to Deck Beta (2)",
+            _ => self.name,
+        }
     }
 }
 
