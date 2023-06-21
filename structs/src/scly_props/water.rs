@@ -28,8 +28,8 @@ pub struct Water<'r>
     pub txtr6: u32,
     pub unknown5: GenericArray<f32, U3>,
     pub unkown6: f32,
-    pub unkown7: f32,
-    pub unkown8: f32,
+    pub unkown7: f32, // morphInTime
+    pub unkown8: f32, // morphOutTime
     pub active: u8,
     pub fluid_type: u32,
     pub unkown11: u8,
@@ -68,8 +68,8 @@ pub struct Water<'r>
     pub heat_wave_color: GenericArray<f32, U4>, // RGBA
     pub lightmap_txtr: u32,
     pub unknown51: f32,
-    pub unknown52: f32,
-    pub unknown53: f32,
+    pub unknown52: f32, // alphaInTime
+    pub unknown53: f32, // alphaOutTime
     pub unknown54: u32,
     pub unknown55: u32,
     pub crash_the_game: u8,

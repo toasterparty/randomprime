@@ -4276,6 +4276,35 @@ fn patch_post_pq_frigate(
     Ok(())
 }
 
+fn patch_edit_water<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
+    morph_in_time: f32,
+    alpha_out_time: f32,
+)
+    -> Result<(), String>
+{
+    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
+    for layer in layers.iter_mut()
+    {
+        let obj = layer.objects
+            .iter_mut()
+            .find(|obj| obj.instance_id&0x00FFFFFF == id&0x00FFFFFF);
+
+        if obj.is_none()
+        {
+            continue;
+        }
+
+        let water = obj.unwrap().property_data.as_water_mut().unwrap();
+        water.unkown7 = morph_in_time;
+        water.unknown53 = alpha_out_time;
+    }
+
+    Ok(())
+}
+
 fn id_in_use(
     area: &mut mlvl_wrapper::MlvlArea,
     id: u32,
@@ -14267,6 +14296,35 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         *special_fn_id,
                                     ),
                                 );
+                            }
+
+                            /* Rooms with moving water get weird when you skip cutscenes, we need to change the water to compensate */
+                            if room_info.room_id.to_u32() == 0xC9D52BBC // energy core
+                            {
+                                for id in [2883635, 2884015]
+                                {
+                                    patcher.add_scly_patch(
+                                        (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                        move |ps, area| patch_edit_water(
+                                            ps,
+                                            area,
+                                            id,
+                                            2.0,
+                                            0.7,
+                                        ),
+                                    );
+                                }
+                            } else if room_info.room_id.to_u32() == 0xC8309DF6 { // hive totem
+                                // patcher.add_scly_patch(
+                                //     (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                //     move |ps, area| patch_edit_water(
+                                //         ps,
+                                //         area,
+                                //         TBD,
+                                //         TBD,
+                                //         TBD,
+                                //     ),
+                                // );
                             }
                         }
 
