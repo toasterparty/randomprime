@@ -13,6 +13,7 @@ pub enum World {
     PhendranaDrifts,
     PhazonMines,
     ImpactCrater,
+    EndCinema,
 }
 
 impl World {
@@ -26,6 +27,7 @@ impl World {
             World::PhazonMines,
             World::MagmoorCaverns,
             World::ImpactCrater,
+            World::EndCinema,
         ].iter().map(|i| *i)
     }
 
@@ -39,6 +41,7 @@ impl World {
             World::PhazonMines     => "metroid5.pak",
             World::MagmoorCaverns  => "Metroid6.pak",
             World::ImpactCrater    => "Metroid7.pak",
+            World::EndCinema       => "Metroid8.pak",
         }
     }
 
@@ -61,6 +64,7 @@ impl World {
             World::PhazonMines     => 0xb1ac4d65,
             World::MagmoorCaverns  => 0x3ef8237c,
             World::ImpactCrater    => 0xc13b09d1,
+            World::EndCinema       => 0x13D79165,
         }
     }
 
@@ -73,6 +77,7 @@ impl World {
             World::PhazonMines     => "Mines, Phazon",
             World::MagmoorCaverns  => "Magmoor Caverns",
             World::ImpactCrater    => "Crater, Impact",
+            World::EndCinema       => "End Cinema",
         }
     }
 
@@ -85,6 +90,7 @@ impl World {
             World::PhazonMines     => "Phazon Mines",
             World::MagmoorCaverns  => "Magmoor Caverns",
             World::ImpactCrater    => "Impact Crater",
+            World::EndCinema       => "End Cinema",
         }
     }
 

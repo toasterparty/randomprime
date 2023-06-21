@@ -923,6 +923,7 @@ fn main()
         "metroid5.pak",
         "Metroid6.pak",
         "Metroid7.pak",
+        "Metroid8.pak",
     ];
 
     let mut pickup_table = HashMap::new();
@@ -1208,12 +1209,19 @@ fn main()
 
             {
                 let strg_id = mrea_name_strg_map[&ResId::<res_id::MREA>::new(res.file_id)];
-                let strg: structs::Strg = res_db.map[&ResourceKey::from(strg_id)]
-                    .data.data.clone().read(());
-                let name = strg
-                    .string_tables.iter().next().unwrap()
-                    .strings.iter().next().unwrap()
-                    .into_owned().into_string();
+
+                let name = match f {
+                    &"Metroid8.pak" => "End Cinema\0".to_string(),
+                    _ => {
+                        let strg: structs::Strg = res_db.map[&ResourceKey::from(strg_id)]
+                            .data.data.clone().read(());
+                        let name = strg
+                            .string_tables.iter().next().unwrap()
+                            .strings.iter().next().unwrap()
+                            .into_owned().into_string();
+                        name
+                    },
+                };
 
                 if vec![
                     0x2398E906, // artifact temple
@@ -1287,7 +1295,7 @@ fn main()
     println!("");
     println!("");
 
-    println!("pub const ROOM_INFO: &[(&str, &[RoomInfo]); 7] = &[");
+    println!("pub const ROOM_INFO: &[(&str, &[RoomInfo]); 8] = &[");
     for (fname, locations) in filenames.iter().zip(locations.into_iter()) {
         // println!("    // {}", fname);
         println!("    ({:?}, &[", fname);

@@ -4291,7 +4291,6 @@ fn id_in_use(
     false
 }
 
-
 fn patch_add_timer<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
