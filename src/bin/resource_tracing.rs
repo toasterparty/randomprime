@@ -1358,6 +1358,19 @@ fn main()
     println!("];");
 
     let mut cmdl_aabbs: Vec<_> = cmdl_aabbs.iter().collect();
+    
+    let ice_trab_cmdl = ResId::<res_id::CMDL>::new(0xA3108E43);
+    let ice_trap_aabb =
+        [
+            f32::from_bits(0xBF09348B),
+            f32::from_bits(0xBFB99CD0),
+            f32::from_bits(0xBEAA8B6E),
+            f32::from_bits(0x3F08ADAC),
+            f32::from_bits(0x3EDC6CFC),
+            f32::from_bits(0x3F003E64),
+        ];
+
+    cmdl_aabbs.push((&ice_trab_cmdl, &ice_trap_aabb));
     cmdl_aabbs.sort_by_key(|&(k, _)| k);
     println!("const PICKUP_CMDL_AABBS: [(u32, [u32; 6]); {}] = [", cmdl_aabbs.len());
     for (cmdl_id, aabb) in cmdl_aabbs {
@@ -1374,11 +1387,15 @@ fn main()
     println!("    {{");
     println!("        match self {{");
     for pt in PickupType::iter() {
+        if pt == PickupType::IceTrap {
+            continue;
+        }
+
         let pm = PickupModel::from_type(pt);
         let filename = stdstr::from_utf8(&pickup_table[&pm].attainment_audio_file_name).unwrap();
         println!("            PickupType::{:?} => {:?},", pt, filename);
     }
-    println!("            PickupType::FloatyJump => \"/audio/itm_x_short_02.dsp\\0\", // This is a hard-coded hack, there isn't an FJ item in-game");
+    println!("            PickupType::IceTrap => \"/audio/evt_x_event_00.dsp\\0\", // being a bit trolly here");
     println!("        }}");
     println!("    }}");
 
@@ -1390,6 +1407,33 @@ fn main()
     println!("    {{");
     println!("        match self {{");
     for pm in PickupModel::iter() {
+        if pm == PickupModel::IceTrap {
+
+            let string = 
+            "PickupModel::IceTrap => {
+                const DATA: &[(u32, FourCC)] = &[
+                    (0x1544D478, FourCC::from_bytes(b\"TXTR\")),
+                    (0x394D3877, FourCC::from_bytes(b\"ANIM\")),
+                    (0x454FB170, FourCC::from_bytes(b\"TXTR\")),
+                    (0x4B26EFDA, FourCC::from_bytes(b\"EVNT\")),
+                    (0xAF9DEFBE, FourCC::from_bytes(b\"CINF\")),
+                    (0x5E027EA1, FourCC::from_bytes(b\"TXTR\")),
+                    (0xA0DA476B, FourCC::from_bytes(b\"PART\")),
+                    (0x29782CA6, FourCC::from_bytes(b\"TXTR\")),
+                    (0x0DEB9456, FourCC::from_bytes(b\"PART\")),
+                    (0xA4B75FDE, FourCC::from_bytes(b\"TXTR\")),
+                    (0x0F7E19D9, FourCC::from_bytes(b\"TXTR\")),
+                    (0x09E3FB4C, FourCC::from_bytes(b\"TXTR\")),
+                    (0xA3108E43, FourCC::from_bytes(b\"CMDL\")),
+                    (0xFEBBC197, FourCC::from_bytes(b\"CSKR\")),
+                ];
+                DATA
+            },";
+
+            println!("{}", string);
+            continue;
+        }
+
         let mut deps: Vec<_> = pickup_table[&pm].deps.iter().collect();
         deps.sort();
         println!("            PickupModel::{:?} => {{", pm);
@@ -1413,6 +1457,46 @@ fn main()
     println!("    {{");
     println!("        match self {{");
     for pm in PickupModel::iter() {
+        if pm == PickupModel::IceTrap {
+            let string = 
+"           PickupModel::IceTrap => &[
+                0x00, 0x00, 0x00, 0x12, 0x49, 0x63, 0x65, 0x20,
+                0x54, 0x72, 0x61, 0x70, 0x00, 0xC3, 0x18, 0x19,
+                0x25, 0x41, 0xCB, 0xC3, 0x2E, 0xC3, 0x0C, 0xB0, 
+                0x2F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x3F, 0xA0, 0x00,
+                0x00, 0x3F, 0xA0, 0x00, 0x00, 0x3F, 0xA0, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x42, 0xC8, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0xA3, 0x10, 0x8E, 0x43, 0xDE, 0xAF, 0x00,
+                0x72, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x0E, 0x00, 0x00, 0x00,
+                0x0E, 0x01, 0x3F, 0x80, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x3F, 0x80, 0x00, 0x00, 0x41, 0xA0,
+                0x00, 0x00, 0x3F, 0x80, 0x00, 0x00, 0x3F, 0x80,
+                0x00, 0x00, 0x3F, 0x80, 0x00, 0x00, 0x3F, 0x80,
+                0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00,
+                0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x04, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+                0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x3F, 0x80, 0x00,
+                0x00, 0x3F, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x01,
+                0x00, 0x00, 0x3F, 0x80, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF,
+            ]";
+
+            println!("{}", string);
+            continue;
+        }
+
         println!("            PickupModel::{:?} => &[", pm);
         let pickup_bytes = &pickup_table[&pm].bytes;
         for y in 0..((pickup_bytes.len() + BYTES_PER_LINE - 1) / BYTES_PER_LINE) {
