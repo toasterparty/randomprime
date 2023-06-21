@@ -31,6 +31,7 @@ use crate::patch_config::{
     FogConfig,
     PhazonDamageModifier,
     ConnectionConfig,
+    RelayConfig,
     TimerConfig,
 };
 
@@ -4313,7 +4314,7 @@ fn patch_add_timer<'r>(
                 max_random_add: timer_config.max_random_add.unwrap_or(0.0),
                 reset_to_zero: timer_config.reset_to_zero.unwrap_or(false) as u8,
                 start_immediately: timer_config.start_immediately.unwrap_or(false) as u8,
-                active: 1,
+                active: timer_config.active.unwrap_or(true) as u8,
             }.into(),
             connections: vec![].into(),
         },
@@ -4366,22 +4367,22 @@ fn patch_add_cutscene_skip_fn<'r>(
 fn patch_add_relay<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
-    id: u32,
+    relay_config: RelayConfig,
 )
     -> Result<(), String>
 {
-    if id_in_use(area, id) {
-        panic!("id 0x{:X} already in use", id);
+    if id_in_use(area, relay_config.id) {
+        panic!("id 0x{:X} already in use", relay_config.id);
     }
 
     let scly = area.mrea().scly_section_mut();
     let layer = &mut scly.layers.as_mut_vec()[0];
     layer.objects.as_mut_vec().push(
         structs::SclyObject {
-            instance_id: id,
+            instance_id: relay_config.id,
             property_data: structs::Relay {
                     name: b"my relay\0".as_cstr(),
-                    active: 1,
+                    active: relay_config.active.unwrap_or(true) as u8,
                 }.into(),
             connections: vec![].into(),
         },
@@ -14244,13 +14245,13 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                         }
 
                         if room.relays.is_some() {
-                            for relay_id in room.relays.as_ref().unwrap() {
+                            for relay_config in room.relays.as_ref().unwrap() {
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
                                     move |ps, area| patch_add_relay(
                                         ps,
                                         area,
-                                        *relay_id,
+                                        relay_config.clone(),
                                     ),
                                 );
                             }

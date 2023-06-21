@@ -477,9 +477,18 @@ pub struct ConnectionConfig
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RelayConfig
+{
+    pub id: u32,
+    pub active: Option<bool>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TimerConfig
 {
     pub id: u32,
+    pub active: Option<bool>,
     pub time: f32,
     pub max_random_add: Option<f32>,
     pub reset_to_zero: Option<bool>,
@@ -521,7 +530,7 @@ pub struct RoomConfig
     pub audio_override: Option<HashMap<String, String>>, // key=instance_id, value=/audio/min_phazonL.dsp|/audio/min_phazonR.dsp
     pub add_connections: Option<Vec<ConnectionConfig>>,
     pub remove_connections: Option<Vec<ConnectionConfig>>,
-    pub relays: Option<Vec<u32>>, // instance id of new relay
+    pub relays: Option<Vec<RelayConfig>>,
     pub cutscene_skip_fns: Option<Vec<u32>>, // instance id of new special function
     pub timers: Option<Vec<TimerConfig>>,
 }
