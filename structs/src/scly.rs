@@ -220,6 +220,7 @@ macro_rules! build_scly_property {
 
 build_scly_property!(
     Actor,                is_actor,                  as_actor,                  as_actor_mut,
+    ActorKeyFrame,        is_actor_key_frame,        as_actor_key_frame,        as_actor_key_frame_mut,
     BallTrigger,          is_ball_trigger,           as_ball_trigger,           as_ball_trigger_mut,
     Camera,               is_camera,                 as_camera,                 as_camera_mut,
     CameraBlurKeyframe,   is_camera_blur_keyframe,   as_camera_blur_keyframe,   as_camera_blur_keyframe_mut,

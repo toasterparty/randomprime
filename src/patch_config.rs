@@ -495,6 +495,19 @@ pub struct TimerConfig
     pub start_immediately: Option<bool>,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ActorKeyFrameConfig
+{
+    pub id: u32,
+    pub active: Option<bool>,
+    pub animation_id: u32,
+    pub looping: bool,
+    pub lifetime: f32,
+    pub fade_out: u32,
+    pub total_playback: f32,
+}
+
 #[derive(Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RoomConfig
@@ -533,6 +546,7 @@ pub struct RoomConfig
     pub relays: Option<Vec<RelayConfig>>,
     pub cutscene_skip_fns: Option<Vec<u32>>, // instance id of new special function
     pub timers: Option<Vec<TimerConfig>>,
+    pub actor_keyframes: Option<Vec<ActorKeyFrameConfig>>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]

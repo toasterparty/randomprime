@@ -33,6 +33,7 @@ use crate::patch_config::{
     ConnectionConfig,
     RelayConfig,
     TimerConfig,
+    ActorKeyFrameConfig,
 };
 
 use std::{fs::{self, File}, io::{Read}, path::Path};
@@ -4319,6 +4320,38 @@ fn id_in_use(
     }
 
     false
+}
+
+fn patch_add_actor_key_frame<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    actor_key_frame_config: ActorKeyFrameConfig,
+)
+    -> Result<(), String>
+{
+    if id_in_use(area, actor_key_frame_config.id) {
+        panic!("id 0x{:X} already in use", actor_key_frame_config.id);
+    }
+
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: actor_key_frame_config.id,
+            property_data: structs::ActorKeyFrame {
+                name: b"my keyframe\0".as_cstr(),
+                active: actor_key_frame_config.active.unwrap_or(true) as u8,
+                animation_id: actor_key_frame_config.animation_id,
+                looping: actor_key_frame_config.looping as u8,
+                lifetime: actor_key_frame_config.lifetime,
+                fade_out: actor_key_frame_config.fade_out,
+                total_playback: actor_key_frame_config.total_playback,
+            }.into(),
+            connections: vec![].into(),
+        },
+    );
+
+    Ok(())
 }
 
 fn patch_add_timer<'r>(
@@ -13751,6 +13784,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             relays: None,
                             cutscene_skip_fns: None,
                             timers: None,
+                            actor_keyframes: None,
                         }
                     );
                 }
@@ -14325,6 +14359,19 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                 //         TBD,
                                 //     ),
                                 // );
+                            }
+                        }
+
+                        if room.actor_keyframes.is_some() {
+                            for actor_key_frame_config in room.actor_keyframes.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_actor_key_frame(
+                                        ps,
+                                        area,
+                                        actor_key_frame_config.clone(),
+                                    ),
+                                );
                             }
                         }
 
