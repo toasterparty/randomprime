@@ -41,7 +41,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use crate::{
-    custom_assets::{custom_asset_ids, collect_game_resources, PickupHashKey},
+    custom_assets::{custom_asset_ids, PickupHashKey, collect_game_resources, custom_asset_filename},
     dol_patcher::DolPatcher,
     ciso_writer::CisoWriter,
     elevators::{Elevator, SpawnRoom, SpawnRoomData, World, is_elevator},
@@ -13462,7 +13462,7 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
         export_logbook(&mut gc_disc, &config, version)?;
         return Ok(());
     } else if config.run_mode == RunMode::ExportAssets {
-        export_assets(&mut gc_disc, &config)?;
+        export_assets(&mut gc_disc, &config, version)?;
         return Ok(());
     }
 
@@ -13592,7 +13592,18 @@ fn export_logbook(gc_disc: &mut structs::GcDisc, config: &PatchConfig, _version:
     Ok(())
 }
 
-fn export_assets(_gc_disc: &mut structs::GcDisc, config: &PatchConfig)
+fn export_asset(asset_dir: &str, filename: String, bytes: Vec<u8>) -> Result<(), String>
+{
+    let mut file = File::create(format!("{}/{}", asset_dir, filename))
+        .map_err(|e| format!("Failed to create asset file: {}", e))?;
+
+    file.write_all(&bytes)
+        .map_err(|e| format!("Failed to write asset file: {}", e))?;
+
+    Ok(())
+}
+
+fn export_assets(gc_disc: &mut structs::GcDisc, config: &PatchConfig, version: Version)
     -> Result<(), String>
 {
     let default_dir = &"assets".to_string();
@@ -13607,47 +13618,17 @@ fn export_assets(_gc_disc: &mut structs::GcDisc, config: &PatchConfig)
         }
     }
 
-    let bytes = include_bytes!("../extra_assets/phazon_suit_texure_1.txtr");
-    let filename = "phazon_suit_texure_1.txtr";
-    let mut file = File::create(format!("{}/{}", asset_dir, filename))
-        .map_err(|e| format!("Failed to create asset file: {}", e))?;
-    file.write_all(bytes)
-        .map_err(|e| format!("Failed to write asset file: {}", e))?;
+    let (_, _, _, _, _, _, _, _, custom_assets) =
+        collect_game_resources(gc_disc, None, &config, version)?;
 
-    let bytes = include_bytes!("../extra_assets/phazon_suit_texure_2.txtr");
-    let filename = "phazon_suit_texure_2.txtr";
-    let mut file = File::create(format!("{}/{}", asset_dir, filename))
-        .map_err(|e| format!("Failed to create asset file: {}", e))?;
-    file.write_all(bytes)
-        .map_err(|e| format!("Failed to write asset file: {}", e))?;
+    for resource in custom_assets {
+        let mut bytes = vec![];
+        resource.write_to(&mut bytes).unwrap();
 
-    let bytes = include_bytes!("../extra_assets/nothing_texture.txtr"     );
-    let filename = "nothing_texture.txtr";
-    let mut file = File::create(format!("{}/{}", asset_dir, filename))
-        .map_err(|e| format!("Failed to create asset file: {}", e))?;
-    file.write_all(bytes)
-        .map_err(|e| format!("Failed to write asset file: {}", e))?;
+        let filename = custom_asset_filename(resource.resource_info(0));
 
-    let bytes = include_bytes!("../extra_assets/shiny-missile0.txtr"      );
-    let filename = "shiny-missile0.txtr";
-    let mut file = File::create(format!("{}/{}", asset_dir, filename))
-        .map_err(|e| format!("Failed to create asset file: {}", e))?;
-    file.write_all(bytes)
-        .map_err(|e| format!("Failed to write asset file: {}", e))?;
-
-    let bytes = include_bytes!("../extra_assets/shiny-missile1.txtr"      );
-    let filename = "shiny-missile1.txtr";
-    let mut file = File::create(format!("{}/{}", asset_dir, filename))
-        .map_err(|e| format!("Failed to create asset file: {}", e))?;
-    file.write_all(bytes)
-        .map_err(|e| format!("Failed to write asset file: {}", e))?;
-
-    let bytes = include_bytes!("../extra_assets/shiny-missile2.txtr"      );
-    let filename = "shiny-missile2.txtr";
-    let mut file = File::create(format!("{}/{}", asset_dir, filename))
-        .map_err(|e| format!("Failed to create asset file: {}", e))?;
-    file.write_all(bytes)
-        .map_err(|e| format!("Failed to write asset file: {}", e))?;
+        export_asset(asset_dir, filename, bytes)?;
+    }
 
     Ok(())
 }
@@ -13856,7 +13837,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         }
     };
 
-    let (game_resources, pickup_hudmemos, pickup_scans, extra_scans, savw_scans_to_add, local_savw_scans_to_add, savw_scan_logbook_category, extern_models) =
+    let (game_resources, pickup_hudmemos, pickup_scans, extra_scans, savw_scans_to_add, local_savw_scans_to_add, savw_scan_logbook_category, extern_models, _) =
         collect_game_resources(gc_disc, starting_memo, &config, version)?;
 
     let extern_models = &extern_models;

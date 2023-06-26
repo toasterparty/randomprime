@@ -1102,6 +1102,10 @@ impl PatchConfig
                 .long("text-file-comment")
                 .hidden(true)
                 .takes_value(true))
+            .arg(Arg::with_name("run mode")
+                .long("run-mode")
+                .hidden(false)
+                .takes_value(true))
             .get_matches();
 
         let mut patch_config = if matches.is_present("profile json path") {
@@ -1167,6 +1171,9 @@ impl PatchConfig
         }
         if let Some(phazon_dmg_mod) = matches.value_of("phazon damage modifier") {
             patch_config.game_config.phazon_damage_modifier = Some(phazon_dmg_mod.to_string());
+        }
+        if let Some(run_mode) = matches.value_of("run mode") {
+            patch_config.run_mode = Some(run_mode.to_string());
         }
 
         // integer/float

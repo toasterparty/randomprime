@@ -205,6 +205,130 @@ pub mod custom_asset_ids {
     }
 }
 
+pub fn custom_asset_filename(resource_info: structs::ResourceInfo) -> String
+{
+    let base_name = match resource_info.file_id {
+        id if custom_asset_ids::PHAZON_SUIT_TXTR1.to_u32()                   == id => "phazon_suit_txtr1".to_string()                  ,
+        id if custom_asset_ids::PHAZON_SUIT_TXTR2.to_u32()                   == id => "phazon_suit_txtr2".to_string()                  ,
+        id if custom_asset_ids::PHAZON_SUIT_CMDL.to_u32()                    == id => "phazon_suit_cmdl".to_string()                   ,
+        id if custom_asset_ids::PHAZON_SUIT_ANCS.to_u32()                    == id => "phazon_suit_ancs".to_string()                   ,
+        id if custom_asset_ids::NOTHING_TXTR.to_u32()                        == id => "nothing_txtr".to_string()                       ,
+        id if custom_asset_ids::NOTHING_CMDL.to_u32()                        == id => "nothing_cmdl".to_string()                       ,
+        id if custom_asset_ids::NOTHING_ANCS.to_u32()                        == id => "nothing_ancs".to_string()                       ,
+        id if custom_asset_ids::THERMAL_CMDL.to_u32()                        == id => "thermal_cmdl".to_string()                       ,
+        id if custom_asset_ids::THERMAL_ANCS.to_u32()                        == id => "thermal_ancs".to_string()                       ,
+        id if custom_asset_ids::XRAY_CMDL.to_u32()                           == id => "xray_cmdl".to_string()                          ,
+        id if custom_asset_ids::XRAY_ANCS.to_u32()                           == id => "xray_ancs".to_string()                          ,
+        id if custom_asset_ids::COMBAT_CMDL.to_u32()                         == id => "combat_cmdl".to_string()                        ,
+        id if custom_asset_ids::COMBAT_ANCS.to_u32()                         == id => "combat_ancs".to_string()                        ,
+        id if custom_asset_ids::SHINY_MISSILE_TXTR0.to_u32()                 == id => "shiny_missile_txtr0".to_string()                ,
+        id if custom_asset_ids::SHINY_MISSILE_TXTR1.to_u32()                 == id => "shiny_missile_txtr1".to_string()                ,
+        id if custom_asset_ids::SHINY_MISSILE_TXTR2.to_u32()                 == id => "shiny_missile_txtr2".to_string()                ,
+        id if custom_asset_ids::SHINY_MISSILE_CMDL.to_u32()                  == id => "shiny_missile_cmdl".to_string()                 ,
+        id if custom_asset_ids::SHINY_MISSILE_ANCS.to_u32()                  == id => "shiny_missile_ancs".to_string()                 ,
+        id if custom_asset_ids::SHINY_MISSILE_EVNT.to_u32()                  == id => "shiny_missile_evnt".to_string()                 ,
+        id if custom_asset_ids::SHINY_MISSILE_ANIM.to_u32()                  == id => "shiny_missile_anim".to_string()                 ,
+        id if custom_asset_ids::SHORELINES_POI_SCAN.to_u32()                 == id => "shorelines_poi_scan".to_string()                ,
+        id if custom_asset_ids::SHORELINES_POI_STRG.to_u32()                 == id => "shorelines_poi_strg".to_string()                ,
+        id if custom_asset_ids::CFLDG_POI_SCAN.to_u32()                      == id => "cfldg_poi_scan".to_string()                     ,
+        id if custom_asset_ids::CFLDG_POI_STRG.to_u32()                      == id => "cfldg_poi_strg".to_string()                     ,
+        id if custom_asset_ids::TOURNEY_WINNERS_SCAN.to_u32()                == id => "tourney_winners_scan".to_string()               ,
+        id if custom_asset_ids::TOURNEY_WINNERS_STRG.to_u32()                == id => "tourney_winners_strg".to_string()               ,
+        id if custom_asset_ids::STARTING_ITEMS_HUDMEMO_STRG.to_u32()         == id => "starting_items_hudmemo_strg".to_string()        ,
+        id if custom_asset_ids::WARPING_TO_START_STRG.to_u32()               == id => "warping_to_start_strg".to_string()              ,
+        id if custom_asset_ids::GENERIC_WARP_STRG.to_u32()                   == id => "generic_warp_strg".to_string()                  ,
+        id if custom_asset_ids::WARPING_TO_START_DELAY_STRG.to_u32()         == id => "warping_to_start_delay_strg".to_string()        ,
+        id if custom_asset_ids::WARPING_TO_OTHER_STRG.to_u32()               == id => "warping_to_other_strg".to_string()              ,
+        id if custom_asset_ids::BLOCK_COLOR_0.to_u32()                       == id => "block_color_0".to_string()                      ,
+        id if custom_asset_ids::BLOCK_COLOR_1.to_u32()                       == id => "block_color_1".to_string()                      ,
+        id if custom_asset_ids::BLOCK_COLOR_2.to_u32()                       == id => "block_color_2".to_string()                      ,
+        id if custom_asset_ids::BLOCK_COLOR_3.to_u32()                       == id => "block_color_3".to_string()                      ,
+        id if custom_asset_ids::BLOCK_COLOR_4.to_u32()                       == id => "block_color_4".to_string()                      ,
+        id if custom_asset_ids::MORPH_BALL_BOMB_DOOR_CMDL.to_u32()           == id => "morph_ball_bomb_door_cmdl".to_string()          ,
+        id if custom_asset_ids::POWER_BOMB_DOOR_CMDL.to_u32()                == id => "power_bomb_door_cmdl".to_string()               ,
+        id if custom_asset_ids::MISSILE_DOOR_CMDL.to_u32()                   == id => "missile_door_cmdl".to_string()                  ,
+        id if custom_asset_ids::CHARGE_DOOR_CMDL.to_u32()                    == id => "charge_door_cmdl".to_string()                   ,
+        id if custom_asset_ids::SUPER_MISSILE_DOOR_CMDL.to_u32()             == id => "super_missile_door_cmdl".to_string()            ,
+        id if custom_asset_ids::WAVEBUSTER_DOOR_CMDL.to_u32()                == id => "wavebuster_door_cmdl".to_string()               ,
+        id if custom_asset_ids::ICESPREADER_DOOR_CMDL.to_u32()               == id => "icespreader_door_cmdl".to_string()              ,
+        id if custom_asset_ids::FLAMETHROWER_DOOR_CMDL.to_u32()              == id => "flamethrower_door_cmdl".to_string()             ,
+        id if custom_asset_ids::DISABLED_DOOR_CMDL.to_u32()                  == id => "disabled_door_cmdl".to_string()                 ,
+        id if custom_asset_ids::AI_DOOR_CMDL.to_u32()                        == id => "ai_door_cmdl".to_string()                       ,
+        id if custom_asset_ids::VERTICAL_RED_DOOR_CMDL.to_u32()              == id => "vertical_red_door_cmdl".to_string()             ,
+        id if custom_asset_ids::VERTICAL_BOOST_DOOR_CMDL.to_u32()            == id => "vertical_boost_door_cmdl".to_string()           ,
+        id if custom_asset_ids::VERTICAL_POWER_BOMB_DOOR_CMDL.to_u32()       == id => "vertical_power_bomb_door_cmdl".to_string()      ,
+        id if custom_asset_ids::VERTICAL_MORPH_BALL_BOMB_DOOR_CMDL.to_u32()  == id => "vertical_morph_ball_bomb_door_cmdl".to_string() ,
+        id if custom_asset_ids::VERTICAL_MISSILE_DOOR_CMDL.to_u32()          == id => "vertical_missile_door_cmdl".to_string()         ,
+        id if custom_asset_ids::VERTICAL_CHARGE_DOOR_CMDL.to_u32()           == id => "vertical_charge_door_cmdl".to_string()          ,
+        id if custom_asset_ids::VERTICAL_SUPER_MISSILE_DOOR_CMDL.to_u32()    == id => "vertical_super_missile_door_cmdl".to_string()   ,
+        id if custom_asset_ids::VERTICAL_DISABLED_DOOR_CMDL.to_u32()         == id => "vertical_disabled_door_cmdl".to_string()        ,
+        id if custom_asset_ids::VERTICAL_WAVEBUSTER_DOOR_CMDL.to_u32()       == id => "vertical_wavebuster_door_cmdl".to_string()      ,
+        id if custom_asset_ids::VERTICAL_ICESPREADER_DOOR_CMDL.to_u32()      == id => "vertical_icespreader_door_cmdl".to_string()     ,
+        id if custom_asset_ids::VERTICAL_FLAMETHROWER_DOOR_CMDL.to_u32()     == id => "vertical_flamethrower_door_cmdl".to_string()    ,
+        id if custom_asset_ids::VERTICAL_AI_DOOR_CMDL.to_u32()               == id => "vertical_ai_door_cmdl".to_string()              ,
+        id if custom_asset_ids::MORPH_BALL_BOMB_DOOR_TXTR.to_u32()           == id => "morph_ball_bomb_door_txtr".to_string()          ,
+        id if custom_asset_ids::POWER_BOMB_DOOR_TXTR.to_u32()                == id => "power_bomb_door_txtr".to_string()               ,
+        id if custom_asset_ids::MISSILE_DOOR_TXTR.to_u32()                   == id => "missile_door_txtr".to_string()                  ,
+        id if custom_asset_ids::CHARGE_DOOR_TXTR.to_u32()                    == id => "charge_door_txtr".to_string()                   ,
+        id if custom_asset_ids::SUPER_MISSILE_DOOR_TXTR.to_u32()             == id => "super_missile_door_txtr".to_string()            ,
+        id if custom_asset_ids::WAVEBUSTER_DOOR_TXTR.to_u32()                == id => "wavebuster_door_txtr".to_string()               ,
+        id if custom_asset_ids::ICESPREADER_DOOR_TXTR.to_u32()               == id => "icespreader_door_txtr".to_string()              ,
+        id if custom_asset_ids::FLAMETHROWER_DOOR_TXTR.to_u32()              == id => "flamethrower_door_txtr".to_string()             ,
+        id if custom_asset_ids::DISABLED_DOOR_TXTR.to_u32()                  == id => "disabled_door_txtr".to_string()                 ,
+        id if custom_asset_ids::AI_DOOR_TXTR.to_u32()                        == id => "ai_door_txtr".to_string()                       ,
+        id if custom_asset_ids::BOOST_DOOR_SCAN.to_u32()                     == id => "boost_door_scan".to_string()                    ,
+        id if custom_asset_ids::BOOST_DOOR_STRG.to_u32()                     == id => "boost_door_strg".to_string()                    ,
+        id if custom_asset_ids::POWER_BOMB_DOOR_SCAN.to_u32()                == id => "power_bomb_door_scan".to_string()               ,
+        id if custom_asset_ids::POWER_BOMB_DOOR_STRG.to_u32()                == id => "power_bomb_door_strg".to_string()               ,
+        id if custom_asset_ids::BOMB_DOOR_SCAN.to_u32()                      == id => "bomb_door_scan".to_string()                     ,
+        id if custom_asset_ids::BOMB_DOOR_STRG.to_u32()                      == id => "bomb_door_strg".to_string()                     ,
+        id if custom_asset_ids::MISSILE_DOOR_SCAN.to_u32()                   == id => "missile_door_scan".to_string()                  ,
+        id if custom_asset_ids::MISSILE_DOOR_STRG.to_u32()                   == id => "missile_door_strg".to_string()                  ,
+        id if custom_asset_ids::CHARGE_DOOR_SCAN.to_u32()                    == id => "charge_door_scan".to_string()                   ,
+        id if custom_asset_ids::CHARGE_DOOR_STRG.to_u32()                    == id => "charge_door_strg".to_string()                   ,
+        id if custom_asset_ids::SUPER_MISSILE_DOOR_SCAN.to_u32()             == id => "super_missile_door_scan".to_string()            ,
+        id if custom_asset_ids::SUPER_MISSILE_DOOR_STRG.to_u32()             == id => "super_missile_door_strg".to_string()            ,
+        id if custom_asset_ids::WAVEBUSTER_DOOR_SCAN.to_u32()                == id => "wavebuster_door_scan".to_string()               ,
+        id if custom_asset_ids::WAVEBUSTER_DOOR_STRG.to_u32()                == id => "wavebuster_door_strg".to_string()               ,
+        id if custom_asset_ids::ICESPREADER_DOOR_SCAN.to_u32()               == id => "icespreader_door_scan".to_string()              ,
+        id if custom_asset_ids::ICESPREADER_DOOR_STRG.to_u32()               == id => "icespreader_door_strg".to_string()              ,
+        id if custom_asset_ids::FLAMETHROWER_DOOR_SCAN.to_u32()              == id => "flamethrower_door_scan".to_string()             ,
+        id if custom_asset_ids::FLAMETHROWER_DOOR_STRG.to_u32()              == id => "flamethrower_door_strg".to_string()             ,
+        id if custom_asset_ids::DISABLED_DOOR_SCAN.to_u32()                  == id => "disabled_door_scan".to_string()                 ,
+        id if custom_asset_ids::DISABLED_DOOR_STRG.to_u32()                  == id => "disabled_door_strg".to_string()                 ,
+        id if custom_asset_ids::AI_DOOR_SCAN.to_u32()                        == id => "ai_door_scan".to_string()                       ,
+        id if custom_asset_ids::AI_DOOR_STRG.to_u32()                        == id => "ai_door_strg".to_string()                       ,
+        id if custom_asset_ids::POWER_BOMB_BLAST_SHIELD_CMDL.to_u32()        == id => "power_bomb_blast_shield_cmdl".to_string()       ,
+        id if custom_asset_ids::SUPER_BLAST_SHIELD_CMDL.to_u32()             == id => "super_blast_shield_cmdl".to_string()            ,
+        id if custom_asset_ids::WAVEBUSTER_BLAST_SHIELD_CMDL.to_u32()        == id => "wavebuster_blast_shield_cmdl".to_string()       ,
+        id if custom_asset_ids::ICESPREADER_BLAST_SHIELD_CMDL.to_u32()       == id => "icespreader_blast_shield_cmdl".to_string()      ,
+        id if custom_asset_ids::FLAMETHROWER_BLAST_SHIELD_CMDL.to_u32()      == id => "flamethrower_blast_shield_cmdl".to_string()     ,
+        id if custom_asset_ids::BLAST_SHIELD_ALT_TXTR0.to_u32()              == id => "blast_shield_alt_txtr0".to_string()             ,
+        id if custom_asset_ids::BLAST_SHIELD_ALT_TXTR1.to_u32()              == id => "blast_shield_alt_txtr1".to_string()             ,
+        id if custom_asset_ids::BLAST_SHIELD_ALT_TXTR2.to_u32()              == id => "blast_shield_alt_txtr2".to_string()             ,
+        id if custom_asset_ids::POWER_BOMB_BLAST_SHIELD_TXTR.to_u32()        == id => "power_bomb_blast_shield_txtr".to_string()       ,
+        id if custom_asset_ids::SUPER_BLAST_SHIELD_TXTR.to_u32()             == id => "super_blast_shield_txtr".to_string()            ,
+        id if custom_asset_ids::WAVEBUSTER_BLAST_SHIELD_TXTR.to_u32()        == id => "wavebuster_blast_shield_txtr".to_string()       ,
+        id if custom_asset_ids::ICESPREADER_BLAST_SHIELD_TXTR.to_u32()       == id => "icespreader_blast_shield_txtr".to_string()      ,
+        id if custom_asset_ids::FLAMETHROWER_BLAST_SHIELD_TXTR.to_u32()      == id => "flamethrower_blast_shield_txtr".to_string()     ,
+        id if custom_asset_ids::POWER_BOMB_BLAST_SHIELD_SCAN.to_u32()        == id => "power_bomb_blast_shield_scan".to_string()       ,
+        id if custom_asset_ids::SUPER_BLAST_SHIELD_SCAN.to_u32()             == id => "super_blast_shield_scan".to_string()            ,
+        id if custom_asset_ids::WAVEBUSTER_BLAST_SHIELD_SCAN.to_u32()        == id => "wavebuster_blast_shield_scan".to_string()       ,
+        id if custom_asset_ids::ICESPREADER_BLAST_SHIELD_SCAN.to_u32()       == id => "icespreader_blast_shield_scan".to_string()      ,
+        id if custom_asset_ids::FLAMETHROWER_BLAST_SHIELD_SCAN.to_u32()      == id => "flamethrower_blast_shield_scan".to_string()     ,
+        id if custom_asset_ids::POWER_BOMB_BLAST_SHIELD_STRG.to_u32()        == id => "power_bomb_blast_shield_strg".to_string()       ,
+        id if custom_asset_ids::SUPER_BLAST_SHIELD_STRG.to_u32()             == id => "super_blast_shield_strg".to_string()            ,
+        id if custom_asset_ids::WAVEBUSTER_BLAST_SHIELD_STRG.to_u32()        == id => "wavebuster_blast_shield_strg".to_string()       ,
+        id if custom_asset_ids::ICESPREADER_BLAST_SHIELD_STRG.to_u32()       == id => "icespreader_blast_shield_strg".to_string()      ,
+        id if custom_asset_ids::FLAMETHROWER_BLAST_SHIELD_STRG.to_u32()      == id => "flamethrower_blast_shield_strg".to_string()     ,
+        id if custom_asset_ids::MAP_PICKUP_ICON_TXTR.to_u32()                == id => "map_pickup_icon_txtr".to_string()               ,
+        id if custom_asset_ids::ICE_TRAP_ANCS.to_u32()                       == id => "ice_trap_ancs".to_string()                      ,
+        _ => format!("{:X}", resource_info.file_id),
+    };
+
+    return format!("{}.{}", base_name, resource_info.fourcc);
+}
+
 pub fn build_resource<'r, K>(file_id: ResId<K>, kind: ResourceKind<'r>) -> Resource<'r>
     where K: res_id::ResIdKind,
 {
@@ -854,6 +978,7 @@ pub fn collect_game_resources<'r>(
         Vec<Vec<ResId<res_id::SCAN>>>,
         HashMap::<u32, u32>,
         HashMap<String, ExternPickupModel>,
+        Vec<structs::Resource<'r>>,
     ),
     String>
 {
@@ -969,17 +1094,17 @@ pub fn collect_game_resources<'r>(
     // in any pak. Instead add them to the output resource pool. These assets //
     // are provided as external files checked into the repository.            //
     let (custom_assets, global_savw_scans_to_add, local_savw_scans_to_add, savw_scan_logbook_category, extern_models) = custom_assets(&found, starting_memo, &mut pickup_hudmemos, &mut pickup_scans, &mut extra_scans, config, version)?;
-    for res in custom_assets {
+    for res in custom_assets.iter() {
         let key = (res.file_id, res.fourcc());
         looking_for.remove(&key);
-        found.insert(key, res);
+        found.insert(key, res.to_owned());
     }
 
     if !looking_for.is_empty() {
         panic!("error - still looking for {:?}", looking_for);
     }
 
-    Ok((found, pickup_hudmemos, pickup_scans, extra_scans, global_savw_scans_to_add, local_savw_scans_to_add, savw_scan_logbook_category, extern_models))
+    Ok((found, pickup_hudmemos, pickup_scans, extra_scans, global_savw_scans_to_add, local_savw_scans_to_add, savw_scan_logbook_category, extern_models, custom_assets))
 }
 
 fn create_custom_block_cmdl<'r>(
