@@ -3,6 +3,7 @@ use auto_struct_macros::auto_struct;
 use reader_writer::CStr;
 use reader_writer::typenum::*;
 use reader_writer::generic_array::GenericArray;
+use crate::res_id:: *;
 use crate::{SclyPropertyData};
 use crate::scly_props::structs::{ActorParameters, DamageInfo, PatternedInfo};
 
@@ -25,7 +26,8 @@ pub struct NewIntroBoss<'r>
     pub weapon_desc: f32,
     pub damage_info: DamageInfo,
 
-    pub dont_care: GenericArray<u32, U4>,
+    pub particles: GenericArray<ResId<PART>, U2>,
+    pub textures: GenericArray<ResId<TXTR>, U2>,
 }
 
 impl<'r> SclyPropertyData for NewIntroBoss<'r>

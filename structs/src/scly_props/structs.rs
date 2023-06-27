@@ -95,7 +95,7 @@ pub struct VisorParameters
 }
 
 #[auto_struct(Readable, Writable, FixedSize)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct DamageInfo
 {
     #[auto_struct(expect = 4)]
@@ -231,4 +231,40 @@ pub struct PatternedInfo
     pub particle1_scale: GenericArray<f32, U3>,
     pub particle1: ResId<PART>,
     pub ice_shatter_sfx: u32,
+}
+
+#[auto_struct(Readable, Writable, FixedSize)]
+#[derive(Debug, Clone)]
+pub struct RidleyStruct1
+{
+    pub unknown0: u32,
+    pub unknown1: u32,
+    pub particles: GenericArray<ResId<PART>, U2>,
+    pub textures: GenericArray<ResId<TXTR>, U2>,
+    pub unknown2: f32,
+    pub unknown3: f32,
+    pub unknown4: f32,
+    pub unknown5: f32,
+    pub unknown6: f32,
+    pub unknown7: f32,
+    pub unknown8: f32,
+    pub unknown9: f32,
+    pub unknown10: f32,
+    pub color0: GenericArray<f32, U4>,
+    pub color1: GenericArray<f32, U4>,
+}
+
+#[auto_struct(Readable, Writable, FixedSize)]
+#[derive(Debug, Clone)]
+pub struct RidleyStruct2
+{
+    pub unknown0: u32,
+    pub unknown1: f32,
+    pub unknown2: f32,
+    pub unknown3: f32,
+    pub unknown4: f32,
+    pub unknown5: f32,
+    pub unknown6: f32,
+    pub unknown7: f32,
+    pub unknown8: u8,
 }
