@@ -79,7 +79,7 @@ use reader_writer::{
     // Readable,
     Writable,
 };
-use structs::{MapState, res_id, ResId, scly_structs::TypeVulnerability, SclyLayer};
+use structs::{MapState, res_id, ResId, scly_structs::DamageInfo, scly_structs::TypeVulnerability, SclyLayer};
 
 use std::{
     borrow::Cow,
@@ -11883,6 +11883,79 @@ fn patch_exo_scale<'r>(
     Ok(())
 }
 
+fn patch_ridley_damage_props<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    version: Version,
+    contact_damage: DamageInfo,
+    other_damages: Vec<DamageInfo>,
+    unknown: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[1];
+    if [Version::Pal, Version::NtscJ, Version::PalTrilogy, Version::NtscUTrilogy, Version::NtscJTrilogy].contains(&version) {
+        let ridley = layer.objects.iter_mut()
+                                  .find(|obj| obj.property_data.is_ridley_v2())
+                                  .and_then(|obj| obj.property_data.as_ridley_v2_mut())
+                                  .unwrap();
+
+        ridley.patterned_info.contact_damage = contact_damage;
+        ridley.damage_info0 = other_damages[0];
+        ridley.damage_info1 = other_damages[1];
+        ridley.damage_info2 = other_damages[2];
+        ridley.damage_info3 = other_damages[3];
+        ridley.damage_info4 = other_damages[4];
+        ridley.damage_info5 = other_damages[5];
+        ridley.damage_info6 = other_damages[6];
+        ridley.damage_info7 = other_damages[7];
+        ridley.damage_info8 = other_damages[8];
+        ridley.unknown4 = unknown;
+    } else {
+        let ridley = layer.objects.iter_mut()
+                                  .find(|obj| obj.property_data.is_ridley_v1())
+                                  .and_then(|obj| obj.property_data.as_ridley_v1_mut())
+                                  .unwrap();
+
+        ridley.patterned_info.contact_damage = contact_damage;
+        ridley.damage_info0 = other_damages[0];
+        ridley.damage_info1 = other_damages[1];
+        ridley.damage_info2 = other_damages[2];
+        ridley.damage_info3 = other_damages[3];
+        ridley.damage_info4 = other_damages[4];
+        ridley.damage_info5 = other_damages[5];
+        ridley.damage_info6 = other_damages[6];
+        ridley.damage_info7 = other_damages[7];
+        ridley.unknown4 = unknown;
+    }
+
+    Ok(())
+}
+
+fn patch_ridley_health<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    version: Version,
+    health: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[1];
+    if [Version::Pal, Version::NtscJ, Version::PalTrilogy, Version::NtscUTrilogy, Version::NtscJTrilogy].contains(&version) {
+        layer.objects.iter_mut()
+                     .filter_map(|obj| obj.property_data.as_ridley_v2_mut())
+                     .for_each(|ridley| ridley.patterned_info.health_info.health = health);
+    } else {
+        layer.objects.iter_mut()
+                     .filter_map(|obj| obj.property_data.as_ridley_v1_mut())
+                     .for_each(|ridley| ridley.patterned_info.health_info.health = health);
+    }
+
+    Ok(())
+}
+
 fn patch_ridley_scale<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -12099,6 +12172,22 @@ fn patch_idrone_scale<'r>(
     Ok(())
 }
 
+fn patch_pq_health<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    health: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.iter_mut()
+                 .filter_map(|obj| obj.property_data.as_new_intro_boss_mut())
+                 .for_each(|pq| pq.patterned_info.health_info.health = health);
+
+    Ok(())
+}
+
 fn patch_pq_scale<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -12155,6 +12244,22 @@ fn patch_thardus_scale<'r>(
             }
         }
     }
+
+    Ok(())
+}
+
+fn patch_essence_health<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    health: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.iter_mut()
+                 .filter_map(|obj| obj.property_data.as_metroidprimestage2_mut())
+                 .for_each(|mps2| mps2.patterned_info.health_info.health = health);
 
     Ok(())
 }
@@ -15040,6 +15145,14 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 patch_move_item_loss_scan,
             );
         }
+
+        // always set Parasite Queen health to its NTSC health
+        if [Version::Pal, Version::NtscJ, Version::NtscJTrilogy, Version::NtscUTrilogy, Version::PalTrilogy].contains(&version) {
+            patcher.add_scly_patch(
+                resource_info!("07_intro_reactor.MREA").into(),
+                move |ps, area| patch_pq_health(ps, area, 480.0),
+            );
+        }
     }
 
     if essence_done_room.is_some() {
@@ -15471,6 +15584,91 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         patcher.add_scly_patch(
             resource_info!("03f_crater.MREA").into(),
             patch_essence_cinematic_skip_nomusic
+        );
+    }
+
+    if [Version::Pal, Version::NtscJ, Version::NtscJTrilogy, Version::NtscUTrilogy, Version::PalTrilogy].contains(&version) {
+        // always set Meta Ridley health to its NTSC health
+        patcher.add_scly_patch(
+            resource_info!("07_stonehenge.MREA").into(),
+            |ps, area| patch_ridley_health(ps, area, version, 2000.0)
+        );
+
+        // always set Meta Ridley damage properties to NTSC values
+        patcher.add_scly_patch(
+            resource_info!("07_stonehenge.MREA").into(),
+            |ps, area| patch_ridley_damage_props(
+                ps, area, version,
+                DamageInfo {
+                    weapon_type: 9, // DamageType::AI
+                    damage: 20.0,
+                    radius: 0.0,
+                    knockback_power: 10.0,
+                },
+                vec![
+                    DamageInfo {
+                        weapon_type: 0, // DamageType::Power
+                        damage: 15.0,
+                        radius: 0.0,
+                        knockback_power: 10.0,
+                    },
+                    DamageInfo {
+                        weapon_type: 0, // DamageType::Power
+                        damage: 20.0,
+                        radius: 4.5,
+                        knockback_power: 5.0,
+                    },
+                    DamageInfo {
+                        weapon_type: 9, // DamageType::AI
+                        damage: 20.0,
+                        radius: 7.0,
+                        knockback_power: 5.0,
+                    },
+                    DamageInfo {
+                        weapon_type: 9, // DamageType::AI
+                        damage: 40.0,
+                        radius: 0.0,
+                        knockback_power: 15.0,
+                    },
+                    DamageInfo {
+                        weapon_type: 9, // DamageType::AI
+                        damage: 80.0,
+                        radius: 0.0,
+                        knockback_power: 15.0,
+                    },
+                    DamageInfo {
+                        weapon_type: 9, // DamageType::AI
+                        damage: 40.0,
+                        radius: 0.0,
+                        knockback_power: 10.0,
+                    },
+                    DamageInfo {
+                        weapon_type: 0, // DamageType::Power
+                        damage: 50.0,
+                        radius: 0.0,
+                        knockback_power: 10.0,
+                    },
+                    DamageInfo {
+                        weapon_type: 0, // DamageType::Power
+                        damage: 25.0,
+                        radius: 0.0,
+                        knockback_power: 10.0,
+                    },
+                    DamageInfo {
+                        weapon_type: 9, // DamageType::AI
+                        damage: 40.0,
+                        radius: 0.0,
+                        knockback_power: 15.0,
+                    },
+                ].into(),
+                25.0
+            )
+        );
+
+        // always set Essence health to its NTSC health
+        patcher.add_scly_patch(
+            resource_info!("03f_crater.MREA").into(),
+            |ps, area| patch_essence_health(ps, area, 36667.0)
         );
     }
 
