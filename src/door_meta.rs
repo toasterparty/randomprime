@@ -213,7 +213,7 @@ impl DoorType {
     pub const fn shield_cmdl(&self) -> ResId<res_id::CMDL> { // model of door, includes specification for which 128x128 texture to line door frame with
         match self {
             DoorType::Blue         => ResId           ::new(0x0734977A)      , // vanilla CMDL - "blueShield_v1" - door frame model
-            DoorType::PowerOnly    => ResId           ::new(0x0734977A)      , // vanilla CMDL - "blueShield_v1" - door frame model
+            DoorType::PowerOnly    => custom_asset_ids::POWER_BEAM_CMDL      ,
             DoorType::Purple       => ResId           ::new(0x33188D1B)      , // vanilla CMDL
             DoorType::White        => ResId           ::new(0x59649E9D)      , // vanilla CMDL
             DoorType::Red          => ResId           ::new(0xBBBA1EC7)      , // vanilla CMDL
@@ -309,7 +309,7 @@ impl DoorType {
 
         match door {
             DoorType::Blue         => ResId::new(0x88ED4593), // vanilla TXTR - "blueholorim" texture [128x128]
-            DoorType::PowerOnly    => ResId::new(0x88ED4593), // vanilla TXTR
+            DoorType::PowerOnly    => custom_asset_ids::POWER_BEAM_HOLORIM_TXTR,
             DoorType::Purple       => ResId::new(0xAB031EA9), // vanilla TXTR
             DoorType::White        => ResId::new(0xF6870C9F), // vanilla TXTR
             DoorType::Red          => ResId::new(0x61A6945B), // vanilla TXTR
