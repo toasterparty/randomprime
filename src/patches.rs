@@ -1220,7 +1220,7 @@ fn patch_door<'r>(
         }
 
         // Add scan point
-        if _door_type.scan() != ResId::invalid() {
+        if _door_type.scan() != ResId::invalid() && blast_shield_type.is_none() {
             let _door_location = door_loc.door_location.unwrap();
             let door = layers[_door_location.layer as usize].objects.iter_mut()
                     .find(|obj| obj.instance_id == _door_location.instance_id)
