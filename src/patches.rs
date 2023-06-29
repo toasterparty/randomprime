@@ -922,6 +922,24 @@ fn patch_door<'r>(
             }
         };
 
+        let lock_on = match blast_shield_type {
+            BlastShieldType::Missile      => true,
+            BlastShieldType::PowerBomb    => false,
+            BlastShieldType::Super        => true,
+            BlastShieldType::Wavebuster   => true,
+            BlastShieldType::Icespreader  => true,
+            BlastShieldType::Flamethrower => true,
+            BlastShieldType::Charge       => true,
+            BlastShieldType::Grapple      => false,
+            BlastShieldType::Bomb         => false,
+            BlastShieldType::Phazon       => true,
+            BlastShieldType::Thermal      => true,
+            BlastShieldType::XRay         => true,
+            BlastShieldType::Scan         => false,
+            BlastShieldType::None         => false,
+            BlastShieldType::Unchanged    => false,
+        };
+
         let dt =
             structs::SclyObject {
                 instance_id: dt_id,
@@ -945,7 +963,7 @@ fn patch_door<'r>(
                     pattern_txtr0: ResId::invalid(),
                     pattern_txtr1: ResId::invalid(),
                     color_txtr: ResId::invalid(),
-                    lock_on: 1,
+                    lock_on: lock_on as u8,
                     active: 1,
                     visor_params: structs::scly_structs::VisorParameters {
                         unknown0: 0,
