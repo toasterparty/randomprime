@@ -561,6 +561,8 @@ fn patch_door<'r>(
     let mrea_id = area.mlvl_area.mrea.to_u32();
     let area_internal_id = area.mlvl_area.internal_id;
 
+    let blue_after_open = door_type.is_some() && blast_shield_type.is_some();
+
     // Update dependencies based on the upcoming patch(es)
     let mut deps: Vec<(u32, FourCC)> = Vec::new();
 
@@ -572,6 +574,11 @@ fn patch_door<'r>(
         // Add dependencies
         deps.extend_from_slice(&blast_shield_type.as_ref().unwrap().dependencies());
     }
+
+    if blue_after_open {
+        deps.extend_from_slice(&DoorType::Blue.dependencies());
+    }
+
     let deps_iter = deps.iter()
         .map(|&(file_id, fourcc)| structs::Dependency {
                 asset_id: file_id,
@@ -606,7 +613,6 @@ fn patch_door<'r>(
         (_damageable_trigger_id, _shield_actor_id)
     };
 
-    // Add blast shield
     let mut special_function_id = 0;
     let mut blast_shield_instance_id = 0;
     let mut sound_id = 0;
@@ -616,6 +622,8 @@ fn patch_door<'r>(
     let mut shaker_id = 0;
     let mut relay_id = 0;
     let mut dt_id = 0;
+    let mut door_shield_id = 0;
+    let mut door_force_id = 0;
 
     let mut blast_shield_layer_idx: usize = 0;
     if blast_shield_type.is_some() {
@@ -634,9 +642,15 @@ fn patch_door<'r>(
         blast_shield_layer_idx = area.layer_flags.layer_count as usize - 1;
     }
 
+    if blue_after_open {
+        door_shield_id = area.new_object_id_from_layer_id(0);
+        door_force_id = area.new_object_id_from_layer_id(0);
+    }
+
     let scly = area.mrea().scly_section_mut();
     let layers = &mut scly.layers.as_mut_vec();
 
+    // Add blast shield
     if blast_shield_type.is_some() {
         /* Special Function to disable the blast shield */
         layers[0].objects.as_mut_vec().push(
@@ -1330,6 +1344,245 @@ fn patch_door<'r>(
     
             door.actor_params.scan_params.scan = _door_type.scan();
         }
+    }
+
+    // make the door turn blue after often
+    if blue_after_open {
+
+        /* Find existing door shield id */
+        let mut existing_door_shield_id = 0;
+        for door_shield_location in door_loc.door_shield_locations.iter() {
+            let result = layers[door_shield_location.layer as usize].objects.iter()
+                .find(|obj| obj.instance_id == door_shield_location.instance_id);
+            if result.is_some() {
+                existing_door_shield_id = door_shield_location.instance_id;
+            }
+        }
+
+        /* Find existing door force id */
+        let mut existing_door_force_id = 0;
+        for door_force_location in door_loc.door_force_locations.iter() {
+            let result = layers[door_force_location.layer as usize].objects.iter()
+                .find(|obj| obj.instance_id == door_force_location.instance_id);
+            if result.is_some() {
+                existing_door_force_id = door_force_location.instance_id;
+            }
+        }
+
+        /* Blast Shield instant start timer */
+        {
+            let door = layers[blast_shield_layer_idx].objects.iter_mut()
+                .find(|obj| obj.instance_id == timer_id)
+                .unwrap();
+
+            // when the blast shield is active, instantly activate the fancy shield/dt
+            // and instantly deactivate the blue "replacement" shield
+            door.connections.as_mut_vec().extend_from_slice(
+                &[
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_force_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_shield_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: existing_door_force_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: existing_door_shield_id,
+                    },
+                ]
+            );
+        }
+
+        /* Damageable Trigger */
+        for door_force_location in door_loc.door_force_locations.iter() {
+            let door_force = layers[door_force_location.layer as usize].objects.iter_mut()
+                .find(|obj| obj.instance_id == door_force_location.instance_id);
+
+            if door_force.is_none() {
+                continue;
+            }
+            let door_force = door_force.unwrap();
+
+            // Don't re-activate the fancy shield once it's been deactivated
+            door_force.connections.as_mut_vec().retain(|conn|
+                !(conn.target_object_id == existing_door_shield_id && conn.message == structs::ConnectionMsg::ACTIVATE)
+            );
+
+            // start disabled by default (auto-enabled by blast shield layer)
+            let door_force = door_force.property_data.as_damageable_trigger_mut().unwrap();
+            door_force.active = 0;
+
+            break;
+        }
+
+        /* Shield Actor */
+        for door_shield_location in door_loc.door_shield_locations.iter() {
+            let door_shield = layers[door_shield_location.layer as usize].objects.iter_mut()
+                .find(|obj| obj.instance_id == door_shield_location.instance_id);
+
+            if door_shield.is_none() {
+                continue;
+            }
+            let door_shield = door_shield.unwrap();
+
+            // start disabled by default (auto-enabled by blast shield layer)
+            let door_shield = door_shield.property_data.as_actor_mut().unwrap();
+            door_shield.active = 0;
+
+            break;
+        }
+
+        /* Unlock Relay */
+        for obj in layers[0].objects.iter_mut() {
+            if !obj.property_data.is_relay() {
+                continue;
+            }
+
+            let found = obj.connections.as_mut_vec().iter_mut().any(|conn|
+                conn.target_object_id == existing_door_shield_id && conn.message == structs::ConnectionMsg::ACTIVATE
+            );
+
+            if !found {
+                continue;
+            }
+
+            // Don't re-activate the fancy shield/trigger once it's been deactivated
+            obj.connections.as_mut_vec().retain(|conn|
+                !(conn.target_object_id == existing_door_shield_id || conn.target_object_id == existing_door_force_id)
+            );
+
+            // add scripting for an additional shield and damageable trigger
+            obj.connections.as_mut_vec().extend_from_slice(
+                &[
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: door_force_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: door_shield_id,
+                    },
+                ]
+            );
+
+            break;
+        }
+
+        /* Door */
+        {
+            let loc = door_loc.door_location.unwrap();
+            let door = layers[loc.layer as usize].objects.iter_mut()
+                .find(|obj| obj.instance_id == loc.instance_id)
+                .unwrap();
+
+            // add scripting for an additional shield and damageable trigger
+            door.connections.as_mut_vec().extend_from_slice(
+                &[
+                    structs::Connection {
+                        state: structs::ConnectionState::OPEN,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_force_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::OPEN,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_shield_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::MAX_REACHED,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_force_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::MAX_REACHED,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_shield_id,
+                    },
+                ]
+            );
+        }
+
+        /* Create new door shield from existing */
+        {
+            let door_shield = {
+                let mut door_shield = None;
+                for door_shield_location in door_loc.door_shield_locations.iter() {
+                    door_shield = layers[door_shield_location.layer as usize].objects.iter_mut()
+                        .find(|obj| obj.instance_id == door_shield_location.instance_id);
+                    if door_shield.is_some() {
+                        break;
+                    }
+                }
+                door_shield.unwrap()
+            };
+
+            let mut new_door_shield = door_shield.clone();
+            let new_door_shield_data = new_door_shield.property_data.as_actor_mut().unwrap();
+            new_door_shield.instance_id = door_shield_id;
+            new_door_shield_data.cmdl = DoorType::Blue.shield_cmdl();
+            new_door_shield_data.active = 1;
+            layers[0].objects.as_mut_vec().push(new_door_shield);
+        }
+
+        /* Create new damageable trigger from existing */
+        {
+            let door_force = {
+                let mut door_force = None;
+                for door_force_location in door_loc.door_force_locations.iter() {
+                    let obj = layers[door_force_location.layer as usize].objects.iter()
+                        .find(|obj| obj.instance_id == door_force_location.instance_id);
+        
+                    if obj.is_none() {
+                        continue;
+                    }
+
+                    door_force = obj;
+                    break;
+                }
+                door_force.unwrap()
+            };
+
+            let mut new_door_force = structs::SclyObject {
+                    instance_id: damageable_trigger_id,
+                    property_data: door_force.property_data.clone(),
+                    connections: door_force.connections.clone()
+                };
+            let new_door_force_data = new_door_force.property_data.as_damageable_trigger_mut().unwrap();
+            new_door_force.instance_id = door_force_id;
+            new_door_force.connections.as_mut_vec().retain(|conn|
+                !(conn.target_object_id == existing_door_shield_id)
+            );
+            new_door_force.connections.as_mut_vec().extend_from_slice(
+                &[
+                    structs::Connection {
+                        state: structs::ConnectionState::DEAD,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_shield_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::MAX_REACHED,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: door_shield_id,
+                    },
+                ]
+            );
+            new_door_force_data.color_txtr = DoorType::Blue.forcefield_txtr();
+            new_door_force_data.damage_vulnerability = DoorType::Blue.vulnerability();
+            new_door_force_data.active = 1;
+            layers[0].objects.as_mut_vec().push(new_door_force);    
+        }        
     }
 
     Ok(())
