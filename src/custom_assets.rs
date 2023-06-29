@@ -1141,7 +1141,13 @@ pub fn collect_game_resources<'r>(
     let mut found = HashMap::with_capacity(looking_for.len());
 
     // Iterate through every level Pak //
-    for pak_name in pickup_meta::ROOM_INFO.iter().map(|(name, _)| name) {
+    let mut paks: Vec<&str> = Vec::new();
+    for pak_name in pickup_meta::ROOM_INFO.iter().map(|(name, _)| name)
+    {
+        paks.push(pak_name);
+    }
+    paks.push("AudioGrp.pak");
+    for pak_name in paks {
         let file_entry = gc_disc.find_file(pak_name).unwrap();
         let pak = match *file_entry.file().unwrap() {
             structs::FstEntryFile::Pak(ref pak) => Cow::Borrowed(pak),

@@ -1100,6 +1100,9 @@ impl BlastShieldType {
         data.push((0xFAF20386, FourCC::from_bytes(b"PART")));
         data.push((0x4EBF5950, FourCC::from_bytes(b"CMDL")));
 
+        /* Sound */
+        data.push((0x57FE7E67, FourCC::from_bytes(b"AGSC")));
+
         data.retain(|i| i.0 != 0xffffffff && i.0 != 0);
         data
     }

@@ -613,19 +613,21 @@ fn patch_door<'r>(
     let mut streamed_audio_id = 0;
     let mut timer_id = 0;
     let mut effect_id = 0;
+    let mut shaker_id = 0;
     let mut relay_id = 0;
     let mut dt_id = 0;
 
     let mut blast_shield_layer_idx: usize = 0;
     if blast_shield_type.is_some() {
-        special_function_id = area.new_object_id_from_layer_name("Default");
-        blast_shield_instance_id = area.new_object_id_from_layer_name("Default");
-        sound_id = area.new_object_id_from_layer_name("Default");
-        streamed_audio_id = area.new_object_id_from_layer_name("Default");
-        timer_id = area.new_object_id_from_layer_name("Default");
-        effect_id = area.new_object_id_from_layer_name("Default");
-        relay_id = area.new_object_id_from_layer_name("Default");
-        dt_id = area.new_object_id_from_layer_name("Default");
+        special_function_id = area.new_object_id_from_layer_id(0);
+        sound_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        streamed_audio_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        shaker_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        blast_shield_instance_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        timer_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        effect_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        relay_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        dt_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
 
         /* Add a new layer to this room to put all the blast shield objects onto */
         area.add_layer(b"Custom Shield Layer\0".as_cstr());
@@ -856,7 +858,7 @@ fn patch_door<'r>(
                     message: structs::ConnectionMsg::ACTIVATE,
                     target_object_id: effect_id,
                 },
-                structs::Connection { // Play explosion sound effect TODO: I don't think this is working
+                structs::Connection { // Play explosion sound effect
                     state: structs::ConnectionState::ZERO,
                     message: structs::ConnectionMsg::PLAY,
                     target_object_id: sound_id,
@@ -870,6 +872,11 @@ fn patch_door<'r>(
                     state: structs::ConnectionState::ZERO,
                     message: structs::ConnectionMsg::DEACTIVATE,
                     target_object_id: dt_id,
+                },
+                structs::Connection { // Shake camera
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::ACTION,
+                    target_object_id: shaker_id,
                 },
             ].into(),
             property_data: structs::Relay {
@@ -1134,7 +1141,81 @@ fn patch_door<'r>(
         };
 
         // Create camera shake and activate on DEAD //
-        // TODO: It's possible, I'm just lazy
+        let shaker = structs::SclyObject {
+            instance_id: shaker_id,
+                property_data: structs::NewCameraShaker {
+                    name: b"myshaker\0".as_cstr(),
+                    position: position.into(),
+                    active: 1,
+                    unknown1: 1,
+                    unknown2: 0,
+                    duration: 0.5,
+                    sfx_dist: 10.0,
+                    shakers: [
+                        structs::CameraShakerComponent {
+                            unknown1: 1,
+                            unknown2: 1,
+                            am: structs::CameraShakePoint {
+                                unknown1: 1,
+                                unknown2: 0,
+                                attack_time: 0.1,
+                                sustain_time: 0.0,
+                                duration: 0.4,
+                                magnitude: 0.2,
+                            }.into(),
+                            fm: structs::CameraShakePoint {
+                                unknown1: 1,
+                                unknown2: 0,
+                                attack_time: 0.1,
+                                sustain_time: 0.0,
+                                duration: 0.2,
+                                magnitude: 2.0,
+                            }.into(),
+                        },
+                        structs::CameraShakerComponent {
+                            unknown1: 1,
+                            unknown2: 0,
+                            am: structs::CameraShakePoint {
+                                unknown1: 1,
+                                unknown2: 1,
+                                attack_time: 0.0,
+                                sustain_time: 0.0,
+                                duration: 0.0,
+                                magnitude: 0.0,
+                            }.into(),
+                            fm: structs::CameraShakePoint {
+                                unknown1: 1,
+                                unknown2: 1,
+                                attack_time: 0.0,
+                                sustain_time: 0.0,
+                                duration: 0.0,
+                                magnitude: 0.0,
+                            }.into(),
+                        },
+                        structs::CameraShakerComponent {
+                            unknown1: 1,
+                            unknown2: 1,
+                            am: structs::CameraShakePoint {
+                                unknown1: 1,
+                                unknown2: 0,
+                                attack_time: 0.2,
+                                sustain_time: 0.0,
+                                duration: 0.3,
+                                magnitude: 0.2,
+                            }.into(),
+                            fm: structs::CameraShakePoint {
+                                unknown1: 1,
+                                unknown2: 0,
+                                attack_time: 0.0,
+                                sustain_time: 0.0,
+                                duration: 0.3,
+                                magnitude: 2.0,
+                            }.into(),
+                        },
+                    ].into(),
+                }.into(),
+                connections: vec![].into(),
+        };
 
         // Create explosion sfx //
         let sound = structs::SclyObject {
@@ -1192,6 +1273,7 @@ fn patch_door<'r>(
         // add new script objects to layer //
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(streamed_audio);
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(sound);
+        layers[blast_shield_layer_idx].objects.as_mut_vec().push(shaker);
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(blast_shield);
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(timer);
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(dt);
