@@ -28,6 +28,7 @@ pub enum DoorType {
     Phazon,
     Thermal,
     XRay,
+    Scan,
     VerticalBlue,
     VerticalPowerOnly,
     VerticalPurple,
@@ -48,6 +49,7 @@ pub enum DoorType {
     VerticalPhazon,
     VerticalThermal,
     VerticalXRay,
+    VerticalScan,
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -64,6 +66,7 @@ pub enum BlastShieldType {
     Phazon,
     Thermal,
     XRay,
+    Scan,
     
     // These don't have assets
     None,
@@ -94,6 +97,7 @@ impl DoorType {
             DoorType::VerticalPhazon       =>   true,
             DoorType::VerticalThermal      =>   true,
             DoorType::VerticalXRay         =>   true,
+            DoorType::VerticalScan         =>   true,
             _ => false,
         }
     }
@@ -120,6 +124,7 @@ impl DoorType {
             DoorType::Phazon       => DoorType::VerticalPhazon       ,
             DoorType::Thermal      => DoorType::VerticalThermal      ,
             DoorType::XRay         => DoorType::VerticalXRay         ,
+            DoorType::Scan         => DoorType::VerticalScan         ,
             _ => {
                 if !self.is_vertical() {
                     panic!("no vertical door for type {:?}", self);
@@ -152,6 +157,7 @@ impl DoorType {
             DoorType::VerticalPhazon       => DoorType::Phazon      ,
             DoorType::VerticalThermal      => DoorType::Thermal     ,
             DoorType::VerticalXRay         => DoorType::XRay        ,
+            DoorType::VerticalScan         => DoorType::Scan        ,
             _ => {
                 if self.is_vertical() {
                     panic!("no horizontal door for type {:?}", self);
@@ -206,6 +212,8 @@ impl DoorType {
             "thermalvisor"  => Some(DoorType::Thermal)      ,
             "xray"          => Some(DoorType::XRay)         ,
             "xrayvisor"     => Some(DoorType::XRay)         ,
+            "scan"          => Some(DoorType::Scan)         ,
+            "scanvisor"     => Some(DoorType::Scan)         ,
             _               => None                         ,
         }
     }
@@ -232,6 +240,7 @@ impl DoorType {
             DoorType::Phazon       => custom_asset_ids::PHAZON_BEAM_CMDL     ,
             DoorType::Thermal      => custom_asset_ids::THERMAL_VISOR_CMDL   ,
             DoorType::XRay         => custom_asset_ids::XRAY_VISOR_CMDL      ,
+            DoorType::Scan         => custom_asset_ids::SCAN_VISOR_CMDL      ,
 
             // vertical doors need a different CMDL, otherwise it will look like this: https://i.imgur.com/jGjWnmg.png //
             DoorType::VerticalBlue         => ResId           ::new(0x18D0AEE6)               , // vanilla horizontal CMDL (blue)
@@ -254,6 +263,7 @@ impl DoorType {
             DoorType::VerticalPhazon       => custom_asset_ids::PHAZON_BEAM_VERTICAL_CMDL     ,
             DoorType::VerticalThermal      => custom_asset_ids::THERMAL_VISOR_VERTICAL_CMDL   ,
             DoorType::VerticalXRay         => custom_asset_ids::XRAY_VISOR_VERTICAL_CMDL      ,
+            DoorType::VerticalScan         => custom_asset_ids::SCAN_VISOR_VERTICAL_CMDL      ,
         }
     }
 
@@ -300,6 +310,7 @@ impl DoorType {
             DoorType::Phazon       => ResId::new(0x8A7F3683), // vanilla blue
             DoorType::Thermal      => ResId::new(0x8A7F3683), // vanilla blue
             DoorType::XRay         => ResId::new(0x8A7F3683), // vanilla blue
+            DoorType::Scan         => ResId::new(0x8344BEC8), // solid grey
             _                      => panic!("Unhandled forcefield_txtr"),
         }
     }
@@ -328,6 +339,7 @@ impl DoorType {
             DoorType::Phazon       => custom_asset_ids::PHAZON_BEAM_HOLORIM_TXTR,
             DoorType::Thermal      => custom_asset_ids::THERMAL_VISOR_HOLORIM_TXTR,
             DoorType::XRay         => custom_asset_ids::XRAY_VISOR_HOLORIM_TXTR,
+            DoorType::Scan         => custom_asset_ids::SCAN_VISOR_HOLORIM_TXTR,
             _                      => panic!("Unhandled holorim_txtr"),
         }
     }
@@ -352,6 +364,7 @@ impl DoorType {
             DoorType::Phazon       => custom_asset_ids::PHAZON_BEAM_SCAN,
             DoorType::Thermal      => ResId::invalid(), // door is just for color
             DoorType::XRay         => ResId::invalid(), // door is just for color
+            DoorType::Scan         => ResId::invalid(), // door is just for color
 
             // Vanilla doors don't need scans //
             _                      =>   ResId::invalid(),
@@ -378,6 +391,7 @@ impl DoorType {
             DoorType::Phazon       => custom_asset_ids::PHAZON_BEAM_STRG,
             DoorType::Thermal      => ResId::invalid(), // door is just for color
             DoorType::XRay         => ResId::invalid(), // door is just for color
+            DoorType::Scan         => ResId::invalid(), // door is just for color
 
             // Vanilla doors don't need scans //
             _                      =>   ResId::invalid(),
@@ -533,6 +547,7 @@ impl DoorType {
             DoorType::Phazon,
             DoorType::Thermal,
             DoorType::XRay,
+            DoorType::Scan,
             DoorType::VerticalBlue,
             DoorType::VerticalPowerOnly,
             DoorType::VerticalPurple,
@@ -553,6 +568,7 @@ impl DoorType {
             DoorType::VerticalPhazon,
             DoorType::VerticalThermal,
             DoorType::VerticalXRay,
+            DoorType::VerticalScan,
         ].iter().map(|i| *i)
     }
 
@@ -773,6 +789,9 @@ impl DoorType {
             DoorType::XRay => {
                 DoorType::Blue.vulnerability().clone()
             },
+            DoorType::Scan => {
+                DoorType::Blue.vulnerability().clone()
+            },
             _ => panic!("Unhandled vulnerability for door {:?}", self)
         }
     }
@@ -832,6 +851,8 @@ impl BlastShieldType {
             "thermalvisor"   => Some(BlastShieldType::Thermal      ),
             "xray"           => Some(BlastShieldType::XRay         ),
             "xrayvisor"      => Some(BlastShieldType::XRay         ),
+            "scan"           => Some(BlastShieldType::Scan         ),
+            "scanvisor"      => Some(BlastShieldType::Scan         ),
             _                => None,
         }
     }
@@ -849,6 +870,7 @@ impl BlastShieldType {
             BlastShieldType::Phazon       => custom_asset_ids::PHAZON_BEAM_BLAST_SHIELD_CMDL,
             BlastShieldType::Thermal      => custom_asset_ids::THERMAL_VISOR_BLAST_SHIELD_CMDL,
             BlastShieldType::XRay         => custom_asset_ids::XRAY_VISOR_BLAST_SHIELD_CMDL,
+            BlastShieldType::Scan         => custom_asset_ids::SCAN_VISOR_BLAST_SHIELD_CMDL,
             _ => ResId::new(0xEFDFFB8C), // Vanilla missile lock model
         }
     }
@@ -866,6 +888,7 @@ impl BlastShieldType {
             BlastShieldType::Phazon       => custom_asset_ids::PHAZON_BEAM_METAL_BODY_TXTR,
             BlastShieldType::Thermal      => custom_asset_ids::THERMAL_VISOR_METAL_BODY_TXTR,
             BlastShieldType::XRay         => custom_asset_ids::XRAY_VISOR_METAL_BODY_TXTR,
+            BlastShieldType::Scan         => custom_asset_ids::SCAN_VISOR_METAL_BODY_TXTR,
             _ => ResId::new(0x6E09EA6B), // Vanilla missile lock txtr
         }
     }
@@ -883,6 +906,7 @@ impl BlastShieldType {
             BlastShieldType::Phazon       => custom_asset_ids::PHAZON_BEAM_GLOW_BORDER_TXTR,
             BlastShieldType::Thermal      => custom_asset_ids::THERMAL_VISOR_GLOW_BORDER_TXTR,
             BlastShieldType::XRay         => custom_asset_ids::XRAY_VISOR_GLOW_BORDER_TXTR,
+            BlastShieldType::Scan         => custom_asset_ids::SCAN_VISOR_GLOW_BORDER_TXTR,
             _ => ResId::new(0x5B97098E), // Vanilla missile lock txtr
         }
     }
@@ -900,6 +924,7 @@ impl BlastShieldType {
             BlastShieldType::Phazon       => custom_asset_ids::PHAZON_BEAM_GLOW_TRIM_TXTR,
             BlastShieldType::Thermal      => custom_asset_ids::THERMAL_VISOR_GLOW_TRIM_TXTR,
             BlastShieldType::XRay         => custom_asset_ids::XRAY_VISOR_GLOW_TRIM_TXTR,
+            BlastShieldType::Scan         => custom_asset_ids::SCAN_VISOR_GLOW_TRIM_TXTR,
             _ => ResId::new(0x5C7B215C), // Vanilla missile lock txtr
         }
     }
@@ -917,6 +942,7 @@ impl BlastShieldType {
             BlastShieldType::Phazon       => custom_asset_ids::PHAZON_BEAM_ANIMATED_GLOW_TXTR,
             BlastShieldType::Thermal      => custom_asset_ids::THERMAL_VISOR_ANIMATED_GLOW_TXTR,
             BlastShieldType::XRay         => custom_asset_ids::XRAY_VISOR_ANIMATED_GLOW_TXTR,
+            BlastShieldType::Scan         => custom_asset_ids::SCAN_VISOR_ANIMATED_GLOW_TXTR,
             _ => ResId::new(0xFA0C2AE8), // Vanilla missile lock txtrw
         }
     }
@@ -934,6 +960,7 @@ impl BlastShieldType {
             BlastShieldType::Phazon       => custom_asset_ids::PHAZON_BEAM_METAL_TRIM_TXTR,
             BlastShieldType::Thermal      => custom_asset_ids::THERMAL_VISOR_METAL_TRIM_TXTR,
             BlastShieldType::XRay         => custom_asset_ids::XRAY_VISOR_METAL_TRIM_TXTR,
+            BlastShieldType::Scan         => custom_asset_ids::SCAN_VISOR_METAL_TRIM_TXTR,
             _ => ResId::new(0xFDE0023A), // Vanilla missile lock txtr
         }
     }
@@ -951,6 +978,7 @@ impl BlastShieldType {
             BlastShieldType::Phazon       => custom_asset_ids::PHAZON_BEAM_BLAST_SHIELD_SCAN,
             BlastShieldType::Thermal      => custom_asset_ids::THERMAL_VISOR_BLAST_SHIELD_SCAN,
             BlastShieldType::XRay         => custom_asset_ids::XRAY_VISOR_BLAST_SHIELD_SCAN,
+            BlastShieldType::Scan         => ResId::invalid(), // scan actor added later
             BlastShieldType::Missile      => ResId::<res_id::SCAN>::new(0x05F56F9D),
             _ => panic!("none/unchanged blast shield doesn't have scan"),
         }
@@ -969,6 +997,7 @@ impl BlastShieldType {
             BlastShieldType::Phazon       => custom_asset_ids::PHAZON_BEAM_BLAST_SHIELD_STRG,
             BlastShieldType::Thermal      => custom_asset_ids::THERMAL_VISOR_BLAST_SHIELD_STRG,
             BlastShieldType::XRay         => custom_asset_ids::XRAY_VISOR_BLAST_SHIELD_STRG,
+            BlastShieldType::Scan         => ResId::invalid(), // scan actor added later
             BlastShieldType::Missile      => ResId::<res_id::STRG>::new(0x265142BA),
             _ => panic!("none/unchanged blast shield doesn't have strg"),
         }
@@ -1089,6 +1118,7 @@ impl BlastShieldType {
             BlastShieldType::Phazon,
             BlastShieldType::Thermal,
             BlastShieldType::XRay,
+            BlastShieldType::Scan,
         ].iter().map(|i| *i)
     }
 
@@ -1110,6 +1140,7 @@ impl BlastShieldType {
             BlastShieldType::Phazon         => DoorType::Phazon,
             BlastShieldType::Thermal        => DoorType::Thermal,
             BlastShieldType::XRay           => DoorType::XRay,
+            BlastShieldType::Scan           => DoorType::Scan,
             _ => panic!("none/unchanged blast shield doesn't have door type counterpart"),
         }
     }
