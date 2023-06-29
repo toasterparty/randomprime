@@ -336,6 +336,7 @@ impl DoorType {
         let door = self.to_horizontal();
 
         match door {
+            DoorType::PowerOnly    => custom_asset_ids::POWER_BEAM_SCAN,
             DoorType::Boost        => custom_asset_ids::BOOST_SCAN,
             DoorType::PowerBomb    => custom_asset_ids::POWER_BOMB_SCAN,
             DoorType::Bomb         => custom_asset_ids::MORPH_BALL_BOMBS_SCAN,
@@ -361,6 +362,7 @@ impl DoorType {
         let door = self.to_horizontal();
 
         match door {
+            DoorType::PowerOnly    => custom_asset_ids::POWER_BEAM_STRG,
             DoorType::Boost        => custom_asset_ids::BOOST_STRG,
             DoorType::PowerBomb    => custom_asset_ids::POWER_BOMB_STRG,
             DoorType::Bomb         => custom_asset_ids::MORPH_BALL_BOMBS_STRG,
@@ -386,6 +388,11 @@ impl DoorType {
         let door = self.to_horizontal();
 
         match door {
+            DoorType::PowerOnly    => vec![
+                "Analysis complete.\0".to_string(),
+                "\0".to_string(),
+                "This door will only open with &push;&main-color=#D91818;Power Beam&pop;.\0".to_string(),
+            ],
             DoorType::Boost        =>
                 vec![
                     "Analysis complete.\0".to_string(),
