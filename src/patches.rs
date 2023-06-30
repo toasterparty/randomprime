@@ -34,6 +34,7 @@ use crate::patch_config::{
     RelayConfig,
     TimerConfig,
     ActorKeyFrameConfig,
+    SpawnPointConfig,
 };
 
 use std::{fs::{self, File}, io::{Read}, path::Path};
@@ -4478,6 +4479,71 @@ fn patch_add_relay<'r>(
             connections: vec![].into(),
         },
     );
+
+    Ok(())
+}
+
+fn patch_add_spawn_point<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    spawn_point_config: SpawnPointConfig,
+)
+    -> Result<(), String>
+{
+    if id_in_use(area, spawn_point_config.id) {
+        panic!("id 0x{:X} already in use", spawn_point_config.id);
+    }
+
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    let mut spawn_point = structs::SclyObject {
+            instance_id: spawn_point_config.id,
+            property_data: structs::SpawnPoint {
+                    name: b"my spawnpoint\0".as_cstr(),
+                    position: spawn_point_config.position.into(),
+                    rotation: spawn_point_config.rotation.into(),
+                    power: 0,
+                    ice: 0,
+                    wave: 0,
+                    plasma: 0,
+                    missiles: 0,
+                    scan_visor: 0,
+                    bombs: 0,
+                    power_bombs: 0,
+                    flamethrower: 0,
+                    thermal_visor: 0,
+                    charge: 0,
+                    super_missile: 0,
+                    grapple: 0,
+                    xray: 0,
+                    ice_spreader: 0,
+                    space_jump: 0,
+                    morph_ball: 0,
+                    combat_visor: 0,
+                    boost_ball: 0,
+                    spider_ball: 0,
+                    power_suit: 0,
+                    gravity_suit: 0,
+                    varia_suit: 0,
+                    phazon_suit: 0,
+                    energy_tanks: 0,
+                    unknown0: 0,
+                    health_refill: 0,
+                    unknown1: 0,
+                    wavebuster: 0,
+                    default_spawn: spawn_point_config.default_spawn.unwrap_or(false) as u8,
+                    active: spawn_point_config.active.unwrap_or(true) as u8,
+                    morphed: spawn_point_config.morphed.unwrap_or(false) as u8,
+                }.into(),
+            connections: vec![].into(),
+        };
+
+    if spawn_point_config.items.is_some() {
+        let items = spawn_point_config.items.unwrap();
+        items.update_spawn_point(spawn_point.property_data.as_spawn_point_mut().unwrap());
+    }
+
+    layer.objects.as_mut_vec().push(spawn_point);
 
     Ok(())
 }
@@ -13900,6 +13966,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             cutscene_skip_fns: None,
                             timers: None,
                             actor_keyframes: None,
+                            spawn_points: None,
                         }
                     );
                 }
@@ -14430,6 +14497,19 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         ps,
                                         area,
                                         relay_config.clone(),
+                                    ),
+                                );
+                            }
+                        }
+
+                        if room.spawn_points.is_some() {
+                            for spawn_point_config in room.spawn_points.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_spawn_point(
+                                        ps,
+                                        area,
+                                        spawn_point_config.clone(),
                                     ),
                                 );
                             }

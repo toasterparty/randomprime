@@ -508,6 +508,19 @@ pub struct ActorKeyFrameConfig
     pub total_playback: f32,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SpawnPointConfig
+{
+    pub id: u32,
+    pub active: Option<bool>,
+    pub position: [f32;3],
+    pub rotation: [f32;3],
+    pub default_spawn: Option<bool>,
+    pub morphed: Option<bool>,
+    pub items: Option<StartingItems>,
+}
+
 #[derive(Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RoomConfig
@@ -547,6 +560,7 @@ pub struct RoomConfig
     pub cutscene_skip_fns: Option<Vec<u32>>, // instance id of new special function
     pub timers: Option<Vec<TimerConfig>>,
     pub actor_keyframes: Option<Vec<ActorKeyFrameConfig>>,
+    pub spawn_points: Option<Vec<SpawnPointConfig>>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
