@@ -35,6 +35,8 @@ use crate::patch_config::{
     TimerConfig,
     ActorKeyFrameConfig,
     SpawnPointConfig,
+    TriggerConfig,
+    DamageType,
 };
 
 use std::{fs::{self, File}, io::{Read}, path::Path};
@@ -4544,6 +4546,54 @@ fn patch_add_spawn_point<'r>(
     }
 
     layer.objects.as_mut_vec().push(spawn_point);
+
+    Ok(())
+}
+
+fn patch_add_trigger<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    trigger_config: TriggerConfig,
+)
+    -> Result<(), String>
+{
+    let instance_id = {
+        if trigger_config.id.is_some() {
+            let id = trigger_config.id.unwrap();
+            if id_in_use(area, id) {
+                panic!("id 0x{:X} already in use", id);
+            }
+
+            id
+        } else {
+            area.new_object_id_from_layer_id(0)
+        }
+    };
+
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id,
+            property_data: structs::Trigger {
+                name: b"Start Sequence Trigger\0".as_cstr(),
+                position: trigger_config.position.into(),
+                scale: trigger_config.scale.into(),
+                damage_info: structs::scly_structs::DamageInfo {
+                    weapon_type: trigger_config.damage_type.unwrap_or(DamageType::Power) as u32,
+                    damage: trigger_config.damage_amount.unwrap_or(0.0),
+                    radius: 0.0,
+                    knockback_power: 0.0
+                },
+                force: trigger_config.force.unwrap_or([0.0, 0.0, 0.0]).into(),
+                flags: trigger_config.flags.unwrap_or(1),
+                active: trigger_config.active.unwrap_or(true) as u8,
+                deactivate_on_enter: trigger_config.deactivate_on_enter.unwrap_or(false) as u8,
+                deactivate_on_exit: trigger_config.deactivate_on_exit.unwrap_or(false) as u8,
+            }.into(),
+            connections: vec![].into(),
+        }
+    );
 
     Ok(())
 }
@@ -14510,6 +14560,19 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         ps,
                                         area,
                                         spawn_point_config.clone(),
+                                    ),
+                                );
+                            }
+                        }
+
+                        if room.triggers.is_some() {
+                            for trigger_config in room.triggers.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_trigger(
+                                        ps,
+                                        area,
+                                        trigger_config.clone(),
                                     ),
                                 );
                             }

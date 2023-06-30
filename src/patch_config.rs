@@ -307,15 +307,39 @@ pub struct LockOnPoint
     pub no_lock: Option<bool>,
 }
 
+
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub enum DamageType {
+    Power,
+    Ice,
+    Wave,
+    Plasma,
+    Bomb,
+    PowerBomb,
+    Missile,
+    BoostBall,
+    Phazon,
+    Ai,
+    PoisonWater,
+    Lava,
+    Hot,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TriggerConfig
 {
+    pub id: Option<u32>,
+    pub active: Option<bool>,
     pub position: [f32;3],
     pub scale: [f32;3],
     pub force: Option<[f32;3]>,
-    pub damage_type: Option<String>,
+    pub damage_type: Option<DamageType>,
     pub damage_amount: Option<f32>,
+    pub flags: Option<u32>,
+    pub deactivate_on_enter: Option<bool>,
+    pub deactivate_on_exit: Option<bool>,
 }
 
 // None = 0,
@@ -540,7 +564,6 @@ pub struct RoomConfig
     pub camera_hints: Option<Vec<CameraHintConfig>>,
     pub blocks: Option<Vec<BlockConfig>>,
     pub lock_on_points: Option<Vec<LockOnPoint>>,
-    pub triggers: Option<Vec<TriggerConfig>>,
     pub fog: Option<FogConfig>,
     pub ambient_lighting_scale: Option<f32>, // 1.0 is default lighting
     pub enviornmental_effect: Option<EnviornmentalEffect>,
@@ -561,6 +584,7 @@ pub struct RoomConfig
     pub timers: Option<Vec<TimerConfig>>,
     pub actor_keyframes: Option<Vec<ActorKeyFrameConfig>>,
     pub spawn_points: Option<Vec<SpawnPointConfig>>,
+    pub triggers: Option<Vec<TriggerConfig>>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
