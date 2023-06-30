@@ -4306,6 +4306,35 @@ fn patch_edit_water<'r>(
     Ok(())
 }
 
+fn patch_edit_camera_keyframe<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
+)
+    -> Result<(), String>
+{
+    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
+    for layer in layers.iter_mut()
+    {
+        let obj = layer.objects
+            .iter_mut()
+            .find(|obj| obj.instance_id&0x00FFFFFF == id&0x00FFFFFF);
+
+        if obj.is_none()
+        {
+            continue;
+        }
+
+        let camera_keyframe = obj.unwrap().property_data.as_camera_filter_keyframe_mut().unwrap();
+        camera_keyframe.filter_type = 1;
+        camera_keyframe.filter_shape = 4;
+        camera_keyframe.unknown4 = 2;
+        camera_keyframe.color = [0.0, 0.0, 0.0, 1.0].into();
+    }
+
+    Ok(())
+}
+
 fn id_in_use(
     area: &mut mlvl_wrapper::MlvlArea,
     id: u32,
@@ -14445,6 +14474,23 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                 //         TBD,
                                 //     ),
                                 // );
+                            } else if room_info.room_id.to_u32() == 0x6655F51E { // chozo ice temple
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_edit_camera_keyframe(
+                                        ps,
+                                        area,
+                                        0x80171,
+                                    ),
+                                );
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_edit_camera_keyframe(
+                                        ps,
+                                        area,
+                                        0x80210,
+                                    ),
+                                );
                             }
                         }
 
