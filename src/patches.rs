@@ -4338,6 +4338,34 @@ fn patch_edit_camera_keyframe<'r>(
     Ok(())
 }
 
+fn patch_move_camera<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
+    position: [f32; 3],
+)
+    -> Result<(), String>
+{
+    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
+    for layer in layers.iter_mut()
+    {
+        let obj = layer.objects
+            .iter_mut()
+            .find(|obj| obj.instance_id&0x00FFFFFF == id&0x00FFFFFF);
+
+        if obj.is_none()
+        {
+            continue;
+        }
+
+        let camera = obj.unwrap().property_data.as_camera_mut().unwrap();
+        camera.position = position.into();
+        break;
+    }
+
+    Ok(())
+}
+
 fn id_in_use(
     area: &mut mlvl_wrapper::MlvlArea,
     id: u32,
@@ -14632,6 +14660,16 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         ps,
                                         area,
                                         0x80210,
+                                    ),
+                                );
+                            } else if room_info.room_id.to_u32() == 0x77714498 { // subchamber five
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_move_camera(
+                                        ps,
+                                        area,
+                                        0x000A0028,
+                                        [46.805, -245.6632, -194.9795],
                                     ),
                                 );
                             }
