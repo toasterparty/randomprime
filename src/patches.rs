@@ -37,9 +37,10 @@ use crate::patch_config::{
     SpawnPointConfig,
     TriggerConfig,
     DamageType,
+    LockOnPoint,
 };
 
-use std::{fs::{self, File}, io::{Read}, path::Path};
+use std::{fs::{self, File}, io::Read, path::Path};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
@@ -5220,9 +5221,7 @@ fn patch_lock_on_point<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
-    position: [f32;3],
-    is_grapple: bool,
-    no_lock: bool,
+    config: LockOnPoint,
 ) -> Result<(), String>
 {
     let deps = vec![
@@ -5237,6 +5236,10 @@ fn patch_lock_on_point<'r>(
         }
     );
     area.add_dependencies(game_resources, 0, deps_iter);
+
+    let is_grapple = config.is_grapple.unwrap_or(false);
+    let no_lock = config.no_lock.unwrap_or(false);
+    let position = config.position;
 
     if is_grapple {
         let deps = vec![
@@ -5260,7 +5263,7 @@ fn patch_lock_on_point<'r>(
         area.add_dependencies(game_resources, 0, deps_iter);
     }
 
-    let actor_id = area.new_object_id_from_layer_name("Default");
+    let actor_id = config.id.unwrap_or(area.new_object_id_from_layer_name("Default"));
     let mut grapple_point_id = 0;
     let mut special_function_id = 0;
     let mut timer_id = 0;
@@ -14908,9 +14911,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         ps,
                                         area,
                                         game_resources,
-                                        lock_on.position,
-                                        lock_on.is_grapple.unwrap_or(false),
-                                        lock_on.no_lock.unwrap_or(false),
+                                        lock_on.clone(),
                                     ),
                                 );
                             }
