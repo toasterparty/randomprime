@@ -4366,6 +4366,43 @@ fn patch_move_camera<'r>(
     Ok(())
 }
 
+fn patch_add_boss_health_bar<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
+)
+    -> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: id,
+            property_data: structs::SpecialFunction {
+                name: b"boss energy bar\0".as_cstr(),
+                position: [0.0, 0.0, 0.0].into(),
+                rotation: [0.0, 0.0, 0.0].into(),
+                type_: 12, // boss energy bar
+                unknown0: b"\0".as_cstr(),
+                unknown1: 0.0,
+                unknown2: 1.0,
+                unknown3: 0.0,
+                layer_change_room_id: 0xFFFFFFFF,
+                layer_change_layer_id: 0xFFFFFFFF,
+                item_id: 0,
+                unknown4: 1, // active
+                unknown5: 0.0,
+                unknown6: 0xFFFFFFFF,
+                unknown7: 0xFFFFFFFF,
+                unknown8: 0xFFFFFFFF,
+            }.into(),
+            connections: vec![].into(),
+        },
+    );
+
+    Ok(())
+}
+
 fn id_in_use(
     area: &mut mlvl_wrapper::MlvlArea,
     id: u32,
@@ -9004,6 +9041,80 @@ fn patch_dol<'r>(
         });
         dol_patcher.ppcasm_patch(&splash_scren_patch)?;
     }
+
+    let flaahgra_patch = ppcasm!(0x801b344c + 0x0, {
+        // r0,0x8e5(r31)
+
+        li r0, 0x0003;
+        stw r0, 0x788(r31);
+        li r0, 0xFFFF;
+
+        // xori r0, r0, 0x18;
+        // xori r0, r0, 0x30;
+        // stw        r0,0x8e5(r31);
+    });
+    dol_patcher.ppcasm_patch(&flaahgra_patch)?;
+
+    // let flaahgra_patch = ppcasm!(symbol_addr!("AcceptScriptMsg__9CFlaahgraF20EScriptObjectMessage9TUniqueIdR13CStateManager", version) + 0x7c8, {
+    //     li         r0,0x0;
+    //     stw        r0,0x788(r31);
+    //     nop;
+    //     nop;
+    //     nop;
+    //     nop;
+    //     nop;
+    //     nop;
+    //     nop;
+    //     nop;
+    //     nop;
+    //     nop;
+    // });
+    // dol_patcher.ppcasm_patch(&flaahgra_patch)?;
+
+    // "Action" handling
+    // let flaahgra_action_addr = symbol_addr!("AcceptScriptMsg__9CFlaahgraF20EScriptObjectMessage9TUniqueIdR13CStateManager", version) + 0x7c8;
+
+    // let data = vec![
+    //     0x88, 0x1f, 0x08, 0xe5,     // lbz        r0,0x8e5(r31)
+    //     0x38, 0x60, 0x00, 0x01,     // li         this,0x1
+    // ];
+    // dol_patcher.patch(flaahgra_action_addr, data.into())?;
+
+    // let flaahgra_patch = ppcasm!(flaahgra_action_addr + 0x8, {
+    //     // switchD_801b2c7c::caseD_13
+    //     // lbz        r0,0x8e5(r31);
+    //     // li         this,0x1;
+    //     rlwimi     r0,r3,0,30,28;
+    //     li         r0, 0xFFFF;
+    //     stb        r0,0x8e5(r31);
+    //     nop;
+    //     nop;
+    //     nop;
+    //     nop;
+    //     nop;
+    //     nop;
+    //     nop;
+    //     nop;
+    //     // b switchD_801b2c7c::caseD_0;
+    // });
+    // dol_patcher.ppcasm_patch(&flaahgra_patch)?;
+
+    // let data = vec![
+    //     0xa0, 0x1d, 0x00, 0x00,
+    //     0x7f, 0xc3, 0xf3, 0x78,
+    //     0x38, 0x81, 0x00, 0x0c,
+    //     0xb0, 0x01, 0x00, 0x0c,
+    //     0x4b, 0xe9, 0x91, 0x8d,
+    //     0x7c, 0x64, 0x1b, 0x78,
+    //     0x38, 0x61, 0x00, 0x7c,
+    //     0x4b, 0xef, 0xa2, 0xe9,
+    //     0x80, 0x03, 0x00, 0x04,
+    //     0x28, 0x00, 0x00, 0x00,
+    //     0x41, 0x82, 0x00, 0x2c,
+    //     0x80, 0x1f, 0x07, 0x88,
+    //     0x90, 0x1f, 0x07, 0xf8,
+    // ];
+    // dol_patcher.patch(flaahgra_action_addr, data.into())?;
 
     /* This is where I keep random dol patch experiments */
 
@@ -14670,6 +14781,15 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         area,
                                         0x000A0028,
                                         [46.805, -245.6632, -194.9795],
+                                    ),
+                                );
+                            } else if room_info.room_id.to_u32() == 0x70181194 { // quarantine cave
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_boss_health_bar(
+                                        ps,
+                                        area,
+                                        0x00100000,
                                     ),
                                 );
                             }
