@@ -441,6 +441,7 @@ decl_instrs! {
     stwu,       (r:s), (r:a:dis)        => (6;37) | s | a | (16;dis);
     stb,        (r:s), (r:a:dis)        => (6;38) | s | a | (16;dis);
     subf[o][.], (r:d), (r:a), (r:b)     => (6;31) | d | a | b | (?o) | (9;40) | (?.);
+    xori,       (r:s), (r:a), (i:imm)   => (6;26) | s | a | (16;imm);
 }
 
 #[proc_macro]
