@@ -4,7 +4,7 @@ use crate::{
 };
 
 use structs::{res_id, ResId, scly_structs::TypeVulnerability};
-use reader_writer::{FourCC};
+use reader_writer::FourCC;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum DoorType {

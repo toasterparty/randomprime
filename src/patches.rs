@@ -9045,6 +9045,68 @@ fn patch_dol<'r>(
         dol_patcher.ppcasm_patch(&splash_scren_patch)?;
     }
 
+/*
+    // need to undo sub801ae980()
+
+    let function_addr = symbol_addr!("AcceptScriptMsg__9CFlaahgraF20EScriptObjectMessage9TUniqueIdR13CStateManager", version);
+
+    // RESET
+    let flaahgra_patch = ppcasm!(function_addr + 0x80c, {
+        nop;
+
+        // x450_bodyController->GetBodyStateInfo().GetCurrentStateId() = pas::EAnimationState::Getup
+        // 0x450 + 0x2a4 + 0x14
+        // li r0, 1;
+        // stw r0, 0x708(r31);
+        nop;
+        nop;
+
+        // branch to the unused ACTION handling (patched below)
+        b       { function_addr + 0x7c8 };
+    });
+    dol_patcher.ppcasm_patch(&flaahgra_patch)?;
+
+    // ACTION
+    let flaahgra_patch = ppcasm!(function_addr + 0x7c8, {
+        
+        li r0, 0;
+        stw r0, 0x7d4(r31); // x7d4_faintTime
+        
+        lfs  f0, 0x5744(r2); // 3.0, ideally it would be 6.0
+        stfs f0, 0x7d8(r31); // x7d8_
+
+        // skip grow animation
+        li r0, 0xFFFF;
+        stw r0, 0x8e4(r31);
+        // nop;
+        // nop;
+
+        li r0, 4;
+        stw r0, 0x568(r31); // x568_state
+
+        // nop;
+        // nop;
+
+        nop;
+    });
+    dol_patcher.ppcasm_patch(&flaahgra_patch)?;
+
+    // re-add the RESET handling
+    dol_patcher.patch(function_addr + 0x7c8 + 9*4, vec![
+            0x88, 0x1f, 0x08, 0xe5,
+            0x38, 0x60, 0x00, 0x01,
+            0x50, 0x60, 0x1f, 0x38,
+            0x98, 0x1f, 0x08, 0xe5,
+        ].into()
+    )?;
+
+    // break;
+
+
+    // 801b3440 c0 02 a8 bc     lfs        f0,-0x5744(r2)=>d_float_0 = 0.0
+    // 801b3444 d0 1f 07 d4     stfs       f0,0x7d4(r31)
+*/
+
     /* This is where I keep random dol patch experiments */
 
     // let boost_on_spider = ppcasm!(symbol_addr!("ComputeBoostBallMovement__10CMorphBallFRC11CFinalInputRC13CStateManagerf", version) + (0x800f4454 - 0x800f43ac), {
