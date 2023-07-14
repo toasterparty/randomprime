@@ -779,6 +779,41 @@ fn create_nothing(pickup_table: &mut HashMap<PickupModel, PickupData>)
     }).is_none());
 }
 
+fn create_gamecube(pickup_table: &mut HashMap<PickupModel, PickupData>)
+{
+    let mut bytes = Vec::new();
+    {
+        let mut pickup: structs::Pickup = Reader::new(&pickup_table[&PickupModel::PhazonSuit].bytes)
+                                        .read::<Pickup>(()).clone();
+        pickup.name = Cow::Borrowed(CStr::from_bytes_with_nul(b"Gamecube\0").unwrap());
+        pickup.kind = PickupType::Missile.kind();
+        pickup.max_increase = 0;
+        pickup.curr_increase = 0;
+        pickup.cmdl = custom_asset_ids::RANDOVANIA_GAMECUBE_CMDL;
+        pickup.ancs.file_id = custom_asset_ids::RANDOVANIA_GAMECUBE_ANCS;
+        pickup.part = ResId::<res_id::PART>::invalid();
+        pickup.write_to(&mut bytes).unwrap();
+    }
+
+    let mut deps: HashSet<_> = pickup_table[&PickupModel::PhazonSuit].deps.iter()
+        .filter(|i| ![b"SCAN".into(), b"STRG".into(),
+                      b"CMDL".into()].contains(&i.fourcc))
+        .cloned()
+        .collect();
+    deps.extend(&[
+        ResourceKey::from(custom_asset_ids::RANDOVANIA_GAMECUBE_CMDL),
+        ResourceKey::from(custom_asset_ids::RANDOVANIA_GAMECUBE_ANCS),
+        ResourceKey::from(custom_asset_ids::RANDOVANIA_GAMECUBE_TXTR),
+        ResourceKey::from(ResId::<res_id::TXTR>::new(0x1B4479FD)),
+        ResourceKey::from(ResId::<res_id::TXTR>::new(0x6E3D2E18)),
+    ]);
+    assert!(pickup_table.insert(PickupModel::RandovaniaGamecube, PickupData {
+        bytes: bytes,
+        deps: deps,
+        attainment_audio_file_name: b"/audio/itm_x_short_02.dsp\0".to_vec(),
+    }).is_none());
+}
+
 fn create_shiny_missile(pickup_table: &mut HashMap<PickupModel, PickupData>)
 {
     let mut shiny_missile_bytes = Vec::new();
@@ -1285,6 +1320,7 @@ fn main()
     assert!(cmdl_aabbs.insert(custom_asset_ids::XRAY_CMDL, visor_aabb).is_none());
     assert!(cmdl_aabbs.insert(custom_asset_ids::COMBAT_CMDL, visor_aabb).is_none());
 
+    create_gamecube(&mut pickup_table);
     create_nothing(&mut pickup_table);
     create_shiny_missile(&mut pickup_table);
     create_thermal_visor(&mut pickup_table);

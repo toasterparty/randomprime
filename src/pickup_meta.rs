@@ -282,6 +282,7 @@ pub enum PickupModel
     PowerBombRefill,
     ShinyMissile,
     IceTrap,
+    RandovaniaGamecube,
 }
 
 impl PickupModel
@@ -327,6 +328,7 @@ impl PickupModel
             PickupModel::ArtifactOfNature =>    "Artifact of Nature",
             PickupModel::ArtifactOfStrength =>  "Artifact of Strength",
             PickupModel::Nothing =>             "Nothing",
+            PickupModel::RandovaniaGamecube =>  "Gamecube",
             PickupModel::HealthRefill =>        "Health Refill",
             PickupModel::MissileRefill =>       "Missile Refill",
             PickupModel::PowerBombRefill =>     "Power Bomb Refill",
@@ -339,6 +341,10 @@ impl PickupModel
     {
         let mut pickup: Pickup = Reader::new(self.raw_pickup_data()).read(());
         if self.name() == PickupModel::Nothing.name() {
+            pickup.scale[0] = 1.0;
+            pickup.scale[1] = 1.0;
+            pickup.scale[2] = 1.0;
+        } else if self.name() == PickupModel::RandovaniaGamecube.name() {
             pickup.scale[0] = 1.0;
             pickup.scale[1] = 1.0;
             pickup.scale[2] = 1.0;
@@ -387,6 +393,7 @@ impl PickupModel
             PickupModel::ArtifactOfNature,
             PickupModel::ArtifactOfStrength,
             PickupModel::Nothing,
+            PickupModel::RandovaniaGamecube,
             PickupModel::HealthRefill,
             PickupModel::MissileRefill,
             PickupModel::PowerBombRefill,
@@ -423,12 +430,20 @@ impl PickupModel
             return Some(PickupModel::XRayVisor);
         }
 
+        if vec!["randovania", "placeholder"]
+            .contains(&string)
+        {
+            return Some(PickupModel::RandovaniaGamecube);
+        }
+
         // Placeholder Mapping
         if vec!["power suit", "power beam"]
             .contains(&string)
         {
-            return Some(PickupModel::Nothing);
+            return Some(PickupModel::RandovaniaGamecube);
         }
+
+        
 
         None
     }
@@ -438,7 +453,7 @@ impl PickupModel
      */
     pub fn from_type(pickup_type: PickupType) -> Self {
         match pickup_type {
-            PickupType::PowerBeam           => PickupModel::Nothing,
+            PickupType::PowerBeam           => PickupModel::RandovaniaGamecube,
             PickupType::IceBeam             => PickupModel::IceBeam,
             PickupType::WaveBeam            => PickupModel::WaveBeam,
             PickupType::PlasmaBeam          => PickupModel::PlasmaBeam,
@@ -458,14 +473,14 @@ impl PickupModel
             PickupType::CombatVisor         => PickupModel::CombatVisor,
             PickupType::BoostBall           => PickupModel::BoostBall,
             PickupType::SpiderBall          => PickupModel::SpiderBall,
-            PickupType::PowerSuit           => PickupModel::Nothing,
+            PickupType::PowerSuit           => PickupModel::RandovaniaGamecube,
             PickupType::GravitySuit         => PickupModel::GravitySuit,
             PickupType::VariaSuit           => PickupModel::VariaSuit,
             PickupType::PhazonSuit          => PickupModel::PhazonSuit,
             PickupType::EnergyTank          => PickupModel::EnergyTank,
-            PickupType::UnknownItem1        => PickupModel::Nothing,
+            PickupType::UnknownItem1        => PickupModel::RandovaniaGamecube,
             PickupType::HealthRefill        => PickupModel::HealthRefill,
-            PickupType::UnknownItem2        => PickupModel::Nothing,
+            PickupType::UnknownItem2        => PickupModel::RandovaniaGamecube,
             PickupType::Wavebuster          => PickupModel::Wavebuster,
             PickupType::ArtifactOfTruth     => PickupModel::ArtifactOfTruth,
             PickupType::ArtifactOfStrength  => PickupModel::ArtifactOfStrength,
@@ -480,7 +495,7 @@ impl PickupModel
             PickupType::ArtifactOfSpirit    => PickupModel::ArtifactOfSpirit,
             PickupType::ArtifactOfNewborn   => PickupModel::ArtifactOfNewborn,
             PickupType::Nothing             => PickupModel::Nothing,
-            PickupType::FloatyJump          => PickupModel::Nothing,
+            PickupType::FloatyJump          => PickupModel::RandovaniaGamecube,
             PickupType::IceTrap             => PickupModel::IceTrap,
         }
     }

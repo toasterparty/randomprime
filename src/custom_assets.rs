@@ -58,7 +58,7 @@ macro_rules! def_asset_ids {
 
 pub mod custom_asset_ids {
     def_asset_ids! {
-        // Item Assets //
+        // Item Assets
         PHAZON_SUIT_TXTR1: TXTR = 0xDEAF0000,
         PHAZON_SUIT_TXTR2: TXTR,
         PHAZON_SUIT_CMDL: CMDL,
@@ -79,6 +79,11 @@ pub mod custom_asset_ids {
         SHINY_MISSILE_ANCS: ANCS,
         SHINY_MISSILE_EVNT: EVNT,
         SHINY_MISSILE_ANIM: ANIM,
+        RANDOVANIA_GAMECUBE_CMDL: CMDL,
+        RANDOVANIA_GAMECUBE_ANCS: ANCS,
+        RANDOVANIA_GAMECUBE_TXTR: TXTR,
+
+        // Custom Scans
         SHORELINES_POI_SCAN: SCAN,
         SHORELINES_POI_STRG: STRG,
         CFLDG_POI_SCAN: SCAN,
@@ -392,17 +397,16 @@ fn extern_assets_compile_time<'r>() -> Vec<Resource<'r>>
         extern_asset!(MAP_PICKUP_ICON_TXTR, "map_pickupdot.txtr"),
 
         /* Pickup Assets */
-        extern_asset!(NOTHING_TXTR       , "nothing_texture.txtr"     ),
-        extern_asset!(PHAZON_SUIT_TXTR1  , "phazon_suit_texure_1.txtr"),
-        extern_asset!(PHAZON_SUIT_TXTR2  , "phazon_suit_texure_2.txtr"),
-        extern_asset!(SHINY_MISSILE_TXTR0, "shiny-missile0.txtr"      ),
-        extern_asset!(SHINY_MISSILE_TXTR1, "shiny-missile1.txtr"      ),
-        extern_asset!(SHINY_MISSILE_TXTR2, "shiny-missile2.txtr"      ),
+        extern_asset!(NOTHING_TXTR             , "nothing_texture.txtr"      ),
+        extern_asset!(PHAZON_SUIT_TXTR1        , "phazon_suit_texure_1.txtr" ),
+        extern_asset!(PHAZON_SUIT_TXTR2        , "phazon_suit_texure_2.txtr" ),
+        extern_asset!(SHINY_MISSILE_TXTR0      , "shiny-missile0.txtr"       ),
+        extern_asset!(SHINY_MISSILE_TXTR1      , "shiny-missile1.txtr"       ),
+        extern_asset!(SHINY_MISSILE_TXTR2      , "shiny-missile2.txtr"       ),
+        extern_asset!(RANDOVANIA_GAMECUBE_TXTR , "randovania_gamecube.TXTR"  ),
 
-        /* Door Assets */
+        /* Door/Blast Shield Assets */
         extern_asset!(AI_TXTR, "holorim_ai.txtr"),
-
-        /* Blast Shield Assets */
         extern_asset!(CHARGE_BEAM_ANIMATED_GLOW_TXTR      , "charge_beam_animated_glow.TXTR"      ),
         extern_asset!(CHARGE_BEAM_GLOW_BORDER_TXTR        , "charge_beam_glow_border.TXTR"        ),
         extern_asset!(CHARGE_BEAM_GLOW_TRIM_TXTR          , "charge_beam_glow_trim.TXTR"          ),
@@ -550,6 +554,12 @@ pub fn custom_assets<'r>(
         custom_asset_ids::NOTHING_ANCS,
         custom_asset_ids::NOTHING_TXTR,
         ResId::<res_id::TXTR>::new(0xF68DF7F1),
+    ));
+    assets.extend_from_slice(&create_randovania_gamecube_cmdl_and_ancs(
+        resources,
+        custom_asset_ids::RANDOVANIA_GAMECUBE_CMDL,
+        custom_asset_ids::RANDOVANIA_GAMECUBE_ANCS,
+        custom_asset_ids::RANDOVANIA_GAMECUBE_TXTR,
     ));
     assets.extend_from_slice(&create_suit_icon_cmdl_and_ancs(
         resources,
@@ -1096,6 +1106,11 @@ pub fn collect_game_resources<'r>(
     ];
     looking_for.extend(orange_light);
 
+    let gamecube: Vec<(u32,FourCC)> = vec![
+        (0x770939c0, FourCC::from_bytes(b"CMDL")),
+    ];
+    looking_for.extend(gamecube);
+
     let ghost_ball: Vec<(u32,FourCC)> = vec![ // used for lock on point model
         (0xBFE4DAA0, FourCC::from_bytes(b"CMDL")),
         (0x57C7107D, FourCC::from_bytes(b"TXTR")),
@@ -1147,6 +1162,7 @@ pub fn collect_game_resources<'r>(
         paks.push(pak_name);
     }
     paks.push("AudioGrp.pak");
+    paks.push("NoARAM.pak");
     for pak_name in paks {
         let file_entry = gc_disc.find_file(pak_name).unwrap();
         let pak = match *file_entry.file().unwrap() {
@@ -1346,6 +1362,52 @@ fn create_nothing_icon_cmdl_and_ancs<'r>(
         )
     };
     [new_suit_cmdl, new_suit_ancs]
+}
+
+fn create_randovania_gamecube_cmdl_and_ancs<'r>(
+    resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+    new_cmdl_id: ResId<res_id::CMDL>,
+    new_ancs_id: ResId<res_id::ANCS>,
+    new_txtr_id: ResId<res_id::TXTR>,
+) -> [structs::Resource<'r>; 2]
+{
+    let new_cmdl = {
+        let old_cmdl = ResourceData::new(
+            &resources[&resource_info!("CMDL_GameCube.CMDL").into()]
+        );
+        let cmdl_bytes = old_cmdl.decompress().into_owned();
+        let mut cmdl: structs::Cmdl = Reader::new(&cmdl_bytes[..]).read::<structs::Cmdl>(());
+
+        cmdl.material_sets.as_mut_vec()[0].texture_ids.as_mut_vec()[1] = new_txtr_id;
+
+        let mut new_cmdl_bytes = vec![];
+        cmdl.write_to(&mut new_cmdl_bytes).unwrap();
+
+        build_resource(
+            new_cmdl_id,
+            structs::ResourceKind::External(new_cmdl_bytes, b"CMDL".into())
+        )
+    };
+
+    let new_ancs = {
+        let grav_suit_ancs = ResourceData::new(
+            &resources[&resource_info!("Node1_11.ANCS").into()]
+        );
+        let ancs_bytes = grav_suit_ancs.decompress().into_owned();
+        let mut ancs = Reader::new(&ancs_bytes[..]).read::<structs::Ancs>(());
+
+        ancs.char_set.char_info.as_mut_vec()[0].cmdl = new_cmdl_id;
+
+        let mut new_ancs_bytes = vec![];
+        ancs.write_to(&mut new_ancs_bytes).unwrap();
+
+        build_resource(
+            new_ancs_id,
+            structs::ResourceKind::External(new_ancs_bytes, b"ANCS".into())
+        )
+    };
+
+    [new_cmdl, new_ancs]
 }
 
 fn create_visor_cmdl_and_ancs<'r>(
