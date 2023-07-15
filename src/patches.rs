@@ -5263,7 +5263,7 @@ fn patch_lock_on_point<'r>(
         area.add_dependencies(game_resources, 0, deps_iter);
     }
 
-    let actor_id = config.id.unwrap_or(area.new_object_id_from_layer_name("Default"));
+    let actor_id = config.id1.unwrap_or(area.new_object_id_from_layer_name("Default"));
     let mut grapple_point_id = 0;
     let mut special_function_id = 0;
     let mut timer_id = 0;
@@ -5282,7 +5282,7 @@ fn patch_lock_on_point<'r>(
             poi_post_id = area.new_object_id_from_layer_name("Default");
         }
     } else if !no_lock {
-        damageable_trigger_id = area.new_object_id_from_layer_name("Default");
+        damageable_trigger_id = config.id2.unwrap_or(area.new_object_id_from_layer_name("Default"));
     }
 
     let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
@@ -5352,7 +5352,7 @@ fn patch_lock_on_point<'r>(
                 snow: 1,
                 solid: 0,
                 camera_passthrough: 1,
-                active: 1,
+                active: config.active1.unwrap_or(1) as u8,
                 unknown8: 0,
                 unknown9: 1.0,
                 unknown10: 1,
@@ -5509,7 +5509,7 @@ fn patch_lock_on_point<'r>(
                     pattern_txtr1: ResId::invalid(),
                     color_txtr: ResId::invalid(),
                     lock_on: 1,
-                    active: 1,
+                    active: config.active2.unwrap_or(1) as u8,
                     visor_params: structs::scly_structs::VisorParameters {
                         unknown0: 0,
                         target_passthrough: 0,

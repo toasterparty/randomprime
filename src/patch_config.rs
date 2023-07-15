@@ -302,7 +302,10 @@ pub struct CameraHintConfig
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct LockOnPoint
 {
-    pub id: Option<u32>,
+    pub id1: Option<u32>,
+    pub active1: Option<u32>,
+    pub id2: Option<u32>,
+    pub active2: Option<u32>,
     pub position: [f32;3],
     pub is_grapple: Option<bool>,
     pub no_lock: Option<bool>,
