@@ -5352,7 +5352,7 @@ fn patch_lock_on_point<'r>(
                 snow: 1,
                 solid: 0,
                 camera_passthrough: 1,
-                active: config.active1.unwrap_or(1) as u8,
+                active: config.active1.unwrap_or(true) as u8,
                 unknown8: 0,
                 unknown9: 1.0,
                 unknown10: 1,
@@ -5509,7 +5509,7 @@ fn patch_lock_on_point<'r>(
                     pattern_txtr1: ResId::invalid(),
                     color_txtr: ResId::invalid(),
                     lock_on: 1,
-                    active: config.active2.unwrap_or(1) as u8,
+                    active: config.active2.unwrap_or(true) as u8,
                     visor_params: structs::scly_structs::VisorParameters {
                         unknown0: 0,
                         target_passthrough: 0,

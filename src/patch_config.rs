@@ -303,9 +303,9 @@ pub struct CameraHintConfig
 pub struct LockOnPoint
 {
     pub id1: Option<u32>,
-    pub active1: Option<u32>,
+    pub active1: Option<bool>,
     pub id2: Option<u32>,
-    pub active2: Option<u32>,
+    pub active2: Option<bool>,
     pub position: [f32;3],
     pub is_grapple: Option<bool>,
     pub no_lock: Option<bool>,
