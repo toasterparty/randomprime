@@ -345,9 +345,9 @@ impl PickupModel
             pickup.scale[1] = 1.0;
             pickup.scale[2] = 1.0;
         } else if self.name() == PickupModel::RandovaniaGamecube.name() {
-            pickup.scale[0] = 1.0;
-            pickup.scale[1] = 1.0;
-            pickup.scale[2] = 1.0;
+            pickup.scale[0] = 0.55;
+            pickup.scale[1] = 0.55;
+            pickup.scale[2] = 0.55;
         }
         pickup
     }
