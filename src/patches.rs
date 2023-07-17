@@ -14834,7 +14834,16 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         0x80210,
                                     ),
                                 );
-                            } else if room_info.room_id.to_u32() == 0x77714498 { // subchamber five
+                            } else if room_info.room_id.to_u32() == 0xA7AC009B { // subchamber four
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_boss_health_bar(
+                                        ps,
+                                        area,
+                                        696969,
+                                    ),
+                                );
+                            } else if room_info.room_id.to_u32() == 0x70181194 { // quarantine cave
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
                                     move |ps, area| patch_move_camera(
