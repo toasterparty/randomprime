@@ -4339,6 +4339,99 @@ fn patch_edit_camera_keyframe<'r>(
     Ok(())
 }
 
+fn patch_sunchamber_cutscene_hack<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+)
+    -> Result<(), String>
+{
+    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
+    let mut layer_num = -1;
+
+    for layer in layers {
+        layer_num += 1;
+
+        /* Extend existing connections to other flaahgras */
+
+        for obj in layer.objects.as_mut_vec() {
+            let mut flaahgra_connections = vec![];
+            for conn in obj.connections.as_mut_vec() {
+
+                if conn.message == structs::ConnectionMsg::ACTIVATE {
+                    continue;
+                }
+
+                if conn.target_object_id&0x00FFFFFF == 0x0025001E {
+                    flaahgra_connections.push(conn.clone());
+                }
+            }
+
+            for conn in flaahgra_connections {
+                for id in vec![0x00500000, 0x00500001, 0x00500002] {
+                    let mut new_conn = conn.clone();
+                    new_conn.target_object_id = id;
+                    obj.connections.as_mut_vec().push(new_conn);
+                }
+            }
+        }
+
+        /* Add other flaahgras */
+
+        if layer_num != 1 {
+            continue;
+        }
+
+        let flaahgra_index = layer.objects.as_mut_vec()
+            .iter()
+            .position(|obj| obj.instance_id&0x00FFFFFF == 0x0025001E)
+            .expect("Couldn't find flaahgra");
+
+        let flaahgra_copy = layer.objects.as_mut_vec()[flaahgra_index].clone();
+
+        for (id, health) in vec![(0x00500000, 1500.0), (0x00500001, 1000.0), (0x00500002, 5000.0)] {
+            let mut new_flaahgra: structs::SclyObject = flaahgra_copy.clone();
+            new_flaahgra.instance_id = id;
+            let data = new_flaahgra.property_data.as_flaahgra_mut().unwrap();
+            // data.patterned_info.health_info.health = health;
+
+            layer.objects.as_mut_vec().push(new_flaahgra);
+        }
+
+        layer.objects.as_mut_vec().push(
+            structs::SclyObject {
+                instance_id: 0x00500003,
+                property_data: structs::Timer {
+                    name: b"my timer\0".as_cstr(),
+                    start_time: 0.01,
+                    max_random_add: 0.0,
+                    reset_to_zero: 0,
+                    start_immediately: 1,
+                    active: 1,
+                }.into(),
+                connections: vec![
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: 0x00500000,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: 0x00500001,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: 0x00500002,
+                    },
+                ].into(),
+            },
+        );
+    }
+
+    Ok(())
+}
+
 fn patch_move_camera<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
@@ -9045,22 +9138,21 @@ fn patch_dol<'r>(
         dol_patcher.ppcasm_patch(&splash_scren_patch)?;
     }
 
-/*
+    /*
     // need to undo sub801ae980()
 
     let function_addr = symbol_addr!("AcceptScriptMsg__9CFlaahgraF20EScriptObjectMessage9TUniqueIdR13CStateManager", version);
 
     // RESET
     let flaahgra_patch = ppcasm!(function_addr + 0x80c, {
-        nop;
-
-        // x450_bodyController->GetBodyStateInfo().GetCurrentStateId() = pas::EAnimationState::Getup
-        // 0x450 + 0x2a4 + 0x14
-        // li r0, 1;
-        // stw r0, 0x708(r31);
+        // skip grow animation
+        // lis r0, 0xFFFF;
+        // ori r0, r0, 0xFFFF;
+        // stw r0, 0x8e4(r31);
         nop;
         nop;
-
+        nop;
+    
         // branch to the unused ACTION handling (patched below)
         b       { function_addr + 0x7c8 };
     });
@@ -9068,25 +9160,14 @@ fn patch_dol<'r>(
 
     // ACTION
     let flaahgra_patch = ppcasm!(function_addr + 0x7c8, {
-        
         li r0, 0;
         stw r0, 0x7d4(r31); // x7d4_faintTime
         
         lfs  f0, 0x5744(r2); // 3.0, ideally it would be 6.0
         stfs f0, 0x7d8(r31); // x7d8_
 
-        // skip grow animation
-        li r0, 0xFFFF;
-        stw r0, 0x8e4(r31);
-        // nop;
-        // nop;
-
         li r0, 4;
         stw r0, 0x568(r31); // x568_state
-
-        // nop;
-        // nop;
-
         nop;
     });
     dol_patcher.ppcasm_patch(&flaahgra_patch)?;
@@ -14720,7 +14801,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                 );
                             }
 
-                            /* Rooms with moving water get weird when you skip cutscenes, we need to change the water to compensate */
+                            /* Some rooms need to be update to play nicely with skippable cutscenes */
                             if room_info.room_id.to_u32() == 0xC9D52BBC // energy core
                             {
                                 for id in [2883635, 2884015]
@@ -14736,17 +14817,6 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         ),
                                     );
                                 }
-                            } else if room_info.room_id.to_u32() == 0xC8309DF6 { // hive totem
-                                // patcher.add_scly_patch(
-                                //     (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                //     move |ps, area| patch_edit_water(
-                                //         ps,
-                                //         area,
-                                //         TBD,
-                                //         TBD,
-                                //         TBD,
-                                //     ),
-                                // );
                             } else if room_info.room_id.to_u32() == 0x6655F51E { // chozo ice temple
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
@@ -14781,6 +14851,13 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         ps,
                                         area,
                                         0x00100000,
+                                    ),
+                                );
+                            } else if room_info.room_id.to_u32() == 0x9A0A03EB { // sunchamber
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_sunchamber_cutscene_hack(
+                                        ps, area,
                                     ),
                                 );
                             }
