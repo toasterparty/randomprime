@@ -23,6 +23,11 @@ use reader_writer::FourCC;
 
 use structs::{res_id, ResId};
 
+use json_data::SKIPPABLE_CUTSCENES;
+use json_strip::strip_jsonc_comments;
+
+use crate::elevators::World;
+
 /*** Parsed Config (fn patch_iso) ***/
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -814,6 +819,7 @@ pub struct PatchConfig
     pub required_artifact_count: Option<u32>,
     pub artifact_temple_layer_overrides: Option<HashMap<String,bool>>,
     pub no_doors: bool,
+    pub skippable_cutscenes: bool,
     pub boss_sizes: HashMap<String,f32>,
     pub ctwk_config: CtwkConfig,
 }
@@ -906,6 +912,7 @@ struct GameConfig
     artifact_temple_layer_overrides: Option<HashMap<String,bool>>,
     required_artifact_count: Option<u32>,
     no_doors: Option<bool>, // Remove every door from the game
+    skippable_cutscenes: Option<bool>,
     boss_sizes: Option<HashMap<String,f32>>,
 }
 
@@ -941,90 +948,33 @@ struct PatchConfigPrivate
 
 /*** Parse Patcher Input ***/
 
-/// Takes a string of jsonc content and returns a comment free version
-/// which should parse fine as regular json.
-/// Nested block comments are supported.
-/// preserve_locations will replace most comments with spaces, so that JSON parsing
-/// errors should point to the right location.
-pub fn strip_jsonc_comments(jsonc_input: &str, preserve_locations: bool) -> String {
-    let mut json_output = String::new();
-
-    let mut block_comment_depth: u8 = 0;
-    let mut is_in_string: bool = false; // Comments cannot be in strings
-
-    for line in jsonc_input.split('\n') {
-        let mut last_char: Option<char> = None;
-        for cur_char in line.chars() {
-            // Check whether we're in a string
-            if block_comment_depth == 0 && last_char != Some('\\') && cur_char == '"' {
-                is_in_string = !is_in_string;
-            }
-
-            // Check for line comment start
-            if !is_in_string && last_char == Some('/') && cur_char == '/' {
-                last_char = None;
-                if preserve_locations {
-                    json_output.push_str("  ");
-                }
-                break; // Stop outputting or parsing this line
-            }
-            // Check for block comment start
-            if !is_in_string && last_char == Some('/') && cur_char == '*' {
-                block_comment_depth += 1;
-                last_char = None;
-                if preserve_locations {
-                    json_output.push_str("  ");
-                }
-            // Check for block comment end
-            } else if !is_in_string && last_char == Some('*') && cur_char == '/' {
-                if block_comment_depth > 0 {
-                    block_comment_depth -= 1;
-                }
-                last_char = None;
-                if preserve_locations {
-                    json_output.push_str("  ");
-                }
-            // Output last char if not in any block comment
-            } else {
-                if block_comment_depth == 0 {
-                    if let Some(last_char) = last_char {
-                        json_output.push(last_char);
-                    }
-                } else {
-                    if preserve_locations {
-                        json_output.push_str(" ");
-                    }
-                }
-                last_char = Some(cur_char);
-            }
+fn extend_option_vec<T>(dest: &mut Option<Vec<T>>, src: Option<Vec<T>>) {
+    if let Some(src_vec) = src {
+        if dest.is_none() {
+            let dest_vec: Vec<T> = Vec::new();
+            *dest = Some(dest_vec);
         }
 
-        // Add last char and newline if not in any block comment
-        if let Some(last_char) = last_char {
-            if block_comment_depth == 0 {
-                json_output.push(last_char);
-            } else if preserve_locations {
-                json_output.push(' ');
-            }
-        }
-
-        // Remove trailing whitespace from line
-        while json_output.ends_with(' ') {
-            json_output.pop();
-        }
-        json_output.push('\n');
+        if let Some(dest_vec) = dest {
+            dest_vec.extend(src_vec);
+        };
     }
+}
 
-    json_output
+macro_rules! extend_option_vec {
+    ($label:ident, $self:expr, $other:expr) => {
+        extend_option_vec(&mut $self.$label, $other.$label.clone());
+    };
 }
 
 impl PatchConfig
 {
     pub fn from_json(json: &str) -> Result<Self, String>
     {
-        let json_config: PatchConfigPrivate = serde_json::from_str(strip_jsonc_comments(json, true).as_str())
-            .map_err(|e| format!("JSON parse failed: {}", e))?;
-        json_config.parse()
+        let result = strip_jsonc_comments(json, true);
+        let result = serde_json::from_str(result.as_str());
+        let result: PatchConfigPrivate = result.map_err(|e| format!("JSON parse failed: {}", e))?;
+        result.parse()
     }
 
     pub fn from_cli_options() -> Result<Self, String>
@@ -1256,7 +1206,68 @@ impl PatchConfig
 
 impl PatchConfigPrivate
 {
+    /* Extends the "stuff" added/edited in each room */
+    pub fn merge(self: &mut Self, other: Self)
+    {
+        for world in World::iter() {
+            let world_key = world.to_json_key();
+
+            if !other.level_data.contains_key(world_key) {
+                continue;
+            }
+
+            if !self.level_data.contains_key(world_key) {
+                self.level_data.insert(world_key.to_string(), LevelConfig::default());
+            }
+
+            let self_rooms = &mut self.level_data.get_mut(world_key).unwrap().rooms;
+            let other_rooms = &other.level_data.get(world_key).unwrap().rooms;
+
+            for (room_name, other_room_config) in other_rooms {
+                if !self_rooms.contains_key(room_name) {
+                    self_rooms.insert(room_name.to_string(), RoomConfig::default());
+                }
+
+                let self_room_config = self_rooms.get_mut(room_name).unwrap();
+
+                extend_option_vec!(liquids           , self_room_config, other_room_config);
+                extend_option_vec!(pickups           , self_room_config, other_room_config);
+                extend_option_vec!(extra_scans       , self_room_config, other_room_config);
+                extend_option_vec!(platforms         , self_room_config, other_room_config);
+                extend_option_vec!(camera_hints      , self_room_config, other_room_config);
+                extend_option_vec!(blocks            , self_room_config, other_room_config);
+                extend_option_vec!(lock_on_points    , self_room_config, other_room_config);
+                extend_option_vec!(escape_sequences  , self_room_config, other_room_config);
+                extend_option_vec!(repositions       , self_room_config, other_room_config);
+                extend_option_vec!(hudmemos          , self_room_config, other_room_config);
+                extend_option_vec!(delete_ids        , self_room_config, other_room_config);
+                extend_option_vec!(add_connections   , self_room_config, other_room_config);
+                extend_option_vec!(remove_connections, self_room_config, other_room_config);
+                extend_option_vec!(relays            , self_room_config, other_room_config);
+                extend_option_vec!(cutscene_skip_fns , self_room_config, other_room_config);
+                extend_option_vec!(timers            , self_room_config, other_room_config);
+                extend_option_vec!(actor_keyframes   , self_room_config, other_room_config);
+                extend_option_vec!(spawn_points      , self_room_config, other_room_config);
+                extend_option_vec!(triggers          , self_room_config, other_room_config);
+            }
+        }
+    }
+
+    // parse and then handle configuration macros (e.g. a bool loading in several pages of JSON changes)
     fn parse(&self) -> Result<PatchConfig, String>
+    {
+        let mut result = self.clone();
+
+        if *result.game_config.skippable_cutscenes.as_ref().unwrap_or(&false) {
+            let skippable_cutscenes = serde_json::from_str(SKIPPABLE_CUTSCENES);
+            let skippable_cutscenes: PatchConfigPrivate = skippable_cutscenes.map_err(|e| format!("JSON parse failed: {}", e))?;
+            result.merge(skippable_cutscenes); 
+        }
+
+        result.parse_inner()
+    }
+
+    fn parse_inner(&self) -> Result<PatchConfig, String>
     {
         let run_mode = {
             if self.run_mode.is_some() {
@@ -1460,7 +1471,7 @@ impl PatchConfigPrivate
             }
         };
 
-        Ok(PatchConfig {
+        let result = PatchConfig {
             run_mode,
             logbook_filename: self.logbook_filename.clone(),
             export_asset_dir: self.export_asset_dir.clone(),
@@ -1533,6 +1544,7 @@ impl PatchConfigPrivate
             update_hint_state_replacement: self.game_config.update_hint_state_replacement.clone(),
             artifact_temple_layer_overrides: self.game_config.artifact_temple_layer_overrides.clone(),
             no_doors: self.game_config.no_doors.unwrap_or(false),
+            skippable_cutscenes: self.game_config.skippable_cutscenes.unwrap_or(false),
             boss_sizes: self.game_config.boss_sizes.clone().unwrap_or(HashMap::new()),
             map_default_state,
 
@@ -1559,7 +1571,11 @@ impl PatchConfigPrivate
             required_artifact_count: self.game_config.required_artifact_count.clone(),
 
             ctwk_config: self.tweaks.clone(),
-        })
+        };
+
+
+
+        Ok(result)
     }
 }
 

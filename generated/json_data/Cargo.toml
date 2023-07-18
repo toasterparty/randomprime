@@ -1,0 +1,12 @@
+[package]
+name = "json_data"
+version = "0.1.0"
+authors = ["toasterparty <toasterparty@derpymail.org>"]
+edition = "2021"
+
+[dependencies]
+
+[build-dependencies]
+walkdir = "2"
+minify = "1.3.0"
+json_strip = { path = "../json_strip" }
