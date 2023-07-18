@@ -34,9 +34,13 @@ use crate::patch_config::{
     RelayConfig,
     TimerConfig,
     ActorKeyFrameConfig,
+    SpawnPointConfig,
+    TriggerConfig,
+    DamageType,
+    LockOnPoint,
 };
 
-use std::{fs::{self, File}, io::{Read}, path::Path};
+use std::{fs::{self, File}, io::Read, path::Path};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
@@ -4659,6 +4663,193 @@ fn patch_edit_water<'r>(
     Ok(())
 }
 
+fn patch_edit_camera_keyframe<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
+)
+    -> Result<(), String>
+{
+    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
+    for layer in layers.iter_mut()
+    {
+        let obj = layer.objects
+            .iter_mut()
+            .find(|obj| obj.instance_id&0x00FFFFFF == id&0x00FFFFFF);
+
+        if obj.is_none()
+        {
+            continue;
+        }
+
+        let camera_keyframe = obj.unwrap().property_data.as_camera_filter_keyframe_mut().unwrap();
+        camera_keyframe.filter_type = 1;
+        camera_keyframe.filter_shape = 4;
+        camera_keyframe.unknown4 = 2;
+        camera_keyframe.color = [0.0, 0.0, 0.0, 1.0].into();
+    }
+
+    Ok(())
+}
+
+fn patch_sunchamber_cutscene_hack<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+)
+    -> Result<(), String>
+{
+    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
+    let mut layer_num = -1;
+
+    for layer in layers {
+        layer_num += 1;
+
+        /* Extend existing connections to other flaahgras */
+
+        for obj in layer.objects.as_mut_vec() {
+            let mut flaahgra_connections = vec![];
+            for conn in obj.connections.as_mut_vec() {
+
+                if conn.message == structs::ConnectionMsg::ACTIVATE {
+                    continue;
+                }
+
+                if conn.target_object_id&0x00FFFFFF == 0x0025001E {
+                    flaahgra_connections.push(conn.clone());
+                }
+            }
+
+            for conn in flaahgra_connections {
+                for id in vec![0x00500000, 0x00500001, 0x00500002] {
+                    let mut new_conn = conn.clone();
+                    new_conn.target_object_id = id;
+                    obj.connections.as_mut_vec().push(new_conn);
+                }
+            }
+        }
+
+        /* Add other flaahgras */
+
+        if layer_num != 1 {
+            continue;
+        }
+
+        let flaahgra_index = layer.objects.as_mut_vec()
+            .iter()
+            .position(|obj| obj.instance_id&0x00FFFFFF == 0x0025001E)
+            .expect("Couldn't find flaahgra");
+
+        let flaahgra_copy = layer.objects.as_mut_vec()[flaahgra_index].clone();
+
+        for (id, _health) in vec![(0x00500000, 1500.0), (0x00500001, 1000.0), (0x00500002, 5000.0)] {
+            let mut new_flaahgra: structs::SclyObject = flaahgra_copy.clone();
+            new_flaahgra.instance_id = id;
+            // let data = new_flaahgra.property_data.as_flaahgra_mut().unwrap();
+            // data.patterned_info.health_info.health = health;
+
+            layer.objects.as_mut_vec().push(new_flaahgra);
+        }
+
+        layer.objects.as_mut_vec().push(
+            structs::SclyObject {
+                instance_id: 0x00500003,
+                property_data: structs::Timer {
+                    name: b"my timer\0".as_cstr(),
+                    start_time: 0.01,
+                    max_random_add: 0.0,
+                    reset_to_zero: 0,
+                    start_immediately: 1,
+                    active: 1,
+                }.into(),
+                connections: vec![
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: 0x00500000,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: 0x00500001,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: 0x00500002,
+                    },
+                ].into(),
+            },
+        );
+    }
+
+    Ok(())
+}
+
+fn patch_move_camera<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
+    position: [f32; 3],
+)
+    -> Result<(), String>
+{
+    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
+    for layer in layers.iter_mut()
+    {
+        let obj = layer.objects
+            .iter_mut()
+            .find(|obj| obj.instance_id&0x00FFFFFF == id&0x00FFFFFF);
+
+        if obj.is_none()
+        {
+            continue;
+        }
+
+        let camera = obj.unwrap().property_data.as_camera_mut().unwrap();
+        camera.position = position.into();
+        break;
+    }
+
+    Ok(())
+}
+
+fn patch_add_boss_health_bar<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
+)
+    -> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: id,
+            property_data: structs::SpecialFunction {
+                name: b"boss energy bar\0".as_cstr(),
+                position: [0.0, 0.0, 0.0].into(),
+                rotation: [0.0, 0.0, 0.0].into(),
+                type_: 12, // boss energy bar
+                unknown0: b"\0".as_cstr(),
+                unknown1: 0.0,
+                unknown2: 1.0,
+                unknown3: 0.0,
+                layer_change_room_id: 0xFFFFFFFF,
+                layer_change_layer_id: 0xFFFFFFFF,
+                item_id: 0,
+                unknown4: 1, // active
+                unknown5: 0.0,
+                unknown6: 0xFFFFFFFF,
+                unknown7: 0xFFFFFFFF,
+                unknown8: 0xFFFFFFFF,
+            }.into(),
+            connections: vec![].into(),
+        },
+    );
+
+    Ok(())
+}
+
 fn id_in_use(
     area: &mut mlvl_wrapper::MlvlArea,
     id: u32,
@@ -4801,6 +4992,119 @@ fn patch_add_relay<'r>(
                 }.into(),
             connections: vec![].into(),
         },
+    );
+
+    Ok(())
+}
+
+fn patch_add_spawn_point<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    spawn_point_config: SpawnPointConfig,
+)
+    -> Result<(), String>
+{
+    if id_in_use(area, spawn_point_config.id) {
+        panic!("id 0x{:X} already in use", spawn_point_config.id);
+    }
+
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    let mut spawn_point = structs::SclyObject {
+            instance_id: spawn_point_config.id,
+            property_data: structs::SpawnPoint {
+                    name: b"my spawnpoint\0".as_cstr(),
+                    position: spawn_point_config.position.into(),
+                    rotation: spawn_point_config.rotation.into(),
+                    power: 0,
+                    ice: 0,
+                    wave: 0,
+                    plasma: 0,
+                    missiles: 0,
+                    scan_visor: 0,
+                    bombs: 0,
+                    power_bombs: 0,
+                    flamethrower: 0,
+                    thermal_visor: 0,
+                    charge: 0,
+                    super_missile: 0,
+                    grapple: 0,
+                    xray: 0,
+                    ice_spreader: 0,
+                    space_jump: 0,
+                    morph_ball: 0,
+                    combat_visor: 0,
+                    boost_ball: 0,
+                    spider_ball: 0,
+                    power_suit: 0,
+                    gravity_suit: 0,
+                    varia_suit: 0,
+                    phazon_suit: 0,
+                    energy_tanks: 0,
+                    unknown0: 0,
+                    health_refill: 0,
+                    unknown1: 0,
+                    wavebuster: 0,
+                    default_spawn: spawn_point_config.default_spawn.unwrap_or(false) as u8,
+                    active: spawn_point_config.active.unwrap_or(true) as u8,
+                    morphed: spawn_point_config.morphed.unwrap_or(false) as u8,
+                }.into(),
+            connections: vec![].into(),
+        };
+
+    if spawn_point_config.items.is_some() {
+        let items = spawn_point_config.items.unwrap();
+        items.update_spawn_point(spawn_point.property_data.as_spawn_point_mut().unwrap());
+    }
+
+    layer.objects.as_mut_vec().push(spawn_point);
+
+    Ok(())
+}
+
+fn patch_add_trigger<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    trigger_config: TriggerConfig,
+)
+    -> Result<(), String>
+{
+    let instance_id = {
+        if trigger_config.id.is_some() {
+            let id = trigger_config.id.unwrap();
+            if id_in_use(area, id) {
+                panic!("id 0x{:X} already in use", id);
+            }
+
+            id
+        } else {
+            area.new_object_id_from_layer_id(0)
+        }
+    };
+
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id,
+            property_data: structs::Trigger {
+                name: b"Start Sequence Trigger\0".as_cstr(),
+                position: trigger_config.position.into(),
+                scale: trigger_config.scale.into(),
+                damage_info: structs::scly_structs::DamageInfo {
+                    weapon_type: trigger_config.damage_type.unwrap_or(DamageType::Power) as u32,
+                    damage: trigger_config.damage_amount.unwrap_or(0.0),
+                    radius: 0.0,
+                    knockback_power: 0.0
+                },
+                force: trigger_config.force.unwrap_or([0.0, 0.0, 0.0]).into(),
+                flags: trigger_config.flags.unwrap_or(1),
+                active: trigger_config.active.unwrap_or(true) as u8,
+                deactivate_on_enter: trigger_config.deactivate_on_enter.unwrap_or(false) as u8,
+                deactivate_on_exit: trigger_config.deactivate_on_exit.unwrap_or(false) as u8,
+            }.into(),
+            connections: vec![].into(),
+        }
     );
 
     Ok(())
@@ -5363,9 +5667,7 @@ fn patch_lock_on_point<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
-    position: [f32;3],
-    is_grapple: bool,
-    no_lock: bool,
+    config: LockOnPoint,
 ) -> Result<(), String>
 {
     let deps = vec![
@@ -5380,6 +5682,10 @@ fn patch_lock_on_point<'r>(
         }
     );
     area.add_dependencies(game_resources, 0, deps_iter);
+
+    let is_grapple = config.is_grapple.unwrap_or(false);
+    let no_lock = config.no_lock.unwrap_or(false);
+    let position = config.position;
 
     if is_grapple {
         let deps = vec![
@@ -5403,7 +5709,7 @@ fn patch_lock_on_point<'r>(
         area.add_dependencies(game_resources, 0, deps_iter);
     }
 
-    let actor_id = area.new_object_id_from_layer_name("Default");
+    let actor_id = config.id1.unwrap_or(area.new_object_id_from_layer_name("Default"));
     let mut grapple_point_id = 0;
     let mut special_function_id = 0;
     let mut timer_id = 0;
@@ -5422,7 +5728,7 @@ fn patch_lock_on_point<'r>(
             poi_post_id = area.new_object_id_from_layer_name("Default");
         }
     } else if !no_lock {
-        damageable_trigger_id = area.new_object_id_from_layer_name("Default");
+        damageable_trigger_id = config.id2.unwrap_or(area.new_object_id_from_layer_name("Default"));
     }
 
     let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
@@ -5492,7 +5798,7 @@ fn patch_lock_on_point<'r>(
                 snow: 1,
                 solid: 0,
                 camera_passthrough: 1,
-                active: 1,
+                active: config.active1.unwrap_or(true) as u8,
                 unknown8: 0,
                 unknown9: 1.0,
                 unknown10: 1,
@@ -5649,7 +5955,7 @@ fn patch_lock_on_point<'r>(
                     pattern_txtr1: ResId::invalid(),
                     color_txtr: ResId::invalid(),
                     lock_on: 1,
-                    active: 1,
+                    active: config.active2.unwrap_or(true) as u8,
                     visor_params: structs::scly_structs::VisorParameters {
                         unknown0: 0,
                         target_passthrough: 0,
@@ -9184,6 +9490,56 @@ fn patch_dol<'r>(
         });
         dol_patcher.ppcasm_patch(&splash_scren_patch)?;
     }
+
+    /*
+    // need to undo sub801ae980()
+
+    let function_addr = symbol_addr!("AcceptScriptMsg__9CFlaahgraF20EScriptObjectMessage9TUniqueIdR13CStateManager", version);
+
+    // RESET
+    let flaahgra_patch = ppcasm!(function_addr + 0x80c, {
+        // skip grow animation
+        // lis r0, 0xFFFF;
+        // ori r0, r0, 0xFFFF;
+        // stw r0, 0x8e4(r31);
+        nop;
+        nop;
+        nop;
+    
+        // branch to the unused ACTION handling (patched below)
+        b       { function_addr + 0x7c8 };
+    });
+    dol_patcher.ppcasm_patch(&flaahgra_patch)?;
+
+    // ACTION
+    let flaahgra_patch = ppcasm!(function_addr + 0x7c8, {
+        li r0, 0;
+        stw r0, 0x7d4(r31); // x7d4_faintTime
+        
+        lfs  f0, 0x5744(r2); // 3.0, ideally it would be 6.0
+        stfs f0, 0x7d8(r31); // x7d8_
+
+        li r0, 4;
+        stw r0, 0x568(r31); // x568_state
+        nop;
+    });
+    dol_patcher.ppcasm_patch(&flaahgra_patch)?;
+
+    // re-add the RESET handling
+    dol_patcher.patch(function_addr + 0x7c8 + 9*4, vec![
+            0x88, 0x1f, 0x08, 0xe5,
+            0x38, 0x60, 0x00, 0x01,
+            0x50, 0x60, 0x1f, 0x38,
+            0x98, 0x1f, 0x08, 0xe5,
+        ].into()
+    )?;
+
+    // break;
+
+
+    // 801b3440 c0 02 a8 bc     lfs        f0,-0x5744(r2)=>d_float_0 = 0.0
+    // 801b3444 d0 1f 07 d4     stfs       f0,0x7d4(r31)
+*/
 
     /* This is where I keep random dol patch experiments */
 
@@ -13230,7 +13586,11 @@ fn patch_qol_cosmetic(
     // not shown here - hudmemos are nonmodal and item aquisition cutscenes are removed
 }
 
-fn patch_qol_competitive_cutscenes(patcher: &mut PrimePatcher, version: Version) {
+fn patch_qol_competitive_cutscenes(patcher: &mut PrimePatcher, version: Version, skip_frigate: bool) {
+    if !skip_frigate {
+        
+    }
+
     patcher.add_scly_patch(
         resource_info!("01_mines_mainplaza.MREA").into(), // main quarry (just pirate booty)
         move |ps, area| patch_remove_cutscenes(ps, area,
@@ -13536,7 +13896,18 @@ fn patch_qol_minor_cutscenes(patcher: &mut PrimePatcher, version: Version) {
     );
 }
 
-pub fn patch_qol_major_cutscenes(patcher: &mut PrimePatcher) {
+pub fn patch_qol_major_cutscenes(patcher: &mut PrimePatcher, shuffle_pickup_position: bool) {
+    if !shuffle_pickup_position {
+        patcher.add_scly_patch(
+            resource_info!("07_ice_chapel.MREA").into(), // chapel of the elders
+            move |ps, area| patch_remove_cutscenes(ps, area,
+                vec![0x000E0057], // Faster adult breakout
+                vec![0x000E019D, 0x000E019B], // keep fight start reposition for wavesun
+                true,
+            ),
+        );
+    }
+
     patcher.add_scly_patch(
         resource_info!("08_courtyard.MREA").into(), // Arboretum
         move |ps, area| patch_remove_cutscenes(ps, area, vec![0x0013012E, 0x00130131, 0x00130141], vec![], false),
@@ -14224,6 +14595,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             cutscene_skip_fns: None,
                             timers: None,
                             actor_keyframes: None,
+                            spawn_points: None,
                         }
                     );
                 }
@@ -14570,28 +14942,6 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         ),
     );
 
-    if config.qol_cutscenes == CutsceneMode::Competitive {
-        patch_qol_competitive_cutscenes(&mut patcher, version);
-    }
-
-    if config.qol_cutscenes == CutsceneMode::Minor || config.qol_cutscenes == CutsceneMode::Major {
-        patch_qol_minor_cutscenes(&mut patcher, version);
-    }
-
-    if config.qol_cutscenes == CutsceneMode::Major {
-        patch_qol_major_cutscenes(&mut patcher);
-        if !config.shuffle_pickup_position {
-            patcher.add_scly_patch(
-                resource_info!("07_ice_chapel.MREA").into(), // chapel of the elders
-                move |ps, area| patch_remove_cutscenes(ps, area,
-                    vec![0x000E0057], // Faster adult breakout
-                    vec![0x000E019D, 0x000E019B], // keep fight start reposition for wavesun
-                    true,
-                ),
-            );
-        }
-    }
-
     {
         patcher.add_scly_patch(
             resource_info!("01_over_mainplaza.MREA").into(),
@@ -14759,6 +15109,32 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             }
                         }
 
+                        if room.spawn_points.is_some() {
+                            for spawn_point_config in room.spawn_points.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_spawn_point(
+                                        ps,
+                                        area,
+                                        spawn_point_config.clone(),
+                                    ),
+                                );
+                            }
+                        }
+
+                        if room.triggers.is_some() {
+                            for trigger_config in room.triggers.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_trigger(
+                                        ps,
+                                        area,
+                                        trigger_config.clone(),
+                                    ),
+                                );
+                            }
+                        }
+
                         if room.cutscene_skip_fns.is_some() {
                             for special_fn_id in room.cutscene_skip_fns.as_ref().unwrap() {
                                 patcher.add_scly_patch(
@@ -14771,7 +15147,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                 );
                             }
 
-                            /* Rooms with moving water get weird when you skip cutscenes, we need to change the water to compensate */
+                            /* Some rooms need to be update to play nicely with skippable cutscenes */
                             if room_info.room_id.to_u32() == 0xC9D52BBC // energy core
                             {
                                 for id in [2883635, 2884015]
@@ -14787,17 +15163,58 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         ),
                                     );
                                 }
-                            } else if room_info.room_id.to_u32() == 0xC8309DF6 { // hive totem
-                                // patcher.add_scly_patch(
-                                //     (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                //     move |ps, area| patch_edit_water(
-                                //         ps,
-                                //         area,
-                                //         TBD,
-                                //         TBD,
-                                //         TBD,
-                                //     ),
-                                // );
+                            } else if room_info.room_id.to_u32() == 0x6655F51E { // chozo ice temple
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_edit_camera_keyframe(
+                                        ps,
+                                        area,
+                                        0x80171,
+                                    ),
+                                );
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_edit_camera_keyframe(
+                                        ps,
+                                        area,
+                                        0x80210,
+                                    ),
+                                );
+                            } else if room_info.room_id.to_u32() == 0xA7AC009B { // subchamber four
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_boss_health_bar(
+                                        ps,
+                                        area,
+                                        696969,
+                                    ),
+                                );
+                            } else if room_info.room_id.to_u32() == 0x70181194 { // quarantine cave
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_move_camera(
+                                        ps,
+                                        area,
+                                        0x000A0028,
+                                        [46.805, -245.6632, -194.9795],
+                                    ),
+                                );
+                            } else if room_info.room_id.to_u32() == 0x70181194 { // quarantine cave
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_boss_health_bar(
+                                        ps,
+                                        area,
+                                        0x00100000,
+                                    ),
+                                );
+                            } else if room_info.room_id.to_u32() == 0x9A0A03EB { // sunchamber
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_sunchamber_cutscene_hack(
+                                        ps, area,
+                                    ),
+                                );
                             }
                         }
 
@@ -14914,9 +15331,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         ps,
                                         area,
                                         game_resources,
-                                        lock_on.position,
-                                        lock_on.is_grapple.unwrap_or(false),
-                                        lock_on.no_lock.unwrap_or(false),
+                                        lock_on.clone(),
                                     ),
                                 );
                             }
@@ -15418,6 +15833,21 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         config.force_vanilla_layout,
     );
     let skip_frigate = skip_frigate && starting_room.mlvl != World::FrigateOrpheon.mlvl();
+
+    match config.qol_cutscenes {
+        CutsceneMode::Original => {},
+        CutsceneMode::Skippable => {},
+        CutsceneMode::Competitive => {
+            patch_qol_competitive_cutscenes(&mut patcher, version, skip_frigate);
+        },
+        CutsceneMode::Minor => {
+            patch_qol_minor_cutscenes(&mut patcher, version);
+        },
+        CutsceneMode::Major => {
+            patch_qol_minor_cutscenes(&mut patcher, version);
+            patch_qol_major_cutscenes(&mut patcher, config.shuffle_pickup_position);
+        },
+    }
 
     let mut smoother_teleports = false;
     for (_, level) in level_data.iter() {
