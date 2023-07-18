@@ -1257,7 +1257,10 @@ impl PatchConfigPrivate
     {
         let mut result = self.clone();
 
-        if result.preferences.qol_cutscenes.as_ref().unwrap_or(&"original".to_string()).to_lowercase().trim() == "skippable" {
+        let mode = result.preferences.qol_cutscenes.as_ref().unwrap_or(&"original".to_string()).to_lowercase();
+        let mode = mode.trim();
+
+        if vec!["skippable"].contains(&mode) {
             let skippable_cutscenes = serde_json::from_str(SKIPPABLE_CUTSCENES);
             let skippable_cutscenes: PatchConfigPrivate = skippable_cutscenes.map_err(|e| format!("JSON parse failed: {}", e))?;
             result.merge(skippable_cutscenes); 

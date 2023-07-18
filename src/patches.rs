@@ -13233,7 +13233,11 @@ fn patch_qol_cosmetic(
     // not shown here - hudmemos are nonmodal and item aquisition cutscenes are removed
 }
 
-fn patch_qol_competitive_cutscenes(patcher: &mut PrimePatcher, version: Version) {
+fn patch_qol_competitive_cutscenes(patcher: &mut PrimePatcher, version: Version, skip_frigate: bool) {
+    if !skip_frigate {
+        
+    }
+
     patcher.add_scly_patch(
         resource_info!("01_mines_mainplaza.MREA").into(), // main quarry (just pirate booty)
         move |ps, area| patch_remove_cutscenes(ps, area,
@@ -13539,7 +13543,18 @@ fn patch_qol_minor_cutscenes(patcher: &mut PrimePatcher, version: Version) {
     );
 }
 
-pub fn patch_qol_major_cutscenes(patcher: &mut PrimePatcher) {
+pub fn patch_qol_major_cutscenes(patcher: &mut PrimePatcher, shuffle_pickup_position: bool) {
+    if !shuffle_pickup_position {
+        patcher.add_scly_patch(
+            resource_info!("07_ice_chapel.MREA").into(), // chapel of the elders
+            move |ps, area| patch_remove_cutscenes(ps, area,
+                vec![0x000E0057], // Faster adult breakout
+                vec![0x000E019D, 0x000E019B], // keep fight start reposition for wavesun
+                true,
+            ),
+        );
+    }
+
     patcher.add_scly_patch(
         resource_info!("08_courtyard.MREA").into(), // Arboretum
         move |ps, area| patch_remove_cutscenes(ps, area, vec![0x0013012E, 0x00130131, 0x00130141], vec![], false),
@@ -14574,28 +14589,6 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         ),
     );
 
-    if config.qol_cutscenes == CutsceneMode::Competitive {
-        patch_qol_competitive_cutscenes(&mut patcher, version);
-    }
-
-    if config.qol_cutscenes == CutsceneMode::Minor || config.qol_cutscenes == CutsceneMode::Major {
-        patch_qol_minor_cutscenes(&mut patcher, version);
-    }
-
-    if config.qol_cutscenes == CutsceneMode::Major {
-        patch_qol_major_cutscenes(&mut patcher);
-        if !config.shuffle_pickup_position {
-            patcher.add_scly_patch(
-                resource_info!("07_ice_chapel.MREA").into(), // chapel of the elders
-                move |ps, area| patch_remove_cutscenes(ps, area,
-                    vec![0x000E0057], // Faster adult breakout
-                    vec![0x000E019D, 0x000E019B], // keep fight start reposition for wavesun
-                    true,
-                ),
-            );
-        }
-    }
-
     {
         patcher.add_scly_patch(
             resource_info!("01_over_mainplaza.MREA").into(),
@@ -15487,6 +15480,21 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         config.force_vanilla_layout,
     );
     let skip_frigate = skip_frigate && starting_room.mlvl != World::FrigateOrpheon.mlvl();
+
+    match config.qol_cutscenes {
+        CutsceneMode::Original => {},
+        CutsceneMode::Skippable => {},
+        CutsceneMode::Competitive => {
+            patch_qol_competitive_cutscenes(&mut patcher, version, skip_frigate);
+        },
+        CutsceneMode::Minor => {
+            patch_qol_minor_cutscenes(&mut patcher, version);
+        },
+        CutsceneMode::Major => {
+            patch_qol_minor_cutscenes(&mut patcher, version);
+            patch_qol_major_cutscenes(&mut patcher, config.shuffle_pickup_position);
+        },
+    }
 
     let mut smoother_teleports = false;
     for (_, level) in level_data.iter() {
