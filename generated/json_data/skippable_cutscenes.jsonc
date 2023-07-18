@@ -7660,7 +7660,7 @@
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "targetId": 4063237, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
                             "state": "ZERO",
-                            "message": "DECREMENT"
+                            "message": "INCREMENT"
                         },
                         {
                             "senderId": 4063288, // [Relay] Faulty Relay - End Leaving Cinematic
@@ -17908,7 +17908,7 @@
                         },
                         {
                             "senderId": 1310726, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 1311931, // [CameraFilterKeyframe] Camera Filter Keyframe
+                            "targetId": 1311928, // [CameraFilterKeyframe] Camera Filter Keyframe
                             "state": "ZERO",
                             "message": "DECREMENT"
                         }
@@ -18207,7 +18207,7 @@
                             "senderId": 1179651, // [Relay] Relay-start of cinema
                             "targetId": 1179936, // [Camera] Cinematic Camera
                             "state": "ZERO",
-                            "message": "DEACTIVATE"
+                            "message": "ACTIVATE"
                         },
                         {
                             "senderId": 1179652, // [Relay] Relay-end of cinema
@@ -18231,7 +18231,7 @@
                             "senderId": 1179653, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1179936, // [Camera] Cinematic Camera
                             "state": "ZERO",
-                            "message": "ACTIVATE"
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 1179653, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
