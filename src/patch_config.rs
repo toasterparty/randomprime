@@ -62,6 +62,7 @@ pub enum ArtifactHintBehavior
 pub enum CutsceneMode
 {
     Original,
+    Skippable,
     Competitive,
     Minor,
     Major,
@@ -819,7 +820,6 @@ pub struct PatchConfig
     pub required_artifact_count: Option<u32>,
     pub artifact_temple_layer_overrides: Option<HashMap<String,bool>>,
     pub no_doors: bool,
-    pub skippable_cutscenes: bool,
     pub boss_sizes: HashMap<String,f32>,
     pub ctwk_config: CtwkConfig,
 }
@@ -912,7 +912,6 @@ struct GameConfig
     artifact_temple_layer_overrides: Option<HashMap<String,bool>>,
     required_artifact_count: Option<u32>,
     no_doors: Option<bool>, // Remove every door from the game
-    skippable_cutscenes: Option<bool>,
     boss_sizes: Option<HashMap<String,f32>>,
 }
 
@@ -1258,7 +1257,7 @@ impl PatchConfigPrivate
     {
         let mut result = self.clone();
 
-        if *result.game_config.skippable_cutscenes.as_ref().unwrap_or(&false) {
+        if result.preferences.qol_cutscenes.as_ref().unwrap_or(&"original".to_string()).to_lowercase().trim() == "skippable" {
             let skippable_cutscenes = serde_json::from_str(SKIPPABLE_CUTSCENES);
             let skippable_cutscenes: PatchConfigPrivate = skippable_cutscenes.map_err(|e| format!("JSON parse failed: {}", e))?;
             result.merge(skippable_cutscenes); 
@@ -1367,6 +1366,7 @@ impl PatchConfigPrivate
         let qol_cutscenes = match self.preferences.qol_cutscenes.as_ref().unwrap_or(&"original".to_string()).to_lowercase().trim() {
             "original" => CutsceneMode::Original,
             "competitive" => CutsceneMode::Competitive,
+            "skippable" => CutsceneMode::Skippable,
             "minor" => CutsceneMode::Minor,
             "major" => CutsceneMode::Major,
             _ => panic!("Unknown cutscene mode {}", self.preferences.qol_cutscenes.as_ref().unwrap()),
@@ -1544,7 +1544,6 @@ impl PatchConfigPrivate
             update_hint_state_replacement: self.game_config.update_hint_state_replacement.clone(),
             artifact_temple_layer_overrides: self.game_config.artifact_temple_layer_overrides.clone(),
             no_doors: self.game_config.no_doors.unwrap_or(false),
-            skippable_cutscenes: self.game_config.skippable_cutscenes.unwrap_or(false),
             boss_sizes: self.game_config.boss_sizes.clone().unwrap_or(HashMap::new()),
             map_default_state,
 
