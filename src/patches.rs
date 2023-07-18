@@ -1068,6 +1068,15 @@ fn patch_door<'r>(
                                 },
                             );
 
+                            // Stop the 1-frame timer from undoing our change if this is the first frame of the room load
+                            obj.connections.as_mut_vec().push(
+                                structs::Connection {
+                                    state: structs::ConnectionState::MAX_REACHED,
+                                    message: structs::ConnectionMsg::DEACTIVATE,
+                                    target_object_id: timer_id,
+                                },
+                            );
+
                             _break = true;
                             break;
                         }
@@ -1377,13 +1386,13 @@ fn patch_door<'r>(
 
         /* Blast Shield instant start timer */
         {
-            let door = layers[blast_shield_layer_idx].objects.iter_mut()
+            let timer = layers[blast_shield_layer_idx].objects.iter_mut()
                 .find(|obj| obj.instance_id == timer_id)
                 .unwrap();
 
             // when the blast shield is active, instantly activate the fancy shield/dt
             // and instantly deactivate the blue "replacement" shield
-            door.connections.as_mut_vec().extend_from_slice(
+            timer.connections.as_mut_vec().extend_from_slice(
                 &[
                     structs::Connection {
                         state: structs::ConnectionState::ZERO,
