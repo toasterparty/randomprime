@@ -108,6 +108,11 @@ pub mod custom_asset_ids {
         BLOCK_COLOR_4: CMDL,
 
         // Door/Blast Shield Assets (alphabetical)
+        ORANGE_TXTR: TXTR,
+        PINK_TXTR: TXTR,
+        YELLOW_TXTR: TXTR,
+        TESTBNEW_TXTR: TXTR,
+
         AI_CMDL: CMDL,
         AI_VERTICAL_CMDL: CMDL,
         AI_TXTR: TXTR,
@@ -406,6 +411,11 @@ fn extern_assets_compile_time<'r>() -> Vec<Resource<'r>>
         extern_asset!(RANDOVANIA_GAMECUBE_TXTR , "randovania_gamecube.TXTR"  ),
 
         /* Door/Blast Shield Assets */
+        extern_asset!(ORANGE_TXTR  , "orange.txtr"  ),
+        extern_asset!(PINK_TXTR    , "pink.txtr"    ),
+        extern_asset!(YELLOW_TXTR  , "yellow.txtr"  ),
+        extern_asset!(TESTBNEW_TXTR, "testbnew.txtr"),
+
         extern_asset!(AI_TXTR, "holorim_ai.txtr"),
         extern_asset!(CHARGE_BEAM_ANIMATED_GLOW_TXTR      , "charge_beam_animated_glow.TXTR"      ),
         extern_asset!(CHARGE_BEAM_GLOW_BORDER_TXTR        , "charge_beam_glow_border.TXTR"        ),
@@ -1163,6 +1173,7 @@ pub fn collect_game_resources<'r>(
     }
     paks.push("AudioGrp.pak");
     paks.push("NoARAM.pak");
+    paks.push("MiscData.pak");
     for pak_name in paks {
         let file_entry = gc_disc.find_file(pak_name).unwrap();
         let pak = match *file_entry.file().unwrap() {

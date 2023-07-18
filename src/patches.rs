@@ -1307,7 +1307,9 @@ fn patch_door<'r>(
                 .find(|obj| obj.instance_id == door_force_location.instance_id)
                 .and_then(|obj| obj.property_data.as_damageable_trigger_mut())
                 .unwrap();
-            door_force.color_txtr = _door_type.forcefield_txtr();
+            door_force.pattern_txtr0 = _door_type.pattern0_txtr();
+            door_force.pattern_txtr1 = _door_type.pattern1_txtr();
+            door_force.color_txtr = _door_type.color_txtr();
             door_force.damage_vulnerability = _door_type.vulnerability();
         }
 
@@ -1582,11 +1584,15 @@ fn patch_door<'r>(
                     },
                 ]
             );
-            new_door_force_data.color_txtr = DoorType::Blue.forcefield_txtr();
+
+            new_door_force_data.pattern_txtr0 = DoorType::Blue.pattern0_txtr();
+            new_door_force_data.pattern_txtr1 = DoorType::Blue.pattern1_txtr();
+            new_door_force_data.color_txtr = DoorType::Blue.color_txtr();
+
             new_door_force_data.damage_vulnerability = DoorType::Blue.vulnerability();
             new_door_force_data.active = 1;
-            layers[0].objects.as_mut_vec().push(new_door_force);    
-        }        
+            layers[0].objects.as_mut_vec().push(new_door_force);
+        }      
     }
 
     Ok(())

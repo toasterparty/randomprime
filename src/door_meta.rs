@@ -285,8 +285,67 @@ impl DoorType {
         }
     }
 
-    // "misty" texture to scroll across center of door for "forcefield" effect 16x16
-    pub fn forcefield_txtr(&self) -> ResId<res_id::TXTR> {
+    // The following three are the textures for the damageable trigger
+
+    pub fn pattern0_txtr(&self) -> ResId<res_id::TXTR> {
+        let door = self.to_horizontal();
+
+        match door {
+            DoorType::Blue         => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::PowerOnly    => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Purple       => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::White        => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Red          => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Boost        => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::PowerBomb    => custom_asset_ids::PINK_TXTR,
+            DoorType::Bomb         => custom_asset_ids::ORANGE_TXTR,
+            DoorType::Missile      => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Charge       => custom_asset_ids::YELLOW_TXTR,
+            DoorType::Super        => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Disabled     => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Wavebuster   => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Icespreader  => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Flamethrower => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Ai           => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Grapple      => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Phazon       => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Thermal      => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::XRay         => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Scan         => ResId::new(0x544A9892), // testb.TXTR
+            _                      => panic!("Unhandled pattern0_txtr"),
+        }
+    }
+
+    pub fn pattern1_txtr(&self) -> ResId<res_id::TXTR> {
+        let door = self.to_horizontal();
+
+        match door {
+            DoorType::Blue         => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::PowerOnly    => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Purple       => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::White        => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Red          => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Boost        => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::PowerBomb    => ResId::new(0xcfa9dff3), // Thermal_Spot_2.TXTR
+            DoorType::Bomb         => ResId::new(0xcfa9dff3), // Thermal_Spot_2.TXTR
+            DoorType::Missile      => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Charge       => ResId::new(0xcfa9dff3), // Thermal_Spot_2.TXTR
+            DoorType::Super        => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Disabled     => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Wavebuster   => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Icespreader  => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Flamethrower => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Ai           => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Grapple      => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Phazon       => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Thermal      => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::XRay         => ResId::new(0x544A9892), // testb.TXTR
+            DoorType::Scan         => ResId::new(0x544A9892), // testb.TXTR
+            _                      => panic!("Unhandled pattern1_txtr"),
+        }
+    }
+
+    pub fn color_txtr(&self) -> ResId<res_id::TXTR> {
         let door = self.to_horizontal();
 
         match door {
@@ -296,10 +355,10 @@ impl DoorType {
             DoorType::White        => ResId::new(0xBE4CD99D), // vanilla white
             DoorType::Red          => ResId::new(0xFC095F6C), // vanilla red
             DoorType::Boost        => ResId::new(0x8A7F3683), // vanilla blue
-            DoorType::PowerBomb    => ResId::new(0x1D588B22), // solid yellow
-            DoorType::Bomb         => ResId::new(0x8344BEC8), // solid grey
+            DoorType::PowerBomb    => custom_asset_ids::TESTBNEW_TXTR, // testbnew.txtr
+            DoorType::Bomb         => custom_asset_ids::TESTBNEW_TXTR, // testbnew.txtr
             DoorType::Missile      => ResId::new(0x8344BEC8), // solid grey
-            DoorType::Charge       => ResId::new(0x8A7F3683), // vanilla blue
+            DoorType::Charge       => custom_asset_ids::TESTBNEW_TXTR, // testbnew.txtr
             DoorType::Super        => ResId::new(0xD5C17775), // solid green
             DoorType::Disabled     => ResId::new(0x717AABCE), // void with specks
             DoorType::Wavebuster   => ResId::new(0xF68DF7F1), // vanilla purple
@@ -311,7 +370,7 @@ impl DoorType {
             DoorType::Thermal      => ResId::new(0x8A7F3683), // vanilla blue
             DoorType::XRay         => ResId::new(0x8A7F3683), // vanilla blue
             DoorType::Scan         => ResId::new(0x8344BEC8), // solid grey
-            _                      => panic!("Unhandled forcefield_txtr"),
+            _                      => panic!("Unhandled color_txtr"),
         }
     }
 
@@ -492,7 +551,17 @@ impl DoorType {
             data.push(dep);
         }
 
-        let dep = (self.forcefield_txtr().to_u32(),FourCC::from_bytes(b"TXTR"));
+        let dep = (self.pattern0_txtr().to_u32(),FourCC::from_bytes(b"TXTR"));
+        if !data.contains(&dep) {
+            data.push(dep);
+        }
+
+        let dep = (self.pattern1_txtr().to_u32(),FourCC::from_bytes(b"TXTR"));
+        if !data.contains(&dep) {
+            data.push(dep);
+        }
+
+        let dep = (self.color_txtr().to_u32(),FourCC::from_bytes(b"TXTR"));
         if !data.contains(&dep) {
             data.push(dep);
         }
@@ -510,13 +579,6 @@ impl DoorType {
         let dep = (self.strg().to_u32(),FourCC::from_bytes(b"STRG"));
         if !data.contains(&dep) {
             data.push(dep);
-        }
-
-        // If the door is a t-posing chozo ghost, add that models dependencies as well
-        if self.shield_cmdl() == 0xDAAC77CB {
-            data.push((0xB516D300,FourCC::from_bytes(b"TXTR")));
-            data.push((0x8D4EF1D8,FourCC::from_bytes(b"TXTR")));
-            data.push((0x7D81B904,FourCC::from_bytes(b"TXTR")));
         }
 
         data.retain(|i| i.0 != 0xffffffff && i.0 != 0);
