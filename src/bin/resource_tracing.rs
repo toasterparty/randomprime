@@ -1029,9 +1029,16 @@ fn main()
             let room_id = ResId::<res_id::MREA>::new(res.file_id);
 
             // println!("\n\n");
+            // let mut hudmemos = HashSet::new();
             // let mut layer_changers: Vec<(u32,u32,u32)> = Vec::new();
             // let mut enable_disable: Vec<(u32,bool)> = Vec::new();
             for (layer_num, scly_layer) in scly.layers.iter().enumerate() {
+                // for obj in scly_layer.objects.iter() {
+                //     if obj.property_data.is_hud_memo() {
+                //         let memo = obj.property_data.as_hud_memo().unwrap();
+                //         hudmemos.insert(memo.strg);
+                //     }
+                // }
                 // for obj in scly_layer.objects.iter() {
                 //     if obj.property_data.is_pickup() {
                 //         let pickup = obj.property_data.as_pickup().unwrap();
@@ -1290,6 +1297,47 @@ fn main()
 
                 //     consolidated_door_locations.retain(|dl| dl.dock_number != existing_location.dock_number);
                 //     consolidated_door_locations.push(existing_location);
+                // }
+
+                // let mut hudmemos2 = Vec::new();
+                // for strg_id in hudmemos {
+                //     if strg_id.to_u32() == 0xFFFFFFFF || strg_id.to_u32() == 0 || strg_id.to_u32() == 0x6B01D75C {
+                //         continue;
+                //     }
+
+                //     let key = ResourceKey::from(strg_id);
+                //     if !res_db.map.contains_key(&key) {
+                //         hudmemos2.push(format!("0x{:X} not found", strg_id.to_u32()));
+                //         continue;
+                //     }
+
+                //     let strg: structs::Strg = res_db.map[&key]
+                //         .data.data.clone().read(());
+
+                //     let text = strg
+                //         .string_tables.iter().next().unwrap()
+                //         .strings.iter().next().unwrap()
+                //         .into_owned().into_string();
+                    
+                //     if text.contains("acquired!") {
+                //         continue;;
+                //     }
+
+                //     if text.contains("Energy fully replenished") {
+                //         continue;
+                //     }
+
+                //     hudmemos2.push(text);
+                // }
+
+                // if !hudmemos2.is_empty() {
+                //     println!("=== {} ===", name.replace("\0", ""));
+                //     for text in hudmemos2 {
+                //         let text = text.replace("&just=center;", "");
+                //         let text = text.replace("\0", "");
+                //         println!("{}", text);
+                //     }
+                //     println!("\n\n\n");
                 // }
 
                 pak_locations.push(RoomInfo {
