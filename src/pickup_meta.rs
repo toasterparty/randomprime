@@ -220,7 +220,6 @@ impl PickupType
     }
 
     pub fn scan(&self) -> ResId<res_id::SCAN> {
-        println!("{}", *self as u32);
         ResId::<res_id::SCAN>::new(custom_asset_ids::DEFAULT_PICKUP_SCANS.to_u32() + (*self as u32))
     }
 

@@ -986,7 +986,7 @@ pub fn custom_assets<'r>(
     // Custom blast shield assets
     for blast_shield in BlastShieldType::iter() {
         if blast_shield.cmdl().to_u32() >= 0xDEAF0000 && blast_shield.cmdl().to_u32() <= custom_asset_ids::EXTRA_IDS_START.to_u32() + 50 { // only if it doesn't exist in-game already
-            assets.push(create_custom_blast_shield_cmdl(resources, blast_shield));
+            assets.push(create_custom_blast_shield_cmdl(blast_shield));
 
             if blast_shield.scan() != ResId::invalid() || blast_shield.strg() != ResId::invalid() {
                 if blast_shield.scan() == ResId::invalid() || blast_shield.strg() == ResId::invalid() {
@@ -1235,17 +1235,12 @@ fn create_custom_block_cmdl<'r>(
 }
 
 fn create_custom_blast_shield_cmdl<'r>(
-    resources: &HashMap<(u32, FourCC),
-    structs::Resource<'r>>,
     blast_shield_type: BlastShieldType,
 ) -> structs::Resource<'r>
 {
-    // Find and read the vanilla blast shield cmdl
-    let old_cmdl = ResourceData::new(&resources[&resource_info!("EFDFFB8C.CMDL").into()]);
-
-    // Create a copy
-    let old_cmdl_bytes = old_cmdl.decompress().into_owned();
-    let mut new_cmdl = Reader::new(&old_cmdl_bytes[..]).read::<structs::Cmdl>(());
+    // Create a copy of the bast model
+    let old_cmdl = include_bytes!("../extra_assets/EFDFFB8C.CMDL");
+    let mut new_cmdl = Reader::new(&old_cmdl[..]).read::<structs::Cmdl>(());
 
     // Modify the new CMDL to use custom textures
     new_cmdl.material_sets.as_mut_vec()[0].texture_ids.as_mut_vec()[0] = blast_shield_type.glow_border_txtr();
