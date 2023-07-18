@@ -530,25 +530,34 @@ fn patch_remove_blast_shield<'r>(
     }
 
     for obj in layer.objects.as_mut_vec() {
-        if !obj.property_data.is_actor() {
-            continue;
+        if obj.property_data.is_actor() {
+            let actor = obj.property_data.as_actor_mut().unwrap();
+
+            if  f32::abs(actor.position[0] - dock_position[0]) > 5.0 ||
+                f32::abs(actor.position[1] - dock_position[1]) > 5.0 ||
+                f32::abs(actor.position[2] - dock_position[2]) > 5.0
+            {
+                continue;
+            }
+    
+            if actor.cmdl.to_u32() == BlastShieldType::Missile.cmdl().to_u32() {
+                actor.active = 0;
+                actor.position[2] -= 100.0;
+            }
+        } else if obj.property_data.is_point_of_interest() {
+            let poi = obj.property_data.as_point_of_interest_mut().unwrap();
+            if  f32::abs(poi.position[0] - dock_position[0]) > 5.0 ||
+                f32::abs(poi.position[1] - dock_position[1]) > 5.0 ||
+                f32::abs(poi.position[2] - dock_position[2]) > 5.0
+            {
+                continue;
+            }
+
+            if poi.scan_param.scan.to_u32() == 0x05F56F9D { // There is a Blast Shield on the door blocking acces
+                poi.active = 0;
+                poi.position[2] -= 100.0;
+            }
         }
-
-        let actor = obj.property_data.as_actor_mut().unwrap();
-
-        if  f32::abs(actor.position[0] - dock_position[0]) > 5.0 ||
-            f32::abs(actor.position[1] - dock_position[1]) > 5.0 ||
-            f32::abs(actor.position[2] - dock_position[2]) > 5.0
-        {
-            continue;
-        }
-
-        if actor.cmdl.to_u32() != BlastShieldType::Missile.cmdl().to_u32() {
-            continue;
-        }
-
-        actor.active = 0;
-        actor.position[2] -= 100.0;
     }
 
     Ok(())
