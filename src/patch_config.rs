@@ -775,6 +775,7 @@ pub struct PatchConfig
     pub qol_game_breaking: bool,
     pub qol_cosmetic: bool,
     pub qol_pickup_scans: bool,
+    pub qol_general: bool,
 
     pub phazon_elite_without_dynamo: bool,
     pub main_plaza_door: bool,
@@ -875,6 +876,7 @@ struct Preferences
     qol_cosmetic: Option<bool>,
     qol_cutscenes: Option<String>,
     qol_pickup_scans: Option<bool>,
+    qol_general: Option<bool>,
 
     map_default_state: Option<String>,
     artifact_hint_behavior: Option<String>,
@@ -1159,6 +1161,7 @@ impl PatchConfig
             "qol game breaking" => patch_config.preferences.qol_game_breaking,
             "qol cosmetic" => patch_config.preferences.qol_cosmetic,
             "qol scans" => patch_config.preferences.qol_pickup_scans,
+            "qol general" => patch_config.preferences.qol_general,
             "automatic crash screen" => patch_config.preferences.automatic_crash_screen,
             "quickplay" => patch_config.preferences.quickplay,
             "quickpatch" => patch_config.preferences.quickpatch,
@@ -1327,6 +1330,8 @@ impl PatchConfigPrivate
             }
         };
 
+        let force_vanilla_layout = self.force_vanilla_layout.unwrap_or(false);
+
         let mut result = self.clone();
 
         let mode = result.preferences.qol_cutscenes.as_ref().unwrap_or(&"original".to_string()).to_lowercase();
@@ -1338,6 +1343,10 @@ impl PatchConfigPrivate
             if [Version::NtscJ, Version::Pal, Version::NtscUTrilogy, Version::NtscJTrilogy, Version::PalTrilogy].contains(&version) {
                 merge_json(&mut result, SKIPPABLE_CUTSCENES_PAL)?;
             }
+        }
+
+        if self.preferences.qol_general.unwrap_or(!force_vanilla_layout) {
+            merge_json(&mut result, QOL)?;
         }
 
         result.parse_inner(version)
@@ -1440,6 +1449,7 @@ impl PatchConfigPrivate
         let qol_game_breaking = self.preferences.qol_game_breaking.unwrap_or(!force_vanilla_layout);
         let qol_cosmetic = self.preferences.qol_cosmetic.unwrap_or(!force_vanilla_layout);
         let qol_pickup_scans = self.preferences.qol_pickup_scans.unwrap_or(!force_vanilla_layout);
+        let qol_general = self.preferences.qol_general.unwrap_or(!force_vanilla_layout);
         let qol_cutscenes = match self.preferences.qol_cutscenes.as_ref().unwrap_or(&"original".to_string()).to_lowercase().trim() {
             "original" => CutsceneMode::Original,
             "competitive" => CutsceneMode::Competitive,
@@ -1569,6 +1579,7 @@ impl PatchConfigPrivate
             qol_cosmetic,
             qol_cutscenes,
             qol_pickup_scans,
+            qol_general,
 
             phazon_elite_without_dynamo: self.game_config.phazon_elite_without_dynamo.unwrap_or(true),
             main_plaza_door: self.game_config.main_plaza_door.unwrap_or(true),
