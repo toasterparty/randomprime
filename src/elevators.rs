@@ -2,7 +2,7 @@
 
 use serde::Deserialize;
 use enum_map::{Enum, EnumMap};
-use crate::{pickup_meta};
+use crate::pickup_meta;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum World {
@@ -188,6 +188,21 @@ impl Elevator
 
         None
     }
+}
+
+pub fn is_teleporter(mrea: u32) -> bool {
+    let mut ids = Vec::new();
+
+    for elv in Elevator::iter() {
+        ids.push(elv.elevator_data().mrea);
+    }
+
+    ids.extend([
+        0x1A666C55, // lair
+        0xD1241219, // exteriror docking hangar
+    ]);
+
+    ids.contains(&mrea)
 }
 
 pub fn is_elevator(mrea: u32) -> bool {

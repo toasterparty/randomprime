@@ -48,7 +48,7 @@ use crate::{
     custom_assets::{custom_asset_ids, PickupHashKey, collect_game_resources, custom_asset_filename},
     dol_patcher::DolPatcher,
     ciso_writer::CisoWriter,
-    elevators::{Elevator, SpawnRoom, SpawnRoomData, World, is_elevator},
+    elevators::{Elevator, SpawnRoom, SpawnRoomData, World, is_elevator, is_teleporter},
     gcz_writer::GczWriter,
     mlvl_wrapper,
     pickup_meta::{self, PickupType, PickupModel, DoorLocation, ObjectsToRemove, ScriptObjectLocation},
@@ -4511,6 +4511,41 @@ fn id_in_use(
     }
 
     false
+}
+
+fn patch_add_camera_filter_key_frame<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
+)
+    -> Result<(), String>
+{
+    if id_in_use(area, id) {
+        panic!("id 0x{:X} already in use", id);
+    }
+
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: id,
+            property_data: structs::CameraFilterKeyframe {
+                name: b"my ckeyframe\0".as_cstr(),
+                active: 1,
+                filter_type: 1,
+                filter_shape: 0,
+                unknown4: 2,
+                unknown5: 0,
+                color: [0.0, 0.0, 0.0, 1.0].into(),
+                fade_in_time: 0.0,
+                fade_out_time: 0.0,
+                overlay_txtr: 0xFFFFFFFF,
+            }.into(),
+            connections: vec![].into(),
+        },
+    );
+
+    Ok(())
 }
 
 fn patch_add_actor_key_frame<'r>(
@@ -14800,8 +14835,8 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             }
 
                             /* Some rooms need to be update to play nicely with skippable cutscenes */
-                            if room_info.room_id.to_u32() == 0xC9D52BBC // energy core
-                            {
+                            match room_info.room_id.to_u32() {
+                                0xC9D52BBC => { // energy core
                                 for id in [2883635, 2884015]
                                 {
                                     patcher.add_scly_patch(
@@ -14815,24 +14850,40 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         ),
                                     );
                                 }
+                                },
                             } else if room_info.room_id.to_u32() == 0x6655F51E { // chozo ice temple
+                                0x6655F51E => { // chozo ice temple
+                                    for id in [0x80171, 0x80210]
+                                    {
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
                                     move |ps, area| patch_edit_camera_keyframe(
                                         ps,
                                         area,
-                                        0x80171,
+                                                id,
                                     ),
                                 );
+                                    }
+                                },
+                                0x9A0A03EB => { // sunchamber
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                    move |ps, area| patch_edit_camera_keyframe(
+                                        move |ps, area| patch_sunchamber_cutscene_hack(
+                                            ps, area,
+                                        ),
+                                    );
+                                },
+                                0x70181194 => { // quarantine cave
+                                    patcher.add_scly_patch(
+                                        (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                        move |ps, area| patch_add_boss_health_bar(
                                         ps,
                                         area,
-                                        0x80210,
+                                            0x00100000,
                                     ),
                                 );
-                            } else if room_info.room_id.to_u32() == 0xA7AC009B { // subchamber four
+                                },
+                                0xA7AC009B => { // subchamber four
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
                                     move |ps, area| patch_add_boss_health_bar(
@@ -14841,7 +14892,8 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         696969,
                                     ),
                                 );
-                            } else if room_info.room_id.to_u32() == 0x77714498 { // subchamber five
+                                },
+                                0x77714498 => { // subchamber five
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
                                     move |ps, area| patch_move_camera(
@@ -14851,20 +14903,17 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         [46.805, -245.6632, -194.9795],
                                     ),
                                 );
-                            } else if room_info.room_id.to_u32() == 0x70181194 { // quarantine cave
+                                },
+                                _ => {},
+                            }
+
+                            if is_teleporter(room_info.room_id.to_u32()) {
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                    move |ps, area| patch_add_boss_health_bar(
+                                    move |ps: &mut PatcherState, area| patch_add_camera_filter_key_frame(
                                         ps,
                                         area,
-                                        0x00100000,
-                                    ),
-                                );
-                            } else if room_info.room_id.to_u32() == 0x9A0A03EB { // sunchamber
-                                patcher.add_scly_patch(
-                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                    move |ps, area| patch_sunchamber_cutscene_hack(
-                                        ps, area,
+                                        0xA455,
                                     ),
                                 );
                             }
