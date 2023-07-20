@@ -4460,6 +4460,37 @@ fn patch_move_camera<'r>(
     Ok(())
 }
 
+fn patch_add_camera<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
+)
+    -> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+
+    // Find existing
+    let camera = layer.objects
+        .as_mut_vec()
+        .iter_mut()
+        .find(|obj| obj.instance_id == 0x1D8)
+        .expect("Could not find camera 0x1D8 in Landing Site");
+
+    // Copy
+    let mut camera = camera.clone();
+
+    // Modify
+    camera.property_data.as_camera_mut().unwrap().shot_duration = 4.5;
+    camera.instance_id = id;
+    camera.connections = vec![].into();
+
+    // Write
+    layer.objects.as_mut_vec().push(camera);
+
+    Ok(())
+}
+
 fn patch_add_boss_health_bar<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
@@ -6982,6 +7013,7 @@ fn patch_remove_ids<'r>
 fn patch_add_connection<'r>(
     layers: &mut Vec<SclyLayer>,
     connection: &ConnectionConfig,
+    mrea_id: u32,
 )
 {
     for layer in layers.iter_mut() {
@@ -7003,7 +7035,7 @@ fn patch_add_connection<'r>(
         }
     }
 
-    panic!("Could not find object 0x{:X} when adding a script connection", connection.sender_id);
+    panic!("Could not find object 0x{:X} when adding a script connection in room 0x{:X}", connection.sender_id, mrea_id);
 }
 
 fn patch_add_connections<'r>
@@ -7014,11 +7046,12 @@ fn patch_add_connections<'r>
 )
 -> Result<(), String>
 {
+    let mrea_id = area.mlvl_area.mrea.to_u32().clone();
     let scly = area.mrea().scly_section_mut();
     let layers = scly.layers.as_mut_vec();
 
     for connection in connections {
-        patch_add_connection(layers, connection);
+        patch_add_connection(layers, connection, mrea_id);
     }
 
     Ok(())
@@ -14373,19 +14406,23 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     let mut other_patches: Vec<((&[u8], u32), &RoomConfig)> = Vec::new();
     for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {
         let world = World::from_pak(pak_name).unwrap();
-        for room_info in rooms.iter() {
-            let level = level_data.get(world.to_json_key());
-            if level.is_none() {
-                continue;
-            }
 
-            let room_config = level.unwrap().rooms.get(room_info.name().trim());
+        let level = level_data.get(world.to_json_key());
+        if level.is_none() {
+            continue;
+        }
+
+        for room_info in rooms.iter() {
+            let room_name = room_info.name().trim();
+            let mrea_id = room_info.room_id.to_u32();
+
+            let room_config = level.unwrap().rooms.get(room_name);
             if room_config.is_none() {
                 continue;
             }
-
             let room_config = room_config.unwrap();
-            other_patches.push(((pak_name.as_bytes(), room_info.room_id.to_u32()), room_config));
+
+            other_patches.push(((pak_name.as_bytes(), mrea_id), room_config));
         }
     }
     let other_patches = &other_patches;
@@ -14837,37 +14874,46 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             /* Some rooms need to be update to play nicely with skippable cutscenes */
                             match room_info.room_id.to_u32() {
                                 0xC9D52BBC => { // energy core
-                                for id in [2883635, 2884015]
-                                {
+                                    for id in [2883635, 2884015]
+                                    {
+                                        patcher.add_scly_patch(
+                                            (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                            move |ps, area| patch_edit_water(
+                                                ps,
+                                                area,
+                                                id,
+                                                2.0,
+                                                0.7,
+                                            ),
+                                        );
+                                    }
+                                },
+                                0xB2701146 => { // landing site
                                     patcher.add_scly_patch(
                                         (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                        move |ps, area| patch_edit_water(
+                                        move |ps, area| patch_add_camera(
                                             ps,
                                             area,
-                                            id,
-                                            2.0,
-                                            0.7,
+                                            0x5,
                                         ),
                                     );
-                                }
                                 },
-                            } else if room_info.room_id.to_u32() == 0x6655F51E { // chozo ice temple
                                 0x6655F51E => { // chozo ice temple
                                     for id in [0x80171, 0x80210]
                                     {
-                                patcher.add_scly_patch(
-                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                    move |ps, area| patch_edit_camera_keyframe(
-                                        ps,
-                                        area,
+                                        patcher.add_scly_patch(
+                                            (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                            move |ps, area| patch_edit_camera_keyframe(
+                                                ps,
+                                                area,
                                                 id,
-                                    ),
-                                );
+                                            ),
+                                        );
                                     }
                                 },
                                 0x9A0A03EB => { // sunchamber
-                                patcher.add_scly_patch(
-                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    patcher.add_scly_patch(
+                                        (pak_name.as_bytes(), room_info.room_id.to_u32()),
                                         move |ps, area| patch_sunchamber_cutscene_hack(
                                             ps, area,
                                         ),
@@ -14877,32 +14923,32 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                     patcher.add_scly_patch(
                                         (pak_name.as_bytes(), room_info.room_id.to_u32()),
                                         move |ps, area| patch_add_boss_health_bar(
-                                        ps,
-                                        area,
+                                            ps,
+                                            area,
                                             0x00100000,
-                                    ),
-                                );
+                                        ),
+                                    );
                                 },
                                 0xA7AC009B => { // subchamber four
-                                patcher.add_scly_patch(
-                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                    move |ps, area| patch_add_boss_health_bar(
-                                        ps,
-                                        area,
-                                        696969,
-                                    ),
-                                );
+                                    patcher.add_scly_patch(
+                                        (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                        move |ps, area| patch_add_boss_health_bar(
+                                            ps,
+                                            area,
+                                            696969,
+                                        ),
+                                    );
                                 },
                                 0x77714498 => { // subchamber five
-                                patcher.add_scly_patch(
-                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                    move |ps, area| patch_move_camera(
-                                        ps,
-                                        area,
-                                        0x000A0028,
-                                        [46.805, -245.6632, -194.9795],
-                                    ),
-                                );
+                                    patcher.add_scly_patch(
+                                        (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                        move |ps, area| patch_move_camera(
+                                            ps,
+                                            area,
+                                            0x000A0028,
+                                            [46.805, -245.6632, -194.9795],
+                                        ),
+                                    );
                                 },
                                 _ => {},
                             }
