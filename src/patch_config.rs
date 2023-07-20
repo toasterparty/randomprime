@@ -538,7 +538,7 @@ pub struct ActorKeyFrameConfig
     pub animation_id: u32,
     pub looping: bool,
     pub lifetime: f32,
-    pub fade_out: u32,
+    pub fade_out: f32,
     pub total_playback: f32,
 }
 

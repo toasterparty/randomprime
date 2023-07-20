@@ -15,7 +15,7 @@ pub struct ActorKeyFrame<'r>
     pub looping: u8,
     pub lifetime: f32,
     pub active: u8,
-    pub fade_out: u32,
+    pub fade_out: f32,
     pub total_playback: f32,
 }
 
