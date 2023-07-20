@@ -4655,6 +4655,11 @@ fn patch_add_spawn_point<'r>(
         panic!("id 0x{:X} already in use", spawn_point_config.id);
     }
 
+    let rotation = spawn_point_config.rotation
+        .as_ref()
+        .unwrap_or(&[0.0, 0.0, 0.0]);
+    let rotation = *rotation;
+
     let scly = area.mrea().scly_section_mut();
     let layer = &mut scly.layers.as_mut_vec()[0];
     let mut spawn_point = structs::SclyObject {
@@ -4662,7 +4667,7 @@ fn patch_add_spawn_point<'r>(
             property_data: structs::SpawnPoint {
                     name: b"my spawnpoint\0".as_cstr(),
                     position: spawn_point_config.position.into(),
-                    rotation: spawn_point_config.rotation.into(),
+                    rotation: rotation.into(),
                     power: 0,
                     ice: 0,
                     wave: 0,
