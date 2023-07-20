@@ -12,6 +12,7 @@ use rand::{
 };
 
 use crate::patch_config::{
+    Version,
     RunMode,
     ArtifactHintBehavior,
     Visor,
@@ -80,7 +81,6 @@ use reader_writer::{
     CStrConversionExtension,
     FourCC,
     Reader,
-    // Readable,
     Writable,
 };
 use structs::{MapState, res_id, ResId, scly_structs::DamageInfo, scly_structs::TypeVulnerability, SclyLayer};
@@ -90,7 +90,6 @@ use std::{
     collections::HashMap,
     convert::TryInto,
     ffi::CString,
-    fmt,
     io::Write,
     iter,
     mem,
@@ -12824,38 +12823,6 @@ fn patch_bnr(
     Ok(())
 }
 
-#[derive(PartialEq, Copy, Clone)]
-pub enum Version
-{
-    NtscU0_00,
-    NtscU0_01,
-    NtscU0_02,
-    NtscK,
-    NtscJ,
-    Pal,
-    NtscUTrilogy,
-    NtscJTrilogy,
-    PalTrilogy,
-}
-
-impl fmt::Display for Version
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error>
-    {
-        match self {
-            Version::NtscU0_00    => write!(f, "1.00"),
-            Version::NtscU0_01    => write!(f, "1.01"),
-            Version::NtscU0_02    => write!(f, "1.02"),
-            Version::NtscK        => write!(f, "kor"),
-            Version::NtscJ        => write!(f, "jap"),
-            Version::Pal          => write!(f, "pal"),
-            Version::NtscUTrilogy => write!(f, "trilogy_ntsc_u"),
-            Version::NtscJTrilogy => write!(f, "trilogy_ntsc_j"),
-            Version::PalTrilogy   => write!(f, "trilogy_pal"),
-        }
-    }
-}
-
 fn patch_qol_game_breaking(
     patcher: &mut PrimePatcher,
     version: Version,
@@ -13986,21 +13953,6 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
     let mut reader = Reader::new(&config.input_iso[..]);
     let mut gc_disc: structs::GcDisc = reader.read(());
 
-    let version = match (&gc_disc.header.game_identifier(), gc_disc.header.disc_id, gc_disc.header.version) {
-        (b"GM8E01", 0, 0)  => Version::NtscU0_00,
-        (b"GM8E01", 0, 1)  => Version::NtscU0_01,
-        (b"GM8E01", 0, 2)  => Version::NtscU0_02,
-        (b"GM8E01", 0, 48) => Version::NtscK,
-        (b"GM8J01", 0, 0)  => Version::NtscJ,
-        (b"GM8P01", 0, 0)  => Version::Pal,
-        (b"R3ME01", 0, 0)  => Version::NtscUTrilogy,
-        (b"R3IJ01", 0, 0)  => Version::NtscJTrilogy,
-        (b"R3MP01", 0, 0)  => Version::PalTrilogy,
-        _ => Err(concat!(
-                "The input ISO doesn't appear to be NTSC-US, NTSC-J, NTSC-K, PAL Metroid Prime, ",
-                "or NTSC-US, NTSC-J, PAL Metroid Prime Trilogy."
-            ))?
-    };
     if gc_disc.find_file("randomprime.txt").is_some() {
         Err(concat!("The input ISO has already been randomized once before. ",
                     "You must start from an unmodified ISO every time."
@@ -14008,14 +13960,14 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
     }
 
     if config.run_mode == RunMode::ExportLogbook {
-        export_logbook(&mut gc_disc, &config, version)?;
+        export_logbook(&mut gc_disc, &config)?;
         return Ok(());
     } else if config.run_mode == RunMode::ExportAssets {
-        export_assets(&mut gc_disc, &config, version)?;
+        export_assets(&mut gc_disc, &config)?;
         return Ok(());
     }
 
-    build_and_run_patches(&mut gc_disc, &config, version, audio_override_patches)?;
+    build_and_run_patches(&mut gc_disc, &config, audio_override_patches)?;
 
     {
         let json_string = serde_json::to_string(&config)
@@ -14024,7 +13976,7 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
         gc_disc.add_file("randomprime.json", structs::FstEntryFile::Unknown(Reader::new(&ct)))?;
     }
 
-    let patches_rel_bytes = match version {
+    let patches_rel_bytes = match config.version {
         Version::NtscU0_00    => Some(rel_files::PATCHES_100_REL),
         Version::NtscU0_01    => Some(rel_files::PATCHES_101_REL),
         Version::NtscU0_02    => Some(rel_files::PATCHES_102_REL),
@@ -14069,7 +14021,7 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
     Ok(())
 }
 
-fn export_logbook(gc_disc: &mut structs::GcDisc, config: &PatchConfig, _version: Version)
+fn export_logbook(gc_disc: &mut structs::GcDisc, config: &PatchConfig)
     -> Result<(), String>
 {
     let filenames = [
@@ -14152,7 +14104,7 @@ fn export_asset(asset_dir: &str, filename: String, bytes: Vec<u8>) -> Result<(),
     Ok(())
 }
 
-fn export_assets(gc_disc: &mut structs::GcDisc, config: &PatchConfig, version: Version)
+fn export_assets(gc_disc: &mut structs::GcDisc, config: &PatchConfig)
     -> Result<(), String>
 {
     let default_dir = &"assets".to_string();
@@ -14168,7 +14120,7 @@ fn export_assets(gc_disc: &mut structs::GcDisc, config: &PatchConfig, version: V
     }
 
     let (_, _, _, _, _, _, _, _, custom_assets) =
-        collect_game_resources(gc_disc, None, &config, version)?;
+        collect_game_resources(gc_disc, None, &config)?;
 
     for resource in custom_assets {
         let mut bytes = vec![];
@@ -14183,7 +14135,7 @@ fn export_assets(gc_disc: &mut structs::GcDisc, config: &PatchConfig, version: V
 }
 
 
-fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchConfig, version: Version, audio_override_patches: &'r Vec<AudioOverridePatch>)
+fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchConfig, audio_override_patches: &'r Vec<AudioOverridePatch>)
     -> Result<(), String>
 {
     let morph_ball_size = config.ctwk_config.morph_ball_size.clone().unwrap_or(1.0);
@@ -14388,7 +14340,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     };
 
     let (game_resources, pickup_hudmemos, pickup_scans, extra_scans, savw_scans_to_add, local_savw_scans_to_add, savw_scan_logbook_category, extern_models, _) =
-        collect_game_resources(gc_disc, starting_memo, &config, version)?;
+        collect_game_resources(gc_disc, starting_memo, &config)?;
 
     let extern_models = &extern_models;
     let game_resources = &game_resources;
@@ -14539,7 +14491,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     }
 
     // Patch Tweaks.pak
-    if version == Version::NtscK {
+    if config.version == Version::NtscK {
         patcher.add_resource_patch(
             (&[ b"Tweaks.Pak" ], 0x37CE7FD6, FourCC::from_bytes(b"CTWK")), // Game.CTWK
             |res| patch_ctwk_game(res, &config.ctwk_config),
@@ -15199,7 +15151,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             config.shuffle_pickup_position,
                             config.seed + seed,
                             !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray,
-                            version,
+                            config.version,
                     )
                 );
 
@@ -15260,7 +15212,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                         config.shuffle_pickup_pos_all_rooms,
                         config.seed,
                         !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray,
-                        version,
+                        config.version,
                     ),
                 );
 
@@ -15344,7 +15296,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
 
                     // Some doors have their object IDs changed in non NTSC-U versions
                     // NTSC-K is based on NTSC-U and shouldn't be part of those changes
-                    if version == Version::Pal || version == Version::NtscJ {
+                    if config.version == Version::Pal || config.version == Version::NtscJ {
                         // Tallon Overworld - Temple Security Station
                         if mrea_id == 0xBDB1FCAC {
                             if local_dl.door_location.unwrap().instance_id == 0x00070055 {
@@ -15585,13 +15537,13 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         CutsceneMode::Original => {},
         CutsceneMode::Skippable => {},
         CutsceneMode::Competitive => {
-            patch_qol_competitive_cutscenes(&mut patcher, version, skip_frigate);
+            patch_qol_competitive_cutscenes(&mut patcher, config.version, skip_frigate);
         },
         CutsceneMode::Minor => {
-            patch_qol_minor_cutscenes(&mut patcher, version);
+            patch_qol_minor_cutscenes(&mut patcher, config.version);
         },
         CutsceneMode::Major => {
-            patch_qol_minor_cutscenes(&mut patcher, version);
+            patch_qol_minor_cutscenes(&mut patcher, config.version);
             patch_qol_major_cutscenes(&mut patcher, config.shuffle_pickup_position);
         },
     }
@@ -15617,7 +15569,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
             |file| patch_dol(
                 file,
                 starting_room,
-                version,
+                config.version,
                 config,
                 remove_ball_color,
                 true,
@@ -15645,7 +15597,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
             |file| patch_dol(
                 file,
                 starting_room,
-                version,
+                config.version,
                 config,
                 remove_ball_color,
                 false,
@@ -15677,7 +15629,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         }
 
         // always set Parasite Queen health to its NTSC health
-        if [Version::Pal, Version::NtscJ, Version::NtscJTrilogy, Version::NtscUTrilogy, Version::PalTrilogy].contains(&version) {
+        if [Version::Pal, Version::NtscJ, Version::NtscJTrilogy, Version::NtscUTrilogy, Version::PalTrilogy].contains(&config.version) {
             patcher.add_scly_patch(
                 resource_info!("07_intro_reactor.MREA").into(),
                 move |ps, area| patch_pq_health(ps, area, 480.0),
@@ -15726,7 +15678,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     }
     patcher.add_resource_patch(
         resource_info!("STRG_Main.STRG").into(),// 0x0552a456
-        |res| patch_main_strg(res, version, &config.main_menu_message)
+        |res| patch_main_strg(res, config.version, &config.main_menu_message)
     );
     patcher.add_resource_patch(
         resource_info!("FRME_NewFileSelect.FRME").into(),
@@ -15734,7 +15686,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     );
     patcher.add_resource_patch(
         resource_info!("STRG_Credits.STRG").into(),
-        |res| patch_credits(res, version, config, &level_data)
+        |res| patch_credits(res, config.version, config, &level_data)
     );
 
     if config.results_string.is_some() {
@@ -16104,31 +16056,31 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     patch_poison_damage_per_sec(&mut patcher, config.poison_damage_per_sec);
 
     // Always patch out the white flash for photosensitive epileptics
-    if version == Version::NtscU0_00 {
+    if config.version == Version::NtscU0_00 {
         patcher.add_scly_patch(
             resource_info!("03f_crater.MREA").into(),
             patch_essence_cinematic_skip_whitescreen
         );
     }
-    if [Version::NtscU0_00, Version::NtscU0_02, Version::Pal].contains(&version) {
+    if [Version::NtscU0_00, Version::NtscU0_02, Version::Pal].contains(&config.version) {
         patcher.add_scly_patch(
             resource_info!("03f_crater.MREA").into(),
             patch_essence_cinematic_skip_nomusic
         );
     }
 
-    if [Version::Pal, Version::NtscJ, Version::NtscJTrilogy, Version::NtscUTrilogy, Version::PalTrilogy].contains(&version) {
+    if [Version::Pal, Version::NtscJ, Version::NtscJTrilogy, Version::NtscUTrilogy, Version::PalTrilogy].contains(&config.version) {
         // always set Meta Ridley health to its NTSC health
         patcher.add_scly_patch(
             resource_info!("07_stonehenge.MREA").into(),
-            |ps, area| patch_ridley_health(ps, area, version, 2000.0)
+            |ps, area| patch_ridley_health(ps, area, config.version, 2000.0)
         );
 
         // always set Meta Ridley damage properties to NTSC values
         patcher.add_scly_patch(
             resource_info!("07_stonehenge.MREA").into(),
             |ps, area| patch_ridley_damage_props(
-                ps, area, version,
+                ps, area, config.version,
                 DamageInfo {
                     weapon_type: 9, // DamageType::AI
                     damage: 20.0,
@@ -16217,7 +16169,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     }
 
     if config.qol_game_breaking {
-        patch_qol_game_breaking(&mut patcher, version, config.force_vanilla_layout, player_size < 0.9);
+        patch_qol_game_breaking(&mut patcher, config.version, config.force_vanilla_layout, player_size < 0.9);
         if boss_permadeath {
             patcher.add_scly_patch(
                 resource_info!("03a_crater.MREA").into(),
@@ -16297,7 +16249,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     }
 
     if !config.force_vanilla_layout {
-        patch_qol_logical(&mut patcher, config, version);
+        patch_qol_logical(&mut patcher, config, config.version);
     }
 
     for (_boss_name, scale) in config.boss_sizes.iter() {
@@ -16379,19 +16331,19 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         {
             patcher.add_scly_patch(
                 resource_info!("07_stonehenge.MREA").into(),
-                move |_ps, area| patch_ridley_scale(_ps, area, version, scale)
+                move |_ps, area| patch_ridley_scale(_ps, area, config.version, scale)
             );
             patcher.add_scly_patch(
                 resource_info!("01_ice_plaza.MREA").into(),
-                move |_ps, area| patch_ridley_scale(_ps, area, version, scale)
+                move |_ps, area| patch_ridley_scale(_ps, area, config.version, scale)
             );
             patcher.add_scly_patch(
                 resource_info!("09_intro_ridley_chamber.MREA").into(),
-                move |_ps, area| patch_ridley_scale(_ps, area, version, scale)
+                move |_ps, area| patch_ridley_scale(_ps, area, config.version, scale)
             );
             patcher.add_scly_patch(
                 resource_info!("01_intro_hanger.MREA").into(),
-                move |_ps, area| patch_ridley_scale(_ps, area, version, scale)
+                move |_ps, area| patch_ridley_scale(_ps, area, config.version, scale)
             );
         }
         else if boss_name == "exo" || boss_name == "metroidprime" || boss_name == "metroidprimeexoskeleton"
@@ -16687,7 +16639,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                     area,
                     &game_resources,
                     starting_room,
-                    version,
+                    config.version,
                     config.warp_to_start_delay_s,
                 )
             );
@@ -16695,7 +16647,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
 
         patcher.add_resource_patch(
             resource_info!("STRG_MemoryCard.STRG").into(),// 0x19C3F7F7
-            |res| patch_memorycard_strg(res, version)
+            |res| patch_memorycard_strg(res, config.version)
         );
     }
 

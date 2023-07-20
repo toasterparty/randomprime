@@ -7,14 +7,14 @@ use reader_writer::{
 use structs::{res_id, ResId, Resource, ResourceKind};
 
 use crate::{
-    patch_config::{PatchConfig, GenericTexture},
+    patch_config::{Version, PatchConfig, GenericTexture},
     elevators::{World, SpawnRoomData},
     pickup_meta::{self, PickupType, PickupModel},
     door_meta::{DoorType, BlastShieldType},
     ResourceData,
     GcDiscLookupExtensions,
     extern_assets::ExternPickupModel,
-    patches::{WaterType, Version},
+    patches::WaterType,
 };
 
 use std::{
@@ -418,8 +418,6 @@ pub fn custom_assets<'r>(
     pickup_scans: &mut HashMap<PickupHashKey, (ResId<res_id::SCAN>, ResId<res_id::STRG>)>,
     extra_scans: &mut HashMap<PickupHashKey, (ResId<res_id::SCAN>, ResId<res_id::STRG>)>,
     config: &PatchConfig,
-    version: Version,
-
 )
 ->
     Result<
@@ -512,7 +510,7 @@ pub fn custom_assets<'r>(
         custom_asset_ids::SHORELINES_POI_SCAN,
         custom_asset_ids::SHORELINES_POI_STRG,
         "task failed successfully\0".to_string(),
-        version,
+        config.version,
     ));
     local_savw_scans_to_add[World::PhendranaDrifts as usize].push(custom_asset_ids::SHORELINES_POI_SCAN);
     assets.extend_from_slice(&create_item_scan_strg_pair_2(
@@ -525,7 +523,7 @@ pub fn custom_assets<'r>(
         ],
         1,
         0,
-        version,
+        config.version,
     ));
     local_savw_scans_to_add[World::TallonOverworld as usize].push(custom_asset_ids::CFLDG_POI_SCAN);
     assets.extend_from_slice(&create_item_scan_strg_pair_2(
@@ -538,7 +536,7 @@ pub fn custom_assets<'r>(
         ],
         1,
         0,
-        version,
+        config.version,
     ));
     local_savw_scans_to_add[World::TallonOverworld as usize].push(custom_asset_ids::TOURNEY_WINNERS_SCAN);
 
@@ -560,7 +558,7 @@ pub fn custom_assets<'r>(
             vec![format!("{}\0", name)],
             1,
             0,
-            version,
+            config.version,
         ));
         global_savw_scans_to_add.push(pt.scan());
 
@@ -671,7 +669,7 @@ pub fn custom_assets<'r>(
                         strings,
                         is_red,
                         *custom_scan.logbook_category.as_ref().unwrap_or(&0),
-                        version,
+                        config.version,
                         )
                     );
 
@@ -720,7 +718,7 @@ pub fn custom_assets<'r>(
                         scan_id,
                         strg_id,
                         string.clone(),
-                        version,
+                        config.version,
                     ));
                     local_savw_scans_to_add[world as usize].push(scan_id);
 
@@ -799,7 +797,7 @@ pub fn custom_assets<'r>(
                                 vec![format!("{}\0", scan_text)],
                                 1,
                                 0,
-                                version,
+                                config.version,
                             ));
                         }
                         else
@@ -808,7 +806,7 @@ pub fn custom_assets<'r>(
                                 scan_id,
                                 strg_id,
                                 format!("{}\0", scan_text),
-                                version,
+                                config.version,
                             ));
                         }
 
@@ -891,7 +889,7 @@ pub fn custom_assets<'r>(
                         door_type.scan_text(),
                         1,
                         0,
-                        version,
+                        config.version,
                     )
                 );
                 global_savw_scans_to_add.push(door_type.scan());
@@ -920,7 +918,7 @@ pub fn custom_assets<'r>(
                         blast_shield.scan_text(),
                         1,
                         0,
-                        version,
+                        config.version,
                     )
                 );
                 global_savw_scans_to_add.push(blast_shield.scan());
@@ -965,7 +963,6 @@ pub fn collect_game_resources<'r>(
     gc_disc: &structs::GcDisc<'r>,
     starting_memo: Option<&str>,
     config: &PatchConfig,
-    version: Version,
 )
     ->
     Result<
@@ -1093,7 +1090,7 @@ pub fn collect_game_resources<'r>(
     // Remove extra assets from dependency search since they won't appear     //
     // in any pak. Instead add them to the output resource pool. These assets //
     // are provided as external files checked into the repository.            //
-    let (custom_assets, global_savw_scans_to_add, local_savw_scans_to_add, savw_scan_logbook_category, extern_models) = custom_assets(&found, starting_memo, &mut pickup_hudmemos, &mut pickup_scans, &mut extra_scans, config, version)?;
+    let (custom_assets, global_savw_scans_to_add, local_savw_scans_to_add, savw_scan_logbook_category, extern_models) = custom_assets(&found, starting_memo, &mut pickup_hudmemos, &mut pickup_scans, &mut extra_scans, config)?;
     for res in custom_assets.iter() {
         let key = (res.file_id, res.fourcc());
         looking_for.remove(&key);

@@ -3,6 +3,7 @@ use std::{
     collections::HashMap,
     fs::{File, OpenOptions},
     fs,
+    fmt,
 };
 
 use clap::{
@@ -19,7 +20,7 @@ use crate::{
     custom_assets::custom_asset_ids,
 };
 
-use reader_writer::FourCC;
+use reader_writer::{FourCC, Reader};
 
 use structs::{res_id, ResId};
 
@@ -718,6 +719,38 @@ pub enum PhazonDamageModifier
     Linear,        // Starts directly and deals linear damages
 }
 
+#[derive(Serialize, Debug, PartialEq, Copy, Clone)]
+pub enum Version
+{
+    NtscU0_00,
+    NtscU0_01,
+    NtscU0_02,
+    NtscK,
+    NtscJ,
+    Pal,
+    NtscUTrilogy,
+    NtscJTrilogy,
+    PalTrilogy,
+}
+
+impl fmt::Display for Version
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error>
+    {
+        match self {
+            Version::NtscU0_00    => write!(f, "1.00"),
+            Version::NtscU0_01    => write!(f, "1.01"),
+            Version::NtscU0_02    => write!(f, "1.02"),
+            Version::NtscK        => write!(f, "kor"),
+            Version::NtscJ        => write!(f, "jap"),
+            Version::Pal          => write!(f, "pal"),
+            Version::NtscUTrilogy => write!(f, "trilogy_ntsc_u"),
+            Version::NtscJTrilogy => write!(f, "trilogy_ntsc_j"),
+            Version::PalTrilogy   => write!(f, "trilogy_pal"),
+        }
+    }
+}
+
 #[derive(Debug, Serialize)]
 pub struct PatchConfig
 {
@@ -729,6 +762,8 @@ pub struct PatchConfig
     pub uuid: Option<[u8;16]>,
 
     pub force_vanilla_layout: bool,
+
+    pub version: Version,
 
     #[serde(skip_serializing)]
     pub input_iso: memmap::Mmap,
@@ -1255,6 +1290,34 @@ impl PatchConfigPrivate
     // parse and then handle configuration macros (e.g. a bool loading in several pages of JSON changes)
     fn parse(&self) -> Result<PatchConfig, String>
     {
+        // Parse version
+        let version = {
+            let input_iso_path = self.input_iso.as_deref().unwrap_or("prime.iso");
+            let input_iso_file = File::open(input_iso_path.trim())
+                .map_err(|e| format!("Failed to open {}: {}", input_iso_path, e))?;
+            let input_iso = unsafe { memmap::Mmap::map(&input_iso_file) }
+                .map_err(|e| format!("Failed to open {}: {}", input_iso_path,  e))?;
+
+            let mut reader = Reader::new(&input_iso[..]);
+            let gc_disc: structs::GcDisc = reader.read(());
+        
+            match (&gc_disc.header.game_identifier(), gc_disc.header.disc_id, gc_disc.header.version) {
+                (b"GM8E01", 0, 0)  => Version::NtscU0_00,
+                (b"GM8E01", 0, 1)  => Version::NtscU0_01,
+                (b"GM8E01", 0, 2)  => Version::NtscU0_02,
+                (b"GM8E01", 0, 48) => Version::NtscK,
+                (b"GM8J01", 0, 0)  => Version::NtscJ,
+                (b"GM8P01", 0, 0)  => Version::Pal,
+                (b"R3ME01", 0, 0)  => Version::NtscUTrilogy,
+                (b"R3IJ01", 0, 0)  => Version::NtscJTrilogy,
+                (b"R3MP01", 0, 0)  => Version::PalTrilogy,
+                _ => Err(concat!(
+                        "The input ISO doesn't appear to be NTSC-US, NTSC-J, NTSC-K, PAL Metroid Prime, ",
+                        "or NTSC-US, NTSC-J, PAL Metroid Prime Trilogy."
+                    ))?
+            }
+        };
+
         let mut result = self.clone();
 
         let mode = result.preferences.qol_cutscenes.as_ref().unwrap_or(&"original".to_string()).to_lowercase();
@@ -1266,10 +1329,10 @@ impl PatchConfigPrivate
             result.merge(skippable_cutscenes); 
         }
 
-        result.parse_inner()
+        result.parse_inner(version)
     }
 
-    fn parse_inner(&self) -> Result<PatchConfig, String>
+    fn parse_inner(&self, version: Version) -> Result<PatchConfig, String>
     {
         let run_mode = {
             if self.run_mode.is_some() {
@@ -1478,6 +1541,7 @@ impl PatchConfigPrivate
             run_mode,
             logbook_filename: self.logbook_filename.clone(),
             export_asset_dir: self.export_asset_dir.clone(),
+            version,
             input_iso,
             iso_format,
             output_iso,
