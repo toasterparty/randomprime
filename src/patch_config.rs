@@ -24,7 +24,7 @@ use reader_writer::{FourCC, Reader};
 
 use structs::{res_id, ResId};
 
-use json_data::SKIPPABLE_CUTSCENES;
+use json_data::*;
 use json_strip::strip_jsonc_comments;
 
 use crate::elevators::World;
@@ -1238,6 +1238,15 @@ impl PatchConfig
     }
 }
 
+fn merge_json(config: &mut PatchConfigPrivate, text: &'static str) -> Result<(), String>
+{
+    let data = serde_json::from_str(text);
+    let data: PatchConfigPrivate = data.map_err(|e| format!("JSON parse failed: {}", e))?;
+    config.merge(data); 
+
+    Ok(())
+}
+
 impl PatchConfigPrivate
 {
     /* Extends the "stuff" added/edited in each room */
@@ -1324,9 +1333,11 @@ impl PatchConfigPrivate
         let mode = mode.trim();
 
         if vec!["skippable"].contains(&mode) {
-            let skippable_cutscenes = serde_json::from_str(SKIPPABLE_CUTSCENES);
-            let skippable_cutscenes: PatchConfigPrivate = skippable_cutscenes.map_err(|e| format!("JSON parse failed: {}", e))?;
-            result.merge(skippable_cutscenes); 
+            merge_json(&mut result, SKIPPABLE_CUTSCENES)?;
+
+            if [Version::NtscJ, Version::Pal, Version::NtscUTrilogy, Version::NtscJTrilogy, Version::PalTrilogy].contains(&version) {
+                merge_json(&mut result, SKIPPABLE_CUTSCENES_PAL)?;
+            }
         }
 
         result.parse_inner(version)
