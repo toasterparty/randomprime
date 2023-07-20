@@ -14836,7 +14836,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         696969,
                                     ),
                                 );
-                            } else if room_info.room_id.to_u32() == 0x70181194 { // quarantine cave
+                            } else if room_info.room_id.to_u32() == 0x77714498 { // subchamber five
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
                                     move |ps, area| patch_move_camera(
