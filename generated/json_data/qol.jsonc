@@ -111,15 +111,15 @@
                     // Add Music Triggers for leaving Ruined Shrine fight
                     "addConnections": [
                         {
-                            "senderId": 589829, // [Relay] Relay-start of cinema
+                            "senderId": 590101, // [Trigger] Master Trigger
                             "targetId": 689863, // [Trigger] Anti-Cringe Trigger
-                            "state": "ZERO",
+                            "state": "ENTERED",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 589829, // [Relay] Relay-start of cinema
+                            "senderId": 590101, // [Trigger] Master Trigger
                             "targetId": 689886, // [Trigger] Anti-Cringe Trigger 2
-                            "state": "ZERO",
+                            "state": "ENTERED",
                             "message": "ACTIVATE"
                         },
                         {
