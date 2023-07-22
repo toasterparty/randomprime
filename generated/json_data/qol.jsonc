@@ -292,32 +292,38 @@
                             "message": "RESET_AND_START"
                         },
                         {
-                            "senderId": 2424947, // [Timer] Stop Music Again
+                            "senderId": 2435191, // [Counter] Counter_Deadghost
+                            "targetId": 2424937, // [Timer] Stop Music Again
+                            "state": "MAX_REACHED",
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 2424937, // [Timer] Stop Music Again
                             "targetId": 2437270, // [StreamedAudio] StreamedAudio - Ruins Samus SW
                             "state": "ZERO",
                             "message": "PLAY"
                         },
                         {
-                            "senderId": 2424947, // [Timer] Stop Music Again
+                            "senderId": 2424937, // [Timer] Stop Music Again
                             "targetId": 2437269, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 2424947, // [Timer] Stop Music Again
+                            "senderId": 2424937, // [Timer] Stop Music Again
                             "targetId": 2424938, // [Timer] Stop Music Again 2
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 2424938, // [Timer] Stop Music Again 2
-                            "targetId": 2424947, // [Timer] Stop Music Again
+                            "targetId": 2424937, // [Timer] Stop Music Again
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 2424943, // [Timer] Stop Stop Music Timer
-                            "targetId": 2424947, // [Timer] Stop Music Again
+                            "targetId": 2424937, // [Timer] Stop Music Again
                             "state": "ZERO",
                             "message": "STOP"
                         },
@@ -330,7 +336,7 @@
                     ],
                     "timers": [
                         {
-                            "id": 2424947, // [Timer] Stop Music Again
+                            "id": 2424937, // [Timer] Stop Music Again
                             "time": 0.001
                         },
                         {
@@ -340,6 +346,148 @@
                         {
                             "id": 2424943, // [Timer] Stop Stop Music Timer
                             "time": 5.0
+                        }
+                    ]
+                },
+                "Training Chamber": {
+                    // Add Music Triggers for leaving Ghost fight
+                    "addConnections": [
+                        {
+                            "senderId": 786844, // [Timer] Timer Alert
+                            "targetId": 886504, // [Trigger] Anti-Cringe Trigger
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 786844, // [Timer] Timer Alert
+                            "targetId": 886505, // [Trigger] Anti-Cringe Trigger 2
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 886505, // [Trigger] Anti-Cringe Trigger 2
+                            "targetId": 886504, // [Trigger] Anti-Cringe Trigger
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 886505, // [Trigger] Anti-Cringe Trigger 2
+                            "targetId": 886503, // [Trigger] Cringe Trigger
+                            "state": "ENTERED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 886505, // [Trigger] Anti-Cringe Trigger 2
+                            "targetId": 787009, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 886505, // [Trigger] Anti-Cringe Trigger 2
+                            "targetId": 787008, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "state": "ENTERED",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 886504, // [Trigger] Anti-Cringe Trigger
+                            "targetId": 886503, // [Trigger] Cringe Trigger
+                            "state": "ENTERED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 886504, // [Trigger] Anti-Cringe Trigger
+                            "targetId": 787009, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 886504, // [Trigger] Anti-Cringe Trigger
+                            "targetId": 787008, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "state": "ENTERED",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 886503, // [Trigger] Cringe Trigger
+                            "targetId": 886504, // [Trigger] Anti-Cringe Trigger
+                            "state": "ENTERED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 886503, // [Trigger] Cringe Trigger
+                            "targetId": 787009, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "state": "ENTERED",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 886503, // [Trigger] Cringe Trigger
+                            "targetId": 787008, // [StreamedAudio] StreamedAudio - General Short Battle SW
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 786842, // [Counter] Counter_Deadghost
+                            "targetId": 886504, // [Trigger] Anti-Cringe Trigger
+                            "state": "MAX_REACHED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 786842, // [Counter] Counter_Deadghost
+                            "targetId": 886505, // [Trigger] Anti-Cringe Trigger 2
+                            "state": "MAX_REACHED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 786842, // [Counter] Counter_Deadghost
+                            "targetId": 886503, // [Trigger] Cringe Trigger
+                            "state": "MAX_REACHED",
+                            "message": "DEACTIVATE"
+                        }
+                    ],
+                    "triggers": [
+                        {
+                            "id": 886504, // [Trigger] Anti-Cringe Trigger
+                            "active": false,
+                            "position": [
+                                121.75486,
+                                -182.080002,
+                                20.48163
+                            ],
+                            "scale": [
+                                6.171,
+                                0.787003,
+                                4.699
+                            ],
+                            "deactivateOnEnter": true
+                        },
+                        {
+                            "id": 886505, // [Trigger] Anti-Cringe Trigger 2
+                            "active": false,
+                            "position": [
+                                153.969376,
+                                -214.294525,
+                                20.481625
+                            ],
+                            "scale": [
+                                0.787003,
+                                6.171,
+                                4.699
+                            ],
+                            "deactivateOnEnter": true
+                        },
+                        {
+                            "id": 886503, // [Trigger] Cringe Trigger
+                            "active": false,
+                            "position": [
+                                121.75486,
+                                -180.080002,
+                                20.48163
+                            ],
+                            "scale": [
+                                6.171,
+                                0.787003,
+                                4.699
+                            ],
+                            "deactivateOnEnter": true
                         }
                     ]
                 },
@@ -388,47 +536,47 @@
         "Tallon Overworld": {
             "transports": {},
             "rooms": {
-                // Make Teleporter play sounds again when ridley dead
                 "Artifact Temple": {
+                    // Make Teleporter play sounds again when ridley dead
                     "addConnections": [
                         {
                             "senderId": 1048578, // [SpawnPoint] Spawn point - NON-Teleporter Spawn
-                            "targetId": 2048608, // [Trigger] Trigger - Play Teleporter Sounds
+                            "targetId": 1048598, // [Trigger] Trigger - Play Teleporter Sounds
                             "state": "INACTIVE",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 2048608, // [Trigger] Trigger - Play Teleporter Sounds
-                            "targetId": 2048599, // [Trigger] Trigger - Stop Teleporter Sounds
+                            "senderId": 1048598, // [Trigger] Trigger - Play Teleporter Sounds
+                            "targetId": 1048599, // [Trigger] Trigger - Stop Teleporter Sounds
                             "state": "ENTERED",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 2048608, // [Trigger] Trigger - Play Teleporter Sounds
+                            "senderId": 1048598, // [Trigger] Trigger - Play Teleporter Sounds
                             "targetId": 1049412, // [Sound] Sound - LightShaft
                             "state": "ENTERED",
                             "message": "PLAY"
                         },
                         {
-                            "senderId": 2048608, // [Trigger] Trigger - Play Teleporter Sounds
+                            "senderId": 1048598, // [Trigger] Trigger - Play Teleporter Sounds
                             "targetId": 1049958, // [Sound] Sound - TeleportCircle
                             "state": "ENTERED",
                             "message": "PLAY"
                         },
                         {
-                            "senderId": 2048599, // [Trigger] Trigger - Stop Teleporter Sounds
-                            "targetId": 2048608, // [Trigger] Trigger - Play Teleporter Sounds
+                            "senderId": 1048599, // [Trigger] Trigger - Stop Teleporter Sounds
+                            "targetId": 1048598, // [Trigger] Trigger - Play Teleporter Sounds
                             "state": "ENTERED",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 2048599, // [Trigger] Trigger - Stop Teleporter Sounds
+                            "senderId": 1048599, // [Trigger] Trigger - Stop Teleporter Sounds
                             "targetId": 1049412, // [Sound] Sound - LightShaft
                             "state": "ENTERED",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 2048599, // [Trigger] Trigger - Stop Teleporter Sounds
+                            "senderId": 1048599, // [Trigger] Trigger - Stop Teleporter Sounds
                             "targetId": 1049958, // [Sound] Sound - TeleportCircle
                             "state": "ENTERED",
                             "message": "STOP"
@@ -448,7 +596,7 @@
                     ],
                     "triggers": [
                         {
-                            "id": 2048608,
+                            "id": 1048598,
                             "active": false,
                             "position": [
                                 -329.966675,
@@ -463,7 +611,7 @@
                             "deactivateOnEnter": true
                         },
                         {
-                            "id": 2048599,
+                            "id": 1048599,
                             "active": false,
                             "position": [
                                 -341.279938,
@@ -507,6 +655,12 @@
                             "targetId": 578, // [StreamedAudio] StreamedAudio - Overworld SW
                             "state": "ENTERED",
                             "message": "PLAY"
+                        },
+                        {
+                            "senderId": 467, // [Trigger] Trigger Save Station In
+                            "targetId": 91, // [Sound] Sound - Samus Ship
+                            "state": "ENTERED",
+                            "message": "PLAY"
                         }
                     ]
                 }
@@ -524,6 +678,12 @@
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         }
+                    ]
+                },
+                "Elite Control": {
+                    "deleteIds": [
+                        // Delete Elite Pirate music Trigger on PPC door side
+                        1051555
                     ]
                 }
             }
