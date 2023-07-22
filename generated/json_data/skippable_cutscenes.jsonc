@@ -3448,6 +3448,12 @@
                             "message": "ACTION"
                         },
                         {
+                            "senderId": 3408028, // [ActorKeyframe] Reset Chozo Statue
+                            "targetId": 3407931, // [Actor] Actor_ChozoBowler
+                            "state": "PLAY",
+                            "message": "PLAY"
+                        },
+                        {
                             "senderId": 4408050, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip (Bowler)
                             "targetId": 3407933, // [Relay] Relay ResetChozoBowler
                             "state": "ZERO",
@@ -3586,7 +3592,7 @@
                             "message": "INCREMENT"
                         },
                         {
-                            "senderId": 5408016, // [SpawnPoint] Middle
+                            "senderId": 3408760, // [SpawnPoint] Spawn point
                             "targetId": 3407932, // [Trigger] Trigger_Bowl
                             "state": "ZERO",
                             "message": "ACTIVATE"
@@ -3599,7 +3605,7 @@
                         },
                         {
                             "senderId": 3407954, // [Trigger] Trigger_DownLand
-                            "targetId": 3408362, // [Relay] Neutral Throw Skip
+                            "targetId": 3408362, // [WorldLightFader] World Light Fader_brighten
                             "state": "ENTERED",
                             "message": "ACTION"
                         },
@@ -4441,7 +4447,7 @@
                             "id": 3408028,
                             "active": true,
                             "animationId": 0,
-                            "looping": false,
+                            "looping": true,
                             "lifetime": 0.0,
                             "fadeOut": 0.0,
                             "totalPlayback": 1.0
@@ -14105,7 +14111,7 @@
                         },
                         {
                             "id": 13, // [Timer] Timer Scanlines Skip
-                            "time": 4.35
+                            "time": 4.50
                         }
                     ],
                     "relays": [
@@ -14118,7 +14124,7 @@
                             "id": 7, // [ActorKeyframe] Ship Close Skip
                             "active": true,
                             "animationId": 15,
-                            "looping": false,
+                            "looping": true,
                             "lifetime": 0.0,
                             "fadeOut": 0.0,
                             "totalPlayback": 1.0
