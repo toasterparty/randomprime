@@ -25,6 +25,7 @@ fn helper(filename: &'static str)
 
 fn main() {
     helper("skippable_cutscenes.jsonc");
+    helper("skippable_cutscenes_competitive.jsonc");
     helper("skippable_cutscenes_pal.jsonc");
     helper("qol.jsonc");
 }

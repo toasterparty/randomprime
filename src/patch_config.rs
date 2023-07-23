@@ -64,6 +64,7 @@ pub enum CutsceneMode
 {
     Original,
     Skippable,
+    SkippableCompetitive,
     Competitive,
     Minor,
     Major,
@@ -1337,11 +1338,15 @@ impl PatchConfigPrivate
         let mode = result.preferences.qol_cutscenes.as_ref().unwrap_or(&"original".to_string()).to_lowercase();
         let mode = mode.trim();
 
-        if vec!["skippable"].contains(&mode) {
+        if vec!["skippable", "skippablecompetitive"].contains(&mode) {
             merge_json(&mut result, SKIPPABLE_CUTSCENES)?;
 
             if [Version::NtscJ, Version::Pal, Version::NtscUTrilogy, Version::NtscJTrilogy, Version::PalTrilogy].contains(&version) {
                 merge_json(&mut result, SKIPPABLE_CUTSCENES_PAL)?;
+            }
+
+            if mode == "skippablecompetitive" {
+                merge_json(&mut result, SKIPPABLE_CUTSCENES_COMPETITIVE)?;
             }
         }
 
@@ -1454,6 +1459,7 @@ impl PatchConfigPrivate
             "original" => CutsceneMode::Original,
             "competitive" => CutsceneMode::Competitive,
             "skippable" => CutsceneMode::Skippable,
+            "skippablecompetitive" => CutsceneMode::SkippableCompetitive,
             "minor" => CutsceneMode::Minor,
             "major" => CutsceneMode::Major,
             _ => panic!("Unknown cutscene mode {}", self.preferences.qol_cutscenes.as_ref().unwrap()),

@@ -1,0 +1,388 @@
+{
+    "levelData": {
+        "Frigate Orpheon": {
+            "transports": {},
+            "rooms": {
+                "Map Facility": {
+                    "deleteIds": [
+                        524318 // [Trigger] Trigger
+                    ]
+                }
+            }
+        },
+        "Chozo Ruins": {
+            "transports": {},
+            "rooms": {
+                "Sun Tower": {
+                    "deleteIds": [
+                        1900703, // [Relay] Relay-start of cinema
+                        1900704, // [Relay] Relay-end of cinema
+                        1900705, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                        1900775, // [CameraFilterKeyframe] Camera Filter Keyframe
+                        1900774, // [Camera] Cinematic Camera
+                        1900773, // [Timer] Timer Cinematic Delay
+                        1900776 // [Timer] Timer Door Open Delay
+                    ],
+                    "addConnections": [
+                        {
+                            "senderId": 1900772, // [Counter] Counter
+                            "targetId": 1900777, // [ActorKeyFrame] ActorKeyFrame Gate
+                            "state": "MAX_REACHED",
+                            "message": "ACTION"
+                        }
+                    ]
+                },
+                "Vault": {
+                    "deleteIds": [
+                        720960, // [Relay] End of Raise Gates Cinematic
+                        720959, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                        721020, // [CameraFilterKeyframe] Camera Filter Keyframe
+                        721019 // [Camera] Cinematic Camera
+                    ]
+                },
+                "Watery Hall": {
+                    "deleteIds": [
+                        2687048, // [Camera] Cinematic Camera
+                        2697214, // [Camera] Cinematic Camera
+                        2687049, // [CameraFilterKeyframe] Camera Filter Keyframe
+                        2697084, // [Timer] Timer Gate Center Animation Start Delay
+                        2697213, // [Timer] Timer Start Eye Cin
+                        2697226, // [Timer] Timer Eyeball Open
+                        2697805, // [Timer] Timer - Play Blink Sounds
+                        2686978, // [Relay] Start Gate Cinematic
+                        2686988, // [Relay] End Gate Cinematic
+                        2686994, // [Relay] Start of Eyes Cinematic
+                        2686998, // [Relay] End of Eyes Cinematic
+                        2686993, // [SpecialFunction] SpecialFunction Cinematic Skip
+                        2687001 // [SpecialFunction] SpecialFunction Cinematic Skip
+                    ],
+                    "addConnections": [
+                        {
+                            "senderId": 2687154, // [Counter] Counter Gate Keys
+                            "targetId": 2697081, // [ActorKeyFrame] ActorKeyFrame Center
+                            "state": "MAX_REACHED",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 2687109, // [Pickup] Pickup
+                            "targetId": 2697094, // [Relay] Relay Trigger EyeBalls
+                            "state": "ARRIVED",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 2697094, // [Relay] Relay Trigger EyeBalls
+                            "targetId": 2697803, // [Sound] Sound - Blink
+                            "state": "ZERO",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 2697094, // [Relay] Relay Trigger EyeBalls
+                            "targetId": 2697804, // [Timer] Timer - Play 2nd Blink Sound
+                            "state": "ZERO",
+                            "message": "START"
+                        }
+                    ]
+                }
+            }
+        },
+        "Phendrana Drifts": {
+            "transports": {},
+            "rooms": {
+                "Chozo Ice Temple": {
+                    "deleteIds": [
+                        524290, // [Relay] Bomb Slot Cinematic Start
+                        524562, // [Timer] Timer - bomb slot / grate
+                        524656, // [Timer] Timer - Delay Grate Opening
+                        524650, // [Camera] Cinematic Camera
+                        524293 // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                    ],
+                    "addConnections": [
+                        {
+                            "senderId": 524560, // [Relay] Faulty Relay - [OUT] Destroyed
+                            "targetId": 524565, // [ActorKeyFrame] ActorKeyFrame - upper grate
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 524560, // [Relay] Faulty Relay - [OUT] Destroyed
+                            "targetId": 524559, // [Relay] Faulty Relay - [IN] Release Ball
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 524560, // [Relay] Faulty Relay - [OUT] Destroyed
+                            "targetId": 524985, // [Trigger] Trigger
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 524560, // [Relay] Faulty Relay - [OUT] Destroyed
+                            "targetId": 524983, // [Effect] Effect
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 524560, // [Relay] Faulty Relay - [OUT] Destroyed
+                            "targetId": 524986, // [WorldLightFader] World Light Fader - on
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        }
+                    ]
+                },
+                "Control Tower": {
+                    "deleteIds": [
+                        2557050, // [Timer] Timer - stop music - start cinematic
+                        2557042, // [Timer] Timer - door unlock delay
+                        2555929, // [Relay] Door Reveal Cinematic Start
+                        2555917, // [Relay] Door Reveal Cinematic End
+                        2557043, // [Camera] Cinematic Camera
+                        2555930 // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                    ],
+                    "addConnections": [
+                        {
+                            "senderId": 2556289, // [Counter] Counter-Dead Flypirate
+                            "targetId": 2556523, // [Relay] Relay Disable Lock (To Trigger_Unlock&Key With Decrement)
+                            "state": "MAX_REACHED",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 2556289, // [Counter] Counter-Dead Flypirate
+                            "targetId": 2556520, // [Relay] Relay Disable Lock (To Trigger_Unlock&Key With Decrement)
+                            "state": "MAX_REACHED",
+                            "message": "SET_TO_ZERO"
+                        }
+                    ]
+                },
+                "Research Lab Aether": {
+                    "deleteIds": [
+                        3343127, // [Trigger] Trigger - activate cinematic
+                        3342337, // [Relay] Relay - start of cinema
+                        3342338, // [Relay] Relay - end of cinema
+                        3343359, // [Timer] Timer Flash
+                        3343360, // [Sound] Sound - Flash
+                        3343128, // [PlayerActor] PlayerActor-4_specimen
+                        3343158, // [ActorKeyframe] ActorKeyFrame-4_specimen
+                        3343167, // [CameraFilterKeyframe] Camera Filter Keyframe
+                        3343365, // [CameraFilterKeyframe] Camera Filter Keyframe
+                        3343357, // [CameraFilterKeyframe] Camera Filter Keyframe Flash
+                        3343363, // [CameraFilterKeyframe] Camera Blur Keyframe
+                        3342342, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                        3343130, // [Camera] Cinematic Camera 1
+                        3343356, // [Camera] camera1.5
+                        3343366, // [Camera] camera1.75
+                        3343367, // [Camera] camera1.75 2
+                        3343159, // [Camera] Cinematic Camera 2
+                        3343168 // [SpawnPoint] Spawn point
+                    ]
+                }
+            }
+        },
+        "Tallon Overworld": {
+            "transports": {},
+            "rooms": {
+                "Biohazard Containment": {
+                    "deleteIds": [
+                        1966730, // [Timer] Timer - door activae delay
+                        1966755, // [Timer] Timer - start cinematic
+                        2966110, // [Relay] Relay-start of cinema
+                        1966112, // [Relay] Relay-end of cinema
+                        1966113, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                        1966564, // [Camera] Cinematic Camera
+                        1966565 // [CameraFilterKeyframe] Camera Filter Keyframe
+                    ],
+                    "addConnections": [
+                        {
+                            "senderId": 1966557, // [Counter] Counter - Thermal Panel Count
+                            "targetId": 1966554, // [Relay] Relay - [IN] Activate Door
+                            "state": "MAX_REACHED",
+                            "message": "SET_TO_ZERO"
+                        }
+                    ]
+                },
+                "Biotech Research Area 1": {
+                    "deleteIds": [
+                        2097371, // [Timer] Timer - delay door activating
+                        2097384, // [Timer] Timer - dealy camera
+                        2097171, // [Relay] Relay-start of cinema
+                        2097184, // [Relay] Relay-end of cinema
+                        2097207, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                        2097192, // [Camera] Cinematic Camera
+                        2097196 // [CameraFilterKeyframe] Camera Filter Keyframe
+                    ],
+                    "addConnections": [
+                        {
+                            "senderId": 2097195, // [Counter] Counter - Thermal Panel Count
+                            "targetId": 2097191, // [Relay] Relay - [IN] Activate Door
+                            "state": "MAX_REACHED",
+                            "message": "SET_TO_ZERO"
+                        }
+                    ]
+                },
+                "Cargo Freight Lift to Deck Gamma": {
+                    "deleteIds": [
+                        1769728, // [Timer] Timer - door activated
+                        1769779, // [Timer] Timer
+                        1769481, // [Relay] Relay-start of cinema
+                        1769482, // [Relay] Relay-end of cinema
+                        1769487, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                        1769617, // [Camera] Cinematic Camera
+                        1769618 // [CameraFilterKeyframe] Camera Filter Keyframe
+                    ],
+                    "addConnections": [
+                        {
+                            "senderId": 1769595, // [Counter] Counter - Wire Counter
+                            "targetId": 1769605, // [Relay] Relay - [OUT] Door Activated
+                            "state": "MAX_REACHED",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1769595, // [Counter] Counter - Wire Counter
+                            "targetId": 1769778, // [Relay] Relay_Jingle_Event
+                            "state": "MAX_REACHED",
+                            "message": "SET_TO_ZERO"
+                        }
+                    ]
+                },
+                "Temple Security Station": {
+                    "deleteIds": [
+                        458855, // [Trigger] Trigger
+                        458852, // [Relay] Relay-start of cinema
+                        458853, // [Relay] Relay-end of cinema
+                        458754, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                        458865, // [Camera] Cinematic Camera -Camera1
+                        458866, // [Camera] Cinematic Camera-Camera2
+                        458854, // [CameraFilterKeyframe] cinema bars
+                        458864, // [Timer] Timer Flash
+                        458857, // [PlayerActor] PlayerActor-B_RReady_Samus
+                        458897, // [Sound] Sound - Bird1
+                        458915, // [StreamedAudio] StreamedAudio Crater Reveal SW
+                        458898, // [Timer] Timer - AudioStream
+                        458887, // [SpecialFunction] SpecialFunction - Display Billboard
+                        458864, // [Timer] Timer Flash
+                        458862 // [CameraFilterKeyframe] Camera Filter Keyframe Flash
+                    ]
+                },
+                "Reactor Core": {
+                    "deleteIds": [
+                        1638402, // [Relay] Relay-start of cinema
+                        1638403, // [Relay] Relay-end of cinema
+                        1638404, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                        1638458, // [Camera] Cinematic Camera
+                        1638461 // [CameraFilterKeyframe] Camera Filter Keyframe
+                    ]
+                }
+            }
+        },
+        "Phazon Mines": {
+            "transports": {},
+            "rooms": {
+                "Main Quarry": {
+                    "deleteIds": [
+                        132208, // [Timer] Timer - camera delay
+                        132206, // [Timer] Timer - delay light
+                        131083, // [Relay] Thermal Panel Cutscene Start
+                        131084, // [Relay] Thermal Panel Cutscene End
+                        131092, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                        132190, // [Camera] Cinematic Camera
+                        132207 // [CameraFilterKeyframe] Camera Filter Keyframe
+                    ],
+                    "addConnections": [
+                        {
+                            "senderId": 131659, // [Relay] Relay - [OUT] Thermal Panel Activated
+                            "targetId": 132205, // [Effect] Effect - booth on light
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 131659, // [Relay] Relay - [OUT] Thermal Panel Activated
+                            "targetId": 132441, // [Sound] Sound - Green Light
+                            "state": "ZERO",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 131659, // [Relay] Relay - [OUT] Thermal Panel Activated
+                            "targetId": 132442, // [Timer] Timer - Play Green Light
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        }
+                    ]
+                }
+            }
+        },
+        "Magmoor Caverns": {
+            "transports": {},
+            "rooms": {
+                "Magmoor Workstation": {
+                    "deleteIds": [
+                        1507894, // [Timer] Timer - Delay Door Opening
+                        1507935, // [Timer] Timer - Delay Lava freezing door 2
+                        1507708, // [Relay] Relay - [IN] Start Open East Door Cinematic
+                        1507707, // [Camera] Cinematic Camera
+                        1507330, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                        1507895, // [Timer] Timer - Delay Door Opening
+                        1507939, // [Timer] Timer - Delay lava freezing door 3
+                        1507681, // [Relay] Relay - [IN] Start Open North Door Cinematic
+                        1507331, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                        1507682 // [Camera] Cinematic Camera
+                    ],
+                    "addConnections": [
+                        {
+                            "senderId": 1507677, // [Relay] Relay - [IN] Start Sequence Part 2
+                            "targetId": 1507709, // [Relay] Relay - [OUT] End Open East Door Cinematic
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1507677, // [Relay] Relay - [IN] Start Sequence Part 2
+                            "targetId": 1507356, // [Actor] Actor - Door Animated
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1507677, // [Relay] Relay - [IN] Start Sequence Part 2
+                            "targetId": 1507689, // [Switch] Switch - [IN] Open Door
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1507677, // [Relay] Relay - [IN] Start Sequence Part 2
+                            "targetId": 1507732, // [Switch] Switch - [IN] Freeze Lava
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1507703, // [Relay] Relay - [IN] Start Sequence Part 3
+                            "targetId": 1507683, // [Relay] Relay - [OUT] End Open North Door Cinematic
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1507703, // [Relay] Relay - [IN] Start Sequence Part 3
+                            "targetId": 1507688, // [Actor] Actor - Door Animated
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1507703, // [Relay] Relay - [IN] Start Sequence Part 3
+                            "targetId": 1507696, // [Switch] Switch - [IN] Open Door
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1507703, // [Relay] Relay - [IN] Start Sequence Part 3
+                            "targetId": 1507738, // [Switch] Switch - [IN] Freeze Lava
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        }
+                    ]
+                },
+                "Elite Control": {
+                    "deleteIds": [
+                        // Delete Elite Pirate music Trigger on PPC door side
+                        1051555
+                    ]
+                }
+            }
+        }
+    }
+}
