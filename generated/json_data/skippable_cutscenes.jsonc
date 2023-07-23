@@ -3340,6 +3340,12 @@
                         },
                         {
                             "senderId": 3408007, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip (Energy Tank Out)
+                            "targetId": 3408286, // [Relay] Relay_EnableDefault
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 3408007, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip (Energy Tank Out)
                             "targetId": 3408271, // [Relay] Relay Reset Bridge Caps
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
@@ -3470,6 +3476,12 @@
                             "targetId": 5408016, // [SpawnPoint] Middle
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 5408016, // [SpawnPoint] Middle
+                            "targetId": 3407932, // [Trigger] Trigger_Bowl
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
                         },
                         {
                             "senderId": 4408013, // [Relay] Wave Throw Skip
@@ -6693,12 +6705,12 @@
                         },
                         {
                             "senderId": 3424936, // [Timer] Repo Part 2
-                            "targetId": 2424937, // [Timer] Repo Part 3
+                            "targetId": 5424937, // [Timer] Repo Part 3
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
-                            "senderId": 2424937, // [Timer] Repo Part 3
+                            "senderId": 5424937, // [Timer] Repo Part 3
                             "targetId": 2424902, // [Water] poison water
                             "state": "ZERO",
                             "message": "ACTIVATE"
@@ -7234,7 +7246,7 @@
                             "time": 0.001
                         },
                         {
-                            "id": 2424937, // [Timer] Repo Part 3
+                            "id": 5424937, // [Timer] Repo Part 3
                             "time": 0.001
                         }
                     ]
@@ -7532,7 +7544,7 @@
                             "message": "DECREMENT"
                         },
                         {
-                            "senderId": 786476, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "senderId": 786475, // [Relay] Relay-end of cinema
                             "targetId": 786485, // [Timer] Cutscene Skip Timer Ghosts 1
                             "state": "ZERO",
                             "message": "RESET_AND_START"
@@ -8988,7 +9000,7 @@
                         },
                         {
                             "senderId": 524294, // [Relay] Wallbreak Cinema Start
-                            "targetId": 524296, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "targetId": 524296, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "state": "ZERO",
                             "message": "INCREMENT"
                         },
@@ -9066,66 +9078,66 @@
                         },
                         {
                             "senderId": 524295, // [Relay] Wallbreak Cinema End
-                            "targetId": 524296, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "targetId": 524296, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "state": "ZERO",
                             "message": "DECREMENT"
                         },
                         {
-                            "senderId": 524296, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "senderId": 524296, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 524295, // [Relay] Wallbreak Cinema End
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
                         },
                         {
-                            "senderId": 524296, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "senderId": 524296, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 524790, // [Platform] Platform_arms_up
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 524296, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "senderId": 524296, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 524801, // [Timer] Timer_pause for drop
                             "state": "ZERO",
-                            "message": "DEACTIVATE"
+                            "message": "STOP_AND_RESET"
                         },
                         {
-                            "senderId": 524296, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "senderId": 524296, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 524787, // [Actor] Actor_arms_anim
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 524296, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "senderId": 524296, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 524805, // [Camera] Cinematic Camera
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 524296, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "senderId": 524296, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 524816, // [CameraFilterKeyframe] Camera Filter Keyframe
                             "state": "ZERO",
                             "message": "DECREMENT"
                         },
                         {
-                            "senderId": 524296, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "senderId": 524296, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 524803, // [Timer] Timer_dooropen_pause
                             "state": "ZERO",
                             "message": "STOP_AND_RESET"
                         },
                         {
-                            "senderId": 524296, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "senderId": 524296, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 524789, // [Platform] Platform_arms_down
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 524296, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "senderId": 524296, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 524876, // [SpecialFunction] SpecialFunction PlayerFollowLocator
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 524296, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "senderId": 524296, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 524297, // [Relay] Destroy Wall Cutscene Skip
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
@@ -13567,40 +13579,6 @@
                             ]
                         }
                     ],
-                    "triggers": [
-                        {
-                            "id": 1048598,
-                            "active": false,
-                            "position": [
-                                -329.966675,
-                                88.600479,
-                                -14.36892
-                            ],
-                            "scale": [
-                                15.370972,
-                                1.468002,
-                                10.599998
-                            ],
-                            "flags": 1,
-                            "deactivateOnEnter": true
-                        },
-                        {
-                            "id": 1048599,
-                            "active": false,
-                            "position": [
-                                -341.279938,
-                                77.827034,
-                                -11.812092
-                            ],
-                            "scale": [
-                                0.786987,
-                                13.436996,
-                                5.654999
-                            ],
-                            "flags": 1,
-                            "deactivateOnEnter": true
-                        }
-                    ],
                     "relays": [
                         {
                             "id": 1048589 // [Relay] Burn Wings Cinematic End
@@ -13890,6 +13868,12 @@
                             "message": "DEACTIVATE"
                         },
                         {
+                            "senderId": 627, // [SpecialFunction] SpecialFunction Cinematic Skip Save
+                            "targetId": 5, // [Camera] Cinematic Camera Save Skip
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
                             "senderId": 4, // [SpecialFunction] SpecialFunction Enter Ship Skip
                             "targetId": 5, // [Camera] Cinematic Camera Save Skip
                             "state": "ZERO",
@@ -13992,22 +13976,46 @@
                             "message": "STOP"
                         },
                         {
-                            "senderId": 4, // [SpecialFunction] SpecialFunction Enter Ship Skip
-                            "targetId": 486, // [Sound] Sound - Into Savesation
-                            "state": "ZERO",
-                            "message": "STOP"
-                        },
-                        {
-                            "senderId": 4, // [SpecialFunction] SpecialFunction Enter Ship Skip
-                            "targetId": 492, // [Timer] Timer - Start Laser Sound
-                            "state": "ZERO",
-                            "message": "STOP"
-                        },
-                        {
-                            "senderId": 4, // [SpecialFunction] SpecialFunction Enter Ship Skip
-                            "targetId": 487, // [Sound] Sound - Laser
+                            "senderId": 700, // [Timer] Affirm Skip
+                            "targetId": 495, // [Sound] Sound - Savestation Affirm
                             "state": "ZERO",
                             "message": "PLAY"
+                        },
+                        {
+                            "senderId": 8, // [Timer] Save Skip Delay
+                            "targetId": 700, // [Timer] Affirm Skip
+                            "state": "ZERO",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 8, // [Timer] Save Skip Delay
+                            "targetId": 501, // [Relay] Relay Affirm sound
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 627, // [SpecialFunction] SpecialFunction Cinematic Skip Save
+                            "targetId": 487, // [Sound] Sound - Laser
+                            "state": "ZERO",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 627, // [SpecialFunction] SpecialFunction Cinematic Skip Save
+                            "targetId": 488, // [Sound] Sound - Download
+                            "state": "ZERO",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 627, // [SpecialFunction] SpecialFunction Cinematic Skip Save
+                            "targetId": 491, // [Sound] Sound - Sound - Low Steam
+                            "state": "ZERO",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 4, // [SpecialFunction] SpecialFunction Enter Ship Skip
+                            "targetId": 7, // [ActorKeyframe] Ship Close Skip
+                            "state": "ZERO",
+                            "message": "ACTION"
                         },
                         {
                             "senderId": 7, // [ActorKeyframe] Ship Close Skip
@@ -14052,19 +14060,13 @@
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 8, // [Timer] Save Skip Delay
-                            "targetId": 7, // [ActorKeyframe] Ship Close Skip
-                            "state": "ZERO",
-                            "message": "ACTION"
-                        },
-                        {
                             "senderId": 465, // [SpecialFunction] SpecialFunction Save Station
-                            "targetId": 9, // [Timer] Save Station is Closed Skip
+                            "targetId": 9, // [Relay] Save Station is Closed Skip
                             "state": "CLOSED",
-                            "message": "RESET_AND_START"
+                            "message": "SET_TO_ZERO"
                         },
                         {
-                            "senderId": 9, // [Timer] Save Station is Closed Skip
+                            "senderId": 9, // [Relay] Save Station is Closed Skip
                             "targetId": 534, // [ActorKeyFrame] ActorKeyFrame Ship Open Hatch
                             "state": "ZERO",
                             "message": "ACTION"
@@ -14103,20 +14105,23 @@
                     "timers": [
                         {
                             "id": 8, // [Timer] Save Skip Delay
-                            "time": 0.02
-                        },
-                        {
-                            "id": 9, // [Timer] Save Station is Closed Skip
-                            "time": 0.0001
+                            "time": 0.1
                         },
                         {
                             "id": 13, // [Timer] Timer Scanlines Skip
-                            "time": 4.50
+                            "time": 4.30
+                        },
+                        {
+                            "id": 700, // [Timer] Affirm Skip
+                            "time": 0.1
                         }
                     ],
                     "relays": [
                         {
                             "id": 12 // [Relay] Decrement Enter Ship Skip
+                        },
+                        {
+                            "id": 9 // [Relay] Save Station is Closed Skip
                         }
                     ],
                     "actorKeyframes": [
@@ -19218,6 +19223,12 @@
                             "targetId": 1507822, // [CameraFilterKeyframe] Camera Filter Keyframe
                             "state": "ZERO",
                             "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 1507331, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 1507682, // [Camera] Cinematic Camera
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 1507331, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip

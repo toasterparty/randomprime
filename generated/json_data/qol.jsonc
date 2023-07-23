@@ -293,37 +293,37 @@
                         },
                         {
                             "senderId": 2435191, // [Counter] Counter_Deadghost
-                            "targetId": 2424937, // [Timer] Stop Music Again
+                            "targetId": 3424937, // [Timer] Stop Music Again
                             "state": "MAX_REACHED",
                             "message": "RESET_AND_START"
                         },
                         {
-                            "senderId": 2424937, // [Timer] Stop Music Again
+                            "senderId": 3424937, // [Timer] Stop Music Again
                             "targetId": 2437270, // [StreamedAudio] StreamedAudio - Ruins Samus SW
                             "state": "ZERO",
                             "message": "PLAY"
                         },
                         {
-                            "senderId": 2424937, // [Timer] Stop Music Again
+                            "senderId": 3424937, // [Timer] Stop Music Again
                             "targetId": 2437269, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 2424937, // [Timer] Stop Music Again
+                            "senderId": 3424937, // [Timer] Stop Music Again
                             "targetId": 2424938, // [Timer] Stop Music Again 2
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 2424938, // [Timer] Stop Music Again 2
-                            "targetId": 2424937, // [Timer] Stop Music Again
+                            "targetId": 3424937, // [Timer] Stop Music Again
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 2424943, // [Timer] Stop Stop Music Timer
-                            "targetId": 2424937, // [Timer] Stop Music Again
+                            "targetId": 3424937, // [Timer] Stop Music Again
                             "state": "ZERO",
                             "message": "STOP"
                         },
@@ -336,7 +336,7 @@
                     ],
                     "timers": [
                         {
-                            "id": 2424937, // [Timer] Stop Music Again
+                            "id": 3424937, // [Timer] Stop Music Again
                             "time": 0.001
                         },
                         {
@@ -541,31 +541,31 @@
                     "addConnections": [
                         {
                             "senderId": 1048578, // [SpawnPoint] Spawn point - NON-Teleporter Spawn
-                            "targetId": 1048598, // [Trigger] Trigger - Play Teleporter Sounds
+                            "targetId": 2048598, // [Trigger] Trigger - Play Teleporter Sounds
                             "state": "INACTIVE",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 1048598, // [Trigger] Trigger - Play Teleporter Sounds
+                            "senderId": 2048598, // [Trigger] Trigger - Play Teleporter Sounds
                             "targetId": 1048599, // [Trigger] Trigger - Stop Teleporter Sounds
                             "state": "ENTERED",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 1048598, // [Trigger] Trigger - Play Teleporter Sounds
+                            "senderId": 2048598, // [Trigger] Trigger - Play Teleporter Sounds
                             "targetId": 1049412, // [Sound] Sound - LightShaft
                             "state": "ENTERED",
                             "message": "PLAY"
                         },
                         {
-                            "senderId": 1048598, // [Trigger] Trigger - Play Teleporter Sounds
+                            "senderId": 2048598, // [Trigger] Trigger - Play Teleporter Sounds
                             "targetId": 1049958, // [Sound] Sound - TeleportCircle
                             "state": "ENTERED",
                             "message": "PLAY"
                         },
                         {
                             "senderId": 1048599, // [Trigger] Trigger - Stop Teleporter Sounds
-                            "targetId": 1048598, // [Trigger] Trigger - Play Teleporter Sounds
+                            "targetId": 2048598, // [Trigger] Trigger - Play Teleporter Sounds
                             "state": "ENTERED",
                             "message": "ACTIVATE"
                         },
@@ -596,7 +596,7 @@
                     ],
                     "triggers": [
                         {
-                            "id": 1048598,
+                            "id": 2048598,
                             "active": false,
                             "position": [
                                 -329.966675,
@@ -643,6 +643,13 @@
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
+                        
+                        {
+                            "senderId": 467, // [Trigger] Trigger Save Station In
+                            "targetId": 91, // [Sound] Sound - Samus Ship
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        },
                         // Play Music when entering the Ship
                         {
                             "senderId": 467, // [Trigger] Trigger Save Station In
@@ -653,12 +660,6 @@
                         {
                             "senderId": 467, // [Trigger] Trigger Save Station In
                             "targetId": 578, // [StreamedAudio] StreamedAudio - Overworld SW
-                            "state": "ENTERED",
-                            "message": "PLAY"
-                        },
-                        {
-                            "senderId": 467, // [Trigger] Trigger Save Station In
-                            "targetId": 91, // [Sound] Sound - Samus Ship
                             "state": "ENTERED",
                             "message": "PLAY"
                         }
