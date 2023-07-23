@@ -13273,13 +13273,6 @@ fn patch_qol_cosmetic(
     // not shown here - hudmemos are nonmodal and item aquisition cutscenes are removed
 }
 
-fn patch_qol_skippable_competitive_cutscenes(patcher: &mut PrimePatcher) {
-    patcher.add_scly_patch(
-        resource_info!("10_over_1alavaarea.MREA").into(), // magmoor workstation
-        move |ps, area| patch_remove_cutscenes(ps, area, vec![], vec![0x00170153], false), // skip patching 1st cutscene (special floaty case)
-    );
-}
-
 fn patch_qol_competitive_cutscenes(patcher: &mut PrimePatcher, version: Version, _skip_frigate: bool) {
     patcher.add_scly_patch(
         resource_info!("01_mines_mainplaza.MREA").into(), // main quarry (just pirate booty)
@@ -15539,9 +15532,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     match config.qol_cutscenes {
         CutsceneMode::Original => {},
         CutsceneMode::Skippable => {},
-        CutsceneMode::SkippableCompetitive => {
-            patch_qol_skippable_competitive_cutscenes(&mut patcher);
-        },
+        CutsceneMode::SkippableCompetitive => {},
         CutsceneMode::Competitive => {
             patch_qol_competitive_cutscenes(&mut patcher, config.version, skip_frigate);
         },
