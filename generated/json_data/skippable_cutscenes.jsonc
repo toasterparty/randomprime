@@ -4123,7 +4123,7 @@
                         },
                         {
                             "senderId": 3408003, // [Relay] Ice Slot Cutscenes
-                            "targetId": 3407962, // [Relay] Default Rotation Cutscene Checker (DownToDefault)
+                            "targetId": 4407962, // [Relay] Default Rotation Cutscene Checker (DownToDefault)
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
                         },
@@ -4140,8 +4140,14 @@
                             "message": "DECREMENT"
                         },
                         {
-                            "senderId": 3408002, // [Timer] Default Rotation Cutscene Timer (RightToDefault)
+                            "senderId": 3408002, // [Timer] Default Rotation Cutscene Timer
                             "targetId": 3407991, // [Relay] Default Rotation Cutscene Checker (RightToDefault)
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 3408002, // [Timer] Default Rotation Cutscene Timer
+                            "targetId": 4407962, // [Relay] Default Rotation Cutscene Checker (DownToDefault)
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
@@ -4158,7 +4164,7 @@
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 3407962, // [Relay] Default Rotation Cutscene Checker (DownToDefault)
+                            "senderId": 4407962, // [Relay] Default Rotation Cutscene Checker (DownToDefault)
                             "targetId": 3408001, // [Timer] Advance Down to Default
                             "state": "ZERO",
                             "message": "RESET_AND_START"
@@ -4273,9 +4279,15 @@
                         },
                         {
                             "senderId": 3408273, // [Camera] Cinematic Camera Watch Bridge Default
-                            "targetId": 3408002, // [Timer] Default Rotation Cutscene Timer (RightToDefault)
+                            "targetId": 3408002, // [Timer] Default Rotation Cutscene Timer
                             "state": "ACTIVE",
                             "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 3408760, // [SpawnPoint] Spawn point
+                            "targetId": 4407962, // [Relay] Default Rotation Cutscene Checker (DownToDefault)
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
                         },
                         {
                             "senderId": 3407934, // [Timer] Advance Default to Right
@@ -4396,6 +4408,30 @@
                             "targetId": 3408191, // [Effect] Sound-Glowsound
                             "state": "ZERO",
                             "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 3408280, // [Camera] Cinematic Camera Watch Slot Reset
+                            "targetId": 3408760, // [SpawnPoint] Spawn point
+                            "state": "INACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 3408273, // [Camera] Cinematic Camera Watch Bridge Default
+                            "targetId": 4408071, // [Timer] Deactivate Rotators
+                            "state": "ACTIVE",
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 4408071, // [Timer] Deactivate Rotators
+                            "targetId": 3408275, // [ActorRotate] ActorRotate DownToDefault
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 4408071, // [Timer] Deactivate Rotators
+                            "targetId": 3408274, // [ActorRotate] ActorRotate RightToDefault
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
                         }
                     ],
                     "removeConnections": [
@@ -4416,12 +4452,6 @@
                             "targetId": 3407946, // [Camera] Camera_RightBowlCamera
                             "state": "ENTERED",
                             "message": "ACTIVATE"
-                        },
-                        {
-                            "senderId": 3408282, // [Trigger] Trigger Back up Land
-                            "targetId": 3408274, // [ActorRotate] ActorRotate RightToDefault
-                            "state": "ENTERED",
-                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 3408282, // [Trigger] Trigger Back up Land
@@ -4499,7 +4529,7 @@
                             "active": true
                         },
                         {
-                            "id": 3407962, // [Relay] Default Rotation Cutscene Checker (DownToDefault)
+                            "id": 4407962, // [Relay] Default Rotation Cutscene Checker (DownToDefault)
                             "active": true
                         },
                         {
@@ -4719,8 +4749,12 @@
                             "time": 0.001
                         },
                         {
-                            "id": 3408002, // [Timer] Default Rotation Cutscene Timer (RightToDefault)
+                            "id": 3408002, // [Timer] Default Rotation Cutscene Timer
                             "time": 1.0
+                        },
+                        {
+                            "id": 4408071, // [Timer] Deactivate Rotators
+                            "time": 6.1
                         },
                         {
                             "id": 3408009, // [Timer] DownBowl Reposition
