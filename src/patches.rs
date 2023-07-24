@@ -52,7 +52,7 @@ use crate::{
     elevators::{Elevator, SpawnRoom, SpawnRoomData, World, is_elevator, is_teleporter},
     gcz_writer::GczWriter,
     mlvl_wrapper,
-    pickup_meta::{self, PickupType, PickupModel, DoorLocation, ObjectsToRemove, ScriptObjectLocation},
+    pickup_meta::{self, PickupType, PickupModel, DoorLocation, ObjectsToRemove, ScriptObjectLocation, pickup_model_for_pickup, pickup_type_for_pickup},
     door_meta::{DoorType, BlastShieldType},
     patcher::{PatcherState, PrimePatcher},
     starting_items::StartingItems,
@@ -2892,11 +2892,34 @@ fn modify_pickups_in_mrea<'r>(
     seed: u64,
     _no_starting_visor: bool,
     version: Version,
+    force_vanilla_layout: bool,
 )
 -> Result<(), String>
 {
     let mrea_id = area.mlvl_area.mrea.to_u32();
-    let _mrea_index = area.mrea_index;
+
+    let mut pickup_config = pickup_config.clone();
+
+    if force_vanilla_layout
+    {
+        let scly = area.mrea().scly_section();
+        let layers = &scly.layers;
+
+        let layer = layers.iter().nth(pickup_location.location.layer as usize).unwrap();
+
+        let pickup = layer.objects.iter()
+            .find(|obj| obj.instance_id == pickup_location.location.instance_id)
+            .unwrap();
+        
+        let pickup = pickup.property_data.as_pickup().unwrap();
+
+        let pickup_model = pickup_model_for_pickup(&pickup).expect(format!("could not derrive pickup model in room 0x{:X}", mrea_id).as_str());
+        let pickup_type = pickup_type_for_pickup(&pickup).expect(format!("could not derrive pickup type in room 0x{:X}", mrea_id).as_str());
+
+        pickup_config.model = Some(pickup_model.name().to_string());
+        pickup_config.pickup_type = pickup_type.name().to_string();
+    }
+
     let area_internal_id = area.mlvl_area.internal_id;
     let mut rng = StdRng::seed_from_u64(seed);
 
@@ -3484,13 +3507,18 @@ fn modify_pickups_in_mrea<'r>(
         }
 
         let pickup_obj = layers[pickup_location.location.layer as usize].objects.iter_mut()
-        .find(|obj| obj.instance_id == pickup_location.location.instance_id)
-        .unwrap();
+            .find(|obj| obj.instance_id == pickup_location.location.instance_id)
+            .unwrap();
 
-        (position, scan_id_out) = update_pickup(pickup_obj, pickup_type, pickup_model_data, pickup_config, scan_id, position_override);
+        if !force_vanilla_layout {
+            (position, scan_id_out) = update_pickup(pickup_obj, pickup_type, pickup_model_data, &pickup_config, scan_id, position_override);
 
-        if additional_connections.len() > 0 {
-            pickup_obj.connections.as_mut_vec().extend_from_slice(&additional_connections);
+            if additional_connections.len() > 0 {
+                pickup_obj.connections.as_mut_vec().extend_from_slice(&additional_connections);
+            }
+        } else {
+            position = [0.0, 0.0, 0.0];
+            scan_id_out = ResId::invalid();
         }
     }
 
@@ -3577,6 +3605,7 @@ fn modify_pickups_in_mrea<'r>(
     // The items in Watery Hall (Charge beam), Research Core (Thermal Visor), and Artifact Temple
     // (Artifact of Truth) should ys have modal hudmenus because a cutscene plays immediately
     // after each item is acquired, and the nonmodal hudmenu wouldn't properly appear.
+
     update_hudmemo(hudmemo, hudmemo_strg, skip_hudmemos, hudmemo_delay);
 
     let location = pickup_location.attainment_audio;
@@ -3822,6 +3851,7 @@ fn update_hudmemo(
 {
     let hudmemo = hudmemo.property_data.as_hud_memo_mut().unwrap();
     hudmemo.strg = hudmemo_strg;
+
     if hudmemo_delay != 0.0 {
         hudmemo.first_message_timer = hudmemo_delay;
     }
@@ -12826,7 +12856,7 @@ fn patch_bnr(
 fn patch_qol_game_breaking(
     patcher: &mut PrimePatcher,
     version: Version,
-    force_vanilla_layout: bool,
+    _force_vanilla_layout: bool,
     small_samus: bool,
 )
 {
@@ -12885,8 +12915,6 @@ fn patch_qol_game_breaking(
         resource_info!("12_mines_eliteboss.MREA").into(),
         move |ps, area| patch_op_death_pickup_spawn(ps, area)
     );
-
-    if force_vanilla_layout { return; }
 
     // undo retro "fixes"
     if version == Version::NtscU0_00 {
@@ -14676,12 +14704,10 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 );
             }
 
-            if config.force_vanilla_layout {continue;}
-
             // Remove objects patch
             {
                 // this is a hack because something is getting messed up with the MREA objects if this patch never gets used
-                let remove_otrs = config.qol_cosmetic && !(config.shuffle_pickup_position && room_info.room_id.to_u32() == 0x40C548E9);
+                let remove_otrs = config.qol_cosmetic && !(config.shuffle_pickup_position && room_info.room_id.to_u32() == 0x40C548E9) && !config.force_vanilla_layout;
 
                 patcher.add_scly_patch(
                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
@@ -15108,11 +15134,18 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 };
 
                 let skip_hudmemos = {
-                    if config.qol_cosmetic {
-                        !(pickup.modal_hudmemo.clone().unwrap_or(false)) // make them modal if the client specified
-                    } else {
-                        false // leave them as they are in vanilla, modal
-                    }
+                    let modal_hudmemo = pickup.modal_hudmemo.as_ref();
+
+                    let modal_hudmemo = match modal_hudmemo {
+                        Some(modal_hudmemo) => {
+                            *modal_hudmemo
+                        },
+                        None => {
+                            !config.qol_cosmetic
+                        }
+                    };
+
+                    !modal_hudmemo
                 };
 
                 let hudmemo_delay = {
@@ -15148,6 +15181,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             config.seed + seed,
                             !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray,
                             config.version,
+                            config.force_vanilla_layout,
                     )
                 );
 

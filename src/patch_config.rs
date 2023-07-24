@@ -1466,18 +1466,35 @@ impl PatchConfigPrivate
         };
 
         let starting_room = {
-            if force_vanilla_layout {
-                "Frigate:Exterior Docking Hangar".to_string()
-            } else {
-                self.game_config.starting_room.clone().unwrap_or("Tallon:Landing Site".to_string())
+            let room = self.game_config.starting_room.as_ref();
+            match room {
+                Some(room) => {
+                    room.to_string()
+                },
+                None => {
+                    if force_vanilla_layout {
+                        "Frigate:Exterior Docking Hangar".to_string()
+                    } else {
+                        "Tallon:Landing Site".to_string()
+                    }
+                }
             }
         };
 
-        let starting_items: StartingItems = {
-            if force_vanilla_layout {
-                StartingItems::from_u64(2188378143)
-            } else {
-                self.game_config.starting_items.clone().unwrap_or_else(|| StartingItems::from_u64(1))
+        let starting_items = {
+            let items = self.game_config.starting_items.as_ref();
+
+            match items {
+                Some(items) => {
+                    items.clone()
+                },
+                None => {
+                    if force_vanilla_layout {
+                        StartingItems::from_u64(2188378143)
+                    } else {
+                        StartingItems::from_u64(1)
+                    }
+                }
             }
         };
 
@@ -1524,26 +1541,53 @@ impl PatchConfigPrivate
         let spring_ball = self.game_config.spring_ball.unwrap_or(false);
         let warp_to_start = self.game_config.warp_to_start.unwrap_or(false);
         let main_menu_message = {
-            if force_vanilla_layout {
-                "".to_string()
-            } else {
-                self.game_config.main_menu_message.clone().unwrap_or_else(|| "randomprime".to_string())
+            let message = self.game_config.main_menu_message.as_ref();
+
+            match message {
+                Some(message) => {
+                    message.to_string()
+                },
+                None => {
+                    if force_vanilla_layout {
+                        "".to_string()
+                    } else {
+                        "randomprime".to_string()
+                    }
+                }
             }
         };
 
         let credits_string = {
-            if force_vanilla_layout {
-                Some("".to_string())
-            } else {
-                self.game_config.credits_string.clone()
+            let message = self.game_config.credits_string.as_ref();
+
+            match message {
+                Some(message) => {
+                    Some(message.to_string())
+                },
+                None => {
+                    if force_vanilla_layout {
+                        Some("".to_string())
+                    } else {
+                        None
+                    }
+                }
             }
         };
 
         let results_string = {
-            if force_vanilla_layout {
-                Some("".to_string())
-            } else {
-                self.game_config.results_string.clone()
+            let message = self.game_config.results_string.as_ref();
+
+            match message {
+                Some(message) => {
+                    Some(message.to_string())
+                },
+                None => {
+                    if force_vanilla_layout {
+                        Some("".to_string())
+                    } else {
+                        None
+                    }
+                }
             }
         };
 
