@@ -4598,7 +4598,7 @@ fn patch_add_camera_filter_key_frame<'r>(
                 unknown5: 0,
                 color: [0.0, 0.0, 0.0, 1.0].into(),
                 fade_in_time: 0.0,
-                fade_out_time: 0.0,
+                fade_out_time: 0.5,
                 overlay_txtr: 0xFFFFFFFF,
             }.into(),
             connections: vec![].into(),
