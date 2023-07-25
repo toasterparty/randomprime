@@ -527,7 +527,7 @@ pub struct TimerConfig
     pub active: Option<bool>,
     pub time: f32,
     pub max_random_add: Option<f32>,
-    pub reset_to_zero: Option<bool>,
+    pub looping: Option<bool>,
     pub start_immediately: Option<bool>,
 }
 
