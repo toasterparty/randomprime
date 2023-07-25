@@ -200,6 +200,7 @@ pub fn is_teleporter(mrea: u32) -> bool {
     ids.extend([
         0x1A666C55, // lair
         0xD1241219, // exteriror docking hangar
+        0xB4B41C48, // end cinema
     ]);
 
     ids.contains(&mrea)
