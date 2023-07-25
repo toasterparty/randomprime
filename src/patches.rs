@@ -4493,29 +4493,33 @@ fn patch_add_camera<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
     id: u32,
+    position: [f32; 3],
+    rotation: Option<[f32; 3]>,
+    shot_duration: f32,
+    unknowns: [u8; 7],
+    unknown: bool,
 )
     -> Result<(), String>
 {
     let scly = area.mrea().scly_section_mut();
-    let layer = &mut scly.layers.as_mut_vec()[0];
-
-    // Find existing
-    let camera = layer.objects
-        .as_mut_vec()
-        .iter_mut()
-        .find(|obj| obj.instance_id == 0x1D8)
-        .expect("Could not find camera 0x1D8 in Landing Site");
-
-    // Copy
-    let mut camera = camera.clone();
-
-    // Modify
-    camera.property_data.as_camera_mut().unwrap().shot_duration = 4.5;
-    camera.instance_id = id;
-    camera.connections = vec![].into();
-
-    // Write
-    layer.objects.as_mut_vec().push(camera);
+    let layer: &mut SclyLayer<'_> = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: id,
+            property_data: structs::Camera {
+                name: b"my camera\0".as_cstr(),
+                position: position.into(),
+                rotation: rotation.unwrap_or([0.0, 0.0, 0.0]).into(),
+                active: 0,
+                shot_duration,
+                unknowns: unknowns.into(),
+                unknown1: 120.0,
+                unknown2: 1,
+                unknown3: unknown as u8,
+            }.into(),
+            connections: vec![].into(),
+        }
+    );
 
     Ok(())
 }
@@ -14869,6 +14873,19 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                             ps,
                                             area,
                                             0x5,
+                                            [-367.851898, 375.47049, -21.39986], // same as 0x1D8
+                                            [11.490609, 0.0, 18.759502].into(),
+                                            4.5,
+                                            [
+                                                0,
+                                                0,
+                                                1,
+                                                0,
+                                                1,
+                                                0,
+                                                0,
+                                            ].into(),
+                                            true
                                         ),
                                     );
                                 },
@@ -14936,7 +14953,38 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         0xA455,
                                     ),
                                 );
+                            } else {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps: &mut PatcherState, area| patch_add_camera_filter_key_frame(
+                                        ps,
+                                        area,
+                                        0x9FBF1,
+                                    ),
+                                );
                             }
+
+                            patcher.add_scly_patch(
+                                (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                move |ps, area| patch_add_camera(
+                                    ps,
+                                    area,
+                                    0xA2C2A,
+                                    [0.0, 0.0, -1000.0],
+                                    None,
+                                    512.0,
+                                    [
+                                        0,
+                                        0,
+                                        0,
+                                        0,
+                                        1,
+                                        0,
+                                        0,
+                                    ].into(),
+                                    false
+                                ),
+                            );
                         }
 
                         if room.actor_keyframes.is_some() {

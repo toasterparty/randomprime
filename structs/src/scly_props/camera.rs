@@ -18,6 +18,18 @@ pub struct Camera<'r>
     pub rotation: GenericArray<f32, U3>,
     pub active: u8,
     pub shot_duration: f32,
+
+    // Value<bool> lookAtPlayer;
+    // Value<bool> outOfPlayerEye;
+    // Value<bool> intoPlayerEye;
+    // Value<bool> drawPlayer;
+    // Value<bool> disableInput;
+    // Value<bool> unknown;
+    // Value<bool> finishCineSkip;
+    // Value<float> fov;
+    // Value<bool> checkFailsafe;
+    // Value<bool> disableOutOfInto;
+
     pub unknowns: GenericArray<u8, U7>,
     pub unknown1: f32,
     pub unknown2: u8,
