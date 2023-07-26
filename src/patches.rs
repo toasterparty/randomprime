@@ -5833,33 +5833,121 @@ fn patch_landing_site_cutscene_triggers(
     area: &mut mlvl_wrapper::MlvlArea,
 ) -> Result<(), String>
 {
-    // make memory relays active by default
-    area.set_memory_relay_active(0x00000143, 1);
+    let timer_id = area.new_object_id_from_layer_id(0);
+    let timer_id2 = area.new_object_id_from_layer_id(0);
 
     let layer = area.mrea().scly_section_mut().layers.iter_mut().next().unwrap();
+    let objects = layer.objects.as_mut_vec();
 
-    // remove the intro cutscene trigger
-    layer.objects.as_mut_vec().retain(|obj|
-        obj.instance_id & 0x0000FFFF != 0xdd
+    // Trigger Start Overworld Cinematic
+    objects.iter_mut()
+         .find(|obj| obj.instance_id & 0x00FFFFFF == 0xDD)
+         .and_then(|obj| obj.property_data.as_trigger_mut())
+         .unwrap()
+         .active = 0;
+
+    // Relay Player Model Loaded
+    objects.iter_mut()
+        .find(|obj| obj.instance_id & 0x00FFFFFF == 0x1F4)
+        .and_then(|obj| obj.property_data.as_relay_mut())
+        .unwrap()
+        .active = 1;
+
+    // PlayerActor-B_rready_samus
+    objects.iter_mut()
+        .find(|obj| obj.instance_id & 0x00FFFFFF == 0x1CE)
+        .unwrap()
+        .connections
+        .as_mut_vec()
+        .clear();
+
+    // Trigger -- Back from Load
+    let obj = objects.iter_mut()
+        .find(|obj| obj.instance_id & 0x00FFFFFF == 0x1F2)
+        .unwrap();
+    obj.property_data.as_trigger_mut().unwrap().active = 1;
+    obj.connections.as_mut_vec().retain(|conn| conn.target_object_id != 0x1F4); // Relay Player Model Loaded
+    obj.connections.as_mut_vec().push(
+        structs::Connection {
+            state: structs::ConnectionState::ENTERED,
+            message: structs::ConnectionMsg::RESET_AND_START,
+            target_object_id: timer_id,
+        }
+    );
+    obj.connections.as_mut_vec().push(
+        structs::Connection {
+            state: structs::ConnectionState::ENTERED,
+            message: structs::ConnectionMsg::ACTIVATE,
+            target_object_id: 0x1CE, // PlayerActor-B_rready_samus
+        }
     );
 
-    // activate the ship
-    layer.objects.iter_mut()
-         .find(|obj| obj.instance_id & 0x0000FFFF == 0x141)
-         .and_then(|obj| obj.property_data.as_platform_mut())
+    objects.push(
+        structs::SclyObject {
+            instance_id: timer_id,
+            property_data: structs::Timer {
+                name: b"my_timer\0".as_cstr(),
+                start_time: 0.6,
+                max_random_add: 0.0,
+                looping: 0,
+                start_immediately: 0,
+                active: 1
+            }.into(),
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::SET_TO_ZERO,
+                    target_object_id: 0x1F4, // Relay Player Model Loaded
+                },
+            ].into(),
+        },
+    );
+
+    objects.push(
+        structs::SclyObject {
+            instance_id: timer_id2,
+            property_data: structs::Timer {
+                name: b"my_timer\0".as_cstr(),
+                start_time: 0.02,
+                max_random_add: 0.0,
+                looping: 0,
+                start_immediately: 1,
+                active: 1
+            }.into(),
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: 0x1F2, // Trigger -- Back from Load
+                },
+            ].into(),
+        },
+    );
+
+    // Actor Save Station Beam
+    objects.iter_mut()
+         .find(|obj| obj.instance_id & 0x00FFFFFF == 0x1CF)
+         .and_then(|obj| obj.property_data.as_actor_mut())
          .unwrap()
          .active = 1;
 
-    // activate ship effects
-    layer.objects.iter_mut()
-         .find(|obj| obj.instance_id & 0x0000FFFF == 0x1e4)
+    // Effect_BaseLights
+    objects.iter_mut()
+         .find(|obj| obj.instance_id & 0x00FFFFFF == 0x1E4)
          .and_then(|obj| obj.property_data.as_effect_mut())
          .unwrap()
          .active = 1;
 
-    // activate ship save station
-    layer.objects.iter_mut()
-         .find(|obj| obj.instance_id & 0x0000FFFF == 0x1cf)
+    // Platform Samus Ship
+    objects.iter_mut()
+         .find(|obj: &&mut structs::SclyObject<'_>| obj.instance_id & 0x00FFFFFF == 0x141)
+         .and_then(|obj| obj.property_data.as_platform_mut())
+         .unwrap()
+         .active = 1;
+
+    // Actor Save Station Beam
+    objects.iter_mut()
+         .find(|obj| obj.instance_id & 0x00FFFFFF == 0x1CF)
          .and_then(|obj| obj.property_data.as_actor_mut())
          .unwrap()
          .active = 1;
