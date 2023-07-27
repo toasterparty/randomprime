@@ -15032,8 +15032,13 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                 _ => {},
                             }
 
+                            let room_id = room_info.room_id.to_u32();
+                            if is_teleporter(room_id) || vec![
+                                0x90709AAC, // vent shaft
+                                0x9A0A03EB, // sunchamber
+                            ].contains(&room_id) {
                                 patcher.add_scly_patch(
-                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    (pak_name.as_bytes(), room_id),
                                     move |ps: &mut PatcherState, area| patch_add_camera_filter_key_frame(
                                         ps,
                                         area,
@@ -15041,27 +15046,28 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                     ),
                                 );
 
-                            patcher.add_scly_patch(
-                                (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                move |ps, area| patch_add_camera(
-                                    ps,
-                                    area,
-                                    0xA2C2A,
-                                    [0.0, 0.0, -1000.0],
-                                    None,
-                                    512.0,
-                                    [
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                        1,
-                                        0,
-                                        0,
-                                    ].into(),
-                                    false
-                                ),
-                            );
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_camera(
+                                        ps,
+                                        area,
+                                        0xA2C2A,
+                                        [0.0, 0.0, -1000.0],
+                                        None,
+                                        512.0,
+                                        [
+                                            0,
+                                            0,
+                                            0,
+                                            0,
+                                            1,
+                                            0,
+                                            0,
+                                        ].into(),
+                                        false
+                                    ),
+                                );
+                            }
                         }
 
                         if room.actor_keyframes.is_some() {
