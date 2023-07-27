@@ -178,15 +178,21 @@
                         },
                         {
                             "senderId": 784, // [Relay] Relay-start of cinema
+                            "targetId": 74, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip (Intro Closing)
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 74, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip (Intro Closing)
                             "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
-                            "targetId": 74, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip (Intro Closing)
+                            "targetId": 864, // [WorldTeleporter] WorldTeleporterToo
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 863, // [Relay] Relay-end of cinema
@@ -197,12 +203,6 @@
                         {
                             "senderId": 74, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip (Intro Closing)
                             "targetId": 863, // [Relay] Relay-end of cinema
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 74, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip (Intro Closing)
-                            "targetId": 864, // [WorldTeleporter] WorldTeleporterToo
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
                         },
@@ -3622,6 +3622,12 @@
                             "message": "ACTION"
                         },
                         {
+                            "senderId": 3407938, // [Trigger] Trigger_DefaultLand
+                            "targetId": 3408362, // [WorldLightFader] World Light Fader_brighten
+                            "state": "EXITED",
+                            "message": "ACTION"
+                        },
+                        {
                             "senderId": 5408018, // [Trigger] Yeet 2
                             "targetId": 3407925, // [CameraFilterKeyFrame] CameraFilterKeyFrame WideScreenFilter
                             "state": "ENTERED",
@@ -4232,7 +4238,7 @@
                         {
                             "senderId": 3407903, // [ActorRotate] PlatformRotateDefault_To_Right
                             "targetId": 3407975, // [Timer] New Grate Open Timer
-                            "state": "ZERO",
+                            "state": "PLAY",
                             "message": "RESET_AND_START"
                         },
                         {
@@ -4380,6 +4386,18 @@
                             "message": "DEACTIVATE"
                         },
                         {
+                            "senderId": 3408027, // [Trigger] Upper Track Trigger
+                            "targetId": 3408760, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 3408027, // [Trigger] Upper Track Trigger
+                            "targetId": 3408760, // [SpawnPoint] Spawn point
+                            "state": "EXITED",
+                            "message": "ACTIVATE"
+                        },
+                        {
                             "senderId": 3407954, // [Trigger] Trigger_DownLand
                             "targetId": 3407925, // [CameraFilterKeyframe] Camera Filter Keyframe Widescreen
                             "state": "ENTERED",
@@ -4432,6 +4450,54 @@
                             "targetId": 3408274, // [ActorRotate] ActorRotate RightToDefault
                             "state": "ZERO",
                             "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 3408102, // [Relay] Relay_RotateBridgeDown
+                            "targetId": 3407998, // [Timer] Advance Default to Down
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 3408101, // [Relay] Relay_RotateBridgeRight
+                            "targetId": 3407934, // [Timer] Advance Default to Right
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 4408051, // [Timer] Reactivate Instant Rotators
+                            "targetId": 3407998, // [Timer] Advance Default to Down
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 4408051, // [Timer] Reactivate Instant Rotators
+                            "targetId": 3407934, // [Timer] Advance Default to Right
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 3407924, // [Camera] Camera_MoveToDown
+                            "targetId": 4408051, // [Timer] Reactivate Instant Rotators
+                            "state": "INACTIVE",
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 3407930, // [Camera] Camera_MoveToRight
+                            "targetId": 4408051, // [Timer] Reactivate Instant Rotators
+                            "state": "INACTIVE",
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 3407926, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip (Ice Slot)
+                            "targetId": 4408051, // [Timer] Reactivate Instant Rotators
+                            "state": "ZERO",
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 3407922, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip (Wave Slot)
+                            "targetId": 4408051, // [Timer] Reactivate Instant Rotators
+                            "state": "ZERO",
+                            "message": "RESET_AND_START"
                         }
                     ],
                     "removeConnections": [
@@ -4783,6 +4849,10 @@
                         {
                             "id": 3408012, // [Timer] Stop Chozo Glow
                             "time": 3.0
+                        },
+                        {
+                            "id": 4408051, // [Timer] Reactivate Instant Rotators
+                            "time": 0.1
                         }
                     ]
                 },
@@ -5163,48 +5233,6 @@
                     "cutsceneSkipFns": [
                         2359300, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip (Intro)
                         2359330 // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip (Outro)
-                    ]
-                },
-                "Main Plaza": {
-                    "addConnections": [
-                        {
-                            "senderId": 131085, // [Trigger] Trigger - Load Generic Z3
-                            "targetId": 131979, // [SpawnPoint] Spawn point
-                            "state": "ENTERED",
-                            "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 131078, // [Trigger] Trigger - Load 00s Connect
-                            "targetId": 131979, // [SpawnPoint] Spawn point
-                            "state": "ENTERED",
-                            "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 131084, // [Trigger] Trigger - Load Generic X4
-                            "targetId": 131979, // [SpawnPoint] Spawn point
-                            "state": "ENTERED",
-                            "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 131208, // [Trigger] Trigger - Load Generic X2
-                            "targetId": 131979, // [SpawnPoint] Spawn point
-                            "state": "ENTERED",
-                            "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 131645, // [Trigger] Trigger - Load 1a_morphball
-                            "targetId": 131979, // [SpawnPoint] Spawn point
-                            "state": "ENTERED",
-                            "message": "DEACTIVATE"
-                        }
-                    ],
-                    "removeConnections": [
-                        {
-                            "senderId": 131481, // [Relay] Relay - start of cinema
-                            "targetId": 131105, // [SpawnPoint] Spawn point
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
-                        }
                     ]
                 },
                 "Ruined Shrine": {
@@ -5910,28 +5938,40 @@
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 2424862, // [Flaahgra] Main Flaahgra
+                            "senderId": 1424937, // [Timer] Deactivate Flaahgra Switch
                             "targetId": 3424946, // [Relay] Flaahgra Switch Activator
-                            "state": "EXITED",
+                            "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 5242880, // [Flaahgra] Flaahgra #2
-                            "targetId": 3424946, // [Relay] Flaahgra Switch Activator
-                            "state": "EXITED",
+                            "senderId": 1424937, // [Timer] Deactivate Flaahgra Switch
+                            "targetId": 2424914, // [Relay] Bomb Slot 1 Destroyed?
+                            "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 5242881, // [Flaahgra] Flaahgra #3
-                            "targetId": 3424946, // [Relay] Flaahgra Switch Activator
-                            "state": "EXITED",
+                            "senderId": 1424937, // [Timer] Deactivate Flaahgra Switch
+                            "targetId": 2424917, // [Relay] Bomb Slot 2 Destroyed?
+                            "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 5242882, // [Flaahgra] Flaahgra #4
-                            "targetId": 3424946, // [Relay] Flaahgra Switch Activator
-                            "state": "EXITED",
+                            "senderId": 1424937, // [Timer] Deactivate Flaahgra Switch
+                            "targetId": 2424920, // [Relay] Bomb Slot 3 Destroyed?
+                            "state": "ZERO",
                             "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1424937, // [Timer] Deactivate Flaahgra Switch
+                            "targetId": 2424926, // [Relay] Bomb Slot 4 Destroyed?
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 2437143, // [Camera] Cinematic Camera - master shot
+                            "targetId": 1424937, // [Timer] Deactivate Flaahgra Switch
+                            "state": "INACTIVE",
+                            "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 3424946, // [Relay] Flaahgra Switch Activator
@@ -6056,6 +6096,12 @@
                         },
                         {
                             "senderId": 2424914, // [Relay] Bomb Slot 1 Destroyed?
+                            "targetId": 1424937, // [Timer] Deactivate Flaahgra Switch
+                            "state": "ZERO",
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 2424914, // [Relay] Bomb Slot 1 Destroyed?
                             "targetId": 3424946, // [Relay] Flaahgra Switch Activator
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
@@ -6083,12 +6129,6 @@
                             "targetId": 2424883, // [SpawnPoint] Spawn point - Destroy Bomb Slot 1
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 2424883, // [SpawnPoint] Spawn point - Destroy Bomb Slot 1
-                            "targetId": 2424914, // [Relay] Bomb Slot 1 Destroyed?
-                            "state": "ZERO",
-                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 2424914, // [Relay] Bomb Slot 1 Destroyed?
@@ -6140,6 +6180,12 @@
                         },
                         {
                             "senderId": 2424917, // [Relay] Bomb Slot 2 Destroyed?
+                            "targetId": 1424937, // [Timer] Deactivate Flaahgra Switch
+                            "state": "ZERO",
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 2424917, // [Relay] Bomb Slot 2 Destroyed?
                             "targetId": 3424946, // [Relay] Flaahgra Switch Activator
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
@@ -6155,12 +6201,6 @@
                             "targetId": 2424968, // [Spawn point] Spawn point - Destroy Bomb Slot 2
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 2424968, // [Spawn point] Spawn point - Destroy Bomb Slot 2
-                            "targetId": 2424917, // [Relay] Bomb Slot 2 Destroyed?
-                            "state": "ZERO",
-                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 2424917, // [Relay] Bomb Slot 2 Destroyed?
@@ -6224,6 +6264,12 @@
                         },
                         {
                             "senderId": 2424920, // [Relay] Bomb Slot 3 Destroyed?
+                            "targetId": 1424937, // [Timer] Deactivate Flaahgra Switch
+                            "state": "ZERO",
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 2424920, // [Relay] Bomb Slot 3 Destroyed?
                             "targetId": 3424946, // [Relay] Flaahgra Switch Activator
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
@@ -6233,12 +6279,6 @@
                             "targetId": 2424971, // [Spawn point] Spawn point - Destroy Bomb Slot 3
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 2424971, // [Spawn point] Spawn point - Destroy Bomb Slot 3
-                            "targetId": 2424920, // [Relay] Bomb Slot 3 Destroyed?
-                            "state": "ZERO",
-                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 2424920, // [Relay] Bomb Slot 3 Destroyed?
@@ -6308,6 +6348,12 @@
                         },
                         {
                             "senderId": 2424926, // [Relay] Bomb Slot 4 Destroyed?
+                            "targetId": 1424937, // [Timer] Deactivate Flaahgra Switch
+                            "state": "ZERO",
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 2424926, // [Relay] Bomb Slot 4 Destroyed?
                             "targetId": 3424946, // [Relay] Flaahgra Switch Activator
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
@@ -6317,12 +6363,6 @@
                             "targetId": 2424974, // [Spawn point] Spawn point - Destroy Bomb Slot 4
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 2424974, // [Spawn point] Spawn point - Destroy Bomb Slot 4
-                            "targetId": 2424926, // [Relay] Bomb Slot 4 Destroyed?
-                            "state": "ZERO",
-                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 2424926, // [Relay] Bomb Slot 4 Destroyed?
@@ -6708,47 +6748,61 @@
                             "message": "DECREMENT"
                         },
                         {
-                            "senderId": 2434957, // [Relay] Relay-start of cinema
+                            "senderId": 2434957, // [Relay] Relay-start of cinema 
                             "targetId": 2424865, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "state": "ZERO",
                             "message": "INCREMENT"
                         },
+                        //give Pre-Floaty
                         {
-                            "senderId": 2434957, // [Relay] Relay-start of cinema
-                            "targetId": 2424935, // [Timer] Repo Part 1
+                            "senderId": 2424865, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 5424929, // [Relay] Pre-Floaty Relay
                             "state": "ZERO",
-                            "message": "RESET_AND_START"
+                            "message": "SET_TO_ZERO"
                         },
                         {
-                            "senderId": 2424935, // [Timer] Repo Part 1
+                            "senderId": 2424865, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 2424865, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 2424865, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 2425129, // [Water] Clean water
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 2424865, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 2424902, // [Water] poison water
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 2424935, // [Timer] Repo Part 1
-                            "targetId": 3424936, // [Timer] Repo Part 2
-                            "state": "ZERO",
-                            "message": "RESET_AND_START"
-                        },
-                        {
-                            "senderId": 3424936, // [Timer] Repo Part 2
+                            "senderId": 5424929, // [Relay] Pre-Floaty Relay
                             "targetId": 2437056, // [SpawnPoint] Spawn point - Death Cinematic
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
                         },
                         {
-                            "senderId": 3424936, // [Timer] Repo Part 2
-                            "targetId": 5424937, // [Timer] Repo Part 3
+                            "senderId": 5424929, // [Relay] Pre-Floaty Relay
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
                             "state": "ZERO",
-                            "message": "RESET_AND_START"
+                            "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 5424937, // [Timer] Repo Part 3
-                            "targetId": 2424902, // [Water] poison water
+                            "senderId": 5424929, // [Relay] Pre-Floaty Relay
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
                             "state": "ZERO",
-                            "message": "ACTIVATE"
+                            "message": "DECREMENT"
                         },
+                        //asdfasdgsfdhsdfh
                         {
                             "senderId": 2434964, // [Relay] Relay-end of cinema
                             "targetId": 2424865, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -7015,12 +7069,6 @@
                         },
                         {
                             "senderId": 2424865, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 2437056, // [SpawnPoint] Spawn point - Death Cinematic
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 2424865, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 2434868, // [CameraFilterKeyframe] cinema bars
                             "state": "ZERO",
                             "message": "DECREMENT"
@@ -7042,18 +7090,6 @@
                             "targetId": 2437043, // [Camera] Cinematic Camera - varia suit pickup
                             "state": "ZERO",
                             "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 2424865, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 2424902, // [Water] poison water
-                            "state": "ZERO",
-                            "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 2424865, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 2425129, // [Water] Clean water
-                            "state": "ZERO",
-                            "message": "ACTIVATE"
                         },
                         {
                             "senderId": 2424865, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -7242,6 +7278,9 @@
                         {
                             "id": 6424928, // [Relay] Swap Relays Failsafe 3
                             "active": false
+                        },
+                        {
+                            "id": 5424929 // [Relay] Pre-Floaty Relay
                         }
                     ],
                     "cutsceneSkipFns": [
@@ -7272,16 +7311,12 @@
                             "time": 0.5
                         },
                         {
-                            "id": 2424935, // [Timer] Repo Part 1
+                            "id": 2424935, // [Timer] Pre-Floaty Timer
                             "time": 0.001
                         },
                         {
-                            "id": 3424936, // [Timer] Repo Part 2
-                            "time": 0.001
-                        },
-                        {
-                            "id": 5424937, // [Timer] Repo Part 3
-                            "time": 0.001
+                            "id": 1424937, // [Timer] Deactivate Flaahgra Switch
+                            "time": 0.1
                         }
                     ]
                 },
@@ -7993,27 +8028,27 @@
                     "addConnections": [
                         {
                             "senderId": 1572914, // [Relay] Faulty Relay - Start Leaving Cinematic
+                            "targetId": 1572881, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 1572881, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
                             "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
-                            "targetId": 1572881, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
+                            "targetId": 1572883, // [Platform] Platform - Leaving Elevator
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "NEXT"
                         },
                         {
                             "senderId": 1572915, // [Relay] Faulty Relay - End Leaving Cinematic
                             "targetId": 1572881, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
                             "state": "ZERO",
                             "message": "DECREMENT"
-                        },
-                        {
-                            "senderId": 1572881, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
-                            "targetId": 1572883, // [Platform] Platform - Leaving Elevator
-                            "state": "ZERO",
-                            "message": "NEXT"
                         },
                         {
                             "senderId": 1572881, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
@@ -8079,12 +8114,48 @@
                             "senderId": 1572882, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
                             "targetId": 1572969, // [SpecialFunction] SpecialFunction - Display Billboard
                             "state": "ZERO",
-                            "message": "DECREMENT"
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 1572882, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
-                            "targetId": 1572930, // [Relay] Relay Camera Flash
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
                             "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1572882, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 1572865, // [Dock] Dock
+                            "targetId": 666555, // [Timer] Load Timer
+                            "state": "MAX_REACHED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 666555, // [Timer] Load Timer
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 5555555, // [SpawnPoint] Morph
+                            "state": "ACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "INACTIVE",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 1572930, // [Relay] Relay Camera Flash
+                            "state": "INACTIVE",
                             "message": "SET_TO_ZERO"
                         },
                         {
@@ -8100,16 +8171,34 @@
                             "message": "STOP_AND_RESET"
                         },
                         {
-                            "senderId": 1572882, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
                             "targetId": 1572900, // [SpawnPoint] Spawn point - Arrival Spawnpoint
-                            "state": "ZERO",
+                            "state": "INACTIVE",
                             "message": "SET_TO_ZERO"
+                        }
+                    ],
+                    "spawnPoints": [
+                        {
+                            "id": 5555555, // [SpawnPoint] Morph
+                            "position": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "morphed": true
                         }
                     ],
                     "timers": [
                         {
                             "id": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "time": 0.02
+                        },
+                        {
+                            "id": 666555, // [Timer] Load Timer
+                            "time": 0.001,
+                            "startImmediately": true,
+                            "looping": true,
+                            "active": false
                         }
                     ],
                     "cutsceneSkipFns": [
@@ -8121,27 +8210,27 @@
                     "addConnections": [
                         {
                             "senderId": 4063287, // [Relay] Faulty Relay - Start Leaving Cinematic
+                            "targetId": 4063237, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 4063237, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
                             "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
-                            "targetId": 4063237, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
+                            "targetId": 4063256, // [Platform] Platform - Leaving Elevator
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "NEXT"
                         },
                         {
                             "senderId": 4063288, // [Relay] Faulty Relay - End Leaving Cinematic
                             "targetId": 4063237, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
                             "state": "ZERO",
                             "message": "DECREMENT"
-                        },
-                        {
-                            "senderId": 4063237, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
-                            "targetId": 4063256, // [Platform] Platform - Leaving Elevator
-                            "state": "ZERO",
-                            "message": "NEXT"
                         },
                         {
                             "senderId": 4063237, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
@@ -8165,7 +8254,7 @@
                             "senderId": 4063237, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
                             "targetId": 4063276, // [WorldTeleporter] 04/17/02 General Elevator Teleporter MMT
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "PLAY"
                         },
                         {
                             "senderId": 4063263, // [Relay] Faulty Relay - Start Arriving Cinematic
@@ -8183,6 +8272,48 @@
                             "senderId": 4063244, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
                             "targetId": 4063257, // [Relay] Faulty Relay - End Arriving Cinematic
                             "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 4063244, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 4063244, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 4063233, // [Dock] Dock
+                            "targetId": 666555, // [Timer] Load Timer
+                            "state": "MAX_REACHED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 666555, // [Timer] Load Timer
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 5555555, // [SpawnPoint] Morph
+                            "state": "ACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "INACTIVE",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 4063305, // [Relay] Relay Camera Flash
+                            "state": "INACTIVE",
                             "message": "SET_TO_ZERO"
                         },
                         {
@@ -8207,13 +8338,7 @@
                             "senderId": 4063244, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
                             "targetId": 4063320, // [SpecialFunction] SpecialFunction - Display Billboard
                             "state": "ZERO",
-                            "message": "DECREMENT"
-                        },
-                        {
-                            "senderId": 4063244, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
-                            "targetId": 4063305, // [Relay] Relay Camera Flash
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 4063244, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
@@ -8228,16 +8353,34 @@
                             "message": "STOP_AND_RESET"
                         },
                         {
-                            "senderId": 4063244, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
                             "targetId": 4063273, // [SpawnPoint] Spawn point - Arrival Spawnpoint
-                            "state": "ZERO",
+                            "state": "INACTIVE",
                             "message": "SET_TO_ZERO"
+                        }
+                    ],
+                    "spawnPoints": [
+                        {
+                            "id": 5555555, // [SpawnPoint] Morph
+                            "position": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "morphed": true
                         }
                     ],
                     "timers": [
                         {
                             "id": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "time": 0.02
+                        },
+                        {
+                            "id": 666555, // [Timer] Load Timer
+                            "time": 0.001,
+                            "startImmediately": true,
+                            "looping": true,
+                            "active": false
                         }
                     ],
                     "cutsceneSkipFns": [
@@ -8249,27 +8392,27 @@
                     "addConnections": [
                         {
                             "senderId": 136, // [Relay] Faulty Relay - Start Leaving Cinematic
+                            "targetId": 9, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 9, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
                             "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
-                            "targetId": 9, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
+                            "targetId": 105, // [Platform] Platform - Leaving Elevator
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "NEXT"
                         },
                         {
                             "senderId": 137, // [Relay] Faulty Relay - End Leaving Cinematic
                             "targetId": 9, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
                             "state": "ZERO",
                             "message": "DECREMENT"
-                        },
-                        {
-                            "senderId": 9, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
-                            "targetId": 105, // [Platform] Platform - Leaving Elevator
-                            "state": "ZERO",
-                            "message": "NEXT"
                         },
                         {
                             "senderId": 9, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
@@ -8315,6 +8458,48 @@
                         },
                         {
                             "senderId": 11, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 11, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 1, // [Dock] Dock
+                            "targetId": 666555, // [Timer] Timer Load
+                            "state": "MAX_REACHED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 666555, // [Timer] Timer Load
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 5555555, // [SpawnPoint] Morph
+                            "state": "ACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "INACTIVE",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 154, // [Relay] Relay Camera Flash
+                            "state": "INACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 11, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
                             "targetId": 121, // [Platform] Platform - Arrival Platform
                             "state": "ZERO",
                             "message": "NEXT"
@@ -8335,13 +8520,7 @@
                             "senderId": 11, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
                             "targetId": 159, // [SpecialFunction] SpecialFunction - Display Billboard
                             "state": "ZERO",
-                            "message": "DECREMENT"
-                        },
-                        {
-                            "senderId": 11, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
-                            "targetId": 154, // [Relay] Relay Camera Flash
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 11, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
@@ -8356,16 +8535,34 @@
                             "message": "STOP_AND_RESET"
                         },
                         {
-                            "senderId": 11, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
                             "targetId": 122, // [SpawnPoint] Spawn point - Arrival Spawnpoint
-                            "state": "ZERO",
+                            "state": "INACTIVE",
                             "message": "SET_TO_ZERO"
+                        }
+                    ],
+                    "spawnPoints": [
+                        {
+                            "id": 5555555, // [SpawnPoint] Morph
+                            "position": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "morphed": true
                         }
                     ],
                     "timers": [
                         {
                             "id": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "time": 0.02
+                        },
+                        {
+                            "id": 666555, // [Timer] Load Timer
+                            "time": 0.001,
+                            "startImmediately": true,
+                            "looping": true,
+                            "active": false
                         }
                     ],
                     "cutsceneSkipFns": [
@@ -8377,27 +8574,27 @@
                     "addConnections": [
                         {
                             "senderId": 4128819, // [Relay] Faulty Relay - Start Leaving Cinematic
+                            "targetId": 4128771, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 4128771, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
                             "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
-                            "targetId": 4128771, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
+                            "targetId": 4128788, // [Platform] Platform - Leaving Elevator
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "NEXT"
                         },
                         {
                             "senderId": 4128820, // [Relay] Faulty Relay - End Leaving Cinematic
                             "targetId": 4128771, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
                             "state": "ZERO",
                             "message": "DECREMENT"
-                        },
-                        {
-                            "senderId": 4128771, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
-                            "targetId": 4128788, // [Platform] Platform - Leaving Elevator
-                            "state": "ZERO",
-                            "message": "NEXT"
                         },
                         {
                             "senderId": 4128771, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
@@ -8443,6 +8640,48 @@
                         },
                         {
                             "senderId": 4128779, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 4128779, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 5555555, // [SpawnPoint] Morph
+                            "state": "ACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "INACTIVE",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 4128837, // [Relay] Relay Camera Flash
+                            "state": "INACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 4128769, // [Dock] Dock
+                            "targetId": 666555, // [Timer] Load Timer
+                            "state": "MAX_REACHED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 666555, // [Timer] Load Timer
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 4128779, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
                             "targetId": 4128804, // [Platform] Platform - Arrival Platform
                             "state": "ZERO",
                             "message": "NEXT"
@@ -8463,13 +8702,7 @@
                             "senderId": 4128779, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
                             "targetId": 4128856, // [SpecialFunction] SpecialFunction - Display Billboard
                             "state": "ZERO",
-                            "message": "DECREMENT"
-                        },
-                        {
-                            "senderId": 4128779, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
-                            "targetId": 4128837, // [Relay] Relay Camera Flash
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 4128779, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
@@ -8484,16 +8717,34 @@
                             "message": "STOP_AND_RESET"
                         },
                         {
-                            "senderId": 4128779, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
                             "targetId": 4128805, // [SpawnPoint] Spawn point - Arrival Spawnpoint
-                            "state": "ZERO",
+                            "state": "INACTIVE",
                             "message": "SET_TO_ZERO"
+                        }
+                    ],
+                    "spawnPoints": [
+                        {
+                            "id": 5555555, // [SpawnPoint] Morph
+                            "position": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "morphed": true
                         }
                     ],
                     "timers": [
                         {
                             "id": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "time": 0.02
+                        },
+                        {
+                            "id": 666555, // [Timer] Load Timer
+                            "time": 0.001,
+                            "startImmediately": true,
+                            "looping": true,
+                            "active": false
                         }
                     ],
                     "cutsceneSkipFns": [
@@ -10543,42 +10794,6 @@
                 "Phendrana Shorelines": {
                     "addConnections": [
                         {
-                            "senderId": 131406, // [Relay] Relay-start of cinema
-                            "targetId": 131080, // [SpawnPoint] Spawn point
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 131552, // [Trigger] Trigger - To 00k_Ice_connect
-                            "targetId": 131080, // [SpawnPoint] Spawn point
-                            "state": "ENTERED",
-                            "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 131553, // [Trigger] Trigger - To generic_z4
-                            "targetId": 131080, // [SpawnPoint] Spawn point
-                            "state": "ENTERED",
-                            "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 131553, // [Trigger] Trigger - To generic_z4
-                            "targetId": 131080, // [SpawnPoint] Spawn point
-                            "state": "ENTERED",
-                            "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 131554, // [Trigger] Trigger - To Generic_z5
-                            "targetId": 131080, // [SpawnPoint] Spawn point
-                            "state": "ENTERED",
-                            "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 131555, // [Trigger] Trigger - To generic_z7
-                            "targetId": 131080, // [SpawnPoint] Spawn point
-                            "state": "ENTERED",
-                            "message": "DEACTIVATE"
-                        },
-                        {
                             "senderId": 131881, // [Timer] Timer - initial fly over delay
                             "targetId": 131081, // [Relay] Ridley Fly Over Start
                             "state": "ZERO",
@@ -12460,6 +12675,48 @@
                         },
                         {
                             "senderId": 1900551, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1900551, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 5555555, // [SpawnPoint] Morph
+                            "state": "ACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "INACTIVE",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 1900661, // [Relay] Relay Camera Flash
+                            "state": "INACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1900546, // [Dock] Dock
+                            "targetId": 666555, // [Timer] Load Timer
+                            "state": "MAX_REACHED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 666555, // [Timer] Load Timer
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1900551, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1900630, // [Platform] Platform - Arrival Platform
                             "state": "ZERO",
                             "message": "NEXT"
@@ -12483,34 +12740,34 @@
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 1900551, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 1900661, // [Relay] Relay Camera Flash
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 1900551, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
                             "targetId": 1900631, // [SpawnPoint] Spawn point - Arrival Spawnpoint
-                            "state": "ZERO",
+                            "state": "INACTIVE",
                             "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 1900551, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1900728, // [SpecialFunction] SpecialFunction - Display Billboard
                             "state": "ZERO",
-                            "message": "DECREMENT"
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 1900645, // [Relay] Faulty Relay - Start Leaving Cinematic
+                            "targetId": 1900552, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 1900552, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
-                            "targetId": 1900552, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 1900614, // [Platform] Platform - Leaving Elevator
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "NEXT"
                         },
                         {
                             "senderId": 1900646, // [Relay] Faulty Relay - End Leaving Cinematic
@@ -12523,12 +12780,6 @@
                             "targetId": 1900646, // [Relay] Faulty Relay - End Leaving Cinematic
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 1900552, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 1900614, // [Platform] Platform - Leaving Elevator
-                            "state": "ZERO",
-                            "message": "NEXT"
                         },
                         {
                             "senderId": 1900552, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -12549,10 +12800,28 @@
                             "message": "INCREMENT"
                         }
                     ],
+                    "spawnPoints": [
+                        {
+                            "id": 5555555, // [SpawnPoint] Morph
+                            "position": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "morphed": true
+                        }
+                    ],
                     "timers": [
                         {
                             "id": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "time": 0.02
+                        },
+                        {
+                            "id": 666555, // [Timer] Load Timer
+                            "time": 0.001,
+                            "startImmediately": true,
+                            "looping": true,
+                            "active": false
                         }
                     ],
                     "cutsceneSkipFns": [
@@ -12582,6 +12851,48 @@
                         },
                         {
                             "senderId": 3, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 3, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 5555555, // [SpawnPoint] Morph
+                            "state": "ACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 72, // [Relay] Relay Camera Flash
+                            "state": "INACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "INACTIVE",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 1, // [Dock] Dock
+                            "targetId": 666555, // [Timer] Load Timer
+                            "state": "MAX_REACHED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 666555, // [Timer] Load Timer
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 3, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 41, // [Platform] Platform - Arrival Platform
                             "state": "ZERO",
                             "message": "NEXT"
@@ -12605,34 +12916,34 @@
                             "message": "DECREMENT"
                         },
                         {
-                            "senderId": 3, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 72, // [Relay] Relay Camera Flash
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 3, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
                             "targetId": 42, // [SpawnPoint] Spawn point - Arrival Spawnpoint
-                            "state": "ZERO",
+                            "state": "INACTIVE",
                             "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 3, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 104, // [SpecialFunction] SpecialFunction - Display Billboard
                             "state": "ZERO",
-                            "message": "DECREMENT"
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 56, // [Relay] Faulty Relay - Start Leaving Cinematic
+                            "targetId": 4, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 4, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
-                            "targetId": 4, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 25, // [Platform] Platform - Leaving Elevator
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "NEXT"
                         },
                         {
                             "senderId": 57, // [Relay] Faulty Relay - End Leaving Cinematic
@@ -12671,10 +12982,28 @@
                             "message": "INCREMENT"
                         }
                     ],
+                    "spawnPoints": [
+                        {
+                            "id": 5555555, // [SpawnPoint] Morph
+                            "position": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "morphed": true
+                        }
+                    ],
                     "timers": [
                         {
                             "id": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "time": 0.02
+                        },
+                        {
+                            "id": 666555, // [Timer] Load Timer
+                            "time": 0.001,
+                            "startImmediately": true,
+                            "looping": true,
+                            "active": false
                         }
                     ],
                     "cutsceneSkipFns": [
@@ -14701,6 +15030,48 @@
                         },
                         {
                             "senderId": 1441796, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 5555555, // [SpawnPoint] Morph
+                            "state": "ACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 1441888, // [Relay] Relay Camera Flash
+                            "state": "INACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "INACTIVE",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 1441796, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 666555, // [Timer] Load Timer
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1441793, // [Dock] Dock
+                            "targetId": 666555, // [Timer] Load Timer
+                            "state": "MAX_REACHED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1441796, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1441871, // [Platform] Platform - Arrival Platform
                             "state": "ZERO",
                             "message": "NEXT"
@@ -14736,34 +15107,34 @@
                             "message": "DECREMENT"
                         },
                         {
-                            "senderId": 1441796, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 1441888, // [Relay] Relay Camera Flash
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 1441796, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
                             "targetId": 1441875, // [SpawnPoint] Spawn point - Arrival Spawnpoint
-                            "state": "ZERO",
+                            "state": "INACTIVE",
                             "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 1441796, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1441913, // [SpecialFunction] SpecialFunction - Display Billboard
                             "state": "ZERO",
-                            "message": "DECREMENT"
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 1441838, // [Relay] Faulty Relay - Start Leaving Cinematic
+                            "targetId": 1441797, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 1441797, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
-                            "targetId": 1441797, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 1441835, // [Platform] Platform - Leaving Elevator
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "NEXT"
                         },
                         {
                             "senderId": 1441840, // [Relay] Faulty Relay - End Leaving Cinematic
@@ -14776,12 +15147,6 @@
                             "targetId": 1441840, // [Relay] Faulty Relay - End Leaving Cinematic
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 1441797, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 1441835, // [Platform] Platform - Leaving Elevator
-                            "state": "ZERO",
-                            "message": "NEXT"
                         },
                         {
                             "senderId": 1441797, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -14802,10 +15167,28 @@
                             "message": "INCREMENT"
                         }
                     ],
+                    "spawnPoints": [
+                        {
+                            "id": 5555555, // [SpawnPoint] Morph
+                            "position": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "morphed": true
+                        }
+                    ],
                     "timers": [
                         {
                             "id": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "time": 0.02
+                        },
+                        {
+                            "id": 666555, // [Timer] Load Timer
+                            "time": 0.001,
+                            "startImmediately": true,
+                            "looping": true,
+                            "active": false
                         }
                     ],
                     "cutsceneSkipFns": [
@@ -14832,6 +15215,48 @@
                             "targetId": 2687017, // [Relay] Faulty Relay - End Arriving Cinematic
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 2686978, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 2686978, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 5555555, // [SpawnPoint] Morph
+                            "state": "ACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "INACTIVE",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 2687052, // [Relay] Relay Camera Flash
+                            "state": "INACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666555, // [Timer] Load Timer
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 2686977, // [Dock] Dock
+                            "targetId": 666555, // [Timer] Load Timer
+                            "state": "MAX_REACHED",
+                            "message": "ACTIVATE"
                         },
                         {
                             "senderId": 2686978, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -14870,34 +15295,34 @@
                             "message": "DECREMENT"
                         },
                         {
-                            "senderId": 2686978, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 2687052, // [Relay] Relay Camera Flash
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 2686978, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
                             "targetId": 2687039, // [SpawnPoint] Spawn point - Arrival Spawnpoint
-                            "state": "ZERO",
+                            "state": "INACTIVE",
                             "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 2686978, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 2687085, // [SpecialFunction] SpecialFunction - Display Billboard
                             "state": "ZERO",
-                            "message": "DECREMENT"
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 2687002, // [Relay] Faulty Relay - Start Leaving Cinematic
+                            "targetId": 2686979, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 2686979, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
-                            "targetId": 2686979, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 2686999, // [Platform] Platform - Leaving Elevator
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "NEXT"
                         },
                         {
                             "senderId": 2687004, // [Relay] Faulty Relay - End Leaving Cinematic
@@ -14910,12 +15335,6 @@
                             "targetId": 2687004, // [Relay] Faulty Relay - End Leaving Cinematic
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 2686979, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 2686999, // [Platform] Platform - Leaving Elevator
-                            "state": "ZERO",
-                            "message": "NEXT"
                         },
                         {
                             "senderId": 2686979, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -14936,10 +15355,28 @@
                             "message": "INCREMENT"
                         }
                     ],
+                    "spawnPoints": [
+                        {
+                            "id": 5555555, // [SpawnPoint] Morph
+                            "position": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "morphed": true
+                        }
+                    ],
                     "timers": [
                         {
                             "id": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "time": 0.02
+                        },
+                        {
+                            "id": 666555, // [Timer] Load Timer
+                            "time": 0.001,
+                            "startImmediately": true,
+                            "looping": true,
+                            "active": false
                         }
                     ],
                     "cutsceneSkipFns": [
@@ -14966,6 +15403,48 @@
                             "targetId": 917527, // [Relay] Faulty Relay - End Arriving Cinematic
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 917567, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 917567, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 5555555, // [SpawnPoint] Morph
+                            "state": "ACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "INACTIVE",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 917562, // [Relay] Relay Camera Flash
+                            "state": "INACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666555, // [Timer] Load Timer
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 917505, // [Dock] Dock
+                            "targetId": 666555, // [Timer] Load Timer
+                            "state": "MAX_REACHED",
+                            "message": "ACTIVATE"
                         },
                         {
                             "senderId": 917567, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -15004,34 +15483,34 @@
                             "message": "DECREMENT"
                         },
                         {
-                            "senderId": 917567, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 917562, // [Relay] Relay Camera Flash
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 917567, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
                             "targetId": 917542, // [SpawnPoint] Spawn point - Arrival Spawnpoint
-                            "state": "ZERO",
+                            "state": "INACTIVE",
                             "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 917567, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 917601, // [SpecialFunction] SpecialFunction - Display Billboard
                             "state": "ZERO",
-                            "message": "DECREMENT"
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 917534, // [Relay] Faulty Relay - Start Leaving Cinematic
+                            "targetId": 917569, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 917569, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
-                            "targetId": 917569, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 917508, // [Platform] Platform - Leaving Elevator
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "NEXT"
                         },
                         {
                             "senderId": 917546, // [Relay] Faulty Relay - End Leaving Cinematic
@@ -15044,12 +15523,6 @@
                             "targetId": 917546, // [Relay] Faulty Relay - End Leaving Cinematic
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 917569, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 917508, // [Platform] Platform - Leaving Elevator
-                            "state": "ZERO",
-                            "message": "NEXT"
                         },
                         {
                             "senderId": 917569, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -15070,10 +15543,28 @@
                             "message": "INCREMENT"
                         }
                     ],
+                    "spawnPoints": [
+                        {
+                            "id": 5555555, // [SpawnPoint] Morph
+                            "position": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "morphed": true
+                        }
+                    ],
                     "timers": [
                         {
                             "id": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "time": 0.02
+                        },
+                        {
+                            "id": 666555, // [Timer] Load Timer
+                            "time": 0.001,
+                            "startImmediately": true,
+                            "looping": true,
+                            "active": false
                         }
                     ],
                     "cutsceneSkipFns": [
@@ -15085,27 +15576,27 @@
                     "addConnections": [
                         {
                             "senderId": 1507389, // [Relay] Faulty Relay - Start Leaving Cinematic
+                            "targetId": 1507331, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 1507331, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
                             "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
-                            "targetId": 1507331, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
+                            "targetId": 1507358, // [Platform] Platform - Leaving Elevator
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "NEXT"
                         },
                         {
                             "senderId": 1507390, // [Relay] Faulty Relay - End Leaving Cinematic
                             "targetId": 1507331, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
                             "state": "ZERO",
                             "message": "DECREMENT"
-                        },
-                        {
-                            "senderId": 1507331, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
-                            "targetId": 1507358, // [Platform] Platform - Leaving Elevator
-                            "state": "ZERO",
-                            "message": "NEXT"
                         },
                         {
                             "senderId": 1507331, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
@@ -15145,6 +15636,48 @@
                         },
                         {
                             "senderId": 1507343, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 1507343, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 5555555, // [SpawnPoint] Morph
+                            "state": "ACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "INACTIVE",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 1507405, // [Relay] Relay Camera Flash
+                            "state": "INACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1507329, // [Dock] Dock
+                            "targetId": 666555, // [Timer] Load Timer
+                            "state": "MAX_REACHED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 666555, // [Timer] Load Timer
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1507343, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
                             "targetId": 1507359, // [Relay] Faulty Relay - End Arriving Cinematic
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
@@ -15171,13 +15704,7 @@
                             "senderId": 1507343, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
                             "targetId": 1507432, // [SpecialFunction] SpecialFunction - Display Billboard
                             "state": "ZERO",
-                            "message": "DECREMENT"
-                        },
-                        {
-                            "senderId": 1507343, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
-                            "targetId": 1507405, // [Relay] Relay Camera Flash
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 1507343, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
@@ -15192,16 +15719,34 @@
                             "message": "STOP_AND_RESET"
                         },
                         {
-                            "senderId": 1507343, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
                             "targetId": 1507375, // [SpawnPoint] Spawn point - Arrival Spawnpoint
-                            "state": "ZERO",
+                            "state": "INACTIVE",
                             "message": "SET_TO_ZERO"
+                        }
+                    ],
+                    "spawnPoints": [
+                        {
+                            "id": 5555555, // [SpawnPoint] Morph
+                            "position": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "morphed": true
                         }
                     ],
                     "timers": [
                         {
                             "id": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "time": 0.02
+                        },
+                        {
+                            "id": 666555, // [Timer] Load Timer
+                            "time": 0.001,
+                            "startImmediately": true,
+                            "looping": true,
+                            "active": false
                         }
                     ],
                     "cutsceneSkipFns": [
@@ -15213,27 +15758,27 @@
                     "addConnections": [
                         {
                             "senderId": 2818094, // [Relay] Faulty Relay - Start Leaving Cinematic
+                            "targetId": 2818110, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 2818110, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
                             "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
-                            "targetId": 2818110, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
+                            "targetId": 2818063, // [Platform] Platform - Leaving Elevator
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "NEXT"
                         },
                         {
                             "senderId": 2818095, // [Relay] Faulty Relay - End Leaving Cinematic
                             "targetId": 2818110, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
                             "state": "ZERO",
                             "message": "DECREMENT"
-                        },
-                        {
-                            "senderId": 2818110, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
-                            "targetId": 2818063, // [Platform] Platform - Leaving Elevator
-                            "state": "ZERO",
-                            "message": "NEXT"
                         },
                         {
                             "senderId": 2818110, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
@@ -15279,6 +15824,48 @@
                         },
                         {
                             "senderId": 2818117, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 2818117, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 5555555, // [SpawnPoint] Morph
+                            "state": "ACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "INACTIVE",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 2818112, // [Relay] Relay Camera Flash
+                            "state": "INACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666555, // [Timer] Load Timer
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 2818049, // [Dock] Dock
+                            "targetId": 666555, // [Timer] Load Timer
+                            "state": "MAX_REACHED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 2818117, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
                             "targetId": 2818079, // [Platform] Platform - Arrival Platform
                             "state": "ZERO",
                             "message": "NEXT"
@@ -15299,13 +15886,7 @@
                             "senderId": 2818117, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
                             "targetId": 2818139, // [SpecialFunction] SpecialFunction - Display Billboard
                             "state": "ZERO",
-                            "message": "DECREMENT"
-                        },
-                        {
-                            "senderId": 2818117, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
-                            "targetId": 2818112, // [Relay] Relay Camera Flash
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 2818117, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
@@ -15320,16 +15901,34 @@
                             "message": "STOP_AND_RESET"
                         },
                         {
-                            "senderId": 2818117, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
                             "targetId": 2818080, // [SpawnPoint] Spawn point - Arrival Spawnpoint
-                            "state": "ZERO",
+                            "state": "INACTIVE",
                             "message": "SET_TO_ZERO"
+                        }
+                    ],
+                    "spawnPoints": [
+                        {
+                            "id": 5555555, // [SpawnPoint] Morph
+                            "position": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "morphed": true
                         }
                     ],
                     "timers": [
                         {
                             "id": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "time": 0.02
+                        },
+                        {
+                            "id": 666555, // [Timer] Load Timer
+                            "time": 0.001,
+                            "startImmediately": true,
+                            "looping": true,
+                            "active": false
                         }
                     ],
                     "cutsceneSkipFns": [
@@ -16596,9 +17195,9 @@
                         },
                         {
                             "senderId": 1048696, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 1048697, // [Relay] Breakout
+                            "targetId": 1050587, // [Actor] Actor Force Shield
                             "state": "ZERO",
-                            "message": "SET_TO_ZERO"
+                            "message": "INCREMENT"
                         },
                         {
                             "senderId": 1048696, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -16623,6 +17222,102 @@
                             "targetId": 1049394, // [Timer] camera blur timer
                             "state": "ZERO",
                             "message": "STOP"
+                        },
+                        {
+                            "senderId": 1048696, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 1048706, // [Relay] Skip - Breakout
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1048696, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 1049404, // [Timer] Timer_Shatter
+                            "state": "ZERO",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 1048696, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 1049400, // [ElitePirate] ElitePirate
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1048706, // [Relay] Skip - Breakout
+                            "targetId": 1048702, // [ActorKeyframe] OH LAWD HE COMIN
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 1048702, // [ActorKeyframe] OH LAWD HE COMIN
+                            "targetId": 1049400, // [ElitePirate] ElitePirate
+                            "state": "PLAY",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 1048706, // [Relay] Skip - Breakout
+                            "targetId": 1048705, // [Timer] Run Animation Stop Delay
+                            "state": "ZERO",
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 1048706, // [Relay] Skip - Breakout
+                            "targetId": 1048707, // [Timer] Metal Pipe Falling
+                            "state": "ZERO",
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 1048706, // [Relay] Skip - Breakout
+                            "targetId": 1051161, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "state": "ZERO",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 1048705, // [Timer] Run Animation Stop Delay
+                            "targetId": 1048704, // [ActorKeyframe] SOMEONE STOP HIM
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 1048704, // [ActorKeyframe] SOMEONE STOP HIM
+                            "targetId": 1049400, // [ElitePirate] ElitePirate
+                            "state": "PLAY",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 1048707, // [Timer] Metal Pipe Falling
+                            "targetId": 1048723, // [Timer] Glass Timer
+                            "state": "ZERO",
+                            "message": "START"
+                        },
+                        {
+                            "senderId": 1048707, // [Timer] Metal Pipe Falling
+                            "targetId": 1048592, // [Timer] Glass Timer2
+                            "state": "ZERO",
+                            "message": "START"
+                        },
+                        {
+                            "senderId": 1048707, // [Timer] Metal Pipe Falling
+                            "targetId": 1049406, // [Timer] Timer_Shatter
+                            "state": "ZERO",
+                            "message": "START"
+                        },
+                        {
+                            "senderId": 1048707, // [Timer] Metal Pipe Falling
+                            "targetId": 1051695, // [Generator] Generator - Glass Sound
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1048707, // [Timer] Metal Pipe Falling
+                            "targetId": 1051110, // [Sound] Sound - Tank Explode
+                            "state": "ZERO",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 1048707, // [Timer] Metal Pipe Falling
+                            "targetId": 1051111, // [Sound] Sound - Glass Break
+                            "state": "ZERO",
+                            "message": "PLAY"
                         },
                         {
                             "senderId": 1049456, // [Relay] Relay_DEATHANIMSTART
@@ -16793,12 +17488,6 @@
                             "message": "DEACTIVATE"
                         }
                     ],
-                    "timers": [
-                        {
-                            "id": 1048701, // [Timer] Cutscene Skip Deactivate Electricity
-                            "time": 1.0
-                        }
-                    ],
                     "removeConnections": [
                         {
                             "senderId": 1050622, // [Trigger] Trigger_Start Breakout
@@ -16843,6 +17532,40 @@
                             "message": "DECREMENT"
                         }
                     ],
+                    "timers": [
+                        {
+                            "id": 1048701, // [Timer] Cutscene Skip Deactivate Electricity
+                            "time": 1.0
+                        },
+                        {
+                            "id": 1048705, // [Timer] Run Animation Stop Delay
+                            "time": 0.7
+                        },
+                        {
+                            "id": 1048707, // [Timer] Metal Pipe Falling
+                            "time": 0.2
+                        }
+                    ],
+                    "actorKeyframes": [
+                        {
+                            "id": 1048702, // [ActorKeyframe] OH LAWD HE COMIN
+                            "active": true,
+                            "animationId": 44,
+                            "looping": false,
+                            "lifetime": 0.0,
+                            "fadeOut": 0.0,
+                            "totalPlayback": 1.0
+                        },
+                        {
+                            "id": 1048704, // [ActorKeyframe] SOMEONE STOP HIM
+                            "active": true,
+                            "animationId": 50,
+                            "looping": false,
+                            "lifetime": 0.0,
+                            "fadeOut": 0.0,
+                            "totalPlayback": 1.0
+                        }
+                    ],
                     "relays": [
                         {
                             "id": 1048591 // [Relay] Relay-start of cinema
@@ -16852,6 +17575,9 @@
                         },
                         {
                             "id": 1048698 // [Relay] Elite Pirate Death Cutscene End
+                        },
+                        {
+                            "id": 1048706 // [Relay] Skip - Breakout
                         }
                     ],
                     "cutsceneSkipFns": [
@@ -17458,20 +18184,20 @@
                             "message": "INCREMENT"
                         },
                         {
-                            "senderId": 851978, // [Relay] One Shot Out End
+                            "senderId": 851978, // [Relay] One Shot Out End 1
                             "targetId": 851979, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "state": "ZERO",
                             "message": "DECREMENT"
                         },
                         {
                             "senderId": 852677, // [Camera] Cinematic Camera_Platform1
-                            "targetId": 851978, // [Relay] One Shot Out End
+                            "targetId": 851978, // [Relay] One Shot Out End 1
                             "state": "INACTIVE",
                             "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 851979, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 851978, // [Relay] One Shot Out End
+                            "targetId": 851978, // [Relay] One Shot Out End 1
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
                         },
@@ -17564,6 +18290,114 @@
                             "targetId": 852167, // [Platform] Platform - Moving Platform Bottom Level
                             "state": "ZERO",
                             "message": "NEXT"
+                        },
+                        {
+                            "senderId": 851979, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 852468, // [MemoryRelay] Memory Relay - Platforms Stay Down
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 852696, // [Relay] Relay One Shot Out
+                            "targetId": 951979, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 853578, // [Relay] One Shot Out End 2
+                            "targetId": 951979, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "state": "ZERO",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 951979, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 853578, // [Relay] One Shot Out End 2
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 951979, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 852684, // [Camera] Cinematic Camera_Platform1
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 951979, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 852702, // [CameraFilterKeyframe] Camera Filter Keyframe Widescreen
+                            "state": "ZERO",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 951979, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 852703, // [Timer] Timer Delay Platforms
+                            "state": "ZERO",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 951979, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 852703, // [Timer] Timer Delay Platforms
+                            "state": "ZERO",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 951979, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 852477, // [MemoryRelay] Memory Relay - Platforms Stay Down
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 951979, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 951983, // [Relay] Skip Platform 2-1
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 951979, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 951984, // [Relay] Skip Platform 2-2
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 951979, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 951985, // [Relay] Skip Platform 2-3
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 951983, // [Relay] Skip Platform 2-1
+                            "targetId": 852474, // [Platform] Platform - Moving Platform Middle Level
+                            "state": "ZERO",
+                            "message": "NEXT"
+                        },
+                        {
+                            "senderId": 951984, // [Relay] Skip Platform 2-2
+                            "targetId": 852473, // [Platform] Platform - Moving Platform Middle Level
+                            "state": "ZERO",
+                            "message": "NEXT"
+                        },
+                        {
+                            "senderId": 951985, // [Relay] Skip Platform 2-3
+                            "targetId": 852472, // [Platform] Platform - Moving Platform Middle Level
+                            "state": "ZERO",
+                            "message": "NEXT"
+                        },
+                        {
+                            "senderId": 852476, // [Waypoint] Waypoint - Moving Platform Dest
+                            "targetId": 951983, // [Relay] Skip Platform 2-1
+                            "state": "ARRIVED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 852481, // [Waypoint] Waypoint - Moving Platform Dest
+                            "targetId": 951983, // [Relay] Skip Platform 2-1
+                            "state": "ARRIVED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 852475, // [Waypoint] Waypoint - Moving Platform Dest
+                            "targetId": 951983, // [Relay] Skip Platform 2-1
+                            "state": "ARRIVED",
+                            "message": "DEACTIVATE"
                         }
                     ],
                     "removeConnections": [
@@ -17603,22 +18437,35 @@
                             "id": 851976 // [Relay] Artifact Reveal End
                         },
                         {
-                            "id": 851978 // [Relay] One Shot Out End
+                            "id": 851978 // [Relay] One Shot Out End 1
                         },
                         {
-                            "id": 851983 // [Relay] Skip Platform 1
+                            "id": 853578 // [Relay] One Shot Out End 2
                         },
                         {
-                            "id": 851984 // [Relay] Skip Platform 2
+                            "id": 951983 // [Relay] Skip Platform 2-1
                         },
                         {
-                            "id": 851985 // [Relay] Skip Platform 3
+                            "id": 951984 // [Relay] Skip Platform 2-2
+                        },
+                        {
+                            "id": 951985 // [Relay] Skip Platform 2-3
+                        },
+                        {
+                            "id": 851983 // [Relay] Skip Platform 1-1
+                        },
+                        {
+                            "id": 851984 // [Relay] Skip Platform 1-2
+                        },
+                        {
+                            "id": 851985 // [Relay] Skip Platform 1-3
                         }
                     ],
                     "cutsceneSkipFns": [
                         851973, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                         851977, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                        851979 // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                        851979, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                        951979 // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                     ]
                 },
                 "Main Quarry": {
@@ -18457,6 +19304,48 @@
                         },
                         {
                             "senderId": 1638479, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1638479, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 5555555, // [SpawnPoint] Morph
+                            "state": "ACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "INACTIVE",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 1638457, // [Relay] Relay Camera Flash
+                            "state": "INACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666555, // [Timer] Load Timer
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1638403, // [Dock] Dock
+                            "targetId": 666555, // [Timer] Load Timer
+                            "state": "MAX_REACHED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1638479, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1638440, // [Platform] Platform - Arrival Platform
                             "state": "ZERO",
                             "message": "NEXT"
@@ -18492,34 +19381,34 @@
                             "message": "DECREMENT"
                         },
                         {
-                            "senderId": 1638479, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 1638457, // [Relay] Relay Camera Flash
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 1638479, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
                             "targetId": 1638444, // [SpawnPoint] Spawn point - Arrival Spawnpoint
-                            "state": "ZERO",
+                            "state": "INACTIVE",
                             "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 1638479, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1638492, // [SpecialFunction] SpecialFunction - Display Billboard
                             "state": "ZERO",
-                            "message": "DECREMENT"
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 1638407, // [Relay] Faulty Relay - Start Leaving Cinematic
+                            "targetId": 1638480, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 1638480, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
-                            "targetId": 1638480, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 1638404, // [Platform] Platform - Leaving Elevator
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "NEXT"
                         },
                         {
                             "senderId": 1638409, // [Relay] Faulty Relay - End Leaving Cinematic
@@ -18532,12 +19421,6 @@
                             "targetId": 1638409, // [Relay] Faulty Relay - End Leaving Cinematic
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 1638480, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 1638404, // [Platform] Platform - Leaving Elevator
-                            "state": "ZERO",
-                            "message": "NEXT"
                         },
                         {
                             "senderId": 1638480, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -18558,10 +19441,28 @@
                             "message": "INCREMENT"
                         }
                     ],
+                    "spawnPoints": [
+                        {
+                            "id": 5555555, // [SpawnPoint] Morph
+                            "position": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "morphed": true
+                        }
+                    ],
                     "timers": [
                         {
                             "id": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "time": 0.02
+                        },
+                        {
+                            "id": 666555, // [Timer] Load Timer
+                            "time": 0.001,
+                            "startImmediately": true,
+                            "looping": true,
+                            "active": false
                         }
                     ],
                     "cutsceneSkipFns": [
@@ -18588,6 +19489,48 @@
                             "targetId": 33, // [Relay] Faulty Relay - End Arriving Cinematic
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 5555555, // [SpawnPoint] Morph
+                            "state": "ACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 68, // [Relay] Relay Camera Flash
+                            "state": "INACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "INACTIVE",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 666555, // [Timer] Load Timer
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 3, // [Dock] Dock
+                            "targetId": 666555, // [Timer] Load Timer
+                            "state": "MAX_REACHED",
+                            "message": "ACTIVATE"
                         },
                         {
                             "senderId": 1, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -18626,34 +19569,34 @@
                             "message": "DECREMENT"
                         },
                         {
-                            "senderId": 1, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 68, // [Relay] Relay Camera Flash
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 1, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
                             "targetId": 55, // [SpawnPoint] Spawn point - Arrival Spawnpoint
-                            "state": "ZERO",
+                            "state": "INACTIVE",
                             "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 1, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 97, // [SpecialFunction] SpecialFunction - Display Billboard
                             "state": "ZERO",
-                            "message": "DECREMENT"
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 18, // [Relay] Faulty Relay - Start Leaving Cinematic
+                            "targetId": 82, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 82, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
-                            "targetId": 82, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 15, // [Platform] Platform - Leaving Elevator
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "NEXT"
                         },
                         {
                             "senderId": 20, // [Relay] Faulty Relay - End Leaving Cinematic
@@ -18666,12 +19609,6 @@
                             "targetId": 20, // [Relay] Faulty Relay - End Leaving Cinematic
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 82, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 15, // [Platform] Platform - Leaving Elevator
-                            "state": "ZERO",
-                            "message": "NEXT"
                         },
                         {
                             "senderId": 82, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -18692,10 +19629,28 @@
                             "message": "INCREMENT"
                         }
                     ],
+                    "spawnPoints": [
+                        {
+                            "id": 5555555, // [SpawnPoint] Morph
+                            "position": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "morphed": true
+                        }
+                    ],
                     "timers": [
                         {
                             "id": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "time": 0.02
+                        },
+                        {
+                            "id": 666555, // [Timer] Load Timer
+                            "time": 0.001,
+                            "startImmediately": true,
+                            "looping": true,
+                            "active": false
                         }
                     ],
                     "cutsceneSkipFns": [
@@ -18740,6 +19695,48 @@
                             "targetId": 1179652, // [Relay] Relay-end of cinema
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1179653, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip 
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "ACTIVE",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "INACTIVE",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 1179842, // [Trigger] Trigger - Area Gas Damage
+                            "state": "INACTIVE",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 666555, // [Timer] Load Timer
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1179649, // [Dock] Dock - 05_mines_forcefields
+                            "targetId": 666555, // [Timer] Load Timer
+                            "state": "MAX_REACHED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1179649, // [Dock] Dock - 05_mines_forcefields
+                            "targetId": 666555, // [Timer] Load Timer
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 1179653, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -18818,12 +19815,6 @@
                             "targetId": 1179843, // [Timer] Timer - Delay Activate Damage
                             "state": "ZERO",
                             "message": "STOP_AND_RESET"
-                        },
-                        {
-                            "senderId": 1179653, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 1179842, // [Trigger] Trigger - Area Gas Damage
-                            "state": "ZERO",
-                            "message": "ACTIVATE"
                         },
                         {
                             "senderId": 1179653, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -18966,6 +19957,15 @@
                             "message": "ACTIVATE"
                         }
                     ],
+                    "timers": [
+                        {
+                            "id": 666555, // [Timer] Load Timer
+                            "time": 0.001,
+                            "startImmediately": true,
+                            "looping": true,
+                            "active": false
+                        }
+                    ],
                     "relays": [
                         {
                             "id": 1179651 // [Relay] Relay-start of cinema
@@ -19070,28 +20070,6 @@
                     ],
                     "cutsceneSkipFns": [
                         1310750 // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                    ]
-                },
-                "Lava Lake": {
-                    "addConnections": [
-                        {
-                            "senderId": 272887, // [SpecialFunction] SpecialFunction Cinematic Skip
-                            "targetId": 272966, // [SpawnPoint] Spawn point
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 272887, // [SpecialFunction] SpecialFunction Cinematic Skip
-                            "targetId": 272748, // [PlayerActor] PlayerActor_B_rready
-                            "state": "ZERO",
-                            "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 272701, // [Relay] Relay-end of cinema
-                            "targetId": 272966, // [StreamedAudio] StreamedAudio Lava Main SW
-                            "state": "ZERO",
-                            "message": "PLAY"
-                        }
                     ]
                 },
                 "Magmoor Workstation": {
@@ -19328,6 +20306,48 @@
                         },
                         {
                             "senderId": 3, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 3, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 5555555, // [SpawnPoint] Morph
+                            "state": "ACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "INACTIVE",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 70, // [Relay] Relay Camera Flash
+                            "state": "INACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666555, // [Timer] Load Timer
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1, // [Dock] Dock
+                            "targetId": 666555, // [Timer] Load Timer
+                            "state": "MAX_REACHED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 3, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 54, // [Platform] Platform - Arrival Platform
                             "state": "ZERO",
                             "message": "NEXT"
@@ -19363,34 +20383,34 @@
                             "message": "DECREMENT"
                         },
                         {
-                            "senderId": 3, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 70, // [Relay] Relay Camera Flash
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 3, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
                             "targetId": 58, // [SpawnPoint] Spawn point - Arrival Spawnpoint
-                            "state": "ZERO",
+                            "state": "INACTIVE",
                             "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 3, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 92, // [SpecialFunction] SpecialFunction - Display Billboard
                             "state": "ZERO",
-                            "message": "DECREMENT"
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 21, // [Relay] Faulty Relay - Start Leaving Cinematic
+                            "targetId": 4, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 4, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
-                            "targetId": 4, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 18, // [Platform] Platform - Leaving Elevator
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "NEXT"
                         },
                         {
                             "senderId": 23, // [Relay] Faulty Relay - End Leaving Cinematic
@@ -19403,12 +20423,6 @@
                             "targetId": 23, // [Relay] Faulty Relay - End Leaving Cinematic
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 4, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 18, // [Platform] Platform - Leaving Elevator
-                            "state": "ZERO",
-                            "message": "NEXT"
                         },
                         {
                             "senderId": 4, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -19429,10 +20443,28 @@
                             "message": "INCREMENT"
                         }
                     ],
+                    "spawnPoints": [
+                        {
+                            "id": 5555555, // [SpawnPoint] Morph
+                            "position": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "morphed": true
+                        }
+                    ],
                     "timers": [
                         {
                             "id": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "time": 0.02
+                        },
+                        {
+                            "id": 666555, // [Timer] Load Timer
+                            "time": 0.001,
+                            "startImmediately": true,
+                            "looping": true,
+                            "active": false
                         }
                     ],
                     "cutsceneSkipFns": [
@@ -19444,27 +20476,27 @@
                     "addConnections": [
                         {
                             "senderId": 1703983, // [Relay] Faulty Relay - Start Leaving Cinematic
+                            "targetId": 1703939, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 1703939, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
                             "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
-                            "targetId": 1703939, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
+                            "targetId": 1703952, // [Platform] Platform - Leaving Elevator
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "NEXT"
                         },
                         {
                             "senderId": 1703984, // [Relay] Faulty Relay - End Leaving Cinematic
                             "targetId": 1703939, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
                             "state": "ZERO",
                             "message": "DECREMENT"
-                        },
-                        {
-                            "senderId": 1703939, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
-                            "targetId": 1703952, // [Platform] Platform - Leaving Elevator
-                            "state": "ZERO",
-                            "message": "NEXT"
                         },
                         {
                             "senderId": 1703939, // [SpecialFunction] SpecialFunction Departure Cinematic Skip
@@ -19510,6 +20542,12 @@
                         },
                         {
                             "senderId": 1703999, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "targetId": 1704001, // [Relay] Relay Camera Flash
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1703999, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
                             "targetId": 1703968, // [Platform] Platform - Arrival Platform
                             "state": "ZERO",
                             "message": "NEXT"
@@ -19530,13 +20568,7 @@
                             "senderId": 1703999, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
                             "targetId": 1704032, // [SpecialFunction] SpecialFunction - Display Billboard
                             "state": "ZERO",
-                            "message": "DECREMENT"
-                        },
-                        {
-                            "senderId": 1703999, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
-                            "targetId": 1704001, // [Relay] Relay Camera Flash
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 1703999, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
@@ -19590,6 +20622,48 @@
                         },
                         {
                             "senderId": 851971, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 851971, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 5555555, // [SpawnPoint] Morph
+                            "state": "ACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 852041, // [Relay] Relay Camera Flash
+                            "state": "INACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "INACTIVE",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 666555, // [Timer] Load Timer
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 851969, // [Dock] Dock
+                            "targetId": 666555, // [Timer] Load Timer
+                            "state": "MAX_REACHED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 851971, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 852025, // [Platform] Platform - Arrival Platform
                             "state": "ZERO",
                             "message": "NEXT"
@@ -19625,34 +20699,34 @@
                             "message": "DECREMENT"
                         },
                         {
-                            "senderId": 851971, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 852041, // [Relay] Relay Camera Flash
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 851971, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
                             "targetId": 852029, // [SpawnPoint] Spawn point - Arrival Spawnpoint
-                            "state": "ZERO",
+                            "state": "INACTIVE",
                             "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 851971, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 852062, // [SpecialFunction] SpecialFunction - Display Billboard
                             "state": "ZERO",
-                            "message": "DECREMENT"
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 851992, // [Relay] Faulty Relay - Start Leaving Cinematic
+                            "targetId": 851972, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 851972, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
-                            "targetId": 851972, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 851989, // [Platform] Platform - Leaving Elevator
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "NEXT"
                         },
                         {
                             "senderId": 851994, // [Relay] Faulty Relay - End Leaving Cinematic
@@ -19665,12 +20739,6 @@
                             "targetId": 851994, // [Relay] Faulty Relay - End Leaving Cinematic
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 851972, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 851989, // [Platform] Platform - Leaving Elevator
-                            "state": "ZERO",
-                            "message": "NEXT"
                         },
                         {
                             "senderId": 851972, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -19691,10 +20759,28 @@
                             "message": "INCREMENT"
                         }
                     ],
+                    "spawnPoints": [
+                        {
+                            "id": 5555555, // [SpawnPoint] Morph
+                            "position": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "morphed": true
+                        }
+                    ],
                     "timers": [
                         {
                             "id": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "time": 0.02
+                        },
+                        {
+                            "id": 666555, // [Timer] Load Timer
+                            "time": 0.001,
+                            "startImmediately": true,
+                            "looping": true,
+                            "active": false
                         }
                     ],
                     "cutsceneSkipFns": [
@@ -19721,6 +20807,48 @@
                             "targetId": 1769517, // [Relay] Faulty Relay - End Arriving Cinematic
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1769478, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1769478, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 5555555, // [SpawnPoint] Morph
+                            "state": "ACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "INACTIVE",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 1769552, // [Relay] Relay Camera Flash
+                            "state": "INACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666555, // [Timer] Load Timer
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1769477, // [Dock] Dock
+                            "targetId": 666555, // [Timer] Load Timer
+                            "state": "MAX_REACHED",
+                            "message": "ACTIVATE"
                         },
                         {
                             "senderId": 1769478, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -19759,34 +20887,34 @@
                             "message": "DECREMENT"
                         },
                         {
-                            "senderId": 1769478, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 1769552, // [Relay] Relay Camera Flash
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 1769478, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
                             "targetId": 1769539, // [SpawnPoint] Spawn point - Arrival Spawnpoint
-                            "state": "ZERO",
+                            "state": "INACTIVE",
                             "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 1769478, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1769580, // [SpecialFunction] SpecialFunction - Display Billboard
                             "state": "ZERO",
-                            "message": "DECREMENT"
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 1769502, // [Relay] Faulty Relay - Start Leaving Cinematic
+                            "targetId": 1769479, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 1769479, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
-                            "targetId": 1769479, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 1769499, // [Platform] Platform - Leaving Elevator
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "NEXT"
                         },
                         {
                             "senderId": 1769504, // [Relay] Faulty Relay - End Leaving Cinematic
@@ -19799,12 +20927,6 @@
                             "targetId": 1769504, // [Relay] Faulty Relay - End Leaving Cinematic
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 1769479, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 1769499, // [Platform] Platform - Leaving Elevator
-                            "state": "ZERO",
-                            "message": "NEXT"
                         },
                         {
                             "senderId": 1769479, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -19825,10 +20947,28 @@
                             "message": "INCREMENT"
                         }
                     ],
+                    "spawnPoints": [
+                        {
+                            "id": 5555555, // [SpawnPoint] Morph
+                            "position": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "morphed": true
+                        }
+                    ],
                     "timers": [
                         {
                             "id": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "time": 0.02
+                        },
+                        {
+                            "id": 666555, // [Timer] Load Timer
+                            "time": 0.001,
+                            "startImmediately": true,
+                            "looping": true,
+                            "active": false
                         }
                     ],
                     "cutsceneSkipFns": [
@@ -19855,6 +20995,48 @@
                             "targetId": 1048613, // [Relay] Faulty Relay - End Arriving Cinematic
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1048593, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1048593, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 5555555, // [SpawnPoint] Morph
+                            "state": "ACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "INACTIVE",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
+                            "targetId": 1048647, // [Relay] Relay Camera Flash
+                            "state": "INACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 666555, // [Timer] Load Timer
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048578, // [Dock] Dock
+                            "targetId": 666555, // [Timer] Load Timer
+                            "state": "MAX_REACHED",
+                            "message": "ACTIVATE"
                         },
                         {
                             "senderId": 1048593, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -19893,34 +21075,34 @@
                             "message": "DECREMENT"
                         },
                         {
-                            "senderId": 1048593, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 1048647, // [Relay] Relay Camera Flash
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 1048593, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "senderId": 666666, // [Camera] Cinematic Camera Hold
                             "targetId": 1048635, // [SpawnPoint] Spawn point - Arrival Spawnpoint
-                            "state": "ZERO",
+                            "state": "INACTIVE",
                             "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 1048593, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1048671, // [SpecialFunction] SpecialFunction - Display Billboard
                             "state": "ZERO",
-                            "message": "DECREMENT"
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 1048598, // [Relay] Faulty Relay - Start Leaving Cinematic
+                            "targetId": 1048659, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 1048659, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
-                            "targetId": 1048659, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 1048595, // [Platform] Platform - Leaving Elevator
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "NEXT"
                         },
                         {
                             "senderId": 1048600, // [Relay] Faulty Relay - End Leaving Cinematic
@@ -19933,12 +21115,6 @@
                             "targetId": 1048600, // [Relay] Faulty Relay - End Leaving Cinematic
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 1048659, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 1048595, // [Platform] Platform - Leaving Elevator
-                            "state": "ZERO",
-                            "message": "NEXT"
                         },
                         {
                             "senderId": 1048659, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -19959,10 +21135,28 @@
                             "message": "INCREMENT"
                         }
                     ],
+                    "spawnPoints": [
+                        {
+                            "id": 5555555, // [SpawnPoint] Morph
+                            "position": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "morphed": true
+                        }
+                    ],
                     "timers": [
                         {
                             "id": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "time": 0.02
+                        },
+                        {
+                            "id": 666555, // [Timer] Load Timer
+                            "time": 0.001,
+                            "startImmediately": true,
+                            "looping": true,
+                            "active": false
                         }
                     ],
                     "cutsceneSkipFns": [
@@ -19973,9 +21167,7 @@
             }
         },
         "Impact Crater": {
-            "transports": {
-                // "Essence Dead Cutscene": "Crater:Crater Tunnel B"
-            },
+            "transports": {},
             "rooms": {
                 "Crater Entry Point": {
                     "addConnections": [
@@ -20041,15 +21233,21 @@
                         },
                         {
                             "senderId": 131, // [Relay] Relay-start of cinema (departure)
+                            "targetId": 21, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 21, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
                             "state": "ZERO",
                             "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
-                            "targetId": 21, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 152, // [WorldTeleporter] WorldTeleporterToo
                             "state": "ZERO",
-                            "message": "INCREMENT"
+                            "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 20, // [Relay] Relay-end of cinema (departure)
@@ -20092,12 +21290,6 @@
                             "targetId": 129, // [Effect] Effect
                             "state": "ZERO",
                             "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 21, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 152, // [WorldTeleporter] WorldTeleporterToo
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 21, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -21404,7 +22596,7 @@
                         },
                         {
                             "senderId": 720903, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 721082, // [Camera] Cinematic Camera
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
@@ -21526,7 +22718,7 @@
                         },
                         {
                             "senderId": 2, // [SpecialFunction] End this Beatch
-                            "targetId": 1201, // [Camera] camera10-ship fly into camera
+                            "targetId": 666666, // [Camera] Cinematic Camera Hold
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
