@@ -87,6 +87,48 @@
         "Chozo Ruins": {
             "transports": {},
             "rooms": {
+                "Main Plaza": {
+                    "addConnections": [
+                        {
+                            "senderId": 131085, // [Trigger] Trigger - Load Generic Z3
+                            "targetId": 131979, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 131078, // [Trigger] Trigger - Load 00s Connect
+                            "targetId": 131979, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 131084, // [Trigger] Trigger - Load Generic X4
+                            "targetId": 131979, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 131208, // [Trigger] Trigger - Load Generic X2
+                            "targetId": 131979, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 131645, // [Trigger] Trigger - Load 1a_morphball
+                            "targetId": 131979, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        }
+                    ],
+                    "removeConnections": [
+                        {
+                            "senderId": 131481, // [Relay] Relay - start of cinema
+                            "targetId": 131105, // [SpawnPoint] Spawn point
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        }
+                    ]
+                },
                 "Dynamo": {
                     // Disable tutorial hudmemos
                     "deleteIds": [
@@ -503,6 +545,46 @@
         "Phendrana Drifts": {
             "transports": {},
             "rooms": {
+                "Phendrana Shorelines": {
+                    "addConnections": [
+                        {
+                            "senderId": 131406, // [Relay] Relay-start of cinema
+                            "targetId": 131080, // [SpawnPoint] Spawn point
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 131552, // [Trigger] Trigger - To 00k_Ice_connect
+                            "targetId": 131080, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 131553, // [Trigger] Trigger - To generic_z4
+                            "targetId": 131080, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 131553, // [Trigger] Trigger - To generic_z4
+                            "targetId": 131080, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 131554, // [Trigger] Trigger - To Generic_z5
+                            "targetId": 131080, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 131555, // [Trigger] Trigger - To generic_z7
+                            "targetId": 131080, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        }
+                    ]
+                },
                 "Ruined Courtyard": {
                     // Disable tutorial hudmemos
                     "deleteIds": [
@@ -643,7 +725,6 @@
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
-                        
                         {
                             "senderId": 467, // [Trigger] Trigger Save Station In
                             "targetId": 91, // [Sound] Sound - Samus Ship
@@ -685,6 +766,156 @@
                     "deleteIds": [
                         // Delete Elite Pirate music Trigger on PPC door side
                         1051555
+                    ],
+                    "addConnections": [
+                        {
+                            "senderId": 1051243, // [SpecialFunction] SpecialFunction PlayerInAreaRelay
+                            "targetId": 1051163, // [Trigger] Trigger - Play Music Yoin 00h Troopers
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1051163, // [Trigger] Trigger - Play Music Yoin 00h Troopers
+                            "targetId": 3469527, // [Timer] Elite Music
+                            "state": "ENTERED",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 1051163, // [Trigger] Trigger - Play Music Yoin 00h Troopers
+                            "targetId": 1051161, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "state": "ENTERED",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 1051243, // [SpecialFunction] SpecialFunction PlayerInAreaRelay
+                            "targetId": 1051162, // [Trigger] Trigger - Play Music Battle 3 00h
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1051162, // [Trigger] Trigger - Play Music Battle 3 00h
+                            "targetId": 3469527, // [Timer] Elite Music
+                            "state": "ENTERED",
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 1049400, // [ElitePirate] ElitePirate
+                            "targetId": 3469527, // [Timer] Elite Music
+                            "state": "DEATH_RATTLE",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 3469527, // [Timer] Elite Music
+                            "targetId": 1051161, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "state": "ZERO",
+                            "message": "PLAY"
+                        }
+                    ],
+                    "removeConnections": [
+                        {
+                            "senderId": 1051165, // [Trigger] Trigger - Play Music Yoin 00f Elite
+                            "targetId": 1051159, // [StreamedAudio] StreamedAudio Pirate Battle 3 SW
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        }
+                    ],
+                    "timers": [
+                        {
+                            "id": 3469527, // [Timer] Elite Music
+                            "time": 0.1,
+                            "startImmediately": false
+                        }
+                    ]
+                },
+                "Ventilation Shaft": {
+                    // Delete Old Load Triggers
+                    "deleteIds": [
+                        1179905,
+                        1179906
+                    ],
+                    // Better Load Trigger Positions
+                    "addConnections": [
+                        {
+                            "senderId": 2179660, // [Trigger] Load Elite Control
+                            "targetId": 1179650, // [Dock] Dock - 05_mines_forcefields
+                            "state": "ENTERED",
+                            "message": "SET_TO_MAX"
+                        },
+                        {
+                            "senderId": 2179660, // [Trigger] Load Elite Control
+                            "targetId": 1179649, // [Dock] Dock - 06_mines_elitebustout
+                            "state": "ENTERED",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 2179661, // [Trigger] Load Omega Research
+                            "targetId": 1179649, // [Dock] Dock - 06_mines_elitebustout
+                            "state": "ENTERED",
+                            "message": "SET_TO_MAX"
+                        },
+                        {
+                            "senderId": 2179661, // [Trigger] Load Omega Research
+                            "targetId": 1179650, // [Dock] Dock - 05_mines_forcefields
+                            "state": "ENTERED",
+                            "message": "SET_TO_ZERO"
+                        }
+                    ],
+                    "triggers": [
+                        {
+                            "id": 2179660, // [Trigger] Load Elite Control
+                            "active": true,
+                            "position": [
+                                25.16172,
+                                69.354729,
+                                -47.47015
+                            ],
+                            "scale": [
+                                5.0,
+                                5.0,
+                                20.0
+                            ]
+                        },
+                        {
+                            "id": 2179661, // [Trigger] Load Omega Research
+                            "active": true,
+                            "position": [
+                                42.751381,
+                                62.091549,
+                                -49.858238
+                            ],
+                            "scale": [
+                                20.0,
+                                18.0,
+                                15.0
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "Magmoor Caverns": {
+            "transports": {},
+            "rooms": {
+                "Lava Lake": {
+                    "addConnections": [
+                        {
+                            "senderId": 272887, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 272966, // [SpawnPoint] Spawn point
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 272887, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 272748, // [PlayerActor] PlayerActor_B_rready
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 272701, // [Relay] Relay-end of cinema
+                            "targetId": 272966, // [StreamedAudio] StreamedAudio Lava Main SW
+                            "state": "ZERO",
+                            "message": "PLAY"
+                        }
                     ]
                 }
             }
