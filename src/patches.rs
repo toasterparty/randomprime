@@ -15032,7 +15032,6 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                 _ => {},
                             }
 
-                            if is_teleporter(room_info.room_id.to_u32()) {
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
                                     move |ps: &mut PatcherState, area| patch_add_camera_filter_key_frame(
@@ -15041,16 +15040,6 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         0xA455,
                                     ),
                                 );
-                            } else {
-                                patcher.add_scly_patch(
-                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                    move |ps: &mut PatcherState, area| patch_add_camera_filter_key_frame(
-                                        ps,
-                                        area,
-                                        0x9FBF1,
-                                    ),
-                                );
-                            }
 
                             patcher.add_scly_patch(
                                 (pak_name.as_bytes(), room_info.room_id.to_u32()),
