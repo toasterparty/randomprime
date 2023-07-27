@@ -19727,13 +19727,25 @@
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 1179649, // [Dock] Dock - 05_mines_forcefields
+                            "senderId": 1179650, // [Dock] Dock - 05_mines_forcefields
                             "targetId": 666555, // [Timer] Load Timer
                             "state": "MAX_REACHED",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 1179649, // [Dock] Dock - 05_mines_forcefields
+                            "senderId": 1179650, // [Dock] Dock - 05_mines_forcefields
+                            "targetId": 666555, // [Timer] Load Timer
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1179649, // [Dock] Dock - 06_mines_elitebustout
+                            "targetId": 666555, // [Timer] Load Timer
+                            "state": "MAX_REACHED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1179649, // [Dock] Dock - 06_mines_elitebustout
                             "targetId": 666555, // [Timer] Load Timer
                             "state": "ZERO",
                             "message": "DEACTIVATE"
@@ -19963,7 +19975,7 @@
                             "time": 0.001,
                             "startImmediately": true,
                             "looping": true,
-                            "active": false
+                            "active": true
                         }
                     ],
                     "relays": [
