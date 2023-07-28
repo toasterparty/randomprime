@@ -39,6 +39,7 @@ use crate::patch_config::{
     TriggerConfig,
     DamageType,
     LockOnPoint,
+    DoorOpenMode,
 };
 
 use std::{fs::{self, File}, io::Read, path::Path};
@@ -569,11 +570,10 @@ fn patch_door<'r>(
     door_type: Option<DoorType>,
     blast_shield_type: Option<BlastShieldType>,
     door_resources:&HashMap<(u32, FourCC), structs::Resource<'r>>,
+    door_open_mode: DoorOpenMode,
 ) -> Result<(), String> {
     let mrea_id = area.mlvl_area.mrea.to_u32();
     let area_internal_id = area.mlvl_area.internal_id;
-
-    let blue_after_open = door_type.is_some() && blast_shield_type.is_some();
 
     // Update dependencies based on the upcoming patch(es)
     let mut deps: Vec<(u32, FourCC)> = Vec::new();
@@ -587,8 +587,32 @@ fn patch_door<'r>(
         deps.extend_from_slice(&blast_shield_type.as_ref().unwrap().dependencies());
     }
 
-    if blue_after_open {
-        deps.extend_from_slice(&DoorType::Blue.dependencies());
+    let blast_shield_can_change_door = door_type.is_some() && blast_shield_type.is_some();
+    let door_type_after_open = match door_open_mode {
+        DoorOpenMode::Original => {
+            None
+        },
+        DoorOpenMode::PrimaryBlastShield => {
+            let door_type = door_type.as_ref().unwrap();
+            let door_type_after_open = door_type.to_primary_color();
+            if blast_shield_can_change_door && door_type != &door_type_after_open {
+                Some(door_type_after_open)
+            } else {
+                None
+            }
+        },
+        DoorOpenMode::BlueBlastShield => {
+            let door_type = door_type.as_ref().unwrap();
+            if blast_shield_can_change_door && door_type != &DoorType::Blue {
+                Some(DoorType::Blue)
+            } else {
+                None
+            }
+        },
+    };
+
+    if door_type_after_open.is_some() {
+        deps.extend_from_slice(&door_type_after_open.as_ref().unwrap().dependencies());
     }
 
     let deps_iter = deps.iter()
@@ -654,7 +678,7 @@ fn patch_door<'r>(
         blast_shield_layer_idx = area.layer_flags.layer_count as usize - 1;
     }
 
-    if blue_after_open {
+    if door_type_after_open.is_some() {
         door_shield_id = area.new_object_id_from_layer_id(0);
         door_force_id = area.new_object_id_from_layer_id(0);
     }
@@ -1380,8 +1404,8 @@ fn patch_door<'r>(
         }
     }
 
-    // make the door turn blue after often
-    if blue_after_open {
+    if door_type_after_open.is_some() {
+        let door_type_after_open = door_type_after_open.unwrap();
 
         /* Find existing door shield id */
         let mut existing_door_shield_id = 0;
@@ -1565,7 +1589,7 @@ fn patch_door<'r>(
             let mut new_door_shield = door_shield.clone();
             let new_door_shield_data = new_door_shield.property_data.as_actor_mut().unwrap();
             new_door_shield.instance_id = door_shield_id;
-            new_door_shield_data.cmdl = DoorType::Blue.shield_cmdl();
+            new_door_shield_data.cmdl = door_type_after_open.shield_cmdl();
             new_door_shield_data.active = 1;
             layers[0].objects.as_mut_vec().push(new_door_shield);
         }
@@ -1613,14 +1637,14 @@ fn patch_door<'r>(
                 ]
             );
 
-            new_door_force_data.pattern_txtr0 = DoorType::Blue.pattern0_txtr();
-            new_door_force_data.pattern_txtr1 = DoorType::Blue.pattern1_txtr();
-            new_door_force_data.color_txtr = DoorType::Blue.color_txtr();
+            new_door_force_data.pattern_txtr0 = door_type_after_open.pattern0_txtr();
+            new_door_force_data.pattern_txtr1 = door_type_after_open.pattern1_txtr();
+            new_door_force_data.color_txtr = door_type_after_open.color_txtr();
 
-            new_door_force_data.damage_vulnerability = DoorType::Blue.vulnerability();
+            new_door_force_data.damage_vulnerability = door_type_after_open.vulnerability();
             new_door_force_data.active = 1;
             layers[0].objects.as_mut_vec().push(new_door_force);
-        }      
+        }
     }
 
     Ok(())
@@ -15922,6 +15946,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             door_type,
                             blast_shield_type,
                             game_resources,
+                            config.door_open_mode,
                         )
                     );
 

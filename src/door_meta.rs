@@ -168,6 +168,39 @@ impl DoorType {
         }
     }
 
+    pub fn to_primary_color(&self) -> DoorType {
+        match self {
+            DoorType::Blue         => DoorType::Blue     ,
+            DoorType::PowerOnly    => DoorType::Blue     ,
+            DoorType::Purple       => DoorType::Purple   ,
+            DoorType::White        => DoorType::White    ,
+            DoorType::Red          => DoorType::Red      ,
+            DoorType::Boost        => DoorType::Blue     ,
+            DoorType::PowerBomb    => DoorType::Blue     ,
+            DoorType::Bomb         => DoorType::Blue     ,
+            DoorType::Missile      => DoorType::Blue     ,
+            DoorType::Charge       => DoorType::Blue     ,
+            DoorType::Super        => DoorType::Blue     ,
+            DoorType::Disabled     => DoorType::Disabled ,
+            DoorType::Wavebuster   => DoorType::Purple   ,
+            DoorType::Icespreader  => DoorType::White    ,
+            DoorType::Flamethrower => DoorType::Red      ,
+            DoorType::Ai           => DoorType::Blue     ,
+            DoorType::Grapple      => DoorType::Blue     ,
+            DoorType::Phazon       => DoorType::Blue     ,
+            DoorType::Thermal      => DoorType::Blue     ,
+            DoorType::XRay         => DoorType::Blue     ,
+            DoorType::Scan         => DoorType::Blue     ,
+            _ => {
+                if !self.is_vertical() {
+                    panic!("unhandled door type {:?}", self);
+                }
+
+                self.to_horizontal().to_primary_color().to_vertical()
+            },
+        }
+    }
+
     pub fn from_string(string: String) -> Option<Self> {
         let test_str = string
             .trim()

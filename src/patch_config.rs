@@ -734,6 +734,16 @@ pub enum Version
     PalTrilogy,
 }
 
+#[derive(Deserialize, Serialize, Debug, PartialEq, Copy, Clone)]
+pub enum DoorOpenMode
+{
+    Original, // Doors always stay the same color after opening
+    PrimaryBlastShield, // Doors under blast shields downgrade their vulnerability to Blue/Wave/Ice/Plasma from vulnerabilities with more requirements after opening
+    // PrimaryAll, // All doors downgrade their vulnerability to Blue/Wave/Ice/Plasma from vulnerabilities with more requirements after opening
+    BlueBlastShield, // Doors under blast shields downgrade to Blue doors after opening
+    // BlueAll, // All Doors downgrade to Blue after opening
+}
+
 impl fmt::Display for Version
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error>
@@ -832,6 +842,7 @@ pub struct PatchConfig
     pub escape_sequence_counts_up: bool,
     pub enable_ice_traps: bool,
     pub missile_station_pb_refill: bool,
+    pub door_open_mode: DoorOpenMode,
 
     pub artifact_hint_behavior: ArtifactHintBehavior,
 
@@ -921,6 +932,7 @@ struct GameConfig
     escape_sequence_counts_up: Option<bool>,
     enable_ice_traps: Option<bool>,
     missile_station_pb_refill: Option<bool>,
+    door_open_mode: Option<DoorOpenMode>,
 
     etank_capacity: Option<u32>,
     item_max_capacity: Option<HashMap<String,u32>>,
@@ -1693,6 +1705,7 @@ impl PatchConfigPrivate
             escape_sequence_counts_up: self.game_config.escape_sequence_counts_up.unwrap_or(false),
             enable_ice_traps: self.game_config.enable_ice_traps.unwrap_or(false),
             missile_station_pb_refill: self.game_config.missile_station_pb_refill.unwrap_or(false),
+            door_open_mode: self.game_config.door_open_mode.unwrap_or(DoorOpenMode::Original),
             starting_visor,
             starting_beam,
 
