@@ -726,14 +726,14 @@ fn patch_door<'r>(
             scale = [1.0*scale_scale, 1.5*scale_scale, 1.5*scale_scale].into();
             rotation = door_rotation.into();
 
-            let door_offset: f32 = 0.1;
+            let door_offset: f32 = -0.2;
             let door_offset_z: f32 = 1.8017;
 
             let scan_offset_width: f32 = 0.0;
             let scan_offset_depth: f32 = 1.0;
             let scan_offset_z: f32 = 2.2;
 
-            hitbox = [0.0, 0.0, 0.0].into();
+            hitbox = [0.0, 2.0, 2.0].into();
 
             if door_rotation[2] >= 45.0 && door_rotation[2] < 135.0 {
                 // Leads North
@@ -816,7 +816,7 @@ fn patch_door<'r>(
                         unknown2: 1.0,
                         visor_params: structs::scly_structs::VisorParameters {
                             unknown0: 0,
-                            target_passthrough: 0,
+                            target_passthrough: 1,
                             visor_mask: 15, // Visor Flags : Combat|Scan|Thermal|XRay
                         },
                         enable_thermal_heat: 0,
