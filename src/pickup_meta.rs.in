@@ -11059,7 +11059,6 @@ impl PickupModel
                 const DATA: &[(u32, FourCC)] = &[
                     (0x0DEB9456, FourCC::from_bytes(b"PART")),
                     (0x1544D478, FourCC::from_bytes(b"TXTR")),
-                    (0x1B4479FD, FourCC::from_bytes(b"TXTR")),
                     (0x394D3877, FourCC::from_bytes(b"ANIM")),
                     (0x454FB170, FourCC::from_bytes(b"TXTR")),
                     (0x4B26EFDA, FourCC::from_bytes(b"EVNT")),
@@ -11071,6 +11070,7 @@ impl PickupModel
                     (0xDEAF0014, FourCC::from_bytes(b"CMDL")),
                     (0xDEAF0015, FourCC::from_bytes(b"ANCS")),
                     (0xDEAF0016, FourCC::from_bytes(b"TXTR")),
+                    (0xDEAF0017, FourCC::from_bytes(b"TXTR")),
                     (0xFEBBC197, FourCC::from_bytes(b"CSKR")),
                 ];
                 DATA

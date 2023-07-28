@@ -756,8 +756,8 @@ fn create_gamecube(pickup_table: &mut HashMap<PickupModel, PickupData>)
     deps.extend(&[
         ResourceKey::from(custom_asset_ids::RANDOVANIA_GAMECUBE_CMDL),
         ResourceKey::from(custom_asset_ids::RANDOVANIA_GAMECUBE_ANCS),
-        ResourceKey::from(custom_asset_ids::RANDOVANIA_GAMECUBE_TXTR),
-        ResourceKey::from(ResId::<res_id::TXTR>::new(0x1B4479FD)),
+        ResourceKey::from(custom_asset_ids::RANDOVANIA_GAMECUBE0_TXTR),
+        ResourceKey::from(custom_asset_ids::RANDOVANIA_GAMECUBE1_TXTR),
         ResourceKey::from(ResId::<res_id::TXTR>::new(0x6E3D2E18)),
     ]);
     assert!(pickup_table.insert(PickupModel::RandovaniaGamecube, PickupData {

@@ -81,7 +81,8 @@ pub mod custom_asset_ids {
         SHINY_MISSILE_ANIM: ANIM,
         RANDOVANIA_GAMECUBE_CMDL: CMDL,
         RANDOVANIA_GAMECUBE_ANCS: ANCS,
-        RANDOVANIA_GAMECUBE_TXTR: TXTR,
+        RANDOVANIA_GAMECUBE0_TXTR: TXTR,
+        RANDOVANIA_GAMECUBE1_TXTR: TXTR,
 
         // Custom Scans
         SHORELINES_POI_SCAN: SCAN,
@@ -408,7 +409,8 @@ fn extern_assets_compile_time<'r>() -> Vec<Resource<'r>>
         extern_asset!(SHINY_MISSILE_TXTR0      , "shiny-missile0.txtr"       ),
         extern_asset!(SHINY_MISSILE_TXTR1      , "shiny-missile1.txtr"       ),
         extern_asset!(SHINY_MISSILE_TXTR2      , "shiny-missile2.txtr"       ),
-        extern_asset!(RANDOVANIA_GAMECUBE_TXTR , "randovania_gamecube.TXTR"  ),
+        extern_asset!(RANDOVANIA_GAMECUBE0_TXTR , "randovania_gamecube.TXTR"),
+        extern_asset!(RANDOVANIA_GAMECUBE1_TXTR , "randovania_gamecube_text.TXTR"),
 
         /* Door/Blast Shield Assets */
         extern_asset!(ORANGE_TXTR  , "orange.txtr"  ),
@@ -567,7 +569,8 @@ pub fn custom_assets<'r>(
         resources,
         custom_asset_ids::RANDOVANIA_GAMECUBE_CMDL,
         custom_asset_ids::RANDOVANIA_GAMECUBE_ANCS,
-        custom_asset_ids::RANDOVANIA_GAMECUBE_TXTR,
+        custom_asset_ids::RANDOVANIA_GAMECUBE0_TXTR,
+        custom_asset_ids::RANDOVANIA_GAMECUBE1_TXTR,
     ));
     assets.extend_from_slice(&create_suit_icon_cmdl_and_ancs(
         resources,
@@ -1371,14 +1374,16 @@ fn create_randovania_gamecube_cmdl_and_ancs<'r>(
     resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     new_cmdl_id: ResId<res_id::CMDL>,
     new_ancs_id: ResId<res_id::ANCS>,
-    new_txtr_id: ResId<res_id::TXTR>,
+    new_txtr_id0: ResId<res_id::TXTR>,
+    new_txtr_id1: ResId<res_id::TXTR>,
 ) -> [structs::Resource<'r>; 2]
 {
     let new_cmdl = {
-        let old_cmdl = include_bytes!("../extra_assets/gamecube.CMDL");
+        let old_cmdl = include_bytes!("../extra_assets/randovania_gamecube.CMDL");
         let mut new_cmdl = Reader::new(&old_cmdl[..]).read::<structs::Cmdl>(());
 
-        new_cmdl.material_sets.as_mut_vec()[0].texture_ids.as_mut_vec()[1] = new_txtr_id;
+        new_cmdl.material_sets.as_mut_vec()[0].texture_ids.as_mut_vec()[0] = new_txtr_id0;
+        new_cmdl.material_sets.as_mut_vec()[0].texture_ids.as_mut_vec()[1] = new_txtr_id1;
 
         let mut new_cmdl_bytes = vec![];
         new_cmdl.write_to(&mut new_cmdl_bytes).unwrap();
