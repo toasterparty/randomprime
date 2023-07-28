@@ -690,9 +690,9 @@ fn patch_door<'r>(
         // Calculate placement //
         let position: GenericArray<f32, U3>;
         let rotation: GenericArray<f32, U3>;
-        let hitbox: GenericArray<f32, U3>;
+        let hitbox: GenericArray<f32, U3>; // this is actually scan offset
         let scale: GenericArray<f32, U3>;
-        let scan_offset: GenericArray<f32, U3>;
+        let scan_offset: GenericArray<f32, U3>; // this is actually hitbox
 
         let door_rotation = door_loc.door_rotation.unwrap();
         let mut is_ceiling = false;
@@ -703,23 +703,34 @@ fn patch_door<'r>(
                 panic!("Vertical door in room {:X} didn't get position data dumped", mrea_id);
             }
 
-            scale = [1.6, 1.6, 1.6].into();
-            hitbox = [5.0, 5.0, 0.8].into();
-
-            if door_rotation[0] > -90.0 && door_rotation[0] < 90.0 {
-                // Ceiling door
-                is_ceiling = true;
-                position    = [door_shield.position[0] + 2.0, door_shield.position[1], door_shield.position[2] + 0.2].into();
-                rotation    = [0.0, -90.0, 0.0].into();
-                scan_offset = [-2.2, 0.0, -0.9].into();
-            } else if door_rotation[0] < -90.0 && door_rotation[0] > -270.0 {
+            if mrea_id == 0xFB54A0CB { // hall of the elders
+                scale = [1.6, 1.6, 1.6].into();
+                hitbox = [5.0, 5.0, 0.8].into();
+    
                 // Floor door
                 is_floor = true;
-                position    = [door_shield.position[0] - 2.0, door_shield.position[1], door_shield.position[2] - 0.2].into();
+                position    = [door_shield.position[0] - 2.0, door_shield.position[1], door_shield.position[2] - 0.3].into();
                 rotation    = [0.0, 90.0, 0.0].into();
-                scan_offset = [2.2, 0.0, 0.9].into();
+                scan_offset = [0.3, 0.3, 0.3].into();
             } else {
-                panic!("Unhandled door rotation on vertical door {:?} in room 0x{:X}", door_rotation, mrea_id);
+                scale = [1.6, 1.6, 1.6].into();
+                hitbox = [5.0, 5.0, 0.8].into();
+    
+                if door_rotation[0] > -90.0 && door_rotation[0] < 90.0 {
+                    // Ceiling door
+                    is_ceiling = true;
+                    position    = [door_shield.position[0] + 2.0, door_shield.position[1], door_shield.position[2] + 0.2].into();
+                    rotation    = [0.0, -90.0, 0.0].into();
+                    scan_offset = [-2.2, 0.0, -0.9].into();
+                } else if door_rotation[0] < -90.0 && door_rotation[0] > -270.0 {
+                    // Floor door
+                    is_floor = true;
+                    position    = [door_shield.position[0] - 2.0, door_shield.position[1], door_shield.position[2] - 0.2].into();
+                    rotation    = [0.0, 90.0, 0.0].into();
+                    scan_offset = [2.2, 0.0, 0.9].into();
+                } else {
+                    panic!("Unhandled door rotation on vertical door {:?} in room 0x{:X}", door_rotation, mrea_id);
+                }
             }
         } else {
             let scale_scale = 1.0;
