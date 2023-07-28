@@ -11,6 +11,8 @@ use rand::{
     Rng,
 };
 
+use structs::SclyPropertyData;
+
 use crate::patch_config::{
     Version,
     RunMode,
@@ -563,6 +565,13 @@ fn patch_remove_blast_shield<'r>(
     Ok(())
 }
 
+fn this_near_that(this: [f32;3], that: [f32;3]) -> bool
+{
+    f32::abs(this[0] - that[0]) < 3.0 &&
+    f32::abs(this[1] - that[1]) < 3.0 &&
+    f32::abs(this[2] - that[2]) < 3.0
+}
+
 fn patch_door<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -687,6 +696,7 @@ fn patch_door<'r>(
     let layers = &mut scly.layers.as_mut_vec();
 
     // Add blast shield
+    let position: GenericArray<f32, U3>;
     if blast_shield_type.is_some() {
         /* Special Function to disable the blast shield */
         layers[0].objects.as_mut_vec().push(
@@ -712,7 +722,6 @@ fn patch_door<'r>(
         let blast_shield_type = blast_shield_type.as_ref().unwrap();
 
         // Calculate placement //
-        let position: GenericArray<f32, U3>;
         let rotation: GenericArray<f32, U3>;
         let hitbox: GenericArray<f32, U3>; // this is actually scan offset
         let scale: GenericArray<f32, U3>;
@@ -761,7 +770,7 @@ fn patch_door<'r>(
             scale = [1.0*scale_scale, 1.5*scale_scale, 1.5*scale_scale].into();
             rotation = door_rotation.into();
 
-            let door_offset: f32 = -0.2;
+            let door_offset: f32 = 0.1;
             let door_offset_z: f32 = 1.8017;
 
             let scan_offset_width: f32 = 0.0;
@@ -851,7 +860,7 @@ fn patch_door<'r>(
                         unknown2: 1.0,
                         visor_params: structs::scly_structs::VisorParameters {
                             unknown0: 0,
-                            target_passthrough: 1,
+                            target_passthrough: 0,
                             visor_mask: 15, // Visor Flags : Combat|Scan|Thermal|XRay
                         },
                         enable_thermal_heat: 0,
@@ -1349,6 +1358,8 @@ fn patch_door<'r>(
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(dt);
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(effect);
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(relay);
+    } else {
+        position = [0.0, 0.0, 0.0].into();
     }
 
     // Patch door vulnerability
@@ -1407,6 +1418,32 @@ fn patch_door<'r>(
     if door_type_after_open.is_some() {
         let door_type_after_open = door_type_after_open.unwrap();
 
+        /* Cleanup the door a bit */
+        for layer in layers.iter_mut() {
+            layer.objects
+                .as_mut_vec()
+                .retain(
+                    |obj|
+                    {
+                        match obj.property_data.object_type() {
+                            structs::Actor::OBJECT_TYPE => {
+                                let obj = obj.property_data.as_actor().unwrap();
+                                obj.active != 0 || !this_near_that(obj.position.into(), position.into())
+                            },
+                            structs::DamageableTrigger::OBJECT_TYPE => {
+                                let obj = obj.property_data.as_damageable_trigger().unwrap();
+                                obj.active != 0 || !this_near_that(obj.position.into(), position.into())
+                            },
+                            structs::Relay::OBJECT_TYPE => {
+                                let obj = obj.property_data.as_relay().unwrap();
+                                !obj.name.to_str().ok().unwrap().to_string().to_lowercase().contains("relay swap door")
+                            },
+                            _ => true,
+                        }
+                    }
+                );
+        }
+
         /* Find existing door shield id */
         let mut existing_door_shield_id = 0;
         for door_shield_location in door_loc.door_shield_locations.iter() {
@@ -1422,6 +1459,7 @@ fn patch_door<'r>(
         for door_force_location in door_loc.door_force_locations.iter() {
             let result = layers[door_force_location.layer as usize].objects.iter()
                 .find(|obj| obj.instance_id == door_force_location.instance_id);
+
             if result.is_some() {
                 existing_door_force_id = door_force_location.instance_id;
             }
