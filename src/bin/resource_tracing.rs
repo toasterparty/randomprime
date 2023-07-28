@@ -3,7 +3,7 @@
 
 pub use randomprime::*;
 use randomprime::custom_assets::custom_asset_ids;
-use randomprime::pickup_meta::{PickupType, PickupModel, ScriptObjectLocation};
+use randomprime::pickup_meta::{PickupType, PickupModel, ScriptObjectLocation, pickup_model_for_pickup};
 
 use reader_writer::{FourCC, Reader, Readable, Writable};
 use structs::{Ancs, Cmdl, Evnt, Pickup, res_id, ResId, Resource, Scan};
@@ -237,53 +237,6 @@ impl ResourceKey
         }
     }
 }
-
-fn pickup_model_for_pickup(pickup: &structs::Pickup) -> Option<PickupModel>
-{
-    match pickup.kind {
-        4 if pickup.max_increase > 0 => Some(PickupModel::Missile),
-        4 if pickup.max_increase == 0 => Some(PickupModel::MissileRefill),
-        24 if pickup.max_increase > 0 => Some(PickupModel::EnergyTank),
-        9 => Some(PickupModel::Visor),
-        13 => Some(PickupModel::Visor),
-        22 => Some(PickupModel::VariaSuit),
-        21 => Some(PickupModel::GravitySuit),
-        // XXX There's two PhazonSuit objects floating around, we want the one with a model
-        23 if pickup.cmdl != 0xFFFFFFFF => Some(PickupModel::PhazonSuit),
-        16 => Some(PickupModel::MorphBall),
-        18 => Some(PickupModel::BoostBall),
-        19 => Some(PickupModel::SpiderBall),
-        6 => Some(PickupModel::MorphBallBomb),
-        7 if pickup.max_increase == 1 => Some(PickupModel::PowerBombExpansion),
-        7 if pickup.max_increase == 4 => Some(PickupModel::PowerBomb),
-        7 if pickup.max_increase == 0 => Some(PickupModel::PowerBombRefill),
-        10 => Some(PickupModel::ChargeBeam),
-        15 => Some(PickupModel::SpaceJumpBoots),
-        12 => Some(PickupModel::GrappleBeam),
-        11 => Some(PickupModel::SuperMissile),
-        28 => Some(PickupModel::Wavebuster),
-        14 => Some(PickupModel::IceSpreader),
-        8 => Some(PickupModel::Flamethrower),
-        2 => Some(PickupModel::WaveBeam),
-        1 => Some(PickupModel::IceBeam),
-        3 => Some(PickupModel::PlasmaBeam),
-        33 => Some(PickupModel::ArtifactOfLifegiver),
-        32 => Some(PickupModel::ArtifactOfWild),
-        38 => Some(PickupModel::ArtifactOfWorld),
-        37 => Some(PickupModel::ArtifactOfSun),
-        31 => Some(PickupModel::ArtifactOfElder),
-        39 => Some(PickupModel::ArtifactOfSpirit),
-        29 => Some(PickupModel::ArtifactOfTruth),
-        35 => Some(PickupModel::ArtifactOfChozo),
-        34 => Some(PickupModel::ArtifactOfWarrior),
-        40 => Some(PickupModel::ArtifactOfNewborn),
-        36 => Some(PickupModel::ArtifactOfNature),
-        30 => Some(PickupModel::ArtifactOfStrength),
-        26 if pickup.curr_increase == 20 => Some(PickupModel::HealthRefill),
-        _ => None,
-    }
-}
-
 
 static CUT_SCENE_PICKUPS: &'static [(u32, u32)] = &[
     (0x3C785450, 589860), // Morph Ball

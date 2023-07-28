@@ -12,6 +12,7 @@ use rand::{
 };
 
 use crate::patch_config::{
+    Version,
     RunMode,
     ArtifactHintBehavior,
     Visor,
@@ -48,10 +49,10 @@ use crate::{
     custom_assets::{custom_asset_ids, PickupHashKey, collect_game_resources, custom_asset_filename},
     dol_patcher::DolPatcher,
     ciso_writer::CisoWriter,
-    elevators::{Elevator, SpawnRoom, SpawnRoomData, World, is_elevator},
+    elevators::{Elevator, SpawnRoom, SpawnRoomData, World, is_elevator, is_teleporter},
     gcz_writer::GczWriter,
     mlvl_wrapper,
-    pickup_meta::{self, PickupType, PickupModel, DoorLocation, ObjectsToRemove, ScriptObjectLocation},
+    pickup_meta::{self, PickupType, PickupModel, DoorLocation, ObjectsToRemove, ScriptObjectLocation, pickup_model_for_pickup, pickup_type_for_pickup},
     door_meta::{DoorType, BlastShieldType},
     patcher::{PatcherState, PrimePatcher},
     starting_items::StartingItems,
@@ -80,7 +81,6 @@ use reader_writer::{
     CStrConversionExtension,
     FourCC,
     Reader,
-    // Readable,
     Writable,
 };
 use structs::{MapState, res_id, ResId, scly_structs::DamageInfo, scly_structs::TypeVulnerability, SclyLayer};
@@ -90,7 +90,6 @@ use std::{
     collections::HashMap,
     convert::TryInto,
     ffi::CString,
-    fmt,
     io::Write,
     iter,
     mem,
@@ -1100,7 +1099,7 @@ fn patch_door<'r>(
                 name: b"disable-dt\0".as_cstr(),
                 start_time: 1.0,
                 max_random_add: 0.0,
-                reset_to_zero: 0,
+                looping: 0,
                 start_immediately: 1,
                 active: 1,
             }.into(),
@@ -2021,7 +2020,7 @@ fn patch_add_item<'r>(
     //         name: b"set-scan\0".as_cstr(),
     //         start_time: 0.5,
     //         max_random_add: 0.0,
-    //         reset_to_zero: 0,
+    //         looping: 0,
     //         start_immediately: 0,
     //         active: 1,
     //     }.into(),
@@ -2240,7 +2239,7 @@ fn add_world_teleporter<'r>(
 
                 start_time: 1.0,
                 max_random_add: 0.0,
-                reset_to_zero: 0,
+                looping: 0,
                 start_immediately: 0,
                 active: 1,
             }.into(),
@@ -3270,11 +3269,34 @@ fn modify_pickups_in_mrea<'r>(
     seed: u64,
     _no_starting_visor: bool,
     version: Version,
+    force_vanilla_layout: bool,
 )
 -> Result<(), String>
 {
     let mrea_id = area.mlvl_area.mrea.to_u32();
-    let _mrea_index = area.mrea_index;
+
+    let mut pickup_config = pickup_config.clone();
+
+    if force_vanilla_layout
+    {
+        let scly = area.mrea().scly_section();
+        let layers = &scly.layers;
+
+        let layer = layers.iter().nth(pickup_location.location.layer as usize).unwrap();
+
+        let pickup = layer.objects.iter()
+            .find(|obj| obj.instance_id == pickup_location.location.instance_id)
+            .unwrap();
+        
+        let pickup = pickup.property_data.as_pickup().unwrap();
+
+        let pickup_model = pickup_model_for_pickup(&pickup).expect(format!("could not derrive pickup model in room 0x{:X}", mrea_id).as_str());
+        let pickup_type = pickup_type_for_pickup(&pickup).expect(format!("could not derrive pickup type in room 0x{:X}", mrea_id).as_str());
+
+        pickup_config.model = Some(pickup_model.name().to_string());
+        pickup_config.pickup_type = pickup_type.name().to_string();
+    }
+
     let area_internal_id = area.mlvl_area.internal_id;
     let mut rng = StdRng::seed_from_u64(seed);
 
@@ -3580,7 +3602,7 @@ fn modify_pickups_in_mrea<'r>(
     //         name: b"set-scan\0".as_cstr(),
     //         start_time: 0.5,
     //         max_random_add: 0.0,
-    //         reset_to_zero: 0,
+    //         looping: 0,
     //         start_immediately: 0,
     //         active: 1,
     //     }.into(),
@@ -3654,7 +3676,7 @@ fn modify_pickups_in_mrea<'r>(
                     name: b"auto-spawn pickup\0".as_cstr(),
                     start_time: 0.001,
                     max_random_add: 0.0,
-                    reset_to_zero: 0,
+                    looping: 0,
                     start_immediately: 1,
                     active: 1,
                 }.into(),
@@ -3676,7 +3698,7 @@ fn modify_pickups_in_mrea<'r>(
                     name: b"auto-despawn trigger\0".as_cstr(),
                     start_time: 0.001,
                     max_random_add: 0.0,
-                    reset_to_zero: 0,
+                    looping: 0,
                     start_immediately: 1,
                     active: 1,
                 }.into(),
@@ -3862,13 +3884,18 @@ fn modify_pickups_in_mrea<'r>(
         }
 
         let pickup_obj = layers[pickup_location.location.layer as usize].objects.iter_mut()
-        .find(|obj| obj.instance_id == pickup_location.location.instance_id)
-        .unwrap();
+            .find(|obj| obj.instance_id == pickup_location.location.instance_id)
+            .unwrap();
 
-        (position, scan_id_out) = update_pickup(pickup_obj, pickup_type, pickup_model_data, pickup_config, scan_id, position_override);
+        if !force_vanilla_layout {
+            (position, scan_id_out) = update_pickup(pickup_obj, pickup_type, pickup_model_data, &pickup_config, scan_id, position_override);
 
-        if additional_connections.len() > 0 {
-            pickup_obj.connections.as_mut_vec().extend_from_slice(&additional_connections);
+            if additional_connections.len() > 0 {
+                pickup_obj.connections.as_mut_vec().extend_from_slice(&additional_connections);
+            }
+        } else {
+            position = [0.0, 0.0, 0.0];
+            scan_id_out = ResId::invalid();
         }
     }
 
@@ -3955,6 +3982,7 @@ fn modify_pickups_in_mrea<'r>(
     // The items in Watery Hall (Charge beam), Research Core (Thermal Visor), and Artifact Temple
     // (Artifact of Truth) should ys have modal hudmenus because a cutscene plays immediately
     // after each item is acquired, and the nonmodal hudmenu wouldn't properly appear.
+
     update_hudmemo(hudmemo, hudmemo_strg, skip_hudmemos, hudmemo_delay);
 
     let location = pickup_location.attainment_audio;
@@ -4000,7 +4028,7 @@ fn place_floaty_contraption<'r>(
 
                 start_time: 1.0/60.0,
                 max_random_add: 0.0,
-                reset_to_zero: 0,
+                looping: 0,
                 start_immediately: 0,
                 active: 1,
             }.into(),
@@ -4032,7 +4060,7 @@ fn place_floaty_contraption<'r>(
 
                 start_time: 1.0/60.0,
                 max_random_add: 0.0,
-                reset_to_zero: 0,
+                looping: 0,
                 start_immediately: 0,
                 active: 1,
             }.into(),
@@ -4200,6 +4228,7 @@ fn update_hudmemo(
 {
     let hudmemo = hudmemo.property_data.as_hud_memo_mut().unwrap();
     hudmemo.strg = hudmemo_strg;
+
     if hudmemo_delay != 0.0 {
         hudmemo.first_message_timer = hudmemo_delay;
     }
@@ -4417,7 +4446,7 @@ fn make_elevators_patch<'a>(
 
                                 start_time: 0.001,
                                 max_random_add: 0f32,
-                                reset_to_zero: 0,
+                                looping: 0,
                                 start_immediately: 1,
                                 active: 1,
                             }.into(),
@@ -4781,7 +4810,7 @@ fn patch_sunchamber_cutscene_hack<'r>(
                     name: b"my timer\0".as_cstr(),
                     start_time: 0.01,
                     max_random_add: 0.0,
-                    reset_to_zero: 0,
+                    looping: 0,
                     start_immediately: 1,
                     active: 1,
                 }.into(),
@@ -4833,6 +4862,41 @@ fn patch_move_camera<'r>(
         camera.position = position.into();
         break;
     }
+
+    Ok(())
+}
+
+fn patch_add_camera<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
+    position: [f32; 3],
+    rotation: Option<[f32; 3]>,
+    shot_duration: f32,
+    unknowns: [u8; 7],
+    unknown: bool,
+)
+    -> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer: &mut SclyLayer<'_> = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: id,
+            property_data: structs::Camera {
+                name: b"my camera\0".as_cstr(),
+                position: position.into(),
+                rotation: rotation.unwrap_or([0.0, 0.0, 0.0]).into(),
+                active: 0,
+                shot_duration,
+                unknowns: unknowns.into(),
+                unknown1: 120.0,
+                unknown2: 1,
+                unknown3: unknown as u8,
+            }.into(),
+            connections: vec![].into(),
+        }
+    );
 
     Ok(())
 }
@@ -4890,6 +4954,41 @@ fn id_in_use(
     false
 }
 
+fn patch_add_camera_filter_key_frame<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
+)
+    -> Result<(), String>
+{
+    if id_in_use(area, id) {
+        panic!("id 0x{:X} already in use", id);
+    }
+
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: id,
+            property_data: structs::CameraFilterKeyframe {
+                name: b"my ckeyframe\0".as_cstr(),
+                active: 1,
+                filter_type: 1,
+                filter_shape: 0,
+                unknown4: 2,
+                unknown5: 0,
+                color: [0.0, 0.0, 0.0, 1.0].into(),
+                fade_in_time: 0.0,
+                fade_out_time: 0.5,
+                overlay_txtr: 0xFFFFFFFF,
+            }.into(),
+            connections: vec![].into(),
+        },
+    );
+
+    Ok(())
+}
+
 fn patch_add_actor_key_frame<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
@@ -4942,7 +5041,7 @@ fn patch_add_timer<'r>(
                 name: b"my timer\0".as_cstr(),
                 start_time: timer_config.time,
                 max_random_add: timer_config.max_random_add.unwrap_or(0.0),
-                reset_to_zero: timer_config.reset_to_zero.unwrap_or(false) as u8,
+                looping: timer_config.looping.unwrap_or(false) as u8,
                 start_immediately: timer_config.start_immediately.unwrap_or(false) as u8,
                 active: timer_config.active.unwrap_or(true) as u8,
             }.into(),
@@ -5032,6 +5131,11 @@ fn patch_add_spawn_point<'r>(
         panic!("id 0x{:X} already in use", spawn_point_config.id);
     }
 
+    let rotation = spawn_point_config.rotation
+        .as_ref()
+        .unwrap_or(&[0.0, 0.0, 0.0]);
+    let rotation = *rotation;
+
     let scly = area.mrea().scly_section_mut();
     let layer = &mut scly.layers.as_mut_vec()[0];
     let mut spawn_point = structs::SclyObject {
@@ -5039,7 +5143,7 @@ fn patch_add_spawn_point<'r>(
             property_data: structs::SpawnPoint {
                     name: b"my spawnpoint\0".as_cstr(),
                     position: spawn_point_config.position.into(),
-                    rotation: spawn_point_config.rotation.into(),
+                    rotation: rotation.into(),
                     power: 0,
                     ice: 0,
                     wave: 0,
@@ -5916,7 +6020,7 @@ fn patch_lock_on_point<'r>(
                         name: b"grapple timer\0".as_cstr(),
                         start_time: 0.02,
                         max_random_add: 0.0,
-                        reset_to_zero: 0,
+                        looping: 0,
                         start_immediately: 1,
                         active: 1,
                     }.into(),
@@ -6106,33 +6210,121 @@ fn patch_landing_site_cutscene_triggers(
     area: &mut mlvl_wrapper::MlvlArea,
 ) -> Result<(), String>
 {
-    // make memory relays active by default
-    area.set_memory_relay_active(0x00000143, 1);
+    let timer_id = area.new_object_id_from_layer_id(0);
+    let timer_id2 = area.new_object_id_from_layer_id(0);
 
     let layer = area.mrea().scly_section_mut().layers.iter_mut().next().unwrap();
+    let objects = layer.objects.as_mut_vec();
 
-    // remove the intro cutscene trigger
-    layer.objects.as_mut_vec().retain(|obj|
-        obj.instance_id & 0x0000FFFF != 0xdd
+    // Trigger Start Overworld Cinematic
+    objects.iter_mut()
+         .find(|obj| obj.instance_id & 0x00FFFFFF == 0xDD)
+         .and_then(|obj| obj.property_data.as_trigger_mut())
+         .unwrap()
+         .active = 0;
+
+    // Relay Player Model Loaded
+    objects.iter_mut()
+        .find(|obj| obj.instance_id & 0x00FFFFFF == 0x1F4)
+        .and_then(|obj| obj.property_data.as_relay_mut())
+        .unwrap()
+        .active = 1;
+
+    // PlayerActor-B_rready_samus
+    objects.iter_mut()
+        .find(|obj| obj.instance_id & 0x00FFFFFF == 0x1CE)
+        .unwrap()
+        .connections
+        .as_mut_vec()
+        .clear();
+
+    // Trigger -- Back from Load
+    let obj = objects.iter_mut()
+        .find(|obj| obj.instance_id & 0x00FFFFFF == 0x1F2)
+        .unwrap();
+    obj.property_data.as_trigger_mut().unwrap().active = 1;
+    obj.connections.as_mut_vec().retain(|conn| conn.target_object_id != 0x1F4); // Relay Player Model Loaded
+    obj.connections.as_mut_vec().push(
+        structs::Connection {
+            state: structs::ConnectionState::ENTERED,
+            message: structs::ConnectionMsg::RESET_AND_START,
+            target_object_id: timer_id,
+        }
+    );
+    obj.connections.as_mut_vec().push(
+        structs::Connection {
+            state: structs::ConnectionState::ENTERED,
+            message: structs::ConnectionMsg::ACTIVATE,
+            target_object_id: 0x1CE, // PlayerActor-B_rready_samus
+        }
     );
 
-    // activate the ship
-    layer.objects.iter_mut()
-         .find(|obj| obj.instance_id & 0x0000FFFF == 0x141)
-         .and_then(|obj| obj.property_data.as_platform_mut())
+    objects.push(
+        structs::SclyObject {
+            instance_id: timer_id,
+            property_data: structs::Timer {
+                name: b"my_timer\0".as_cstr(),
+                start_time: 0.6,
+                max_random_add: 0.0,
+                looping: 0,
+                start_immediately: 0,
+                active: 1
+            }.into(),
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::SET_TO_ZERO,
+                    target_object_id: 0x1F4, // Relay Player Model Loaded
+                },
+            ].into(),
+        },
+    );
+
+    objects.push(
+        structs::SclyObject {
+            instance_id: timer_id2,
+            property_data: structs::Timer {
+                name: b"my_timer\0".as_cstr(),
+                start_time: 0.02,
+                max_random_add: 0.0,
+                looping: 0,
+                start_immediately: 1,
+                active: 1
+            }.into(),
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: 0x1F2, // Trigger -- Back from Load
+                },
+            ].into(),
+        },
+    );
+
+    // Actor Save Station Beam
+    objects.iter_mut()
+         .find(|obj| obj.instance_id & 0x00FFFFFF == 0x1CF)
+         .and_then(|obj| obj.property_data.as_actor_mut())
          .unwrap()
          .active = 1;
 
-    // activate ship effects
-    layer.objects.iter_mut()
-         .find(|obj| obj.instance_id & 0x0000FFFF == 0x1e4)
+    // Effect_BaseLights
+    objects.iter_mut()
+         .find(|obj| obj.instance_id & 0x00FFFFFF == 0x1E4)
          .and_then(|obj| obj.property_data.as_effect_mut())
          .unwrap()
          .active = 1;
 
-    // activate ship save station
-    layer.objects.iter_mut()
-         .find(|obj| obj.instance_id & 0x0000FFFF == 0x1cf)
+    // Platform Samus Ship
+    objects.iter_mut()
+         .find(|obj: &&mut structs::SclyObject<'_>| obj.instance_id & 0x00FFFFFF == 0x141)
+         .and_then(|obj| obj.property_data.as_platform_mut())
+         .unwrap()
+         .active = 1;
+
+    // Actor Save Station Beam
+    objects.iter_mut()
+         .find(|obj| obj.instance_id & 0x00FFFFFF == 0x1CF)
          .and_then(|obj| obj.property_data.as_actor_mut())
          .unwrap()
          .active = 1;
@@ -7075,7 +7267,7 @@ fn make_main_plaza_locked_door_two_ways(_ps: &mut PatcherState, area: &mut mlvl_
                 name: b"Timer_DoorClose\0".as_cstr(),
                 start_time: 0.25,
                 max_random_add: 0.0,
-                reset_to_zero: 1,
+                looping: 1,
                 start_immediately: 0,
                 active: 1
             }.into(),
@@ -7319,6 +7511,7 @@ fn patch_remove_ids<'r>
 fn patch_add_connection<'r>(
     layers: &mut Vec<SclyLayer>,
     connection: &ConnectionConfig,
+    mrea_id: u32,
 )
 {
     for layer in layers.iter_mut() {
@@ -7340,7 +7533,7 @@ fn patch_add_connection<'r>(
         }
     }
 
-    panic!("Could not find object 0x{:X} when adding a script connection", connection.sender_id);
+    panic!("Could not find object 0x{:X} when adding a script connection in room 0x{:X}", connection.sender_id, mrea_id);
 }
 
 fn patch_add_connections<'r>
@@ -7351,11 +7544,12 @@ fn patch_add_connections<'r>
 )
 -> Result<(), String>
 {
+    let mrea_id = area.mlvl_area.mrea.to_u32().clone();
     let scly = area.mrea().scly_section_mut();
     let layers = scly.layers.as_mut_vec();
 
     for connection in connections {
-        patch_add_connection(layers, connection);
+        patch_add_connection(layers, connection, mrea_id);
     }
 
     Ok(())
@@ -7918,7 +8112,7 @@ fn patch_debug_trigger_2(
                 name: b"\0".as_cstr(),
                 start_time: 0.1,
                 max_random_add: 0.0,
-                reset_to_zero: 0,
+                looping: 0,
                 start_immediately: 0,
                 active: 1,
             }.into(),
@@ -8085,7 +8279,7 @@ fn patch_remove_cutscenes(
                 name: b"activate-prime\0".as_cstr(),
                 start_time: 1.0,
                 max_random_add: 0.0,
-                reset_to_zero: 0,
+                looping: 0,
                 start_immediately: 0,
                 active: 1,
             }.into(),
@@ -8191,7 +8385,7 @@ fn patch_remove_cutscenes(
                         name: b"cutscene-replacement\0".as_cstr(),
                         start_time: shot_duration,
                         max_random_add: 0.0,
-                        reset_to_zero: 0,
+                        looping: 0,
                         start_immediately: 0,
                         active: 1,
                     }.into(),
@@ -8640,7 +8834,7 @@ fn patch_save_station_for_warp_to_start<'r>(
 
                 start_time: warp_to_start_delay_s,
                 max_random_add: 0.0,
-                reset_to_zero: 0,
+                looping: 0,
                 start_immediately: 0,
                 active: 1,
             }.into(),
@@ -9080,7 +9274,7 @@ fn patch_starting_pickups<'r>(
 
                         start_time: 0.025,
                         max_random_add: 0f32,
-                        reset_to_zero: 0,
+                        looping: 0,
                         start_immediately: 1,
                         active: 1,
                     }.into(),
@@ -11158,7 +11352,7 @@ fn patch_subchamber_five_essence_permadeath<'r>(
                 name: b"enable cutscene trigger\0".as_cstr(),
                 start_time: 0.1,
                 max_random_add: 0.0,
-                reset_to_zero: 0,
+                looping: 0,
                 start_immediately: 1,
                 active: 1,
             }.into(),
@@ -11179,7 +11373,7 @@ fn patch_subchamber_five_essence_permadeath<'r>(
                 name: b"disable cutscene trigger\0".as_cstr(),
                 start_time: 0.01,
                 max_random_add: 0.0,
-                reset_to_zero: 0,
+                looping: 0,
                 start_immediately: 1,
                 active: 1,
             }.into(),
@@ -11507,7 +11701,7 @@ fn patch_final_boss_permadeath<'r>(
                     name: b"remove warp\0".as_cstr(),
                     start_time: 0.1,
                     max_random_add: 0.0,
-                    reset_to_zero: 0,
+                    looping: 0,
                     start_immediately: 1,
                     active: 1,
                 }.into(),
@@ -11602,7 +11796,7 @@ fn patch_final_boss_permadeath<'r>(
                     name: b"change layer\0".as_cstr(),
                     start_time: 0.1,
                     max_random_add: 0.0,
-                    reset_to_zero: 0,
+                    looping: 0,
                     start_immediately: 1,
                     active: 1,
                 }.into(),
@@ -12365,7 +12559,7 @@ fn patch_add_dock_teleport<'r>(
             name: b"open-door-timer\0".as_cstr(),
             start_time: 0.1,
             max_random_add: 0.0,
-            reset_to_zero: 0,
+            looping: 0,
             start_immediately: 0,
             active: 1,
         }.into(),
@@ -13128,42 +13322,10 @@ fn patch_bnr(
     Ok(())
 }
 
-#[derive(PartialEq, Copy, Clone)]
-pub enum Version
-{
-    NtscU0_00,
-    NtscU0_01,
-    NtscU0_02,
-    NtscK,
-    NtscJ,
-    Pal,
-    NtscUTrilogy,
-    NtscJTrilogy,
-    PalTrilogy,
-}
-
-impl fmt::Display for Version
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error>
-    {
-        match self {
-            Version::NtscU0_00    => write!(f, "1.00"),
-            Version::NtscU0_01    => write!(f, "1.01"),
-            Version::NtscU0_02    => write!(f, "1.02"),
-            Version::NtscK        => write!(f, "kor"),
-            Version::NtscJ        => write!(f, "jap"),
-            Version::Pal          => write!(f, "pal"),
-            Version::NtscUTrilogy => write!(f, "trilogy_ntsc_u"),
-            Version::NtscJTrilogy => write!(f, "trilogy_ntsc_j"),
-            Version::PalTrilogy   => write!(f, "trilogy_pal"),
-        }
-    }
-}
-
 fn patch_qol_game_breaking(
     patcher: &mut PrimePatcher,
     version: Version,
-    force_vanilla_layout: bool,
+    _force_vanilla_layout: bool,
     small_samus: bool,
 )
 {
@@ -13222,8 +13384,6 @@ fn patch_qol_game_breaking(
         resource_info!("12_mines_eliteboss.MREA").into(),
         move |ps, area| patch_op_death_pickup_spawn(ps, area)
     );
-
-    if force_vanilla_layout { return; }
 
     // undo retro "fixes"
     if version == Version::NtscU0_00 {
@@ -13610,11 +13770,7 @@ fn patch_qol_cosmetic(
     // not shown here - hudmemos are nonmodal and item aquisition cutscenes are removed
 }
 
-fn patch_qol_competitive_cutscenes(patcher: &mut PrimePatcher, version: Version, skip_frigate: bool) {
-    if !skip_frigate {
-        
-    }
-
+fn patch_qol_competitive_cutscenes(patcher: &mut PrimePatcher, version: Version, _skip_frigate: bool) {
     patcher.add_scly_patch(
         resource_info!("01_mines_mainplaza.MREA").into(), // main quarry (just pirate booty)
         move |ps, area| patch_remove_cutscenes(ps, area,
@@ -14178,7 +14334,7 @@ fn patch_hive_mecha<'a>(patcher: &mut PrimePatcher<'_, 'a>)
                     name: b"Auto start relay\0".as_cstr(),
                     start_time: 0.001,
                     max_random_add: 0f32,
-                    reset_to_zero: 0,
+                    looping: 0,
                     start_immediately: 1,
                     active: 1,
                 }.into(),
@@ -14290,21 +14446,6 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
     let mut reader = Reader::new(&config.input_iso[..]);
     let mut gc_disc: structs::GcDisc = reader.read(());
 
-    let version = match (&gc_disc.header.game_identifier(), gc_disc.header.disc_id, gc_disc.header.version) {
-        (b"GM8E01", 0, 0)  => Version::NtscU0_00,
-        (b"GM8E01", 0, 1)  => Version::NtscU0_01,
-        (b"GM8E01", 0, 2)  => Version::NtscU0_02,
-        (b"GM8E01", 0, 48) => Version::NtscK,
-        (b"GM8J01", 0, 0)  => Version::NtscJ,
-        (b"GM8P01", 0, 0)  => Version::Pal,
-        (b"R3ME01", 0, 0)  => Version::NtscUTrilogy,
-        (b"R3IJ01", 0, 0)  => Version::NtscJTrilogy,
-        (b"R3MP01", 0, 0)  => Version::PalTrilogy,
-        _ => Err(concat!(
-                "The input ISO doesn't appear to be NTSC-US, NTSC-J, NTSC-K, PAL Metroid Prime, ",
-                "or NTSC-US, NTSC-J, PAL Metroid Prime Trilogy."
-            ))?
-    };
     if gc_disc.find_file("randomprime.txt").is_some() {
         Err(concat!("The input ISO has already been randomized once before. ",
                     "You must start from an unmodified ISO every time."
@@ -14312,14 +14453,14 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
     }
 
     if config.run_mode == RunMode::ExportLogbook {
-        export_logbook(&mut gc_disc, &config, version)?;
+        export_logbook(&mut gc_disc, &config)?;
         return Ok(());
     } else if config.run_mode == RunMode::ExportAssets {
-        export_assets(&mut gc_disc, &config, version)?;
+        export_assets(&mut gc_disc, &config)?;
         return Ok(());
     }
 
-    build_and_run_patches(&mut gc_disc, &config, version, audio_override_patches)?;
+    build_and_run_patches(&mut gc_disc, &config, audio_override_patches)?;
 
     {
         let json_string = serde_json::to_string(&config)
@@ -14328,7 +14469,7 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
         gc_disc.add_file("randomprime.json", structs::FstEntryFile::Unknown(Reader::new(&ct)))?;
     }
 
-    let patches_rel_bytes = match version {
+    let patches_rel_bytes = match config.version {
         Version::NtscU0_00    => Some(rel_files::PATCHES_100_REL),
         Version::NtscU0_01    => Some(rel_files::PATCHES_101_REL),
         Version::NtscU0_02    => Some(rel_files::PATCHES_102_REL),
@@ -14373,7 +14514,7 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
     Ok(())
 }
 
-fn export_logbook(gc_disc: &mut structs::GcDisc, config: &PatchConfig, _version: Version)
+fn export_logbook(gc_disc: &mut structs::GcDisc, config: &PatchConfig)
     -> Result<(), String>
 {
     let filenames = [
@@ -14456,7 +14597,7 @@ fn export_asset(asset_dir: &str, filename: String, bytes: Vec<u8>) -> Result<(),
     Ok(())
 }
 
-fn export_assets(gc_disc: &mut structs::GcDisc, config: &PatchConfig, version: Version)
+fn export_assets(gc_disc: &mut structs::GcDisc, config: &PatchConfig)
     -> Result<(), String>
 {
     let default_dir = &"assets".to_string();
@@ -14472,7 +14613,7 @@ fn export_assets(gc_disc: &mut structs::GcDisc, config: &PatchConfig, version: V
     }
 
     let (_, _, _, _, _, _, _, _, custom_assets) =
-        collect_game_resources(gc_disc, None, &config, version)?;
+        collect_game_resources(gc_disc, None, &config)?;
 
     for resource in custom_assets {
         let mut bytes = vec![];
@@ -14487,7 +14628,7 @@ fn export_assets(gc_disc: &mut structs::GcDisc, config: &PatchConfig, version: V
 }
 
 
-fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchConfig, version: Version, audio_override_patches: &'r Vec<AudioOverridePatch>)
+fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchConfig, audio_override_patches: &'r Vec<AudioOverridePatch>)
     -> Result<(), String>
 {
     let morph_ball_size = config.ctwk_config.morph_ball_size.clone().unwrap_or(1.0);
@@ -14692,7 +14833,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     };
 
     let (game_resources, pickup_hudmemos, pickup_scans, extra_scans, savw_scans_to_add, local_savw_scans_to_add, savw_scan_logbook_category, extern_models, _) =
-        collect_game_resources(gc_disc, starting_memo, &config, version)?;
+        collect_game_resources(gc_disc, starting_memo, &config)?;
 
     let extern_models = &extern_models;
     let game_resources = &game_resources;
@@ -14710,19 +14851,23 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     let mut other_patches: Vec<((&[u8], u32), &RoomConfig)> = Vec::new();
     for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {
         let world = World::from_pak(pak_name).unwrap();
-        for room_info in rooms.iter() {
-            let level = level_data.get(world.to_json_key());
-            if level.is_none() {
-                continue;
-            }
 
-            let room_config = level.unwrap().rooms.get(room_info.name().trim());
+        let level = level_data.get(world.to_json_key());
+        if level.is_none() {
+            continue;
+        }
+
+        for room_info in rooms.iter() {
+            let room_name = room_info.name().trim();
+            let mrea_id = room_info.room_id.to_u32();
+
+            let room_config = level.unwrap().rooms.get(room_name);
             if room_config.is_none() {
                 continue;
             }
-
             let room_config = room_config.unwrap();
-            other_patches.push(((pak_name.as_bytes(), room_info.room_id.to_u32()), room_config));
+
+            other_patches.push(((pak_name.as_bytes(), mrea_id), room_config));
         }
     }
     let other_patches = &other_patches;
@@ -14839,7 +14984,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     }
 
     // Patch Tweaks.pak
-    if version == Version::NtscK {
+    if config.version == Version::NtscK {
         patcher.add_resource_patch(
             (&[ b"Tweaks.Pak" ], 0x37CE7FD6, FourCC::from_bytes(b"CTWK")), // Game.CTWK
             |res| patch_ctwk_game(res, &config.ctwk_config),
@@ -15028,12 +15173,10 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 );
             }
 
-            if config.force_vanilla_layout {continue;}
-
             // Remove objects patch
             {
                 // this is a hack because something is getting messed up with the MREA objects if this patch never gets used
-                let remove_otrs = config.qol_cosmetic && !(config.shuffle_pickup_position && room_info.room_id.to_u32() == 0x40C548E9);
+                let remove_otrs = config.qol_cosmetic && !(config.shuffle_pickup_position && room_info.room_id.to_u32() == 0x40C548E9) && !config.force_vanilla_layout;
 
                 patcher.add_scly_patch(
                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
@@ -15172,71 +15315,133 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             }
 
                             /* Some rooms need to be update to play nicely with skippable cutscenes */
-                            if room_info.room_id.to_u32() == 0xC9D52BBC // energy core
-                            {
-                                for id in [2883635, 2884015]
-                                {
+                            match room_info.room_id.to_u32() {
+                                0xC9D52BBC => { // energy core
+                                    for id in [2883635, 2884015]
+                                    {
+                                        patcher.add_scly_patch(
+                                            (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                            move |ps, area| patch_edit_water(
+                                                ps,
+                                                area,
+                                                id,
+                                                2.0,
+                                                0.7,
+                                            ),
+                                        );
+                                    }
+                                },
+                                0xB2701146 => { // landing site
                                     patcher.add_scly_patch(
                                         (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                        move |ps, area| patch_edit_water(
+                                        move |ps, area| patch_add_camera(
                                             ps,
                                             area,
-                                            id,
-                                            2.0,
-                                            0.7,
+                                            0x5,
+                                            [-367.851898, 375.47049, -21.39986], // same as 0x1D8
+                                            [11.490609, 0.0, 18.759502].into(),
+                                            4.5,
+                                            [
+                                                0,
+                                                0,
+                                                1,
+                                                0,
+                                                1,
+                                                0,
+                                                0,
+                                            ].into(),
+                                            true
                                         ),
                                     );
-                                }
-                            } else if room_info.room_id.to_u32() == 0x6655F51E { // chozo ice temple
+                                },
+                                0x6655F51E => { // chozo ice temple
+                                    for id in [0x80171, 0x80210]
+                                    {
+                                        patcher.add_scly_patch(
+                                            (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                            move |ps, area| patch_edit_camera_keyframe(
+                                                ps,
+                                                area,
+                                                id,
+                                            ),
+                                        );
+                                    }
+                                },
+                                0x9A0A03EB => { // sunchamber
+                                    patcher.add_scly_patch(
+                                        (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                        move |ps, area| patch_sunchamber_cutscene_hack(
+                                            ps, area,
+                                        ),
+                                    );
+                                },
+                                0x70181194 => { // quarantine cave
+                                    patcher.add_scly_patch(
+                                        (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                        move |ps, area| patch_add_boss_health_bar(
+                                            ps,
+                                            area,
+                                            0x00100000,
+                                        ),
+                                    );
+                                },
+                                0xA7AC009B => { // subchamber four
+                                    patcher.add_scly_patch(
+                                        (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                        move |ps, area| patch_add_boss_health_bar(
+                                            ps,
+                                            area,
+                                            696969,
+                                        ),
+                                    );
+                                },
+                                0x77714498 => { // subchamber five
+                                    patcher.add_scly_patch(
+                                        (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                        move |ps, area| patch_move_camera(
+                                            ps,
+                                            area,
+                                            0x000A0028,
+                                            [46.805, -245.6632, -194.9795],
+                                        ),
+                                    );
+                                },
+                                _ => {},
+                            }
+
+                            let room_id = room_info.room_id.to_u32();
+                            if is_teleporter(room_id) || vec![
+                                0x90709AAC, // vent shaft
+                                0x9A0A03EB, // sunchamber
+                            ].contains(&room_id) {
                                 patcher.add_scly_patch(
-                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                    move |ps, area| patch_edit_camera_keyframe(
+                                    (pak_name.as_bytes(), room_id),
+                                    move |ps: &mut PatcherState, area| patch_add_camera_filter_key_frame(
                                         ps,
                                         area,
-                                        0x80171,
+                                        0xA455,
                                     ),
                                 );
+
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                    move |ps, area| patch_edit_camera_keyframe(
+                                    move |ps, area| patch_add_camera(
                                         ps,
                                         area,
-                                        0x80210,
-                                    ),
-                                );
-                            } else if room_info.room_id.to_u32() == 0xA7AC009B { // subchamber four
-                                patcher.add_scly_patch(
-                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                    move |ps, area| patch_add_boss_health_bar(
-                                        ps,
-                                        area,
-                                        696969,
-                                    ),
-                                );
-                            } else if room_info.room_id.to_u32() == 0x70181194 { // quarantine cave
-                                patcher.add_scly_patch(
-                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                    move |ps, area| patch_move_camera(
-                                        ps,
-                                        area,
-                                        0x000A0028,
-                                        [46.805, -245.6632, -194.9795],
-                                    ),
-                                );
-                            } else if room_info.room_id.to_u32() == 0x70181194 { // quarantine cave
-                                patcher.add_scly_patch(
-                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                    move |ps, area| patch_add_boss_health_bar(
-                                        ps,
-                                        area,
-                                        0x00100000,
-                                    ),
-                                );
-                            } else if room_info.room_id.to_u32() == 0x9A0A03EB { // sunchamber
-                                patcher.add_scly_patch(
-                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                                    move |ps, area| patch_sunchamber_cutscene_hack(
-                                        ps, area,
+                                        0xA2C2A,
+                                        [0.0, 0.0, -1000.0],
+                                        None,
+                                        512.0,
+                                        [
+                                            0,
+                                            0,
+                                            0,
+                                            0,
+                                            1,
+                                            0,
+                                            0,
+                                        ].into(),
+                                        false
                                     ),
                                 );
                             }
@@ -15437,11 +15642,18 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 };
 
                 let skip_hudmemos = {
-                    if config.qol_cosmetic {
-                        !(pickup.modal_hudmemo.clone().unwrap_or(false)) // make them modal if the client specified
-                    } else {
-                        false // leave them as they are in vanilla, modal
-                    }
+                    let modal_hudmemo = pickup.modal_hudmemo.as_ref();
+
+                    let modal_hudmemo = match modal_hudmemo {
+                        Some(modal_hudmemo) => {
+                            *modal_hudmemo
+                        },
+                        None => {
+                            !config.qol_cosmetic
+                        }
+                    };
+
+                    !modal_hudmemo
                 };
 
                 let hudmemo_delay = {
@@ -15476,7 +15688,8 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             config.shuffle_pickup_position,
                             config.seed + seed,
                             !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray,
-                            version,
+                            config.version,
+                            config.force_vanilla_layout,
                     )
                 );
 
@@ -15537,7 +15750,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                         config.shuffle_pickup_pos_all_rooms,
                         config.seed,
                         !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray,
-                        version,
+                        config.version,
                     ),
                 );
 
@@ -15621,7 +15834,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
 
                     // Some doors have their object IDs changed in non NTSC-U versions
                     // NTSC-K is based on NTSC-U and shouldn't be part of those changes
-                    if version == Version::Pal || version == Version::NtscJ {
+                    if config.version == Version::Pal || config.version == Version::NtscJ {
                         // Tallon Overworld - Temple Security Station
                         if mrea_id == 0xBDB1FCAC {
                             if local_dl.door_location.unwrap().instance_id == 0x00070055 {
@@ -15861,14 +16074,15 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     match config.qol_cutscenes {
         CutsceneMode::Original => {},
         CutsceneMode::Skippable => {},
+        CutsceneMode::SkippableCompetitive => {},
         CutsceneMode::Competitive => {
-            patch_qol_competitive_cutscenes(&mut patcher, version, skip_frigate);
+            patch_qol_competitive_cutscenes(&mut patcher, config.version, skip_frigate);
         },
         CutsceneMode::Minor => {
-            patch_qol_minor_cutscenes(&mut patcher, version);
+            patch_qol_minor_cutscenes(&mut patcher, config.version);
         },
         CutsceneMode::Major => {
-            patch_qol_minor_cutscenes(&mut patcher, version);
+            patch_qol_minor_cutscenes(&mut patcher, config.version);
             patch_qol_major_cutscenes(&mut patcher, config.shuffle_pickup_position);
         },
     }
@@ -15894,7 +16108,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
             |file| patch_dol(
                 file,
                 starting_room,
-                version,
+                config.version,
                 config,
                 remove_ball_color,
                 true,
@@ -15922,7 +16136,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
             |file| patch_dol(
                 file,
                 starting_room,
-                version,
+                config.version,
                 config,
                 remove_ball_color,
                 false,
@@ -15954,7 +16168,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         }
 
         // always set Parasite Queen health to its NTSC health
-        if [Version::Pal, Version::NtscJ, Version::NtscJTrilogy, Version::NtscUTrilogy, Version::PalTrilogy].contains(&version) {
+        if [Version::Pal, Version::NtscJ, Version::NtscJTrilogy, Version::NtscUTrilogy, Version::PalTrilogy].contains(&config.version) {
             patcher.add_scly_patch(
                 resource_info!("07_intro_reactor.MREA").into(),
                 move |ps, area| patch_pq_health(ps, area, 480.0),
@@ -16003,7 +16217,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     }
     patcher.add_resource_patch(
         resource_info!("STRG_Main.STRG").into(),// 0x0552a456
-        |res| patch_main_strg(res, version, &config.main_menu_message)
+        |res| patch_main_strg(res, config.version, &config.main_menu_message)
     );
     patcher.add_resource_patch(
         resource_info!("FRME_NewFileSelect.FRME").into(),
@@ -16011,7 +16225,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     );
     patcher.add_resource_patch(
         resource_info!("STRG_Credits.STRG").into(),
-        |res| patch_credits(res, version, config, &level_data)
+        |res| patch_credits(res, config.version, config, &level_data)
     );
 
     if config.results_string.is_some() {
@@ -16381,31 +16595,31 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     patch_poison_damage_per_sec(&mut patcher, config.poison_damage_per_sec);
 
     // Always patch out the white flash for photosensitive epileptics
-    if version == Version::NtscU0_00 {
+    if config.version == Version::NtscU0_00 {
         patcher.add_scly_patch(
             resource_info!("03f_crater.MREA").into(),
             patch_essence_cinematic_skip_whitescreen
         );
     }
-    if [Version::NtscU0_00, Version::NtscU0_02, Version::Pal].contains(&version) {
+    if [Version::NtscU0_00, Version::NtscU0_02, Version::Pal].contains(&config.version) {
         patcher.add_scly_patch(
             resource_info!("03f_crater.MREA").into(),
             patch_essence_cinematic_skip_nomusic
         );
     }
 
-    if [Version::Pal, Version::NtscJ, Version::NtscJTrilogy, Version::NtscUTrilogy, Version::PalTrilogy].contains(&version) {
+    if [Version::Pal, Version::NtscJ, Version::NtscJTrilogy, Version::NtscUTrilogy, Version::PalTrilogy].contains(&config.version) {
         // always set Meta Ridley health to its NTSC health
         patcher.add_scly_patch(
             resource_info!("07_stonehenge.MREA").into(),
-            |ps, area| patch_ridley_health(ps, area, version, 2000.0)
+            |ps, area| patch_ridley_health(ps, area, config.version, 2000.0)
         );
 
         // always set Meta Ridley damage properties to NTSC values
         patcher.add_scly_patch(
             resource_info!("07_stonehenge.MREA").into(),
             |ps, area| patch_ridley_damage_props(
-                ps, area, version,
+                ps, area, config.version,
                 DamageInfo {
                     weapon_type: 9, // DamageType::AI
                     damage: 20.0,
@@ -16494,7 +16708,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     }
 
     if config.qol_game_breaking {
-        patch_qol_game_breaking(&mut patcher, version, config.force_vanilla_layout, player_size < 0.9);
+        patch_qol_game_breaking(&mut patcher, config.version, config.force_vanilla_layout, player_size < 0.9);
         if boss_permadeath {
             patcher.add_scly_patch(
                 resource_info!("03a_crater.MREA").into(),
@@ -16574,7 +16788,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     }
 
     if !config.force_vanilla_layout {
-        patch_qol_logical(&mut patcher, config, version);
+        patch_qol_logical(&mut patcher, config, config.version);
     }
 
     for (_boss_name, scale) in config.boss_sizes.iter() {
@@ -16656,19 +16870,19 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         {
             patcher.add_scly_patch(
                 resource_info!("07_stonehenge.MREA").into(),
-                move |_ps, area| patch_ridley_scale(_ps, area, version, scale)
+                move |_ps, area| patch_ridley_scale(_ps, area, config.version, scale)
             );
             patcher.add_scly_patch(
                 resource_info!("01_ice_plaza.MREA").into(),
-                move |_ps, area| patch_ridley_scale(_ps, area, version, scale)
+                move |_ps, area| patch_ridley_scale(_ps, area, config.version, scale)
             );
             patcher.add_scly_patch(
                 resource_info!("09_intro_ridley_chamber.MREA").into(),
-                move |_ps, area| patch_ridley_scale(_ps, area, version, scale)
+                move |_ps, area| patch_ridley_scale(_ps, area, config.version, scale)
             );
             patcher.add_scly_patch(
                 resource_info!("01_intro_hanger.MREA").into(),
-                move |_ps, area| patch_ridley_scale(_ps, area, version, scale)
+                move |_ps, area| patch_ridley_scale(_ps, area, config.version, scale)
             );
         }
         else if boss_name == "exo" || boss_name == "metroidprime" || boss_name == "metroidprimeexoskeleton"
@@ -16964,7 +17178,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                     area,
                     &game_resources,
                     starting_room,
-                    version,
+                    config.version,
                     config.warp_to_start_delay_s,
                 )
             );
@@ -16972,7 +17186,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
 
         patcher.add_resource_patch(
             resource_info!("STRG_MemoryCard.STRG").into(),// 0x19C3F7F7
-            |res| patch_memorycard_strg(res, version)
+            |res| patch_memorycard_strg(res, config.version)
         );
     }
 

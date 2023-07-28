@@ -1,0 +1,1037 @@
+{
+    "levelData": {
+        "Frigate Orpheon": {
+            "transports": {},
+            "rooms": {
+                "Exterior Docking Hangar": {
+                    // Disable tutorial hudmemos
+                    "deleteIds": [
+                        669,
+                        1089,
+                        676,
+                        685,
+                        671,
+                        675,
+                        696,
+                        672,
+                        693,
+                        691,
+                        1096,
+                        1098
+                    ]
+                },
+                "Map Facility": {
+                    // Disable tutorial hudmemos
+                    "deleteIds": [
+                        524466
+                    ]
+                },
+                "Deck Beta Conduit Hall": {
+                    // Disable tutorial hudmemos
+                    "deleteIds": [
+                        786539,
+                        786568
+                    ]
+                },
+                "Deck Beta Security Hall": {
+                    // Disable tutorial hudmemos
+                    "deleteIds": [
+                        1048710
+                    ]
+                },
+                "Connection Elevator to Deck Beta": {
+                    // Disable tutorial hudmemos
+                    "deleteIds": [
+                        655456,
+                        655448
+                    ]
+                },
+                "Reactor Core Entrance": {
+                    // Disable tutorial hudmemos
+                    "deleteIds": [
+                        1769827,
+                        1769828
+                    ]
+                },
+                "Reactor Core": {
+                    // Disable tutorial hudmemos
+                    "deleteIds": [
+                        1638690,
+                        1638605
+                    ]
+                },
+                "Connection Elevator to Deck Alpha": {
+                    // Disable tutorial hudmemos
+                    "deleteIds": [
+                        328032,
+                        328033,
+                        328034,
+                        328038,
+                        328058
+                    ]
+                },
+                "Biotech Research Area 1": {
+                    // Disable tutorial hudmemos
+                    "deleteIds": [
+                        917554
+                    ]
+                },
+                "Biotech Research Area 2": {
+                    // Disable tutorial hudmemos
+                    "deleteIds": [
+                        458789
+                    ]
+                }
+            }
+        },
+        "Chozo Ruins": {
+            "transports": {},
+            "rooms": {
+                "Main Plaza": {
+                    "addConnections": [
+                        {
+                            "senderId": 131085, // [Trigger] Trigger - Load Generic Z3
+                            "targetId": 131979, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 131078, // [Trigger] Trigger - Load 00s Connect
+                            "targetId": 131979, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 131084, // [Trigger] Trigger - Load Generic X4
+                            "targetId": 131979, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 131208, // [Trigger] Trigger - Load Generic X2
+                            "targetId": 131979, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 131645, // [Trigger] Trigger - Load 1a_morphball
+                            "targetId": 131979, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        }
+                    ],
+                    "removeConnections": [
+                        {
+                            "senderId": 131481, // [Relay] Relay - start of cinema
+                            "targetId": 131105, // [SpawnPoint] Spawn point
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        }
+                    ]
+                },
+                "Dynamo": {
+                    // Disable tutorial hudmemos
+                    "deleteIds": [
+                        2949319,
+                        2949320
+                    ]
+                },
+                "Furnace": {
+                    // Disable tutorial hudmemos
+                    "deleteIds": [
+                        3211975,
+                        3211976
+                    ]
+                },
+                "Ruined Shrine": {
+                    // Disable tutorial hudmemos
+                    "deleteIds": [
+                        600483,
+                        600282,
+                        600284
+                    ],
+                    // Add Music Triggers for leaving Ruined Shrine fight
+                    "addConnections": [
+                        {
+                            "senderId": 590101, // [Trigger] Master Trigger
+                            "targetId": 689863, // [Trigger] Anti-Cringe Trigger
+                            "state": "ENTERED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 590101, // [Trigger] Master Trigger
+                            "targetId": 689886, // [Trigger] Anti-Cringe Trigger 2
+                            "state": "ENTERED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 689863, // [Trigger] Anti-Cringe Trigger
+                            "targetId": 589865, // [Trigger] Cringe Trigger
+                            "state": "ENTERED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 689863, // [Trigger] Anti-Cringe Trigger
+                            "targetId": 599956, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 689863, // [Trigger] Anti-Cringe Trigger
+                            "targetId": 600226, // [StreamedAudio] StreamedAudio - General Short Battle SW
+                            "state": "ENTERED",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 589865, // [Trigger] Cringe Trigger
+                            "targetId": 689863, // [Trigger] Anti-Cringe Trigger
+                            "state": "ENTERED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 589865, // [Trigger] Cringe Trigger
+                            "targetId": 599956, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "state": "ENTERED",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 589865, // [Trigger] Cringe Trigger
+                            "targetId": 600226, // [StreamedAudio] StreamedAudio - General Short Battle SW
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 689886, // [Trigger] Anti-Cringe Trigger 2
+                            "targetId": 689878, // [Trigger] Cringe Trigger 2
+                            "state": "ENTERED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 689886, // [Trigger] Anti-Cringe Trigger 2
+                            "targetId": 599956, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 689886, // [Trigger] Anti-Cringe Trigger 2
+                            "targetId": 600226, // [StreamedAudio] StreamedAudio - General Short Battle SW
+                            "state": "ENTERED",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 689878, // [Trigger] Cringe Trigger 2
+                            "targetId": 689886, // [Trigger] Anti-Cringe Trigger 2
+                            "state": "ENTERED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 689878, // [Trigger] Cringe Trigger 2
+                            "targetId": 599956, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "state": "ENTERED",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 689878, // [Trigger] Cringe Trigger 2
+                            "targetId": 600226, // [StreamedAudio] StreamedAudio - General Short Battle SW
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 589944, // [Beetle] GarBeetle
+                            "targetId": 689863, // [Trigger] Anti-Cringe Trigger
+                            "state": "DEAD",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 589944, // [Beetle] GarBeetle
+                            "targetId": 689886, // [Trigger] Anti-Cringe Trigger 2
+                            "state": "DEAD",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 589944, // [Beetle] GarBeetle
+                            "targetId": 589865, // [Trigger] Cringe Trigger
+                            "state": "DEAD",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 589944, // [Beetle] GarBeetle
+                            "targetId": 689878, // [Trigger] Cringe Trigger 2
+                            "state": "DEAD",
+                            "message": "DEACTIVATE"
+                        }
+                    ],
+                    "triggers": [
+                        {
+                            "id": 689863, // [Trigger] Anti-Cringe Trigger
+                            "active": false,
+                            "position": [
+                                -22.005863,
+                                2.29114,
+                                2.30289
+                            ],
+                            "scale": [
+                                0.787003,
+                                6.171,
+                                4.699
+                            ],
+                            "deactivateOnEnter": true
+                        },
+                        {
+                            "id": 689886, // [Trigger] Anti-Cringe Trigger 2
+                            "active": false,
+                            "position": [
+                                -95.912621,
+                                2.278812,
+                                21.1436
+                            ],
+                            "scale": [
+                                0.787003,
+                                6.171,
+                                4.699
+                            ],
+                            "deactivateOnEnter": true
+                        },
+                        {
+                            "id": 589865, // [Trigger] Cringe Trigger
+                            "active": false,
+                            "position": [
+                                -23.412239,
+                                2.553309,
+                                2.190406
+                            ],
+                            "scale": [
+                                0.787003,
+                                6.171,
+                                4.699
+                            ],
+                            "deactivateOnEnter": true
+                        },
+                        {
+                            "id": 689878, // [Trigger] Cringe Trigger 2
+                            "active": false,
+                            "position": [
+                                -94.51947,
+                                2.016643,
+                                21.256084
+                            ],
+                            "scale": [
+                                0.787003,
+                                6.171,
+                                4.699
+                            ],
+                            "deactivateOnEnter": true
+                        }
+                    ]
+                },
+                "Sunchamber": {
+                    // Stop Music if grabbed the item while music was still fading
+                    "addConnections": [
+                        {
+                            "senderId": 2435191, // [Counter] Counter_Deadghost
+                            "targetId": 2424943, // [Timer] Stop Stop Music Timer
+                            "state": "MAX_REACHED",
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 2435191, // [Counter] Counter_Deadghost
+                            "targetId": 3424937, // [Timer] Stop Music Again
+                            "state": "MAX_REACHED",
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 3424937, // [Timer] Stop Music Again
+                            "targetId": 2437270, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "state": "ZERO",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 3424937, // [Timer] Stop Music Again
+                            "targetId": 2437269, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "state": "ZERO",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 3424937, // [Timer] Stop Music Again
+                            "targetId": 2424938, // [Timer] Stop Music Again 2
+                            "state": "ZERO",
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 2424938, // [Timer] Stop Music Again 2
+                            "targetId": 3424937, // [Timer] Stop Music Again
+                            "state": "ZERO",
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 2424943, // [Timer] Stop Stop Music Timer
+                            "targetId": 3424937, // [Timer] Stop Music Again
+                            "state": "ZERO",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 2424943, // [Timer] Stop Stop Music Timer
+                            "targetId": 2424938, // [Timer] Stop Music Again 2
+                            "state": "ZERO",
+                            "message": "STOP"
+                        }
+                    ],
+                    "timers": [
+                        {
+                            "id": 3424937, // [Timer] Stop Music Again
+                            "time": 0.001
+                        },
+                        {
+                            "id": 2424938, // [Timer] Stop Music Again 2
+                            "time": 0.001
+                        },
+                        {
+                            "id": 2424943, // [Timer] Stop Stop Music Timer
+                            "time": 5.0
+                        }
+                    ]
+                },
+                "Training Chamber": {
+                    // Add Music Triggers for leaving Ghost fight
+                    "addConnections": [
+                        {
+                            "senderId": 786844, // [Timer] Timer Alert
+                            "targetId": 886504, // [Trigger] Anti-Cringe Trigger
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 786844, // [Timer] Timer Alert
+                            "targetId": 886505, // [Trigger] Anti-Cringe Trigger 2
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 886505, // [Trigger] Anti-Cringe Trigger 2
+                            "targetId": 886504, // [Trigger] Anti-Cringe Trigger
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 886505, // [Trigger] Anti-Cringe Trigger 2
+                            "targetId": 886503, // [Trigger] Cringe Trigger
+                            "state": "ENTERED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 886505, // [Trigger] Anti-Cringe Trigger 2
+                            "targetId": 787009, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 886505, // [Trigger] Anti-Cringe Trigger 2
+                            "targetId": 787008, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "state": "ENTERED",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 886504, // [Trigger] Anti-Cringe Trigger
+                            "targetId": 886503, // [Trigger] Cringe Trigger
+                            "state": "ENTERED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 886504, // [Trigger] Anti-Cringe Trigger
+                            "targetId": 787009, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 886504, // [Trigger] Anti-Cringe Trigger
+                            "targetId": 787008, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "state": "ENTERED",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 886503, // [Trigger] Cringe Trigger
+                            "targetId": 886504, // [Trigger] Anti-Cringe Trigger
+                            "state": "ENTERED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 886503, // [Trigger] Cringe Trigger
+                            "targetId": 787009, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "state": "ENTERED",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 886503, // [Trigger] Cringe Trigger
+                            "targetId": 787008, // [StreamedAudio] StreamedAudio - General Short Battle SW
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 786842, // [Counter] Counter_Deadghost
+                            "targetId": 886504, // [Trigger] Anti-Cringe Trigger
+                            "state": "MAX_REACHED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 786842, // [Counter] Counter_Deadghost
+                            "targetId": 886505, // [Trigger] Anti-Cringe Trigger 2
+                            "state": "MAX_REACHED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 786842, // [Counter] Counter_Deadghost
+                            "targetId": 886503, // [Trigger] Cringe Trigger
+                            "state": "MAX_REACHED",
+                            "message": "DEACTIVATE"
+                        }
+                    ],
+                    "triggers": [
+                        {
+                            "id": 886504, // [Trigger] Anti-Cringe Trigger
+                            "active": false,
+                            "position": [
+                                121.75486,
+                                -182.080002,
+                                20.48163
+                            ],
+                            "scale": [
+                                6.171,
+                                0.787003,
+                                4.699
+                            ],
+                            "deactivateOnEnter": true
+                        },
+                        {
+                            "id": 886505, // [Trigger] Anti-Cringe Trigger 2
+                            "active": false,
+                            "position": [
+                                153.969376,
+                                -214.294525,
+                                20.481625
+                            ],
+                            "scale": [
+                                0.787003,
+                                6.171,
+                                4.699
+                            ],
+                            "deactivateOnEnter": true
+                        },
+                        {
+                            "id": 886503, // [Trigger] Cringe Trigger
+                            "active": false,
+                            "position": [
+                                121.75486,
+                                -180.080002,
+                                20.48163
+                            ],
+                            "scale": [
+                                6.171,
+                                0.787003,
+                                4.699
+                            ],
+                            "deactivateOnEnter": true
+                        }
+                    ]
+                },
+                "Sun Tower": {
+                    // Disable tutorial hudmemos
+                    "deleteIds": [
+                        1900904,
+                        1900905
+                    ]
+                }
+            }
+        },
+        "Phendrana Drifts": {
+            "transports": {},
+            "rooms": {
+                "Phendrana Shorelines": {
+                    "addConnections": [
+                        {
+                            "senderId": 131406, // [Relay] Relay-start of cinema
+                            "targetId": 131080, // [SpawnPoint] Spawn point
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 131552, // [Trigger] Trigger - To 00k_Ice_connect
+                            "targetId": 131080, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 131553, // [Trigger] Trigger - To generic_z4
+                            "targetId": 131080, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 131553, // [Trigger] Trigger - To generic_z4
+                            "targetId": 131080, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 131554, // [Trigger] Trigger - To Generic_z5
+                            "targetId": 131080, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 131555, // [Trigger] Trigger - To generic_z7
+                            "targetId": 131080, // [SpawnPoint] Spawn point
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        }
+                    ]
+                },
+                "Ruined Courtyard": {
+                    // Disable tutorial hudmemos
+                    "deleteIds": [
+                        983794,
+                        983795
+                    ]
+                },
+                "Phendrana Canyon": {
+                    // Disable tutorial hudmemos
+                    "deleteIds": [
+                        1049573,
+                        1049574
+                    ]
+                },
+                "Frozen Pike": {
+                    // Disable tutorial hudmemos
+                    "deleteIds": [
+                        2228678,
+                        2228682
+                    ]
+                },
+                "Research Core": {
+                    // Disable tutorial hudmemos
+                    "deleteIds": [
+                        2622699,
+                        2622700
+                    ]
+                }
+            }
+        },
+        "Tallon Overworld": {
+            "transports": {},
+            "rooms": {
+                "Artifact Temple": {
+                    // Make Teleporter play sounds again when ridley dead
+                    "addConnections": [
+                        {
+                            "senderId": 1048578, // [SpawnPoint] Spawn point - NON-Teleporter Spawn
+                            "targetId": 2048598, // [Trigger] Trigger - Play Teleporter Sounds
+                            "state": "INACTIVE",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 2048598, // [Trigger] Trigger - Play Teleporter Sounds
+                            "targetId": 1048599, // [Trigger] Trigger - Stop Teleporter Sounds
+                            "state": "ENTERED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 2048598, // [Trigger] Trigger - Play Teleporter Sounds
+                            "targetId": 1049412, // [Sound] Sound - LightShaft
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 2048598, // [Trigger] Trigger - Play Teleporter Sounds
+                            "targetId": 1049958, // [Sound] Sound - TeleportCircle
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 1048599, // [Trigger] Trigger - Stop Teleporter Sounds
+                            "targetId": 2048598, // [Trigger] Trigger - Play Teleporter Sounds
+                            "state": "ENTERED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1048599, // [Trigger] Trigger - Stop Teleporter Sounds
+                            "targetId": 1049412, // [Sound] Sound - LightShaft
+                            "state": "ENTERED",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 1048599, // [Trigger] Trigger - Stop Teleporter Sounds
+                            "targetId": 1049958, // [Sound] Sound - TeleportCircle
+                            "state": "ENTERED",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 1049299, // [Trigger] Trigger - Start Arriving Sequence
+                            "targetId": 1049412, // [Sound] Sound - LightShaft
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 1049299, // [Trigger] Trigger - Start Arriving Sequence
+                            "targetId": 1049958, // [Sound] Sound - TeleportCircle
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        }
+                    ],
+                    "triggers": [
+                        {
+                            "id": 2048598,
+                            "active": false,
+                            "position": [
+                                -329.966675,
+                                88.600479,
+                                -14.36892
+                            ],
+                            "scale": [
+                                15.370972,
+                                1.468002,
+                                10.599998
+                            ],
+                            "deactivateOnEnter": true
+                        },
+                        {
+                            "id": 1048599,
+                            "active": false,
+                            "position": [
+                                -341.279938,
+                                77.827034,
+                                -11.812092
+                            ],
+                            "scale": [
+                                0.786987,
+                                13.436996,
+                                5.654999
+                            ],
+                            "deactivateOnEnter": true
+                        }
+                    ]
+                },
+                "Cargo Freight Lift to Deck Gamma": {
+                    "deleteIds": [
+                        // Disable tutorial hudmemos
+                        1769724,
+                        1769739
+                    ]
+                },
+                "Landing Site": {
+                    "addConnections": [
+                        // Activate Ship Noises MemoryRelay upon Vanilla Intro Cutscene Skip
+                        {
+                            "senderId": 611, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 635, // [MemoryRelay] Memory Relay - Activate Ship Idle Sound
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 467, // [Trigger] Trigger Save Station In
+                            "targetId": 91, // [Sound] Sound - Samus Ship
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        },
+                        // Play Music when entering the Ship
+                        {
+                            "senderId": 467, // [Trigger] Trigger Save Station In
+                            "targetId": 437, // [StreamedAudio] StreamedAudio - Overworld Daichi SW
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 467, // [Trigger] Trigger Save Station In
+                            "targetId": 578, // [StreamedAudio] StreamedAudio - Overworld SW
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        }
+                    ]
+                }
+            }
+        },
+        "Phazon Mines": {
+            "transports": {},
+            "rooms": {
+                "Central Dynamo": {
+                    // Activate the Entry Gate upon grabbing item to prevent Maze Skip softlock
+                    "addConnections": [
+                        {
+                            "senderId": 1770320, // [Relay] Relay Start Cinematic
+                            "targetId": 1770226, // [Actor] Actor Entry Door
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        }
+                    ]
+                },
+                "Elite Control": {
+                    "deleteIds": [
+                        // Delete Elite Pirate music Trigger on PPC door side
+                        1051555
+                    ],
+                    "addConnections": [
+                        {
+                            "senderId": 1051243, // [SpecialFunction] SpecialFunction PlayerInAreaRelay
+                            "targetId": 1051163, // [Trigger] Trigger - Play Music Yoin 00h Troopers
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1051163, // [Trigger] Trigger - Play Music Yoin 00h Troopers
+                            "targetId": 3469527, // [Timer] Elite Music
+                            "state": "ENTERED",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 1051163, // [Trigger] Trigger - Play Music Yoin 00h Troopers
+                            "targetId": 1051161, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "state": "ENTERED",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 1051243, // [SpecialFunction] SpecialFunction PlayerInAreaRelay
+                            "targetId": 1051162, // [Trigger] Trigger - Play Music Battle 3 00h
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1051162, // [Trigger] Trigger - Play Music Battle 3 00h
+                            "targetId": 3469527, // [Timer] Elite Music
+                            "state": "ENTERED",
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 1049400, // [ElitePirate] ElitePirate
+                            "targetId": 3469527, // [Timer] Elite Music
+                            "state": "DEATH_RATTLE",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 3469527, // [Timer] Elite Music
+                            "targetId": 1051161, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "state": "ZERO",
+                            "message": "PLAY"
+                        }
+                    ],
+                    "removeConnections": [
+                        {
+                            "senderId": 1051165, // [Trigger] Trigger - Play Music Yoin 00f Elite
+                            "targetId": 1051159, // [StreamedAudio] StreamedAudio Pirate Battle 3 SW
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        }
+                    ],
+                    "timers": [
+                        {
+                            "id": 3469527, // [Timer] Elite Music
+                            "time": 0.1,
+                            "startImmediately": false
+                        }
+                    ]
+                },
+                "Ventilation Shaft": {
+                    // Delete Old Load Triggers
+                    "deleteIds": [
+                        1179905,
+                        1179906
+                    ],
+                    // Better Load Trigger Positions
+                    "addConnections": [
+                        {
+                            "senderId": 2179660, // [Trigger] Load Elite Control
+                            "targetId": 1179650, // [Dock] Dock - 05_mines_forcefields
+                            "state": "ENTERED",
+                            "message": "SET_TO_MAX"
+                        },
+                        {
+                            "senderId": 2179660, // [Trigger] Load Elite Control
+                            "targetId": 1179649, // [Dock] Dock - 06_mines_elitebustout
+                            "state": "ENTERED",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 2179661, // [Trigger] Load Omega Research
+                            "targetId": 1179649, // [Dock] Dock - 06_mines_elitebustout
+                            "state": "ENTERED",
+                            "message": "SET_TO_MAX"
+                        },
+                        {
+                            "senderId": 2179661, // [Trigger] Load Omega Research
+                            "targetId": 1179650, // [Dock] Dock - 05_mines_forcefields
+                            "state": "ENTERED",
+                            "message": "SET_TO_ZERO"
+                        }
+                    ],
+                    "triggers": [
+                        {
+                            "id": 2179660, // [Trigger] Load Elite Control
+                            "active": true,
+                            "position": [
+                                25.16172,
+                                69.354729,
+                                -47.47015
+                            ],
+                            "scale": [
+                                5.0,
+                                5.0,
+                                20.0
+                            ]
+                        },
+                        {
+                            "id": 2179661, // [Trigger] Load Omega Research
+                            "active": true,
+                            "position": [
+                                42.751381,
+                                62.091549,
+                                -49.858238
+                            ],
+                            "scale": [
+                                20.0,
+                                18.0,
+                                15.0
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "Magmoor Caverns": {
+            "transports": {},
+            "rooms": {
+                "Lava Lake": {
+                    "addConnections": [
+                        {
+                            "senderId": 272887, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 272966, // [SpawnPoint] Spawn point
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 272887, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 272748, // [PlayerActor] PlayerActor_B_rready
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 272701, // [Relay] Relay-end of cinema
+                            "targetId": 272966, // [StreamedAudio] StreamedAudio Lava Main SW
+                            "state": "ZERO",
+                            "message": "PLAY"
+                        }
+                    ]
+                }
+            }
+        },
+        "Impact Crater": {
+            "transports": {},
+            "rooms": {
+                "Subchamber Two": {
+                    // Destroy Energy Orbs when Exo dipping Cutscene Starts
+                    "addConnections": [
+                        {
+                            "senderId": 458812, // [Relay] Relay
+                            "targetId": 558758, // [Trigger] Destroy Energy Balls
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 458812, // [Relay] Relay
+                            "targetId": 458909, // [PickupGenerator] PickupGenerator
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        }
+                    ],
+                    "triggers": [
+                        {
+                            "id": 558758,
+                            "active": false,
+                            "position": [
+                                -22.069084,
+                                -327.599915,
+                                -27.776508
+                            ],
+                            "scale": [
+                                66.162003,
+                                155.578003,
+                                51.860001
+                            ],
+                            "damageType": "missile",
+                            "damageAmount": 30.0,
+                            "flags": 2
+                        }
+                    ]
+                },
+                "Subchamber Three": {
+                    // Destroy Energy Orbs when Exo dipping Cutscene Starts
+                    "addConnections": [
+                        {
+                            "senderId": 524325, // [Relay] Relay
+                            "targetId": 624291, // [Trigger] Destroy Energy Balls
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 524325, // [Relay] Relay
+                            "targetId": 524421, // [PickupGenerator] PickupGenerator
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        }
+                    ],
+                    "triggers": [
+                        {
+                            "id": 624291,
+                            "active": false,
+                            "position": [
+                                -22.108036,
+                                -255.562607,
+                                -74.912018
+                            ],
+                            "scale": [
+                                66.162003,
+                                155.578003,
+                                51.860001
+                            ],
+                            "damageType": "missile",
+                            "damageAmount": 30.0,
+                            "flags": 2
+                        }
+                    ]
+                },
+                "Subchamber Four": {
+                    // Destroy Energy Orbs when Exo dipping Cutscene Starts
+                    "addConnections": [
+                        {
+                            "senderId": 589858, // [Relay] Relay
+                            "targetId": 689826, // [Trigger] Destroy Energy Balls
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 589858, // [Relay] Relay
+                            "targetId": 589938, // [PickupGenerator] PickupGenerator
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        }
+                    ],
+                    "triggers": [
+                        {
+                            "id": 689826,
+                            "active": false,
+                            "position": [
+                                7.918359,
+                                -227.698868,
+                                -122.937988
+                            ],
+                            "scale": [
+                                116.270996,
+                                51.949005,
+                                49.259003
+                            ],
+                            "damageType": "missile",
+                            "damageAmount": 30.0,
+                            "flags": 2
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

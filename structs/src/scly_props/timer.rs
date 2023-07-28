@@ -14,7 +14,7 @@ pub struct Timer<'r>
 
     pub start_time: f32,
     pub max_random_add: f32,
-    pub reset_to_zero: u8,
+    pub looping: u8,
     pub start_immediately: u8,
     pub active: u8,
 }

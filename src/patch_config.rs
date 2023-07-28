@@ -3,6 +3,7 @@ use std::{
     collections::HashMap,
     fs::{File, OpenOptions},
     fs,
+    fmt,
 };
 
 use clap::{
@@ -19,11 +20,11 @@ use crate::{
     custom_assets::custom_asset_ids,
 };
 
-use reader_writer::FourCC;
+use reader_writer::{FourCC, Reader};
 
 use structs::{res_id, ResId};
 
-use json_data::SKIPPABLE_CUTSCENES;
+use json_data::*;
 use json_strip::strip_jsonc_comments;
 
 use crate::elevators::World;
@@ -63,6 +64,7 @@ pub enum CutsceneMode
 {
     Original,
     Skippable,
+    SkippableCompetitive,
     Competitive,
     Minor,
     Major,
@@ -525,7 +527,7 @@ pub struct TimerConfig
     pub active: Option<bool>,
     pub time: f32,
     pub max_random_add: Option<f32>,
-    pub reset_to_zero: Option<bool>,
+    pub looping: Option<bool>,
     pub start_immediately: Option<bool>,
 }
 
@@ -538,7 +540,7 @@ pub struct ActorKeyFrameConfig
     pub animation_id: u32,
     pub looping: bool,
     pub lifetime: f32,
-    pub fade_out: u32,
+    pub fade_out: f32,
     pub total_playback: f32,
 }
 
@@ -549,7 +551,7 @@ pub struct SpawnPointConfig
     pub id: u32,
     pub active: Option<bool>,
     pub position: [f32;3],
-    pub rotation: [f32;3],
+    pub rotation: Option<[f32;3]>,
     pub default_spawn: Option<bool>,
     pub morphed: Option<bool>,
     pub items: Option<StartingItems>,
@@ -718,6 +720,38 @@ pub enum PhazonDamageModifier
     Linear,        // Starts directly and deals linear damages
 }
 
+#[derive(Serialize, Debug, PartialEq, Copy, Clone)]
+pub enum Version
+{
+    NtscU0_00,
+    NtscU0_01,
+    NtscU0_02,
+    NtscK,
+    NtscJ,
+    Pal,
+    NtscUTrilogy,
+    NtscJTrilogy,
+    PalTrilogy,
+}
+
+impl fmt::Display for Version
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error>
+    {
+        match self {
+            Version::NtscU0_00    => write!(f, "1.00"),
+            Version::NtscU0_01    => write!(f, "1.01"),
+            Version::NtscU0_02    => write!(f, "1.02"),
+            Version::NtscK        => write!(f, "kor"),
+            Version::NtscJ        => write!(f, "jap"),
+            Version::Pal          => write!(f, "pal"),
+            Version::NtscUTrilogy => write!(f, "trilogy_ntsc_u"),
+            Version::NtscJTrilogy => write!(f, "trilogy_ntsc_j"),
+            Version::PalTrilogy   => write!(f, "trilogy_pal"),
+        }
+    }
+}
+
 #[derive(Debug, Serialize)]
 pub struct PatchConfig
 {
@@ -730,6 +764,8 @@ pub struct PatchConfig
 
     pub force_vanilla_layout: bool,
 
+    pub version: Version,
+
     #[serde(skip_serializing)]
     pub input_iso: memmap::Mmap,
     pub iso_format: IsoFormat,
@@ -740,6 +776,7 @@ pub struct PatchConfig
     pub qol_game_breaking: bool,
     pub qol_cosmetic: bool,
     pub qol_pickup_scans: bool,
+    pub qol_general: bool,
 
     pub phazon_elite_without_dynamo: bool,
     pub main_plaza_door: bool,
@@ -840,6 +877,7 @@ struct Preferences
     qol_cosmetic: Option<bool>,
     qol_cutscenes: Option<String>,
     qol_pickup_scans: Option<bool>,
+    qol_general: Option<bool>,
 
     map_default_state: Option<String>,
     artifact_hint_behavior: Option<String>,
@@ -1124,6 +1162,7 @@ impl PatchConfig
             "qol game breaking" => patch_config.preferences.qol_game_breaking,
             "qol cosmetic" => patch_config.preferences.qol_cosmetic,
             "qol scans" => patch_config.preferences.qol_pickup_scans,
+            "qol general" => patch_config.preferences.qol_general,
             "automatic crash screen" => patch_config.preferences.automatic_crash_screen,
             "quickplay" => patch_config.preferences.quickplay,
             "quickpatch" => patch_config.preferences.quickpatch,
@@ -1203,6 +1242,15 @@ impl PatchConfig
     }
 }
 
+fn merge_json(config: &mut PatchConfigPrivate, text: &'static str) -> Result<(), String>
+{
+    let data = serde_json::from_str(text);
+    let data: PatchConfigPrivate = data.map_err(|e| format!("JSON parse failed: {}", e))?;
+    config.merge(data); 
+
+    Ok(())
+}
+
 impl PatchConfigPrivate
 {
     /* Extends the "stuff" added/edited in each room */
@@ -1255,21 +1303,61 @@ impl PatchConfigPrivate
     // parse and then handle configuration macros (e.g. a bool loading in several pages of JSON changes)
     fn parse(&self) -> Result<PatchConfig, String>
     {
+        // Parse version
+        let version = {
+            let input_iso_path = self.input_iso.as_deref().unwrap_or("prime.iso");
+            let input_iso_file = File::open(input_iso_path.trim())
+                .map_err(|e| format!("Failed to open {}: {}", input_iso_path, e))?;
+            let input_iso = unsafe { memmap::Mmap::map(&input_iso_file) }
+                .map_err(|e| format!("Failed to open {}: {}", input_iso_path,  e))?;
+
+            let mut reader = Reader::new(&input_iso[..]);
+            let gc_disc: structs::GcDisc = reader.read(());
+        
+            match (&gc_disc.header.game_identifier(), gc_disc.header.disc_id, gc_disc.header.version) {
+                (b"GM8E01", 0, 0)  => Version::NtscU0_00,
+                (b"GM8E01", 0, 1)  => Version::NtscU0_01,
+                (b"GM8E01", 0, 2)  => Version::NtscU0_02,
+                (b"GM8E01", 0, 48) => Version::NtscK,
+                (b"GM8J01", 0, 0)  => Version::NtscJ,
+                (b"GM8P01", 0, 0)  => Version::Pal,
+                (b"R3ME01", 0, 0)  => Version::NtscUTrilogy,
+                (b"R3IJ01", 0, 0)  => Version::NtscJTrilogy,
+                (b"R3MP01", 0, 0)  => Version::PalTrilogy,
+                _ => Err(concat!(
+                        "The input ISO doesn't appear to be NTSC-US, NTSC-J, NTSC-K, PAL Metroid Prime, ",
+                        "or NTSC-US, NTSC-J, PAL Metroid Prime Trilogy."
+                    ))?
+            }
+        };
+
+        let force_vanilla_layout = self.force_vanilla_layout.unwrap_or(false);
+
         let mut result = self.clone();
 
         let mode = result.preferences.qol_cutscenes.as_ref().unwrap_or(&"original".to_string()).to_lowercase();
         let mode = mode.trim();
 
-        if vec!["skippable"].contains(&mode) {
-            let skippable_cutscenes = serde_json::from_str(SKIPPABLE_CUTSCENES);
-            let skippable_cutscenes: PatchConfigPrivate = skippable_cutscenes.map_err(|e| format!("JSON parse failed: {}", e))?;
-            result.merge(skippable_cutscenes); 
+        if vec!["skippable", "skippablecompetitive"].contains(&mode) {
+            merge_json(&mut result, SKIPPABLE_CUTSCENES)?;
+
+            if [Version::NtscJ, Version::Pal, Version::NtscUTrilogy, Version::NtscJTrilogy, Version::PalTrilogy].contains(&version) {
+                merge_json(&mut result, SKIPPABLE_CUTSCENES_PAL)?;
+            }
+
+            if mode == "skippablecompetitive" {
+                merge_json(&mut result, SKIPPABLE_CUTSCENES_COMPETITIVE)?;
+            }
         }
 
-        result.parse_inner()
+        if self.preferences.qol_general.unwrap_or(!force_vanilla_layout) {
+            merge_json(&mut result, QOL)?;
+        }
+
+        result.parse_inner(version)
     }
 
-    fn parse_inner(&self) -> Result<PatchConfig, String>
+    fn parse_inner(&self, version: Version) -> Result<PatchConfig, String>
     {
         let run_mode = {
             if self.run_mode.is_some() {
@@ -1366,28 +1454,47 @@ impl PatchConfigPrivate
         let qol_game_breaking = self.preferences.qol_game_breaking.unwrap_or(!force_vanilla_layout);
         let qol_cosmetic = self.preferences.qol_cosmetic.unwrap_or(!force_vanilla_layout);
         let qol_pickup_scans = self.preferences.qol_pickup_scans.unwrap_or(!force_vanilla_layout);
+        let qol_general = self.preferences.qol_general.unwrap_or(!force_vanilla_layout);
         let qol_cutscenes = match self.preferences.qol_cutscenes.as_ref().unwrap_or(&"original".to_string()).to_lowercase().trim() {
             "original" => CutsceneMode::Original,
             "competitive" => CutsceneMode::Competitive,
             "skippable" => CutsceneMode::Skippable,
+            "skippablecompetitive" => CutsceneMode::SkippableCompetitive,
             "minor" => CutsceneMode::Minor,
             "major" => CutsceneMode::Major,
             _ => panic!("Unknown cutscene mode {}", self.preferences.qol_cutscenes.as_ref().unwrap()),
         };
 
         let starting_room = {
-            if force_vanilla_layout {
-                "Frigate:Exterior Docking Hangar".to_string()
-            } else {
-                self.game_config.starting_room.clone().unwrap_or("Tallon:Landing Site".to_string())
+            let room = self.game_config.starting_room.as_ref();
+            match room {
+                Some(room) => {
+                    room.to_string()
+                },
+                None => {
+                    if force_vanilla_layout {
+                        "Frigate:Exterior Docking Hangar".to_string()
+                    } else {
+                        "Tallon:Landing Site".to_string()
+                    }
+                }
             }
         };
 
-        let starting_items: StartingItems = {
-            if force_vanilla_layout {
-                StartingItems::from_u64(2188378143)
-            } else {
-                self.game_config.starting_items.clone().unwrap_or_else(|| StartingItems::from_u64(1))
+        let starting_items = {
+            let items = self.game_config.starting_items.as_ref();
+
+            match items {
+                Some(items) => {
+                    items.clone()
+                },
+                None => {
+                    if force_vanilla_layout {
+                        StartingItems::from_u64(2188378143)
+                    } else {
+                        StartingItems::from_u64(1)
+                    }
+                }
             }
         };
 
@@ -1434,26 +1541,53 @@ impl PatchConfigPrivate
         let spring_ball = self.game_config.spring_ball.unwrap_or(false);
         let warp_to_start = self.game_config.warp_to_start.unwrap_or(false);
         let main_menu_message = {
-            if force_vanilla_layout {
-                "".to_string()
-            } else {
-                self.game_config.main_menu_message.clone().unwrap_or_else(|| "randomprime".to_string())
+            let message = self.game_config.main_menu_message.as_ref();
+
+            match message {
+                Some(message) => {
+                    message.to_string()
+                },
+                None => {
+                    if force_vanilla_layout {
+                        "".to_string()
+                    } else {
+                        "randomprime".to_string()
+                    }
+                }
             }
         };
 
         let credits_string = {
-            if force_vanilla_layout {
-                Some("".to_string())
-            } else {
-                self.game_config.credits_string.clone()
+            let message = self.game_config.credits_string.as_ref();
+
+            match message {
+                Some(message) => {
+                    Some(message.to_string())
+                },
+                None => {
+                    if force_vanilla_layout {
+                        Some("".to_string())
+                    } else {
+                        None
+                    }
+                }
             }
         };
 
         let results_string = {
-            if force_vanilla_layout {
-                Some("".to_string())
-            } else {
-                self.game_config.results_string.clone()
+            let message = self.game_config.results_string.as_ref();
+
+            match message {
+                Some(message) => {
+                    Some(message.to_string())
+                },
+                None => {
+                    if force_vanilla_layout {
+                        Some("".to_string())
+                    } else {
+                        None
+                    }
+                }
             }
         };
 
@@ -1478,6 +1612,7 @@ impl PatchConfigPrivate
             run_mode,
             logbook_filename: self.logbook_filename.clone(),
             export_asset_dir: self.export_asset_dir.clone(),
+            version,
             input_iso,
             iso_format,
             output_iso,
@@ -1494,6 +1629,7 @@ impl PatchConfigPrivate
             qol_cosmetic,
             qol_cutscenes,
             qol_pickup_scans,
+            qol_general,
 
             phazon_elite_without_dynamo: self.game_config.phazon_elite_without_dynamo.unwrap_or(true),
             main_plaza_door: self.game_config.main_plaza_door.unwrap_or(true),

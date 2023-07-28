@@ -1,0 +1,148 @@
+{
+    "levelData": {
+        "Frigate Orpheon": {
+            "transports": {},
+            "rooms": {
+                "Exterior Docking Hangar": {
+                    "deleteIds": [
+                        74
+                    ]
+                },
+                "Map Facility": {
+                    "deleteIds": [
+                        524289,
+                        524302,
+                        524290
+                    ]
+                },
+                "Biotech Research Area 2": {
+                    "deleteIds": [
+                        459103
+                    ]
+                }
+            }
+        },
+        "Chozo Ruins": {
+            "transports": {},
+            "rooms": {
+                "Burn Dome": {
+                    "deleteIds": [
+                        3145754,
+                        3145745
+                    ]
+                },
+                "Ruined Shrine": {
+                    "deleteIds": [
+                        589893,
+                        589930,
+                        589935,
+                        589932
+                    ]
+                }
+            }
+        },
+        "Phendrana Drifts": {
+            "transports": {},
+            "rooms": {
+                "Chapel of the Elders": {
+                    "deleteIds": [
+                        928130,
+                        917507,
+                        917508
+                    ],
+                    "addConnections": [
+                        {
+                            "senderId": 918130, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 917877, // [CameraFilterKeyframe] Camera Filter Keyframe WideScreen
+                            "state": "ZERO",
+                            "message": "DECREMENT"
+                        }
+                    ]
+                },
+                "Research Lab Aether": {
+                    "deleteIds": [
+                        3342342,
+                        3342337,
+                        3342338
+                    ]
+                }
+            }
+        },
+        "Tallon Overworld": {
+            "transports": {},
+            "rooms": {
+                "Temple Security Station": {
+                    "deleteIds": [
+                        458754
+                    ],
+                    "addConnections": [
+                        {
+                            "senderId": 458926, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "targetId": 458864, // [Timer] Timer Flash
+                            "state": "ZERO",
+                            "message": "STOP"
+                        }
+                    ],
+                    "timers": [],
+                    "removeConnections": [
+                        {
+                            "senderId": 458865, // [Camera] Cinematic Camera -Camera1
+                            "targetId": 458854, // [CameraFilterKeyframe] cinema bars
+                            "state": "ACTIVE",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 458866, // [Camera] Cinematic Camera-Camera2
+                            "targetId": 458854, // [CameraFilterKeyframe] cinema bars
+                            "state": "INACTIVE",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 458866, // [Camera] Cinematic Camera-Camera2
+                            "targetId": 458857, // [PlayerActor] PlayerActor-B_RReady_Samus
+                            "state": "INACTIVE",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 458866, // [Camera] Cinematic Camera-Camera2
+                            "targetId": 458909, // [SpawnPoint] Spawn point
+                            "state": "INACTIVE",
+                            "message": "SET_TO_ZERO"
+                        }
+                    ],
+                    "relays": [],
+                    "cutsceneSkipFns": [
+                        458754 // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                    ]
+                }
+            }
+        },
+        "Phazon Mines": {
+            "transports": {},
+            "rooms": {
+                "Elite Control": {
+                    "deleteIds": [
+                        1048591,
+                        1048701,
+                        1048697,
+                        1048698,
+                        1048696,
+                        1048699
+                    ]
+                },
+                "Mine Security Station": {
+                    "deleteIds": [
+                        458753,
+                        458754,
+                        458757,
+                        458758,
+                        458759,
+                        558760,
+                        458756,
+                        558761
+                    ]
+                }
+            }
+        }
+    }
+}

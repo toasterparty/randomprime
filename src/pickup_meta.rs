@@ -228,6 +228,95 @@ impl PickupType
     }
 }
 
+pub fn pickup_type_for_pickup(pickup: &structs::Pickup) -> Option<PickupType>
+{
+    match pickup.kind {
+        4 => Some(PickupType::Missile),
+        24 => Some(PickupType::EnergyTank),
+        9 => Some(PickupType::ThermalVisor),
+        13 => Some(PickupType::XRayVisor),
+        22 => Some(PickupType::VariaSuit),
+        21 => Some(PickupType::GravitySuit),
+        // XXX There's two PhazonSuit objects floating around, we want the one with a model
+        23 if pickup.cmdl != 0xFFFFFFFF => Some(PickupType::PhazonSuit),
+        16 => Some(PickupType::MorphBall),
+        18 => Some(PickupType::BoostBall),
+        19 => Some(PickupType::SpiderBall),
+        6 => Some(PickupType::MorphBallBomb),
+        7 => Some(PickupType::PowerBomb),
+        10 => Some(PickupType::ChargeBeam),
+        15 => Some(PickupType::SpaceJumpBoots),
+        12 => Some(PickupType::GrappleBeam),
+        11 => Some(PickupType::SuperMissile),
+        28 => Some(PickupType::Wavebuster),
+        14 => Some(PickupType::IceSpreader),
+        8 => Some(PickupType::Flamethrower),
+        2 => Some(PickupType::WaveBeam),
+        1 => Some(PickupType::IceBeam),
+        3 => Some(PickupType::PlasmaBeam),
+        33 => Some(PickupType::ArtifactOfLifegiver),
+        32 => Some(PickupType::ArtifactOfWild),
+        38 => Some(PickupType::ArtifactOfWorld),
+        37 => Some(PickupType::ArtifactOfSun),
+        31 => Some(PickupType::ArtifactOfElder),
+        39 => Some(PickupType::ArtifactOfSpirit),
+        29 => Some(PickupType::ArtifactOfTruth),
+        35 => Some(PickupType::ArtifactOfChozo),
+        34 => Some(PickupType::ArtifactOfWarrior),
+        40 => Some(PickupType::ArtifactOfNewborn),
+        36 => Some(PickupType::ArtifactOfNature),
+        30 => Some(PickupType::ArtifactOfStrength),
+        26 if pickup.curr_increase == 20 => Some(PickupType::HealthRefill),
+        _ => None,
+    }
+}
+
+pub fn pickup_model_for_pickup(pickup: &structs::Pickup) -> Option<PickupModel>
+{
+    match pickup.kind {
+        4 if pickup.max_increase > 0 => Some(PickupModel::Missile),
+        4 if pickup.max_increase == 0 => Some(PickupModel::MissileRefill),
+        24 if pickup.max_increase > 0 => Some(PickupModel::EnergyTank),
+        9 => Some(PickupModel::Visor),
+        13 => Some(PickupModel::Visor),
+        22 => Some(PickupModel::VariaSuit),
+        21 => Some(PickupModel::GravitySuit),
+        // XXX There's two PhazonSuit objects floating around, we want the one with a model
+        23 if pickup.cmdl != 0xFFFFFFFF => Some(PickupModel::PhazonSuit),
+        16 => Some(PickupModel::MorphBall),
+        18 => Some(PickupModel::BoostBall),
+        19 => Some(PickupModel::SpiderBall),
+        6 => Some(PickupModel::MorphBallBomb),
+        7 if pickup.max_increase == 1 => Some(PickupModel::PowerBombExpansion),
+        7 if pickup.max_increase == 4 => Some(PickupModel::PowerBomb),
+        7 if pickup.max_increase == 0 => Some(PickupModel::PowerBombRefill),
+        10 => Some(PickupModel::ChargeBeam),
+        15 => Some(PickupModel::SpaceJumpBoots),
+        12 => Some(PickupModel::GrappleBeam),
+        11 => Some(PickupModel::SuperMissile),
+        28 => Some(PickupModel::Wavebuster),
+        14 => Some(PickupModel::IceSpreader),
+        8 => Some(PickupModel::Flamethrower),
+        2 => Some(PickupModel::WaveBeam),
+        1 => Some(PickupModel::IceBeam),
+        3 => Some(PickupModel::PlasmaBeam),
+        33 => Some(PickupModel::ArtifactOfLifegiver),
+        32 => Some(PickupModel::ArtifactOfWild),
+        38 => Some(PickupModel::ArtifactOfWorld),
+        37 => Some(PickupModel::ArtifactOfSun),
+        31 => Some(PickupModel::ArtifactOfElder),
+        39 => Some(PickupModel::ArtifactOfSpirit),
+        29 => Some(PickupModel::ArtifactOfTruth),
+        35 => Some(PickupModel::ArtifactOfChozo),
+        34 => Some(PickupModel::ArtifactOfWarrior),
+        40 => Some(PickupModel::ArtifactOfNewborn),
+        36 => Some(PickupModel::ArtifactOfNature),
+        30 => Some(PickupModel::ArtifactOfStrength),
+        26 if pickup.curr_increase == 20 => Some(PickupModel::HealthRefill),
+        _ => None,
+    }
+}
+
 /* CMDL which exist in the vanilla game, or are custom-made for randomprime */
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Deserialize)]
 #[serde(rename_all = "camelCase")]
