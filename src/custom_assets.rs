@@ -1375,16 +1375,13 @@ fn create_randovania_gamecube_cmdl_and_ancs<'r>(
 ) -> [structs::Resource<'r>; 2]
 {
     let new_cmdl = {
-        let old_cmdl = ResourceData::new(
-            &resources[&resource_info!("CMDL_GameCube.CMDL").into()]
-        );
-        let cmdl_bytes = old_cmdl.decompress().into_owned();
-        let mut cmdl: structs::Cmdl = Reader::new(&cmdl_bytes[..]).read::<structs::Cmdl>(());
+        let old_cmdl = include_bytes!("../extra_assets/gamecube.CMDL");
+        let mut new_cmdl = Reader::new(&old_cmdl[..]).read::<structs::Cmdl>(());
 
-        cmdl.material_sets.as_mut_vec()[0].texture_ids.as_mut_vec()[1] = new_txtr_id;
+        new_cmdl.material_sets.as_mut_vec()[0].texture_ids.as_mut_vec()[1] = new_txtr_id;
 
         let mut new_cmdl_bytes = vec![];
-        cmdl.write_to(&mut new_cmdl_bytes).unwrap();
+        new_cmdl.write_to(&mut new_cmdl_bytes).unwrap();
 
         build_resource(
             new_cmdl_id,
