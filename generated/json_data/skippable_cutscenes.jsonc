@@ -5718,6 +5718,28 @@
                         1900705 // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                     ]
                 },
+                "Sun Tower Access": {
+                    // Delete Debris Extended to save memory
+                    "deleteIds": [
+                        2293909,
+                        2293910,
+                        2293914,
+                        2293918,
+                        2293919,
+                        2293920,
+                        2293921,
+                        2293922,
+                        2293923,
+                        2293924,
+                        2293925,
+                        2293926,
+                        2293913,
+                        2293912,
+                        2293911,
+                        2293915,
+                        2293916
+                    ]
+                },
                 "Sunchamber": {
                     "addConnections": [
                         {
@@ -7318,6 +7340,28 @@
                             "id": 1424937, // [Timer] Deactivate Flaahgra Switch
                             "time": 0.1
                         }
+                    ]
+                },
+                "Sunchamber Access": {
+                    // Delete Debris Extended to save memory
+                    "deleteIds": [
+                        2031696,
+                        2031695,
+                        2031694,
+                        2031693,
+                        2031692,
+                        2031691,
+                        2031690,
+                        2031689,
+                        2031688,
+                        2031678,
+                        2031679,
+                        2031680,
+                        2031681,
+                        2031682,
+                        2031683,
+                        2031684,
+                        2031685
                     ]
                 },
                 "Tower of Light": {
