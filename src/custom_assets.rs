@@ -58,7 +58,7 @@ macro_rules! def_asset_ids {
 
 pub mod custom_asset_ids {
     def_asset_ids! {
-        // Item Assets //
+        // Item Assets
         PHAZON_SUIT_TXTR1: TXTR = 0xDEAF0000,
         PHAZON_SUIT_TXTR2: TXTR,
         PHAZON_SUIT_CMDL: CMDL,
@@ -79,6 +79,11 @@ pub mod custom_asset_ids {
         SHINY_MISSILE_ANCS: ANCS,
         SHINY_MISSILE_EVNT: EVNT,
         SHINY_MISSILE_ANIM: ANIM,
+        RANDOVANIA_GAMECUBE_CMDL: CMDL,
+        RANDOVANIA_GAMECUBE_ANCS: ANCS,
+        RANDOVANIA_GAMECUBE_TXTR: TXTR,
+
+        // Custom Scans
         SHORELINES_POI_SCAN: SCAN,
         SHORELINES_POI_STRG: STRG,
         CFLDG_POI_SCAN: SCAN,
@@ -102,93 +107,210 @@ pub mod custom_asset_ids {
         BLOCK_COLOR_3: CMDL,
         BLOCK_COLOR_4: CMDL,
 
-        // Door Assets //
-        MORPH_BALL_BOMB_DOOR_CMDL: CMDL,
-        POWER_BOMB_DOOR_CMDL: CMDL,
-        MISSILE_DOOR_CMDL: CMDL,
-        CHARGE_DOOR_CMDL: CMDL,
-        SUPER_MISSILE_DOOR_CMDL: CMDL,
-        WAVEBUSTER_DOOR_CMDL: CMDL,
-        ICESPREADER_DOOR_CMDL: CMDL,
-        FLAMETHROWER_DOOR_CMDL: CMDL,
-        DISABLED_DOOR_CMDL: CMDL,
-        AI_DOOR_CMDL: CMDL,
+        // Door/Blast Shield Assets (alphabetical)
+        ORANGE_TXTR: TXTR,
+        PINK_TXTR: TXTR,
+        YELLOW_TXTR: TXTR,
+        TESTBNEW_TXTR: TXTR,
 
-        VERTICAL_RED_DOOR_CMDL: CMDL,
-        VERTICAL_BOOST_DOOR_CMDL: CMDL,
-        VERTICAL_POWER_BOMB_DOOR_CMDL: CMDL,
-        VERTICAL_MORPH_BALL_BOMB_DOOR_CMDL: CMDL,
-        VERTICAL_MISSILE_DOOR_CMDL: CMDL,
-        VERTICAL_CHARGE_DOOR_CMDL: CMDL,
-        VERTICAL_SUPER_MISSILE_DOOR_CMDL: CMDL,
-        VERTICAL_DISABLED_DOOR_CMDL: CMDL,
-        VERTICAL_WAVEBUSTER_DOOR_CMDL: CMDL,
-        VERTICAL_ICESPREADER_DOOR_CMDL: CMDL,
-        VERTICAL_FLAMETHROWER_DOOR_CMDL: CMDL,
-        VERTICAL_AI_DOOR_CMDL: CMDL,
+        AI_CMDL: CMDL,
+        AI_VERTICAL_CMDL: CMDL,
+        AI_TXTR: TXTR,
+        AI_SCAN: SCAN,
+        AI_STRG: STRG,
 
-        MORPH_BALL_BOMB_DOOR_TXTR: TXTR,
-        POWER_BOMB_DOOR_TXTR: TXTR,
-        MISSILE_DOOR_TXTR: TXTR,
-        CHARGE_DOOR_TXTR: TXTR,
-        SUPER_MISSILE_DOOR_TXTR: TXTR,
-        WAVEBUSTER_DOOR_TXTR: TXTR,
-        ICESPREADER_DOOR_TXTR: TXTR,
-        FLAMETHROWER_DOOR_TXTR: TXTR,
-        DISABLED_DOOR_TXTR: TXTR,
-        AI_DOOR_TXTR: TXTR,
+        BOOST_CMDL: CMDL,
+        BOOST_VERTICAL_CMDL: CMDL,
+        BOOST_SCAN: SCAN,
+        BOOST_STRG: STRG,
 
-        BOOST_DOOR_SCAN: SCAN,
-        BOOST_DOOR_STRG: STRG,
-        POWER_BOMB_DOOR_SCAN: SCAN,
-        POWER_BOMB_DOOR_STRG: STRG,
-        BOMB_DOOR_SCAN: SCAN,
-        BOMB_DOOR_STRG: STRG,
-        MISSILE_DOOR_SCAN: SCAN,
-        MISSILE_DOOR_STRG: STRG,
-        CHARGE_DOOR_SCAN: SCAN,
-        CHARGE_DOOR_STRG: STRG,
-        SUPER_MISSILE_DOOR_SCAN: SCAN,
-        SUPER_MISSILE_DOOR_STRG: STRG,
-        WAVEBUSTER_DOOR_SCAN: SCAN,
-        WAVEBUSTER_DOOR_STRG: STRG,
-        ICESPREADER_DOOR_SCAN: SCAN,
-        ICESPREADER_DOOR_STRG: STRG,
-        FLAMETHROWER_DOOR_SCAN: SCAN,
-        FLAMETHROWER_DOOR_STRG: STRG,
-        DISABLED_DOOR_SCAN: SCAN,
-        DISABLED_DOOR_STRG: STRG,
-        AI_DOOR_SCAN: SCAN,
-        AI_DOOR_STRG: STRG,
+        CHARGE_BEAM_CMDL: CMDL,
+        CHARGE_BEAM_VERTICAL_CMDL: CMDL,
+        CHARGE_BEAM_BLAST_SHIELD_CMDL: CMDL,
+        CHARGE_BEAM_ANIMATED_GLOW_TXTR: TXTR,
+        CHARGE_BEAM_GLOW_BORDER_TXTR: TXTR,
+        CHARGE_BEAM_GLOW_TRIM_TXTR: TXTR,
+        CHARGE_BEAM_HOLORIM_TXTR: TXTR,
+        CHARGE_BEAM_METAL_BODY_TXTR: TXTR,
+        CHARGE_BEAM_METAL_TRIM_TXTR: TXTR,
+        CHARGE_BEAM_SCAN: SCAN,
+        CHARGE_BEAM_STRG: STRG,
+        CHARGE_BEAM_BLAST_SHIELD_SCAN: SCAN,
+        CHARGE_BEAM_BLAST_SHIELD_STRG: STRG,
 
-        // blast shield assets //
-        POWER_BOMB_BLAST_SHIELD_CMDL: CMDL,
-        SUPER_BLAST_SHIELD_CMDL: CMDL,
-        WAVEBUSTER_BLAST_SHIELD_CMDL: CMDL,
-        ICESPREADER_BLAST_SHIELD_CMDL: CMDL,
+        DISABLED_CMDL: CMDL,
+        DISABLED_VERTICAL_CMDL: CMDL,
+        DISABLED_TXTR: TXTR,
+        DISABLED_SCAN: SCAN,
+        DISABLED_STRG: STRG,
+
+        FLAMETHROWER_CMDL: CMDL,
+        FLAMETHROWER_VERTICAL_CMDL: CMDL,
         FLAMETHROWER_BLAST_SHIELD_CMDL: CMDL,
-
-        BLAST_SHIELD_ALT_TXTR0: TXTR,
-        BLAST_SHIELD_ALT_TXTR1: TXTR,
-        BLAST_SHIELD_ALT_TXTR2: TXTR,
-
-        POWER_BOMB_BLAST_SHIELD_TXTR: TXTR,
-        SUPER_BLAST_SHIELD_TXTR: TXTR,
-        WAVEBUSTER_BLAST_SHIELD_TXTR: TXTR,
-        ICESPREADER_BLAST_SHIELD_TXTR: TXTR,
-        FLAMETHROWER_BLAST_SHIELD_TXTR: TXTR,
-
-        POWER_BOMB_BLAST_SHIELD_SCAN: SCAN,
-        SUPER_BLAST_SHIELD_SCAN: SCAN,
-        WAVEBUSTER_BLAST_SHIELD_SCAN: SCAN,
-        ICESPREADER_BLAST_SHIELD_SCAN: SCAN,
+        FLAMETHROWER_ANIMATED_GLOW_TXTR: TXTR,
+        FLAMETHROWER_GLOW_BORDER_TXTR: TXTR,
+        FLAMETHROWER_GLOW_TRIM_TXTR: TXTR,
+        FLAMETHROWER_HOLORIM_TXTR: TXTR,
+        FLAMETHROWER_METAL_BODY_TXTR: TXTR,
+        FLAMETHROWER_METAL_TRIM_TXTR: TXTR,
+        FLAMETHROWER_SCAN: SCAN,
+        FLAMETHROWER_STRG: STRG,
         FLAMETHROWER_BLAST_SHIELD_SCAN: SCAN,
-
-        POWER_BOMB_BLAST_SHIELD_STRG: STRG,
-        SUPER_BLAST_SHIELD_STRG: STRG,
-        WAVEBUSTER_BLAST_SHIELD_STRG: STRG,
-        ICESPREADER_BLAST_SHIELD_STRG: STRG,
         FLAMETHROWER_BLAST_SHIELD_STRG: STRG,
+
+        GRAPPLE_BEAM_CMDL: CMDL,
+        GRAPPLE_BEAM_VERTICAL_CMDL: CMDL,
+        GRAPPLE_BEAM_BLAST_SHIELD_CMDL: CMDL,
+        GRAPPLE_BEAM_ANIMATED_GLOW_TXTR: TXTR,
+        GRAPPLE_BEAM_GLOW_BORDER_TXTR: TXTR,
+        GRAPPLE_BEAM_GLOW_TRIM_TXTR: TXTR,
+        GRAPPLE_BEAM_HOLORIM_TXTR: TXTR,
+        GRAPPLE_BEAM_METAL_BODY_TXTR: TXTR,
+        GRAPPLE_BEAM_METAL_TRIM_TXTR: TXTR,
+        GRAPPLE_BEAM_SCAN: SCAN,
+        GRAPPLE_BEAM_STRG: STRG,
+        GRAPPLE_BEAM_BLAST_SHIELD_SCAN: SCAN,
+        GRAPPLE_BEAM_BLAST_SHIELD_STRG: STRG,
+
+        ICE_SPREADER_CMDL: CMDL,
+        ICE_SPREADER_VERTICAL_CMDL: CMDL,
+        ICE_SPREADER_BLAST_SHIELD_CMDL: CMDL,
+        ICE_SPREADER_ANIMATED_GLOW_TXTR: TXTR,
+        ICE_SPREADER_GLOW_TRIM_TXTR: TXTR,
+        ICE_SPREADER_HOLORIM_TXTR: TXTR,
+        ICE_SPREADER_METAL_BODY_TXTR: TXTR,
+        ICE_SPREADER_METAL_TRIM_TXTR: TXTR,
+        ICE_SPREADER_GLOW_BORDER_TXTR: TXTR,
+        ICE_SPREADER_SCAN: SCAN,
+        ICE_SPREADER_STRG: STRG,
+        ICE_SPREADER_BLAST_SHIELD_SCAN: SCAN,
+        ICE_SPREADER_BLAST_SHIELD_STRG: STRG,
+
+        MISSILE_CMDL: CMDL,
+        MISSILE_VERTICAL_CMDL: CMDL,
+        MISSILE_TXTR: TXTR,
+        MISSILE_SCAN: SCAN,
+        MISSILE_STRG: STRG,
+
+        MORPH_BALL_BOMBS_CMDL: CMDL,
+        MORPH_BALL_BOMBS_VERTICAL_CMDL: CMDL,
+        MORPH_BALL_BOMBS_BLAST_SHIELD_CMDL: CMDL,
+        MORPH_BALL_BOMBS_ANIMATED_GLOW_TXTR: TXTR,
+        MORPH_BALL_BOMBS_GLOW_BORDER_TXTR: TXTR,
+        MORPH_BALL_BOMBS_GLOW_TRIM_TXTR: TXTR,
+        MORPH_BALL_BOMBS_HOLORIM_TXTR: TXTR,
+        MORPH_BALL_BOMBS_METAL_BODY_TXTR: TXTR,
+        MORPH_BALL_BOMBS_METAL_TRIM_TXTR: TXTR,
+        MORPH_BALL_BOMBS_SCAN: SCAN,
+        MORPH_BALL_BOMBS_STRG: STRG,
+        MORPH_BALL_BOMBS_BLAST_SHIELD_SCAN: SCAN,
+        MORPH_BALL_BOMBS_BLAST_SHIELD_STRG: STRG,
+
+        PHAZON_BEAM_CMDL: CMDL,
+        PHAZON_BEAM_VERTICAL_CMDL: CMDL,
+        PHAZON_BEAM_BLAST_SHIELD_CMDL: CMDL,
+        PHAZON_BEAM_ANIMATED_GLOW_TXTR: TXTR,
+        PHAZON_BEAM_GLOW_BORDER_TXTR: TXTR,
+        PHAZON_BEAM_GLOW_TRIM_TXTR: TXTR,
+        PHAZON_BEAM_HOLORIM_TXTR: TXTR,
+        PHAZON_BEAM_METAL_BODY_TXTR: TXTR,
+        PHAZON_BEAM_METAL_TRIM_TXTR: TXTR,
+        PHAZON_BEAM_SCAN: SCAN,
+        PHAZON_BEAM_STRG: STRG,
+        PHAZON_BEAM_BLAST_SHIELD_SCAN: SCAN,
+        PHAZON_BEAM_BLAST_SHIELD_STRG: STRG,
+
+        PLASMA_VERTICAL_CMDL: CMDL,
+
+        POWER_BEAM_CMDL: CMDL,
+        POWER_BEAM_VERTICAL_CMDL: CMDL,
+        POWER_BEAM_HOLORIM_TXTR: TXTR,
+        POWER_BEAM_SCAN: SCAN,
+        POWER_BEAM_STRG: STRG,
+
+        POWER_BOMB_CMDL: CMDL,
+        POWER_BOMB_VERTICAL_CMDL: CMDL,
+        POWER_BOMB_BLAST_SHIELD_CMDL: CMDL,
+        POWER_BOMB_ANIMATED_GLOW_TXTR: TXTR,
+        POWER_BOMB_GLOW_BORDER_TXTR: TXTR,
+        POWER_BOMB_GLOW_TRIM_TXTR: TXTR,
+        POWER_BOMB_HOLORIM_TXTR: TXTR,
+        POWER_BOMB_METAL_BODY_TXTR: TXTR,
+        POWER_BOMB_METAL_TRIM_TXTR: TXTR,
+        POWER_BOMB_SCAN: SCAN,
+        POWER_BOMB_STRG: STRG,
+        POWER_BOMB_BLAST_SHIELD_SCAN: SCAN,
+        POWER_BOMB_BLAST_SHIELD_STRG: STRG,
+
+        SCAN_VISOR_CMDL: CMDL,
+        SCAN_VISOR_VERTICAL_CMDL: CMDL,
+        SCAN_VISOR_BLAST_SHIELD_CMDL: CMDL,
+        SCAN_VISOR_ANIMATED_GLOW_TXTR: TXTR,
+        SCAN_VISOR_GLOW_BORDER_TXTR: TXTR,
+        SCAN_VISOR_GLOW_TRIM_TXTR: TXTR,
+        SCAN_VISOR_HOLORIM_TXTR: TXTR,
+        SCAN_VISOR_METAL_BODY_TXTR: TXTR,
+        SCAN_VISOR_METAL_TRIM_TXTR: TXTR,
+        SCAN_VISOR_SCAN: SCAN,
+        SCAN_VISOR_STRG: STRG,
+        SCAN_VISOR_BLAST_SHIELD_SCAN: SCAN,
+        SCAN_VISOR_BLAST_SHIELD_STRG: STRG,
+
+        SUPER_MISSILE_CMDL: CMDL,
+        SUPER_MISSILE_VERTICAL_CMDL: CMDL,
+        SUPER_MISSILE_BLAST_SHIELD_CMDL: CMDL,
+        SUPER_MISSILE_ANIMATED_GLOW_TXTR: TXTR,
+        SUPER_MISSILE_GLOW_BORDER_TXTR: TXTR,
+        SUPER_MISSILE_GLOW_TRIM_TXTR: TXTR,
+        SUPER_MISSILE_HOLORIM_TXTR: TXTR,
+        SUPER_MISSILE_METAL_BODY_TXTR: TXTR,
+        SUPER_MISSILE_METAL_TRIM_TXTR: TXTR,
+        SUPER_MISSILE_SCAN: SCAN,
+        SUPER_MISSILE_STRG: STRG,
+        SUPER_MISSILE_BLAST_SHIELD_SCAN: SCAN,
+        SUPER_MISSILE_BLAST_SHIELD_STRG: STRG,
+
+        THERMAL_VISOR_CMDL: CMDL,
+        THERMAL_VISOR_VERTICAL_CMDL: CMDL,
+        THERMAL_VISOR_BLAST_SHIELD_CMDL: CMDL,
+        THERMAL_VISOR_ANIMATED_GLOW_TXTR: TXTR,
+        THERMAL_VISOR_GLOW_BORDER_TXTR: TXTR,
+        THERMAL_VISOR_GLOW_TRIM_TXTR: TXTR,
+        THERMAL_VISOR_HOLORIM_TXTR: TXTR,
+        THERMAL_VISOR_METAL_BODY_TXTR: TXTR,
+        THERMAL_VISOR_METAL_TRIM_TXTR: TXTR,
+        THERMAL_VISOR_SCAN: SCAN,
+        THERMAL_VISOR_STRG: STRG,
+        THERMAL_VISOR_BLAST_SHIELD_SCAN: SCAN,
+        THERMAL_VISOR_BLAST_SHIELD_STRG: STRG,
+
+        WAVEBUSTER_CMDL: CMDL,
+        WAVEBUSTER_VERTICAL_CMDL: CMDL,
+        WAVEBUSTER_BLAST_SHIELD_CMDL: CMDL,
+        WAVEBUSTER_ANIMATED_GLOW_TXTR: TXTR,
+        WAVEBUSTER_GLOW_BORDER_TXTR: TXTR,
+        WAVEBUSTER_GLOW_TRIM_TXTR: TXTR,
+        WAVEBUSTER_HOLORIM_TXTR: TXTR,
+        WAVEBUSTER_METAL_BODY_TXTR: TXTR,
+        WAVEBUSTER_METAL_TRIM_TXTR: TXTR,
+        WAVEBUSTER_SCAN: SCAN,
+        WAVEBUSTER_STRG: STRG,
+        WAVEBUSTER_BLAST_SHIELD_SCAN: SCAN,
+        WAVEBUSTER_BLAST_SHIELD_STRG: STRG,
+
+        XRAY_VISOR_CMDL: CMDL,
+        XRAY_VISOR_BLAST_SHIELD_CMDL: CMDL,
+        XRAY_VISOR_VERTICAL_CMDL: CMDL,
+        XRAY_VISOR_ANIMATED_GLOW_TXTR: TXTR,
+        XRAY_VISOR_GLOW_BORDER_TXTR: TXTR,
+        XRAY_VISOR_GLOW_TRIM_TXTR: TXTR,
+        XRAY_VISOR_HOLORIM_TXTR: TXTR,
+        XRAY_VISOR_METAL_BODY_TXTR: TXTR,
+        XRAY_VISOR_METAL_TRIM_TXTR: TXTR,
+        XRAY_VISOR_SCAN: SCAN,
+        XRAY_VISOR_STRG: STRG,
+        XRAY_VISOR_BLAST_SHIELD_SCAN: SCAN,
+        XRAY_VISOR_BLAST_SHIELD_STRG: STRG,
 
         // Pickup dot icon
         MAP_PICKUP_ICON_TXTR: TXTR,
@@ -208,121 +330,7 @@ pub mod custom_asset_ids {
 pub fn custom_asset_filename(resource_info: structs::ResourceInfo) -> String
 {
     let base_name = match resource_info.file_id {
-        id if custom_asset_ids::PHAZON_SUIT_TXTR1.to_u32()                   == id => "phazon_suit_txtr1".to_string()                  ,
-        id if custom_asset_ids::PHAZON_SUIT_TXTR2.to_u32()                   == id => "phazon_suit_txtr2".to_string()                  ,
-        id if custom_asset_ids::PHAZON_SUIT_CMDL.to_u32()                    == id => "phazon_suit_cmdl".to_string()                   ,
-        id if custom_asset_ids::PHAZON_SUIT_ANCS.to_u32()                    == id => "phazon_suit_ancs".to_string()                   ,
-        id if custom_asset_ids::NOTHING_TXTR.to_u32()                        == id => "nothing_txtr".to_string()                       ,
-        id if custom_asset_ids::NOTHING_CMDL.to_u32()                        == id => "nothing_cmdl".to_string()                       ,
-        id if custom_asset_ids::NOTHING_ANCS.to_u32()                        == id => "nothing_ancs".to_string()                       ,
-        id if custom_asset_ids::THERMAL_CMDL.to_u32()                        == id => "thermal_cmdl".to_string()                       ,
-        id if custom_asset_ids::THERMAL_ANCS.to_u32()                        == id => "thermal_ancs".to_string()                       ,
-        id if custom_asset_ids::XRAY_CMDL.to_u32()                           == id => "xray_cmdl".to_string()                          ,
-        id if custom_asset_ids::XRAY_ANCS.to_u32()                           == id => "xray_ancs".to_string()                          ,
-        id if custom_asset_ids::COMBAT_CMDL.to_u32()                         == id => "combat_cmdl".to_string()                        ,
-        id if custom_asset_ids::COMBAT_ANCS.to_u32()                         == id => "combat_ancs".to_string()                        ,
-        id if custom_asset_ids::SHINY_MISSILE_TXTR0.to_u32()                 == id => "shiny_missile_txtr0".to_string()                ,
-        id if custom_asset_ids::SHINY_MISSILE_TXTR1.to_u32()                 == id => "shiny_missile_txtr1".to_string()                ,
-        id if custom_asset_ids::SHINY_MISSILE_TXTR2.to_u32()                 == id => "shiny_missile_txtr2".to_string()                ,
-        id if custom_asset_ids::SHINY_MISSILE_CMDL.to_u32()                  == id => "shiny_missile_cmdl".to_string()                 ,
-        id if custom_asset_ids::SHINY_MISSILE_ANCS.to_u32()                  == id => "shiny_missile_ancs".to_string()                 ,
-        id if custom_asset_ids::SHINY_MISSILE_EVNT.to_u32()                  == id => "shiny_missile_evnt".to_string()                 ,
-        id if custom_asset_ids::SHINY_MISSILE_ANIM.to_u32()                  == id => "shiny_missile_anim".to_string()                 ,
-        id if custom_asset_ids::SHORELINES_POI_SCAN.to_u32()                 == id => "shorelines_poi_scan".to_string()                ,
-        id if custom_asset_ids::SHORELINES_POI_STRG.to_u32()                 == id => "shorelines_poi_strg".to_string()                ,
-        id if custom_asset_ids::CFLDG_POI_SCAN.to_u32()                      == id => "cfldg_poi_scan".to_string()                     ,
-        id if custom_asset_ids::CFLDG_POI_STRG.to_u32()                      == id => "cfldg_poi_strg".to_string()                     ,
-        id if custom_asset_ids::TOURNEY_WINNERS_SCAN.to_u32()                == id => "tourney_winners_scan".to_string()               ,
-        id if custom_asset_ids::TOURNEY_WINNERS_STRG.to_u32()                == id => "tourney_winners_strg".to_string()               ,
-        id if custom_asset_ids::STARTING_ITEMS_HUDMEMO_STRG.to_u32()         == id => "starting_items_hudmemo_strg".to_string()        ,
-        id if custom_asset_ids::WARPING_TO_START_STRG.to_u32()               == id => "warping_to_start_strg".to_string()              ,
-        id if custom_asset_ids::GENERIC_WARP_STRG.to_u32()                   == id => "generic_warp_strg".to_string()                  ,
-        id if custom_asset_ids::WARPING_TO_START_DELAY_STRG.to_u32()         == id => "warping_to_start_delay_strg".to_string()        ,
-        id if custom_asset_ids::WARPING_TO_OTHER_STRG.to_u32()               == id => "warping_to_other_strg".to_string()              ,
-        id if custom_asset_ids::BLOCK_COLOR_0.to_u32()                       == id => "block_color_0".to_string()                      ,
-        id if custom_asset_ids::BLOCK_COLOR_1.to_u32()                       == id => "block_color_1".to_string()                      ,
-        id if custom_asset_ids::BLOCK_COLOR_2.to_u32()                       == id => "block_color_2".to_string()                      ,
-        id if custom_asset_ids::BLOCK_COLOR_3.to_u32()                       == id => "block_color_3".to_string()                      ,
-        id if custom_asset_ids::BLOCK_COLOR_4.to_u32()                       == id => "block_color_4".to_string()                      ,
-        id if custom_asset_ids::MORPH_BALL_BOMB_DOOR_CMDL.to_u32()           == id => "morph_ball_bomb_door_cmdl".to_string()          ,
-        id if custom_asset_ids::POWER_BOMB_DOOR_CMDL.to_u32()                == id => "power_bomb_door_cmdl".to_string()               ,
-        id if custom_asset_ids::MISSILE_DOOR_CMDL.to_u32()                   == id => "missile_door_cmdl".to_string()                  ,
-        id if custom_asset_ids::CHARGE_DOOR_CMDL.to_u32()                    == id => "charge_door_cmdl".to_string()                   ,
-        id if custom_asset_ids::SUPER_MISSILE_DOOR_CMDL.to_u32()             == id => "super_missile_door_cmdl".to_string()            ,
-        id if custom_asset_ids::WAVEBUSTER_DOOR_CMDL.to_u32()                == id => "wavebuster_door_cmdl".to_string()               ,
-        id if custom_asset_ids::ICESPREADER_DOOR_CMDL.to_u32()               == id => "icespreader_door_cmdl".to_string()              ,
-        id if custom_asset_ids::FLAMETHROWER_DOOR_CMDL.to_u32()              == id => "flamethrower_door_cmdl".to_string()             ,
-        id if custom_asset_ids::DISABLED_DOOR_CMDL.to_u32()                  == id => "disabled_door_cmdl".to_string()                 ,
-        id if custom_asset_ids::AI_DOOR_CMDL.to_u32()                        == id => "ai_door_cmdl".to_string()                       ,
-        id if custom_asset_ids::VERTICAL_RED_DOOR_CMDL.to_u32()              == id => "vertical_red_door_cmdl".to_string()             ,
-        id if custom_asset_ids::VERTICAL_BOOST_DOOR_CMDL.to_u32()            == id => "vertical_boost_door_cmdl".to_string()           ,
-        id if custom_asset_ids::VERTICAL_POWER_BOMB_DOOR_CMDL.to_u32()       == id => "vertical_power_bomb_door_cmdl".to_string()      ,
-        id if custom_asset_ids::VERTICAL_MORPH_BALL_BOMB_DOOR_CMDL.to_u32()  == id => "vertical_morph_ball_bomb_door_cmdl".to_string() ,
-        id if custom_asset_ids::VERTICAL_MISSILE_DOOR_CMDL.to_u32()          == id => "vertical_missile_door_cmdl".to_string()         ,
-        id if custom_asset_ids::VERTICAL_CHARGE_DOOR_CMDL.to_u32()           == id => "vertical_charge_door_cmdl".to_string()          ,
-        id if custom_asset_ids::VERTICAL_SUPER_MISSILE_DOOR_CMDL.to_u32()    == id => "vertical_super_missile_door_cmdl".to_string()   ,
-        id if custom_asset_ids::VERTICAL_DISABLED_DOOR_CMDL.to_u32()         == id => "vertical_disabled_door_cmdl".to_string()        ,
-        id if custom_asset_ids::VERTICAL_WAVEBUSTER_DOOR_CMDL.to_u32()       == id => "vertical_wavebuster_door_cmdl".to_string()      ,
-        id if custom_asset_ids::VERTICAL_ICESPREADER_DOOR_CMDL.to_u32()      == id => "vertical_icespreader_door_cmdl".to_string()     ,
-        id if custom_asset_ids::VERTICAL_FLAMETHROWER_DOOR_CMDL.to_u32()     == id => "vertical_flamethrower_door_cmdl".to_string()    ,
-        id if custom_asset_ids::VERTICAL_AI_DOOR_CMDL.to_u32()               == id => "vertical_ai_door_cmdl".to_string()              ,
-        id if custom_asset_ids::MORPH_BALL_BOMB_DOOR_TXTR.to_u32()           == id => "morph_ball_bomb_door_txtr".to_string()          ,
-        id if custom_asset_ids::POWER_BOMB_DOOR_TXTR.to_u32()                == id => "power_bomb_door_txtr".to_string()               ,
-        id if custom_asset_ids::MISSILE_DOOR_TXTR.to_u32()                   == id => "missile_door_txtr".to_string()                  ,
-        id if custom_asset_ids::CHARGE_DOOR_TXTR.to_u32()                    == id => "charge_door_txtr".to_string()                   ,
-        id if custom_asset_ids::SUPER_MISSILE_DOOR_TXTR.to_u32()             == id => "super_missile_door_txtr".to_string()            ,
-        id if custom_asset_ids::WAVEBUSTER_DOOR_TXTR.to_u32()                == id => "wavebuster_door_txtr".to_string()               ,
-        id if custom_asset_ids::ICESPREADER_DOOR_TXTR.to_u32()               == id => "icespreader_door_txtr".to_string()              ,
-        id if custom_asset_ids::FLAMETHROWER_DOOR_TXTR.to_u32()              == id => "flamethrower_door_txtr".to_string()             ,
-        id if custom_asset_ids::DISABLED_DOOR_TXTR.to_u32()                  == id => "disabled_door_txtr".to_string()                 ,
-        id if custom_asset_ids::AI_DOOR_TXTR.to_u32()                        == id => "ai_door_txtr".to_string()                       ,
-        id if custom_asset_ids::BOOST_DOOR_SCAN.to_u32()                     == id => "boost_door_scan".to_string()                    ,
-        id if custom_asset_ids::BOOST_DOOR_STRG.to_u32()                     == id => "boost_door_strg".to_string()                    ,
-        id if custom_asset_ids::POWER_BOMB_DOOR_SCAN.to_u32()                == id => "power_bomb_door_scan".to_string()               ,
-        id if custom_asset_ids::POWER_BOMB_DOOR_STRG.to_u32()                == id => "power_bomb_door_strg".to_string()               ,
-        id if custom_asset_ids::BOMB_DOOR_SCAN.to_u32()                      == id => "bomb_door_scan".to_string()                     ,
-        id if custom_asset_ids::BOMB_DOOR_STRG.to_u32()                      == id => "bomb_door_strg".to_string()                     ,
-        id if custom_asset_ids::MISSILE_DOOR_SCAN.to_u32()                   == id => "missile_door_scan".to_string()                  ,
-        id if custom_asset_ids::MISSILE_DOOR_STRG.to_u32()                   == id => "missile_door_strg".to_string()                  ,
-        id if custom_asset_ids::CHARGE_DOOR_SCAN.to_u32()                    == id => "charge_door_scan".to_string()                   ,
-        id if custom_asset_ids::CHARGE_DOOR_STRG.to_u32()                    == id => "charge_door_strg".to_string()                   ,
-        id if custom_asset_ids::SUPER_MISSILE_DOOR_SCAN.to_u32()             == id => "super_missile_door_scan".to_string()            ,
-        id if custom_asset_ids::SUPER_MISSILE_DOOR_STRG.to_u32()             == id => "super_missile_door_strg".to_string()            ,
-        id if custom_asset_ids::WAVEBUSTER_DOOR_SCAN.to_u32()                == id => "wavebuster_door_scan".to_string()               ,
-        id if custom_asset_ids::WAVEBUSTER_DOOR_STRG.to_u32()                == id => "wavebuster_door_strg".to_string()               ,
-        id if custom_asset_ids::ICESPREADER_DOOR_SCAN.to_u32()               == id => "icespreader_door_scan".to_string()              ,
-        id if custom_asset_ids::ICESPREADER_DOOR_STRG.to_u32()               == id => "icespreader_door_strg".to_string()              ,
-        id if custom_asset_ids::FLAMETHROWER_DOOR_SCAN.to_u32()              == id => "flamethrower_door_scan".to_string()             ,
-        id if custom_asset_ids::FLAMETHROWER_DOOR_STRG.to_u32()              == id => "flamethrower_door_strg".to_string()             ,
-        id if custom_asset_ids::DISABLED_DOOR_SCAN.to_u32()                  == id => "disabled_door_scan".to_string()                 ,
-        id if custom_asset_ids::DISABLED_DOOR_STRG.to_u32()                  == id => "disabled_door_strg".to_string()                 ,
-        id if custom_asset_ids::AI_DOOR_SCAN.to_u32()                        == id => "ai_door_scan".to_string()                       ,
-        id if custom_asset_ids::AI_DOOR_STRG.to_u32()                        == id => "ai_door_strg".to_string()                       ,
-        id if custom_asset_ids::POWER_BOMB_BLAST_SHIELD_CMDL.to_u32()        == id => "power_bomb_blast_shield_cmdl".to_string()       ,
-        id if custom_asset_ids::SUPER_BLAST_SHIELD_CMDL.to_u32()             == id => "super_blast_shield_cmdl".to_string()            ,
-        id if custom_asset_ids::WAVEBUSTER_BLAST_SHIELD_CMDL.to_u32()        == id => "wavebuster_blast_shield_cmdl".to_string()       ,
-        id if custom_asset_ids::ICESPREADER_BLAST_SHIELD_CMDL.to_u32()       == id => "icespreader_blast_shield_cmdl".to_string()      ,
-        id if custom_asset_ids::FLAMETHROWER_BLAST_SHIELD_CMDL.to_u32()      == id => "flamethrower_blast_shield_cmdl".to_string()     ,
-        id if custom_asset_ids::BLAST_SHIELD_ALT_TXTR0.to_u32()              == id => "blast_shield_alt_txtr0".to_string()             ,
-        id if custom_asset_ids::BLAST_SHIELD_ALT_TXTR1.to_u32()              == id => "blast_shield_alt_txtr1".to_string()             ,
-        id if custom_asset_ids::BLAST_SHIELD_ALT_TXTR2.to_u32()              == id => "blast_shield_alt_txtr2".to_string()             ,
-        id if custom_asset_ids::POWER_BOMB_BLAST_SHIELD_TXTR.to_u32()        == id => "power_bomb_blast_shield_txtr".to_string()       ,
-        id if custom_asset_ids::SUPER_BLAST_SHIELD_TXTR.to_u32()             == id => "super_blast_shield_txtr".to_string()            ,
-        id if custom_asset_ids::WAVEBUSTER_BLAST_SHIELD_TXTR.to_u32()        == id => "wavebuster_blast_shield_txtr".to_string()       ,
-        id if custom_asset_ids::ICESPREADER_BLAST_SHIELD_TXTR.to_u32()       == id => "icespreader_blast_shield_txtr".to_string()      ,
-        id if custom_asset_ids::FLAMETHROWER_BLAST_SHIELD_TXTR.to_u32()      == id => "flamethrower_blast_shield_txtr".to_string()     ,
-        id if custom_asset_ids::POWER_BOMB_BLAST_SHIELD_SCAN.to_u32()        == id => "power_bomb_blast_shield_scan".to_string()       ,
-        id if custom_asset_ids::SUPER_BLAST_SHIELD_SCAN.to_u32()             == id => "super_blast_shield_scan".to_string()            ,
-        id if custom_asset_ids::WAVEBUSTER_BLAST_SHIELD_SCAN.to_u32()        == id => "wavebuster_blast_shield_scan".to_string()       ,
-        id if custom_asset_ids::ICESPREADER_BLAST_SHIELD_SCAN.to_u32()       == id => "icespreader_blast_shield_scan".to_string()      ,
-        id if custom_asset_ids::FLAMETHROWER_BLAST_SHIELD_SCAN.to_u32()      == id => "flamethrower_blast_shield_scan".to_string()     ,
-        id if custom_asset_ids::POWER_BOMB_BLAST_SHIELD_STRG.to_u32()        == id => "power_bomb_blast_shield_strg".to_string()       ,
-        id if custom_asset_ids::SUPER_BLAST_SHIELD_STRG.to_u32()             == id => "super_blast_shield_strg".to_string()            ,
-        id if custom_asset_ids::WAVEBUSTER_BLAST_SHIELD_STRG.to_u32()        == id => "wavebuster_blast_shield_strg".to_string()       ,
-        id if custom_asset_ids::ICESPREADER_BLAST_SHIELD_STRG.to_u32()       == id => "icespreader_blast_shield_strg".to_string()      ,
-        id if custom_asset_ids::FLAMETHROWER_BLAST_SHIELD_STRG.to_u32()      == id => "flamethrower_blast_shield_strg".to_string()     ,
-        id if custom_asset_ids::MAP_PICKUP_ICON_TXTR.to_u32()                == id => "map_pickup_icon_txtr".to_string()               ,
-        id if custom_asset_ids::ICE_TRAP_ANCS.to_u32()                       == id => "ice_trap_ancs".to_string()                      ,
+        // id if custom_asset_ids::PHAZON_SUIT_TXTR1.to_u32()                   == id => "phazon_suit_txtr1".to_string()                  ,
         _ => format!("{:X}", resource_info.file_id),
     };
 
@@ -376,32 +384,112 @@ fn extern_assets_runtime<'r>(extern_assets_dir: Option<String>)
     Ok((resources, extern_models))
 }
 
+macro_rules! extern_asset {
+    ($enum_name:ident, $filename:expr) => {
+        (
+            custom_asset_ids::$enum_name,
+            *b"TXTR",
+            include_bytes!(concat!("../extra_assets/", $filename)),
+        )
+    };
+}
+
 // Assets defined in an external file at COMPILE TIME
 fn extern_assets_compile_time<'r>() -> Vec<Resource<'r>>
 {
-    let extern_assets: &[(ResId<res_id::TXTR>, [u8; 4], &[u8])] = &[
-        (custom_asset_ids::PHAZON_SUIT_TXTR1             , *b"TXTR", include_bytes!("../extra_assets/phazon_suit_texure_1.txtr")),
-        (custom_asset_ids::PHAZON_SUIT_TXTR2             , *b"TXTR", include_bytes!("../extra_assets/phazon_suit_texure_2.txtr")),
-        (custom_asset_ids::NOTHING_TXTR                  , *b"TXTR", include_bytes!("../extra_assets/nothing_texture.txtr"     )),
-        (custom_asset_ids::SHINY_MISSILE_TXTR0           , *b"TXTR", include_bytes!("../extra_assets/shiny-missile0.txtr"      )),
-        (custom_asset_ids::SHINY_MISSILE_TXTR1           , *b"TXTR", include_bytes!("../extra_assets/shiny-missile1.txtr"      )),
-        (custom_asset_ids::SHINY_MISSILE_TXTR2           , *b"TXTR", include_bytes!("../extra_assets/shiny-missile2.txtr"      )),
-        (custom_asset_ids::AI_DOOR_TXTR                  , *b"TXTR", include_bytes!("../extra_assets/holorim_ai.txtr"          )),
-        (custom_asset_ids::MORPH_BALL_BOMB_DOOR_TXTR     , *b"TXTR", include_bytes!("../extra_assets/holorim_bombs.txtr"       )),
-        (custom_asset_ids::POWER_BOMB_DOOR_TXTR          , *b"TXTR", include_bytes!("../extra_assets/holorim_powerbomb.txtr"   )),
-        (custom_asset_ids::SUPER_MISSILE_DOOR_TXTR       , *b"TXTR", include_bytes!("../extra_assets/holorim_super.txtr"       )),
-        (custom_asset_ids::WAVEBUSTER_DOOR_TXTR          , *b"TXTR", include_bytes!("../extra_assets/holorim_wavebuster.txtr"  )),
-        (custom_asset_ids::ICESPREADER_DOOR_TXTR         , *b"TXTR", include_bytes!("../extra_assets/holorim_icespreader.txtr" )),
-        (custom_asset_ids::FLAMETHROWER_DOOR_TXTR        , *b"TXTR", include_bytes!("../extra_assets/holorim_flamethrower.txtr")),
-        (custom_asset_ids::BLAST_SHIELD_ALT_TXTR0        , *b"TXTR", include_bytes!("../extra_assets/blast_shield_alt_0.txtr"  )),
-        (custom_asset_ids::BLAST_SHIELD_ALT_TXTR1        , *b"TXTR", include_bytes!("../extra_assets/blast_shield_alt_1.txtr"  )),
-        (custom_asset_ids::BLAST_SHIELD_ALT_TXTR2        , *b"TXTR", include_bytes!("../extra_assets/blast_shield_alt_2.txtr"  )),
-        (custom_asset_ids::POWER_BOMB_BLAST_SHIELD_TXTR  , *b"TXTR", include_bytes!("../extra_assets/blast_shield_pbm.txtr"    )),
-        (custom_asset_ids::SUPER_BLAST_SHIELD_TXTR       , *b"TXTR", include_bytes!("../extra_assets/blast_shield_spr.txtr"    )),
-        (custom_asset_ids::WAVEBUSTER_BLAST_SHIELD_TXTR  , *b"TXTR", include_bytes!("../extra_assets/blast_shield_wvb.txtr"    )),
-        (custom_asset_ids::ICESPREADER_BLAST_SHIELD_TXTR , *b"TXTR", include_bytes!("../extra_assets/blast_shield_ice.txtr"    )),
-        (custom_asset_ids::FLAMETHROWER_BLAST_SHIELD_TXTR, *b"TXTR", include_bytes!("../extra_assets/blast_shield_flm.txtr"    )),
-        (custom_asset_ids::MAP_PICKUP_ICON_TXTR          , *b"TXTR", include_bytes!("../extra_assets/map_pickupdot.txtr"       )),
+    let extern_assets: &[(ResId<_>, [u8; 4], &[u8])] = &[
+        /* Map Assets */
+        extern_asset!(MAP_PICKUP_ICON_TXTR, "map_pickupdot.txtr"),
+
+        /* Pickup Assets */
+        extern_asset!(NOTHING_TXTR             , "nothing_texture.txtr"      ),
+        extern_asset!(PHAZON_SUIT_TXTR1        , "phazon_suit_texure_1.txtr" ),
+        extern_asset!(PHAZON_SUIT_TXTR2        , "phazon_suit_texure_2.txtr" ),
+        extern_asset!(SHINY_MISSILE_TXTR0      , "shiny-missile0.txtr"       ),
+        extern_asset!(SHINY_MISSILE_TXTR1      , "shiny-missile1.txtr"       ),
+        extern_asset!(SHINY_MISSILE_TXTR2      , "shiny-missile2.txtr"       ),
+        extern_asset!(RANDOVANIA_GAMECUBE_TXTR , "randovania_gamecube.TXTR"  ),
+
+        /* Door/Blast Shield Assets */
+        extern_asset!(ORANGE_TXTR  , "orange.txtr"  ),
+        extern_asset!(PINK_TXTR    , "pink.txtr"    ),
+        extern_asset!(YELLOW_TXTR  , "yellow.txtr"  ),
+        extern_asset!(TESTBNEW_TXTR, "testbnew.txtr"),
+
+        extern_asset!(AI_TXTR, "holorim_ai.txtr"),
+        extern_asset!(CHARGE_BEAM_ANIMATED_GLOW_TXTR      , "charge_beam_animated_glow.TXTR"      ),
+        extern_asset!(CHARGE_BEAM_GLOW_BORDER_TXTR        , "charge_beam_glow_border.TXTR"        ),
+        extern_asset!(CHARGE_BEAM_GLOW_TRIM_TXTR          , "charge_beam_glow_trim.TXTR"          ),
+        extern_asset!(CHARGE_BEAM_HOLORIM_TXTR            , "charge_beam_holorim.TXTR"            ),
+        extern_asset!(CHARGE_BEAM_METAL_BODY_TXTR         , "charge_beam_metal_body.TXTR"         ),
+        extern_asset!(CHARGE_BEAM_METAL_TRIM_TXTR         , "charge_beam_metal_trim.TXTR"         ),
+        extern_asset!(FLAMETHROWER_ANIMATED_GLOW_TXTR     , "flamethrower_animated_glow.TXTR"     ),
+        extern_asset!(FLAMETHROWER_GLOW_BORDER_TXTR       , "flamethrower_glow_border.TXTR"       ),
+        extern_asset!(FLAMETHROWER_GLOW_TRIM_TXTR         , "flamethrower_glow_trim.TXTR"         ),
+        extern_asset!(FLAMETHROWER_HOLORIM_TXTR           , "flamethrower_holorim.TXTR"           ),
+        extern_asset!(FLAMETHROWER_METAL_BODY_TXTR        , "flamethrower_metal_body.TXTR"        ),
+        extern_asset!(FLAMETHROWER_METAL_TRIM_TXTR        , "flamethrower_metal_trim.TXTR"        ),
+        extern_asset!(GRAPPLE_BEAM_ANIMATED_GLOW_TXTR     , "grapple_beam_animated_glow.TXTR"     ),
+        extern_asset!(GRAPPLE_BEAM_GLOW_BORDER_TXTR       , "grapple_beam_glow_border.TXTR"       ),
+        extern_asset!(GRAPPLE_BEAM_GLOW_TRIM_TXTR         , "grapple_beam_glow_trim.TXTR"         ),
+        extern_asset!(GRAPPLE_BEAM_HOLORIM_TXTR           , "grapple_beam_holorim.TXTR"           ),
+        extern_asset!(GRAPPLE_BEAM_METAL_BODY_TXTR        , "grapple_beam_metal_body.TXTR"        ),
+        extern_asset!(GRAPPLE_BEAM_METAL_TRIM_TXTR        , "grapple_beam_metal_trim.TXTR"        ),
+        extern_asset!(ICE_SPREADER_ANIMATED_GLOW_TXTR     , "ice_spreader_animated_glow.TXTR"     ),
+        extern_asset!(ICE_SPREADER_GLOW_TRIM_TXTR         , "ice_spreader_glow_trim.TXTR"         ),
+        extern_asset!(ICE_SPREADER_HOLORIM_TXTR           , "ice_spreader_holorim.TXTR"           ),
+        extern_asset!(ICE_SPREADER_METAL_BODY_TXTR        , "ice_spreader_metal_body.TXTR"        ),
+        extern_asset!(ICE_SPREADER_METAL_TRIM_TXTR        , "ice_spreader_metal_trim.TXTR"        ),
+        extern_asset!(ICE_SPREADER_GLOW_BORDER_TXTR       , "ice_spreader_glow_border.TXTR"       ),
+        extern_asset!(MORPH_BALL_BOMBS_ANIMATED_GLOW_TXTR , "morph_ball_bombs_animated_glow.TXTR" ),
+        extern_asset!(MORPH_BALL_BOMBS_GLOW_BORDER_TXTR   , "morph_ball_bombs_glow_border.TXTR"   ),
+        extern_asset!(MORPH_BALL_BOMBS_GLOW_TRIM_TXTR     , "morph_ball_bombs_glow_trim.TXTR"     ),
+        extern_asset!(MORPH_BALL_BOMBS_HOLORIM_TXTR       , "morph_ball_bombs_holorim.TXTR"       ),
+        extern_asset!(MORPH_BALL_BOMBS_METAL_BODY_TXTR    , "morph_ball_bombs_metal_body.TXTR"    ),
+        extern_asset!(MORPH_BALL_BOMBS_METAL_TRIM_TXTR    , "morph_ball_bombs_metal_trim.TXTR"    ),
+        extern_asset!(PHAZON_BEAM_ANIMATED_GLOW_TXTR      , "phazon_beam_animated_glow.TXTR"      ),
+        extern_asset!(PHAZON_BEAM_GLOW_BORDER_TXTR        , "phazon_beam_glow_border.TXTR"        ),
+        extern_asset!(PHAZON_BEAM_GLOW_TRIM_TXTR          , "phazon_beam_glow_trim.TXTR"          ),
+        extern_asset!(PHAZON_BEAM_HOLORIM_TXTR            , "phazon_beam_holorim.TXTR"            ),
+        extern_asset!(PHAZON_BEAM_METAL_BODY_TXTR         , "phazon_beam_metal_body.TXTR"         ),
+        extern_asset!(PHAZON_BEAM_METAL_TRIM_TXTR         , "phazon_beam_metal_trim.TXTR"         ),
+        extern_asset!(POWER_BEAM_HOLORIM_TXTR             , "power_beam_holorim.TXTR"             ),
+        extern_asset!(POWER_BOMB_ANIMATED_GLOW_TXTR       , "power_bomb_animated_glow.TXTR"       ),
+        extern_asset!(POWER_BOMB_GLOW_BORDER_TXTR         , "power_bomb_glow_border.TXTR"         ),
+        extern_asset!(POWER_BOMB_GLOW_TRIM_TXTR           , "power_bomb_glow_trim.TXTR"           ),
+        extern_asset!(POWER_BOMB_HOLORIM_TXTR             , "power_bomb_holorim.TXTR"             ),
+        extern_asset!(POWER_BOMB_METAL_BODY_TXTR          , "power_bomb_metal_body.TXTR"          ),
+        extern_asset!(POWER_BOMB_METAL_TRIM_TXTR          , "power_bomb_metal_trim.TXTR"          ),
+        extern_asset!(SUPER_MISSILE_ANIMATED_GLOW_TXTR    , "super_missile_animated_glow.TXTR"    ),
+        extern_asset!(SUPER_MISSILE_GLOW_BORDER_TXTR      , "super_missile_glow_border.TXTR"      ),
+        extern_asset!(SUPER_MISSILE_GLOW_TRIM_TXTR        , "super_missile_glow_trim.TXTR"        ),
+        extern_asset!(SUPER_MISSILE_HOLORIM_TXTR          , "super_missile_holorim.TXTR"          ),
+        extern_asset!(SUPER_MISSILE_METAL_BODY_TXTR       , "super_missile_metal_body.TXTR"       ),
+        extern_asset!(SUPER_MISSILE_METAL_TRIM_TXTR       , "super_missile_metal_trim.TXTR"       ),
+        extern_asset!(THERMAL_VISOR_ANIMATED_GLOW_TXTR    , "thermal_visor_animated_glow.TXTR"    ),
+        extern_asset!(THERMAL_VISOR_GLOW_BORDER_TXTR      , "thermal_visor_glow_border.TXTR"      ),
+        extern_asset!(THERMAL_VISOR_GLOW_TRIM_TXTR        , "thermal_visor_glow_trim.TXTR"        ),
+        extern_asset!(THERMAL_VISOR_HOLORIM_TXTR          , "thermal_visor_holorim.TXTR"          ),
+        extern_asset!(THERMAL_VISOR_METAL_BODY_TXTR       , "thermal_visor_metal_body.TXTR"       ),
+        extern_asset!(THERMAL_VISOR_METAL_TRIM_TXTR       , "thermal_visor_metal_trim.TXTR"       ),
+        extern_asset!(WAVEBUSTER_ANIMATED_GLOW_TXTR       , "wavebuster_animated_glow.TXTR"       ),
+        extern_asset!(WAVEBUSTER_GLOW_BORDER_TXTR         , "wavebuster_glow_border.TXTR"         ),
+        extern_asset!(WAVEBUSTER_GLOW_TRIM_TXTR           , "wavebuster_glow_trim.TXTR"           ),
+        extern_asset!(WAVEBUSTER_HOLORIM_TXTR             , "wavebuster_holorim.TXTR"             ),
+        extern_asset!(WAVEBUSTER_METAL_BODY_TXTR          , "wavebuster_metal_body.TXTR"          ),
+        extern_asset!(WAVEBUSTER_METAL_TRIM_TXTR          , "wavebuster_metal_trim.TXTR"          ),
+        extern_asset!(XRAY_VISOR_ANIMATED_GLOW_TXTR       , "xray_visor_animated_glow.TXTR"       ),
+        extern_asset!(XRAY_VISOR_GLOW_BORDER_TXTR         , "xray_visor_glow_border.TXTR"         ),
+        extern_asset!(XRAY_VISOR_GLOW_TRIM_TXTR           , "xray_visor_glow_trim.TXTR"           ),
+        extern_asset!(XRAY_VISOR_HOLORIM_TXTR             , "xray_visor_holorim.TXTR"             ),
+        extern_asset!(XRAY_VISOR_METAL_BODY_TXTR          , "xray_visor_metal_body.TXTR"          ),
+        extern_asset!(XRAY_VISOR_METAL_TRIM_TXTR          , "xray_visor_metal_trim.TXTR"          ),
+        extern_asset!(SCAN_VISOR_ANIMATED_GLOW_TXTR       , "scan_visor_animated_glow.TXTR"       ),
+        extern_asset!(SCAN_VISOR_GLOW_BORDER_TXTR         , "scan_visor_glow_border.TXTR"         ),
+        extern_asset!(SCAN_VISOR_GLOW_TRIM_TXTR           , "scan_visor_glow_trim.TXTR"           ),
+        extern_asset!(SCAN_VISOR_HOLORIM_TXTR             , "scan_visor_holorim.TXTR"             ),
+        extern_asset!(SCAN_VISOR_METAL_BODY_TXTR          , "scan_visor_metal_body.TXTR"          ),
+        extern_asset!(SCAN_VISOR_METAL_TRIM_TXTR          , "scan_visor_metal_trim.TXTR"          ),
     ];
 
     extern_assets.iter().map(|&(res, ref fourcc, bytes)| {
@@ -474,6 +562,12 @@ pub fn custom_assets<'r>(
         custom_asset_ids::NOTHING_ANCS,
         custom_asset_ids::NOTHING_TXTR,
         ResId::<res_id::TXTR>::new(0xF68DF7F1),
+    ));
+    assets.extend_from_slice(&create_randovania_gamecube_cmdl_and_ancs(
+        resources,
+        custom_asset_ids::RANDOVANIA_GAMECUBE_CMDL,
+        custom_asset_ids::RANDOVANIA_GAMECUBE_ANCS,
+        custom_asset_ids::RANDOVANIA_GAMECUBE_TXTR,
     ));
     assets.extend_from_slice(&create_suit_icon_cmdl_and_ancs(
         resources,
@@ -900,7 +994,7 @@ pub fn custom_assets<'r>(
     // Custom blast shield assets
     for blast_shield in BlastShieldType::iter() {
         if blast_shield.cmdl().to_u32() >= 0xDEAF0000 && blast_shield.cmdl().to_u32() <= custom_asset_ids::EXTRA_IDS_START.to_u32() + 50 { // only if it doesn't exist in-game already
-            assets.push(create_custom_blast_shield_cmdl(resources, blast_shield));
+            assets.push(create_custom_blast_shield_cmdl(blast_shield));
 
             if blast_shield.scan() != ResId::invalid() || blast_shield.strg() != ResId::invalid() {
                 if blast_shield.scan() == ResId::invalid() || blast_shield.strg() == ResId::invalid() {
@@ -1019,6 +1113,11 @@ pub fn collect_game_resources<'r>(
     ];
     looking_for.extend(orange_light);
 
+    let gamecube: Vec<(u32,FourCC)> = vec![
+        (0x770939c0, FourCC::from_bytes(b"CMDL")),
+    ];
+    looking_for.extend(gamecube);
+
     let ghost_ball: Vec<(u32,FourCC)> = vec![ // used for lock on point model
         (0xBFE4DAA0, FourCC::from_bytes(b"CMDL")),
         (0x57C7107D, FourCC::from_bytes(b"TXTR")),
@@ -1064,7 +1163,15 @@ pub fn collect_game_resources<'r>(
     let mut found = HashMap::with_capacity(looking_for.len());
 
     // Iterate through every level Pak //
-    for pak_name in pickup_meta::ROOM_INFO.iter().map(|(name, _)| name) {
+    let mut paks: Vec<&str> = Vec::new();
+    for pak_name in pickup_meta::ROOM_INFO.iter().map(|(name, _)| name)
+    {
+        paks.push(pak_name);
+    }
+    paks.push("AudioGrp.pak");
+    paks.push("NoARAM.pak");
+    paks.push("MiscData.pak");
+    for pak_name in paks {
         let file_entry = gc_disc.find_file(pak_name).unwrap();
         let pak = match *file_entry.file().unwrap() {
             structs::FstEntryFile::Pak(ref pak) => Cow::Borrowed(pak),
@@ -1136,17 +1243,12 @@ fn create_custom_block_cmdl<'r>(
 }
 
 fn create_custom_blast_shield_cmdl<'r>(
-    resources: &HashMap<(u32, FourCC),
-    structs::Resource<'r>>,
     blast_shield_type: BlastShieldType,
 ) -> structs::Resource<'r>
 {
-    // Find and read the vanilla blast shield cmdl
-    let old_cmdl = ResourceData::new(&resources[&resource_info!("EFDFFB8C.CMDL").into()]);
-
-    // Create a copy
-    let old_cmdl_bytes = old_cmdl.decompress().into_owned();
-    let mut new_cmdl = Reader::new(&old_cmdl_bytes[..]).read::<structs::Cmdl>(());
+    // Create a copy of the bast model
+    let old_cmdl = include_bytes!("../extra_assets/EFDFFB8C.CMDL");
+    let mut new_cmdl = Reader::new(&old_cmdl[..]).read::<structs::Cmdl>(());
 
     // Modify the new CMDL to use custom textures
     new_cmdl.material_sets.as_mut_vec()[0].texture_ids.as_mut_vec()[0] = blast_shield_type.glow_border_txtr();
@@ -1176,7 +1278,7 @@ fn create_custom_door_cmdl<'r>(
 ) -> structs::Resource<'r>
 {
     let new_cmdl_id: ResId<res_id::CMDL> = door_type.shield_cmdl();
-    let new_txtr_id: ResId<res_id::TXTR> = door_type.holorim_texture();
+    let new_txtr_id: ResId<res_id::TXTR> = door_type.holorim_txtr();
 
     let new_door_cmdl = {
         // Find and read the blue door CMDL
@@ -1263,6 +1365,52 @@ fn create_nothing_icon_cmdl_and_ancs<'r>(
         )
     };
     [new_suit_cmdl, new_suit_ancs]
+}
+
+fn create_randovania_gamecube_cmdl_and_ancs<'r>(
+    resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+    new_cmdl_id: ResId<res_id::CMDL>,
+    new_ancs_id: ResId<res_id::ANCS>,
+    new_txtr_id: ResId<res_id::TXTR>,
+) -> [structs::Resource<'r>; 2]
+{
+    let new_cmdl = {
+        let old_cmdl = ResourceData::new(
+            &resources[&resource_info!("CMDL_GameCube.CMDL").into()]
+        );
+        let cmdl_bytes = old_cmdl.decompress().into_owned();
+        let mut cmdl: structs::Cmdl = Reader::new(&cmdl_bytes[..]).read::<structs::Cmdl>(());
+
+        cmdl.material_sets.as_mut_vec()[0].texture_ids.as_mut_vec()[1] = new_txtr_id;
+
+        let mut new_cmdl_bytes = vec![];
+        cmdl.write_to(&mut new_cmdl_bytes).unwrap();
+
+        build_resource(
+            new_cmdl_id,
+            structs::ResourceKind::External(new_cmdl_bytes, b"CMDL".into())
+        )
+    };
+
+    let new_ancs = {
+        let grav_suit_ancs = ResourceData::new(
+            &resources[&resource_info!("Node1_11.ANCS").into()]
+        );
+        let ancs_bytes = grav_suit_ancs.decompress().into_owned();
+        let mut ancs = Reader::new(&ancs_bytes[..]).read::<structs::Ancs>(());
+
+        ancs.char_set.char_info.as_mut_vec()[0].cmdl = new_cmdl_id;
+
+        let mut new_ancs_bytes = vec![];
+        ancs.write_to(&mut new_ancs_bytes).unwrap();
+
+        build_resource(
+            new_ancs_id,
+            structs::ResourceKind::External(new_ancs_bytes, b"ANCS".into())
+        )
+    };
+
+    [new_cmdl, new_ancs]
 }
 
 fn create_visor_cmdl_and_ancs<'r>(

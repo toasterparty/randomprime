@@ -732,6 +732,41 @@ fn create_nothing(pickup_table: &mut HashMap<PickupModel, PickupData>)
     }).is_none());
 }
 
+fn create_gamecube(pickup_table: &mut HashMap<PickupModel, PickupData>)
+{
+    let mut bytes = Vec::new();
+    {
+        let mut pickup: structs::Pickup = Reader::new(&pickup_table[&PickupModel::PhazonSuit].bytes)
+                                        .read::<Pickup>(()).clone();
+        pickup.name = Cow::Borrowed(CStr::from_bytes_with_nul(b"Gamecube\0").unwrap());
+        pickup.kind = PickupType::Missile.kind();
+        pickup.max_increase = 0;
+        pickup.curr_increase = 0;
+        pickup.cmdl = custom_asset_ids::RANDOVANIA_GAMECUBE_CMDL;
+        pickup.ancs.file_id = custom_asset_ids::RANDOVANIA_GAMECUBE_ANCS;
+        pickup.part = ResId::<res_id::PART>::invalid();
+        pickup.write_to(&mut bytes).unwrap();
+    }
+
+    let mut deps: HashSet<_> = pickup_table[&PickupModel::PhazonSuit].deps.iter()
+        .filter(|i| ![b"SCAN".into(), b"STRG".into(),
+                      b"CMDL".into()].contains(&i.fourcc))
+        .cloned()
+        .collect();
+    deps.extend(&[
+        ResourceKey::from(custom_asset_ids::RANDOVANIA_GAMECUBE_CMDL),
+        ResourceKey::from(custom_asset_ids::RANDOVANIA_GAMECUBE_ANCS),
+        ResourceKey::from(custom_asset_ids::RANDOVANIA_GAMECUBE_TXTR),
+        ResourceKey::from(ResId::<res_id::TXTR>::new(0x1B4479FD)),
+        ResourceKey::from(ResId::<res_id::TXTR>::new(0x6E3D2E18)),
+    ]);
+    assert!(pickup_table.insert(PickupModel::RandovaniaGamecube, PickupData {
+        bytes: bytes,
+        deps: deps,
+        attainment_audio_file_name: b"/audio/itm_x_short_02.dsp\0".to_vec(),
+    }).is_none());
+}
+
 fn create_shiny_missile(pickup_table: &mut HashMap<PickupModel, PickupData>)
 {
     let mut shiny_missile_bytes = Vec::new();
@@ -947,9 +982,16 @@ fn main()
             let room_id = ResId::<res_id::MREA>::new(res.file_id);
 
             // println!("\n\n");
+            // let mut hudmemos = HashSet::new();
             // let mut layer_changers: Vec<(u32,u32,u32)> = Vec::new();
             // let mut enable_disable: Vec<(u32,bool)> = Vec::new();
             for (layer_num, scly_layer) in scly.layers.iter().enumerate() {
+                // for obj in scly_layer.objects.iter() {
+                //     if obj.property_data.is_hud_memo() {
+                //         let memo = obj.property_data.as_hud_memo().unwrap();
+                //         hudmemos.insert(memo.strg);
+                //     }
+                // }
                 // for obj in scly_layer.objects.iter() {
                 //     if obj.property_data.is_pickup() {
                 //         let pickup = obj.property_data.as_pickup().unwrap();
@@ -1210,6 +1252,47 @@ fn main()
                 //     consolidated_door_locations.push(existing_location);
                 // }
 
+                // let mut hudmemos2 = Vec::new();
+                // for strg_id in hudmemos {
+                //     if strg_id.to_u32() == 0xFFFFFFFF || strg_id.to_u32() == 0 || strg_id.to_u32() == 0x6B01D75C {
+                //         continue;
+                //     }
+
+                //     let key = ResourceKey::from(strg_id);
+                //     if !res_db.map.contains_key(&key) {
+                //         hudmemos2.push(format!("0x{:X} not found", strg_id.to_u32()));
+                //         continue;
+                //     }
+
+                //     let strg: structs::Strg = res_db.map[&key]
+                //         .data.data.clone().read(());
+
+                //     let text = strg
+                //         .string_tables.iter().next().unwrap()
+                //         .strings.iter().next().unwrap()
+                //         .into_owned().into_string();
+                    
+                //     if text.contains("acquired!") {
+                //         continue;;
+                //     }
+
+                //     if text.contains("Energy fully replenished") {
+                //         continue;
+                //     }
+
+                //     hudmemos2.push(text);
+                // }
+
+                // if !hudmemos2.is_empty() {
+                //     println!("=== {} ===", name.replace("\0", ""));
+                //     for text in hudmemos2 {
+                //         let text = text.replace("&just=center;", "");
+                //         let text = text.replace("\0", "");
+                //         println!("{}", text);
+                //     }
+                //     println!("\n\n\n");
+                // }
+
                 pak_locations.push(RoomInfo {
                     room_id,
                     name,
@@ -1238,6 +1321,7 @@ fn main()
     assert!(cmdl_aabbs.insert(custom_asset_ids::XRAY_CMDL, visor_aabb).is_none());
     assert!(cmdl_aabbs.insert(custom_asset_ids::COMBAT_CMDL, visor_aabb).is_none());
 
+    create_gamecube(&mut pickup_table);
     create_nothing(&mut pickup_table);
     create_shiny_missile(&mut pickup_table);
     create_thermal_visor(&mut pickup_table);

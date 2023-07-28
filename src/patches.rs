@@ -39,6 +39,7 @@ use crate::patch_config::{
     TriggerConfig,
     DamageType,
     LockOnPoint,
+    DoorOpenMode,
 };
 
 use std::{fs::{self, File}, io::Read, path::Path};
@@ -529,25 +530,34 @@ fn patch_remove_blast_shield<'r>(
     }
 
     for obj in layer.objects.as_mut_vec() {
-        if !obj.property_data.is_actor() {
-            continue;
+        if obj.property_data.is_actor() {
+            let actor = obj.property_data.as_actor_mut().unwrap();
+
+            if  f32::abs(actor.position[0] - dock_position[0]) > 5.0 ||
+                f32::abs(actor.position[1] - dock_position[1]) > 5.0 ||
+                f32::abs(actor.position[2] - dock_position[2]) > 5.0
+            {
+                continue;
+            }
+    
+            if actor.cmdl.to_u32() == BlastShieldType::Missile.cmdl().to_u32() {
+                actor.active = 0;
+                actor.position[2] -= 100.0;
+            }
+        } else if obj.property_data.is_point_of_interest() {
+            let poi = obj.property_data.as_point_of_interest_mut().unwrap();
+            if  f32::abs(poi.position[0] - dock_position[0]) > 5.0 ||
+                f32::abs(poi.position[1] - dock_position[1]) > 5.0 ||
+                f32::abs(poi.position[2] - dock_position[2]) > 5.0
+            {
+                continue;
+            }
+
+            if poi.scan_param.scan.to_u32() == 0x05F56F9D { // There is a Blast Shield on the door blocking acces
+                poi.active = 0;
+                poi.position[2] -= 100.0;
+            }
         }
-
-        let actor = obj.property_data.as_actor_mut().unwrap();
-
-        if  f32::abs(actor.position[0] - dock_position[0]) > 5.0 ||
-            f32::abs(actor.position[1] - dock_position[1]) > 5.0 ||
-            f32::abs(actor.position[2] - dock_position[2]) > 5.0
-        {
-            continue;
-        }
-
-        if actor.cmdl.to_u32() != BlastShieldType::Missile.cmdl().to_u32() {
-            continue;
-        }
-
-        actor.active = 0;
-        actor.position[2] -= 100.0;
     }
 
     Ok(())
@@ -560,6 +570,7 @@ fn patch_door<'r>(
     door_type: Option<DoorType>,
     blast_shield_type: Option<BlastShieldType>,
     door_resources:&HashMap<(u32, FourCC), structs::Resource<'r>>,
+    door_open_mode: DoorOpenMode,
 ) -> Result<(), String> {
     let mrea_id = area.mlvl_area.mrea.to_u32();
     let area_internal_id = area.mlvl_area.internal_id;
@@ -575,6 +586,35 @@ fn patch_door<'r>(
         // Add dependencies
         deps.extend_from_slice(&blast_shield_type.as_ref().unwrap().dependencies());
     }
+
+    let blast_shield_can_change_door = door_type.is_some() && blast_shield_type.is_some();
+    let door_type_after_open = match door_open_mode {
+        DoorOpenMode::Original => {
+            None
+        },
+        DoorOpenMode::PrimaryBlastShield => {
+            let door_type = door_type.as_ref().unwrap();
+            let door_type_after_open = door_type.to_primary_color();
+            if blast_shield_can_change_door && door_type != &door_type_after_open {
+                Some(door_type_after_open)
+            } else {
+                None
+            }
+        },
+        DoorOpenMode::BlueBlastShield => {
+            let door_type = door_type.as_ref().unwrap();
+            if blast_shield_can_change_door && door_type != &DoorType::Blue {
+                Some(DoorType::Blue)
+            } else {
+                None
+            }
+        },
+    };
+
+    if door_type_after_open.is_some() {
+        deps.extend_from_slice(&door_type_after_open.as_ref().unwrap().dependencies());
+    }
+
     let deps_iter = deps.iter()
         .map(|&(file_id, fourcc)| structs::Dependency {
                 asset_id: file_id,
@@ -609,35 +649,44 @@ fn patch_door<'r>(
         (_damageable_trigger_id, _shield_actor_id)
     };
 
-    // Add blast shield
     let mut special_function_id = 0;
     let mut blast_shield_instance_id = 0;
     let mut sound_id = 0;
     let mut streamed_audio_id = 0;
     let mut timer_id = 0;
     let mut effect_id = 0;
+    let mut shaker_id = 0;
     let mut relay_id = 0;
     let mut dt_id = 0;
+    let mut door_shield_id = 0;
+    let mut door_force_id = 0;
 
     let mut blast_shield_layer_idx: usize = 0;
     if blast_shield_type.is_some() {
-        special_function_id = area.new_object_id_from_layer_name("Default");
-        blast_shield_instance_id = area.new_object_id_from_layer_name("Default");
-        sound_id = area.new_object_id_from_layer_name("Default");
-        streamed_audio_id = area.new_object_id_from_layer_name("Default");
-        timer_id = area.new_object_id_from_layer_name("Default");
-        effect_id = area.new_object_id_from_layer_name("Default");
-        relay_id = area.new_object_id_from_layer_name("Default");
-        dt_id = area.new_object_id_from_layer_name("Default");
+        special_function_id = area.new_object_id_from_layer_id(0);
+        sound_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        streamed_audio_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        shaker_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        blast_shield_instance_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        timer_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        effect_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        relay_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        dt_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
 
         /* Add a new layer to this room to put all the blast shield objects onto */
         area.add_layer(b"Custom Shield Layer\0".as_cstr());
         blast_shield_layer_idx = area.layer_flags.layer_count as usize - 1;
     }
 
+    if door_type_after_open.is_some() {
+        door_shield_id = area.new_object_id_from_layer_id(0);
+        door_force_id = area.new_object_id_from_layer_id(0);
+    }
+
     let scly = area.mrea().scly_section_mut();
     let layers = &mut scly.layers.as_mut_vec();
 
+    // Add blast shield
     if blast_shield_type.is_some() {
         /* Special Function to disable the blast shield */
         layers[0].objects.as_mut_vec().push(
@@ -665,9 +714,9 @@ fn patch_door<'r>(
         // Calculate placement //
         let position: GenericArray<f32, U3>;
         let rotation: GenericArray<f32, U3>;
-        let hitbox: GenericArray<f32, U3>;
+        let hitbox: GenericArray<f32, U3>; // this is actually scan offset
         let scale: GenericArray<f32, U3>;
-        let scan_offset: GenericArray<f32, U3>;
+        let scan_offset: GenericArray<f32, U3>; // this is actually hitbox
 
         let door_rotation = door_loc.door_rotation.unwrap();
         let mut is_ceiling = false;
@@ -678,37 +727,48 @@ fn patch_door<'r>(
                 panic!("Vertical door in room {:X} didn't get position data dumped", mrea_id);
             }
 
-            scale = [1.6, 1.6, 1.6].into();
-            hitbox = [5.0, 5.0, 0.8].into();
-
-            if door_rotation[0] > -90.0 && door_rotation[0] < 90.0 {
-                // Ceiling door
-                is_ceiling = true;
-                position    = [door_shield.position[0] + 2.0, door_shield.position[1], door_shield.position[2] + 0.2].into();
-                rotation    = [0.0, -90.0, 0.0].into();
-                scan_offset = [-2.2, 0.0, -0.9].into();
-            } else if door_rotation[0] < -90.0 && door_rotation[0] > -270.0 {
+            if mrea_id == 0xFB54A0CB { // hall of the elders
+                scale = [1.6, 1.6, 1.6].into();
+                hitbox = [5.0, 5.0, 0.8].into();
+    
                 // Floor door
                 is_floor = true;
-                position    = [door_shield.position[0] - 2.0, door_shield.position[1], door_shield.position[2] - 0.2].into();
+                position    = [door_shield.position[0] - 2.0, door_shield.position[1], door_shield.position[2] - 0.3].into();
                 rotation    = [0.0, 90.0, 0.0].into();
-                scan_offset = [2.2, 0.0, 0.9].into();
+                scan_offset = [0.3, 0.3, 0.3].into();
             } else {
-                panic!("Unhandled door rotation on vertical door {:?} in room 0x{:X}", door_rotation, mrea_id);
+                scale = [1.6, 1.6, 1.6].into();
+                hitbox = [5.0, 5.0, 0.8].into();
+    
+                if door_rotation[0] > -90.0 && door_rotation[0] < 90.0 {
+                    // Ceiling door
+                    is_ceiling = true;
+                    position    = [door_shield.position[0] + 2.0, door_shield.position[1], door_shield.position[2] + 0.2].into();
+                    rotation    = [0.0, -90.0, 0.0].into();
+                    scan_offset = [-2.2, 0.0, -0.9].into();
+                } else if door_rotation[0] < -90.0 && door_rotation[0] > -270.0 {
+                    // Floor door
+                    is_floor = true;
+                    position    = [door_shield.position[0] - 2.0, door_shield.position[1], door_shield.position[2] - 0.2].into();
+                    rotation    = [0.0, 90.0, 0.0].into();
+                    scan_offset = [2.2, 0.0, 0.9].into();
+                } else {
+                    panic!("Unhandled door rotation on vertical door {:?} in room 0x{:X}", door_rotation, mrea_id);
+                }
             }
         } else {
             let scale_scale = 1.0;
             scale = [1.0*scale_scale, 1.5*scale_scale, 1.5*scale_scale].into();
             rotation = door_rotation.into();
 
-            let door_offset: f32 = 0.1;
+            let door_offset: f32 = -0.2;
             let door_offset_z: f32 = 1.8017;
 
             let scan_offset_width: f32 = 0.0;
             let scan_offset_depth: f32 = 1.0;
             let scan_offset_z: f32 = 2.2;
 
-            hitbox = [0.0, 0.0, 0.0].into();
+            hitbox = [0.0, 2.0, 2.0].into();
 
             if door_rotation[2] >= 45.0 && door_rotation[2] < 135.0 {
                 // Leads North
@@ -791,7 +851,7 @@ fn patch_door<'r>(
                         unknown2: 1.0,
                         visor_params: structs::scly_structs::VisorParameters {
                             unknown0: 0,
-                            target_passthrough: 0,
+                            target_passthrough: 1,
                             visor_mask: 15, // Visor Flags : Combat|Scan|Thermal|XRay
                         },
                         enable_thermal_heat: 0,
@@ -859,7 +919,7 @@ fn patch_door<'r>(
                     message: structs::ConnectionMsg::ACTIVATE,
                     target_object_id: effect_id,
                 },
-                structs::Connection { // Play explosion sound effect TODO: I don't think this is working
+                structs::Connection { // Play explosion sound effect
                     state: structs::ConnectionState::ZERO,
                     message: structs::ConnectionMsg::PLAY,
                     target_object_id: sound_id,
@@ -873,6 +933,11 @@ fn patch_door<'r>(
                     state: structs::ConnectionState::ZERO,
                     message: structs::ConnectionMsg::DEACTIVATE,
                     target_object_id: dt_id,
+                },
+                structs::Connection { // Shake camera
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::ACTION,
+                    target_object_id: shaker_id,
                 },
             ].into(),
             property_data: structs::Relay {
@@ -925,6 +990,24 @@ fn patch_door<'r>(
             }
         };
 
+        let lock_on = match blast_shield_type {
+            BlastShieldType::Missile      => true,
+            BlastShieldType::PowerBomb    => false,
+            BlastShieldType::Super        => true,
+            BlastShieldType::Wavebuster   => true,
+            BlastShieldType::Icespreader  => true,
+            BlastShieldType::Flamethrower => true,
+            BlastShieldType::Charge       => true,
+            BlastShieldType::Grapple      => false,
+            BlastShieldType::Bomb         => false,
+            BlastShieldType::Phazon       => true,
+            BlastShieldType::Thermal      => true,
+            BlastShieldType::XRay         => true,
+            BlastShieldType::Scan         => false,
+            BlastShieldType::None         => false,
+            BlastShieldType::Unchanged    => false,
+        };
+
         let dt =
             structs::SclyObject {
                 instance_id: dt_id,
@@ -948,7 +1031,7 @@ fn patch_door<'r>(
                     pattern_txtr0: ResId::invalid(),
                     pattern_txtr1: ResId::invalid(),
                     color_txtr: ResId::invalid(),
-                    lock_on: 1,
+                    lock_on: lock_on as u8,
                     active: 1,
                     visor_params: structs::scly_structs::VisorParameters {
                         unknown0: 0,
@@ -1025,6 +1108,15 @@ fn patch_door<'r>(
                                     state: structs::ConnectionState::MAX_REACHED,
                                     message: structs::ConnectionMsg::DEACTIVATE,
                                     target_object_id: dt_id,
+                                },
+                            );
+
+                            // Stop the 1-frame timer from undoing our change if this is the first frame of the room load
+                            obj.connections.as_mut_vec().push(
+                                structs::Connection {
+                                    state: structs::ConnectionState::MAX_REACHED,
+                                    message: structs::ConnectionMsg::DEACTIVATE,
+                                    target_object_id: timer_id,
                                 },
                             );
 
@@ -1119,7 +1211,81 @@ fn patch_door<'r>(
         };
 
         // Create camera shake and activate on DEAD //
-        // TODO: It's possible, I'm just lazy
+        let shaker = structs::SclyObject {
+            instance_id: shaker_id,
+                property_data: structs::NewCameraShaker {
+                    name: b"myshaker\0".as_cstr(),
+                    position: position.into(),
+                    active: 1,
+                    unknown1: 1,
+                    unknown2: 0,
+                    duration: 0.5,
+                    sfx_dist: 10.0,
+                    shakers: [
+                        structs::CameraShakerComponent {
+                            unknown1: 1,
+                            unknown2: 1,
+                            am: structs::CameraShakePoint {
+                                unknown1: 1,
+                                unknown2: 0,
+                                attack_time: 0.1,
+                                sustain_time: 0.0,
+                                duration: 0.4,
+                                magnitude: 0.2,
+                            }.into(),
+                            fm: structs::CameraShakePoint {
+                                unknown1: 1,
+                                unknown2: 0,
+                                attack_time: 0.1,
+                                sustain_time: 0.0,
+                                duration: 0.2,
+                                magnitude: 2.0,
+                            }.into(),
+                        },
+                        structs::CameraShakerComponent {
+                            unknown1: 1,
+                            unknown2: 0,
+                            am: structs::CameraShakePoint {
+                                unknown1: 1,
+                                unknown2: 1,
+                                attack_time: 0.0,
+                                sustain_time: 0.0,
+                                duration: 0.0,
+                                magnitude: 0.0,
+                            }.into(),
+                            fm: structs::CameraShakePoint {
+                                unknown1: 1,
+                                unknown2: 1,
+                                attack_time: 0.0,
+                                sustain_time: 0.0,
+                                duration: 0.0,
+                                magnitude: 0.0,
+                            }.into(),
+                        },
+                        structs::CameraShakerComponent {
+                            unknown1: 1,
+                            unknown2: 1,
+                            am: structs::CameraShakePoint {
+                                unknown1: 1,
+                                unknown2: 0,
+                                attack_time: 0.2,
+                                sustain_time: 0.0,
+                                duration: 0.3,
+                                magnitude: 0.2,
+                            }.into(),
+                            fm: structs::CameraShakePoint {
+                                unknown1: 1,
+                                unknown2: 0,
+                                attack_time: 0.0,
+                                sustain_time: 0.0,
+                                duration: 0.3,
+                                magnitude: 2.0,
+                            }.into(),
+                        },
+                    ].into(),
+                }.into(),
+                connections: vec![].into(),
+        };
 
         // Create explosion sfx //
         let sound = structs::SclyObject {
@@ -1177,6 +1343,7 @@ fn patch_door<'r>(
         // add new script objects to layer //
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(streamed_audio);
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(sound);
+        layers[blast_shield_layer_idx].objects.as_mut_vec().push(shaker);
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(blast_shield);
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(timer);
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(dt);
@@ -1192,7 +1359,9 @@ fn patch_door<'r>(
                 .find(|obj| obj.instance_id == door_force_location.instance_id)
                 .and_then(|obj| obj.property_data.as_damageable_trigger_mut())
                 .unwrap();
-            door_force.color_txtr = _door_type.forcefield_txtr();
+            door_force.pattern_txtr0 = _door_type.pattern0_txtr();
+            door_force.pattern_txtr1 = _door_type.pattern1_txtr();
+            door_force.color_txtr = _door_type.color_txtr();
             door_force.damage_vulnerability = _door_type.vulnerability();
         }
 
@@ -1205,7 +1374,7 @@ fn patch_door<'r>(
         }
 
         // Add scan point
-        if _door_type.scan() != ResId::invalid() {
+        if _door_type.scan() != ResId::invalid() && blast_shield_type.is_none() {
             let _door_location = door_loc.door_location.unwrap();
             let door = layers[_door_location.layer as usize].objects.iter_mut()
                     .find(|obj| obj.instance_id == _door_location.instance_id)
@@ -1232,6 +1401,249 @@ fn patch_door<'r>(
             }
     
             door.actor_params.scan_params.scan = _door_type.scan();
+        }
+    }
+
+    if door_type_after_open.is_some() {
+        let door_type_after_open = door_type_after_open.unwrap();
+
+        /* Find existing door shield id */
+        let mut existing_door_shield_id = 0;
+        for door_shield_location in door_loc.door_shield_locations.iter() {
+            let result = layers[door_shield_location.layer as usize].objects.iter()
+                .find(|obj| obj.instance_id == door_shield_location.instance_id);
+            if result.is_some() {
+                existing_door_shield_id = door_shield_location.instance_id;
+            }
+        }
+
+        /* Find existing door force id */
+        let mut existing_door_force_id = 0;
+        for door_force_location in door_loc.door_force_locations.iter() {
+            let result = layers[door_force_location.layer as usize].objects.iter()
+                .find(|obj| obj.instance_id == door_force_location.instance_id);
+            if result.is_some() {
+                existing_door_force_id = door_force_location.instance_id;
+            }
+        }
+
+        /* Blast Shield instant start timer */
+        {
+            let timer = layers[blast_shield_layer_idx].objects.iter_mut()
+                .find(|obj| obj.instance_id == timer_id)
+                .unwrap();
+
+            // when the blast shield is active, instantly activate the fancy shield/dt
+            // and instantly deactivate the blue "replacement" shield
+            timer.connections.as_mut_vec().extend_from_slice(
+                &[
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_force_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_shield_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: existing_door_force_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: existing_door_shield_id,
+                    },
+                ]
+            );
+        }
+
+        /* Damageable Trigger */
+        for door_force_location in door_loc.door_force_locations.iter() {
+            let door_force = layers[door_force_location.layer as usize].objects.iter_mut()
+                .find(|obj| obj.instance_id == door_force_location.instance_id);
+
+            if door_force.is_none() {
+                continue;
+            }
+            let door_force = door_force.unwrap();
+
+            // Don't re-activate the fancy shield once it's been deactivated
+            door_force.connections.as_mut_vec().retain(|conn|
+                !(conn.target_object_id == existing_door_shield_id && conn.message == structs::ConnectionMsg::ACTIVATE)
+            );
+
+            // start disabled by default (auto-enabled by blast shield layer)
+            let door_force = door_force.property_data.as_damageable_trigger_mut().unwrap();
+            door_force.active = 0;
+
+            break;
+        }
+
+        /* Shield Actor */
+        for door_shield_location in door_loc.door_shield_locations.iter() {
+            let door_shield = layers[door_shield_location.layer as usize].objects.iter_mut()
+                .find(|obj| obj.instance_id == door_shield_location.instance_id);
+
+            if door_shield.is_none() {
+                continue;
+            }
+            let door_shield = door_shield.unwrap();
+
+            // start disabled by default (auto-enabled by blast shield layer)
+            let door_shield = door_shield.property_data.as_actor_mut().unwrap();
+            door_shield.active = 0;
+
+            break;
+        }
+
+        /* Unlock Relay */
+        for obj in layers[0].objects.iter_mut() {
+            if !obj.property_data.is_relay() {
+                continue;
+            }
+
+            let found = obj.connections.as_mut_vec().iter_mut().any(|conn|
+                conn.target_object_id == existing_door_shield_id && conn.message == structs::ConnectionMsg::ACTIVATE
+            );
+
+            if !found {
+                continue;
+            }
+
+            // Don't re-activate the fancy shield/trigger once it's been deactivated
+            obj.connections.as_mut_vec().retain(|conn|
+                !(conn.target_object_id == existing_door_shield_id || conn.target_object_id == existing_door_force_id)
+            );
+
+            // add scripting for an additional shield and damageable trigger
+            obj.connections.as_mut_vec().extend_from_slice(
+                &[
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: door_force_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: door_shield_id,
+                    },
+                ]
+            );
+
+            break;
+        }
+
+        /* Door */
+        {
+            let loc = door_loc.door_location.unwrap();
+            let door = layers[loc.layer as usize].objects.iter_mut()
+                .find(|obj| obj.instance_id == loc.instance_id)
+                .unwrap();
+
+            // add scripting for an additional shield and damageable trigger
+            door.connections.as_mut_vec().extend_from_slice(
+                &[
+                    structs::Connection {
+                        state: structs::ConnectionState::OPEN,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_force_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::OPEN,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_shield_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::MAX_REACHED,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_force_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::MAX_REACHED,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_shield_id,
+                    },
+                ]
+            );
+        }
+
+        /* Create new door shield from existing */
+        {
+            let door_shield = {
+                let mut door_shield = None;
+                for door_shield_location in door_loc.door_shield_locations.iter() {
+                    door_shield = layers[door_shield_location.layer as usize].objects.iter_mut()
+                        .find(|obj| obj.instance_id == door_shield_location.instance_id);
+                    if door_shield.is_some() {
+                        break;
+                    }
+                }
+                door_shield.unwrap()
+            };
+
+            let mut new_door_shield = door_shield.clone();
+            let new_door_shield_data = new_door_shield.property_data.as_actor_mut().unwrap();
+            new_door_shield.instance_id = door_shield_id;
+            new_door_shield_data.cmdl = door_type_after_open.shield_cmdl();
+            new_door_shield_data.active = 1;
+            layers[0].objects.as_mut_vec().push(new_door_shield);
+        }
+
+        /* Create new damageable trigger from existing */
+        {
+            let door_force = {
+                let mut door_force = None;
+                for door_force_location in door_loc.door_force_locations.iter() {
+                    let obj = layers[door_force_location.layer as usize].objects.iter()
+                        .find(|obj| obj.instance_id == door_force_location.instance_id);
+        
+                    if obj.is_none() {
+                        continue;
+                    }
+
+                    door_force = obj;
+                    break;
+                }
+                door_force.unwrap()
+            };
+
+            let mut new_door_force = structs::SclyObject {
+                    instance_id: damageable_trigger_id,
+                    property_data: door_force.property_data.clone(),
+                    connections: door_force.connections.clone()
+                };
+            let new_door_force_data = new_door_force.property_data.as_damageable_trigger_mut().unwrap();
+            new_door_force.instance_id = door_force_id;
+            new_door_force.connections.as_mut_vec().retain(|conn|
+                !(conn.target_object_id == existing_door_shield_id)
+            );
+            new_door_force.connections.as_mut_vec().extend_from_slice(
+                &[
+                    structs::Connection {
+                        state: structs::ConnectionState::DEAD,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_shield_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::MAX_REACHED,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: door_shield_id,
+                    },
+                ]
+            );
+
+            new_door_force_data.pattern_txtr0 = door_type_after_open.pattern0_txtr();
+            new_door_force_data.pattern_txtr1 = door_type_after_open.pattern1_txtr();
+            new_door_force_data.color_txtr = door_type_after_open.color_txtr();
+
+            new_door_force_data.damage_vulnerability = door_type_after_open.vulnerability();
+            new_door_force_data.active = 1;
+            layers[0].objects.as_mut_vec().push(new_door_force);
         }
     }
 
@@ -15534,6 +15946,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             door_type,
                             blast_shield_type,
                             game_resources,
+                            config.door_open_mode,
                         )
                     );
 
