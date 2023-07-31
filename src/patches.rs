@@ -672,6 +672,10 @@ fn patch_door<'r>(
     let mut door_shield_id = 0;
     let mut door_force_id = 0;
     let mut poi_id = 0;
+    let mut update_door_timer_id = 0;
+    let mut activate_old_door_id = 0;
+    let mut activate_new_door_id = 0;
+    let mut auto_open_relay_id = 0;
 
     let mut blast_shield_layer_idx: usize = 0;
     if blast_shield_type.is_some() {
@@ -683,6 +687,7 @@ fn patch_door<'r>(
         timer_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
         effect_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
         relay_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        auto_open_relay_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
         dt_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
         poi_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
 
@@ -694,6 +699,9 @@ fn patch_door<'r>(
     if door_type_after_open.is_some() {
         door_shield_id = area.new_object_id_from_layer_id(0);
         door_force_id = area.new_object_id_from_layer_id(0);
+        update_door_timer_id = area.new_object_id_from_layer_id(0);
+        activate_old_door_id = area.new_object_id_from_layer_id(0);
+        activate_new_door_id = area.new_object_id_from_layer_id(0);
     }
 
     let scly = area.mrea().scly_section_mut();
@@ -1068,36 +1076,60 @@ fn patch_door<'r>(
                     }.into()
                 ),
             };
+        
+        let mut relay_connections_to_add = Vec::new();
+
+        relay_connections_to_add.push(
+            structs::Connection { // Load next room
+                state: structs::ConnectionState::ZERO,
+                message: structs::ConnectionMsg::SET_TO_ZERO,
+                target_object_id: door_loc.door_location.unwrap().instance_id,
+            }
+        );
+        relay_connections_to_add.push(
+            structs::Connection { // Activate door open trigger
+                state: structs::ConnectionState::ZERO,
+                message: structs::ConnectionMsg::ACTIVATE,
+                target_object_id: door_open_trigger_id,
+            }
+        );
+        for loc in door_loc.door_shield_locations.iter() {
+            relay_connections_to_add.push(
+                structs::Connection { // Deactivate shield
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: loc.instance_id,
+                }
+            );
+        }
 
         /* Relay should also open the door, but only if this isn't an unpowered door */
-        if !vec![
-            (0xAC2C58FE, 1), // Biohazard Containment
-            (0x5F2EB7B6, 1), // Biotech Research Area 1
-            (0x1921876D, 3), // Ruined Courtyard
-        ].contains(&(mrea_id, door_loc.dock_number)) {
+        if vec![
+            0x001E000B, // Biohazard Containment
+            0x0020000D, // Biotech Research Area 1
+            0x000F01D1, // Ruined Courtyard
+            0x001B0088, // Cargo Frieght Lift to Deck Gamma
+        ].contains(&door_open_trigger_id) {
+            layers[blast_shield_layer_idx].objects.as_mut_vec().push(
+                structs::SclyObject {
+                    instance_id: auto_open_relay_id,
+                    connections: relay_connections_to_add.into(),
+                    property_data: structs::Relay {
+                        name: b"auto-open-door\0".as_cstr(),
+                        active: 0,
+                    }.into(),
+                }
+            );
+
             relay.connections.as_mut_vec().push(
-                structs::Connection { // Load next room
+                structs::Connection {
                     state: structs::ConnectionState::ZERO,
                     message: structs::ConnectionMsg::SET_TO_ZERO,
-                    target_object_id: door_loc.door_location.unwrap().instance_id,
+                    target_object_id: auto_open_relay_id,
                 }
             );
-            relay.connections.as_mut_vec().push(
-                structs::Connection { // Activate door open trigger
-                    state: structs::ConnectionState::ZERO,
-                    message: structs::ConnectionMsg::ACTIVATE,
-                    target_object_id: door_open_trigger_id,
-                }
-            );
-            for loc in door_loc.door_shield_locations.iter() {
-                relay.connections.as_mut_vec().push(
-                    structs::Connection { // Deactivate shield
-                        state: structs::ConnectionState::ZERO,
-                        message: structs::ConnectionMsg::DEACTIVATE,
-                        target_object_id: loc.instance_id,
-                    }
-                );
-            }
+        } else {
+            relay.connections.as_mut_vec().extend_from_slice(&relay_connections_to_add);
         }
 
         let mut _break = false;
@@ -1169,7 +1201,7 @@ fn patch_door<'r>(
             instance_id: timer_id,
             property_data: structs::Timer {
                 name: b"disable-dt\0".as_cstr(),
-                start_time: 1.0,
+                start_time: 0.2,
                 max_random_add: 0.0,
                 looping: 0,
                 start_immediately: 1,
@@ -1212,51 +1244,51 @@ fn patch_door<'r>(
         let effect: Option<structs::SclyObject<'_>> = match DO_GIBBS {
             true => {
                 Some(structs::SclyObject {
-            instance_id: effect_id,
-            connections: vec![].into(),
-            property_data: structs::scly_props::Effect {
-                name: b"gibbs effect\0".as_cstr(),
-
-                position,
-                rotation,
-                scale,
-
-                part: ResId::<res_id::PART>::new(0xCDCBDF04),
-                elsc: ResId::invalid(),
-                hot_in_thermal: 0,
-                no_timer_unless_area_occluded: 0,
-                rebuild_systems_on_active: 1,
-                active: 0,
-                use_rate_inverse_cam_dist: 0,
-                rate_inverse_cam_dist: 5.0,
-                rate_inverse_cam_dist_rate: 0.5,
-                duration: 0.2,
-                dureation_reset_while_visible: 0.1,
-                use_rate_cam_dist_range: 0,
-                rate_cam_dist_range_min: 20.0,
-                rate_cam_dist_range_max: 30.0,
-                rate_cam_dist_range_far_rate: 0.0,
-                combat_visor_visible: 1,
-                thermal_visor_visible:1 ,
-                xray_visor_visible: 1,
-                die_when_systems_done: 0,
-                light_params: structs::scly_structs::LightParameters {
-                    unknown0: 1,
-                    unknown1: 1.0,
-                    shadow_tessellation: 0,
-                    unknown2: 1.0,
-                    unknown3: 20.0,
-                    color: [1.0, 1.0, 1.0, 1.0].into(), // RGBA
-                    unknown4: 0,
-                    world_lighting: 1,
-                    light_recalculation: 1,
-                    unknown5: [0.0, 0.0, 0.0].into(),
-                    unknown6: 4,
-                    unknown7: 4,
-                    unknown8: 0,
-                    light_layer_id: 0,
-                },
-            }.into()
+                    instance_id: effect_id,
+                    connections: vec![].into(),
+                    property_data: structs::scly_props::Effect {
+                        name: b"gibbs effect\0".as_cstr(),
+        
+                        position,
+                        rotation,
+                        scale,
+        
+                        part: ResId::<res_id::PART>::new(0xCDCBDF04),
+                        elsc: ResId::invalid(),
+                        hot_in_thermal: 0,
+                        no_timer_unless_area_occluded: 0,
+                        rebuild_systems_on_active: 1,
+                        active: 0,
+                        use_rate_inverse_cam_dist: 0,
+                        rate_inverse_cam_dist: 5.0,
+                        rate_inverse_cam_dist_rate: 0.5,
+                        duration: 0.2,
+                        dureation_reset_while_visible: 0.1,
+                        use_rate_cam_dist_range: 0,
+                        rate_cam_dist_range_min: 20.0,
+                        rate_cam_dist_range_max: 30.0,
+                        rate_cam_dist_range_far_rate: 0.0,
+                        combat_visor_visible: 1,
+                        thermal_visor_visible:1 ,
+                        xray_visor_visible: 1,
+                        die_when_systems_done: 0,
+                        light_params: structs::scly_structs::LightParameters {
+                            unknown0: 1,
+                            unknown1: 1.0,
+                            shadow_tessellation: 0,
+                            unknown2: 1.0,
+                            unknown3: 20.0,
+                            color: [1.0, 1.0, 1.0, 1.0].into(), // RGBA
+                            unknown4: 0,
+                            world_lighting: 1,
+                            light_recalculation: 1,
+                            unknown5: [0.0, 0.0, 0.0].into(),
+                            unknown6: 4,
+                            unknown7: 4,
+                            unknown8: 0,
+                            light_layer_id: 0,
+                        },
+                    }.into()
                 })
             },
             false => None,
@@ -1683,6 +1715,238 @@ fn patch_door<'r>(
             new_door_shield_data.active = 1;
             layers[0].objects.as_mut_vec().push(new_door_shield);
         }
+
+        if vec![
+            (0x37B3AFE6, 1), // cargo freight lift
+            (0xAC2C58FE, 1), // biohazard containment
+            (0x5F2EB7B6, 1), // biotech research area 1
+            (0x1921876D, 3), // ruined courtyard
+            (0xA49B2544, 1), // research core
+        ].contains(&(mrea_id, door_loc.dock_number)) {
+            /* Add two relays which can activated/deactivated to control which shield appears */
+            layers[0].objects.as_mut_vec().push(
+                structs::SclyObject {
+                    instance_id: activate_new_door_id,
+                    connections: vec![
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::ACTIVATE,
+                            target_object_id: door_force_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::ACTIVATE,
+                            target_object_id: door_shield_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: existing_door_force_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: existing_door_shield_id,
+                        },
+                    ].into(),
+                    property_data: structs::Relay {
+                        name: b"activate new door\0".as_cstr(),
+                        active: 1,
+                    }.into(),
+                }
+            );
+
+            layers[0].objects.as_mut_vec().push(
+                    structs::SclyObject {
+                        instance_id: update_door_timer_id,
+                        property_data: structs::Timer {
+                            name: b"update_door_timer\0".as_cstr(),
+                            start_time: 0.5,
+                            max_random_add: 0.0,
+                            looping: 0,
+                            start_immediately: 0,
+                            active: 1,
+                        }.into(),
+                        connections: vec![
+                            structs::Connection {
+                                state: structs::ConnectionState::ZERO,
+                                message: structs::ConnectionMsg::SET_TO_ZERO,
+                                target_object_id: activate_old_door_id,
+                            },
+                            structs::Connection {
+                                state: structs::ConnectionState::ZERO,
+                                message: structs::ConnectionMsg::SET_TO_ZERO,
+                                target_object_id: activate_new_door_id,
+                            },
+                            structs::Connection {
+                                state: structs::ConnectionState::ZERO,
+                                message: structs::ConnectionMsg::ACTIVATE,
+                                target_object_id: auto_open_relay_id,
+                            },
+                        ].into(),
+                    }
+                );
+
+            layers[0].objects.as_mut_vec().push(
+                structs::SclyObject {
+                    instance_id: activate_old_door_id,
+                    connections: vec![
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: door_force_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: door_shield_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::ACTIVATE,
+                            target_object_id: existing_door_force_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::ACTIVATE,
+                            target_object_id: existing_door_shield_id,
+                        },
+                    ].into(),
+                    property_data: structs::Relay {
+                        name: b"activate old door\0".as_cstr(),
+                        active: 0,
+                    }.into(),
+                }
+            );
+
+            /* Change blast shield auto-start timer behavior */
+            let obj = layers[blast_shield_layer_idx].objects.iter_mut()
+                .find(|obj| obj.instance_id == timer_id)
+                .unwrap();
+
+            obj.connections
+                .as_mut_vec()
+                .retain(|conn|
+                    !vec![
+                        existing_door_shield_id,
+                        existing_door_force_id,
+                        door_shield_id,
+                        door_force_id,
+                    ].contains(&conn.target_object_id)
+                );
+
+            obj.connections.as_mut_vec().extend_from_slice(
+                &vec![
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: activate_old_door_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: activate_new_door_id,
+                    },
+                ]
+            );
+
+            /* Change blast shield destruction relay to change what happens when conduits are activated */
+            let obj = layers[blast_shield_layer_idx].objects.iter_mut()
+                .find(|obj| obj.instance_id == relay_id)
+                .unwrap();
+            
+            obj.connections.as_mut_vec().extend_from_slice(
+                &vec![
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: activate_old_door_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: activate_new_door_id,
+                    },
+                ]
+            );
+
+            let (activate_door_id, deactivate_door_id) =  match mrea_id {
+                0x37B3AFE6 => (Some(0x001B008D), None), // cargo freight lift
+                0xAC2C58FE => (Some(0x001E01DA), Some(0x001E01D8)), // biohazard containment
+                0x5F2EB7B6 => (Some(0x00200027), Some(0x00200025)), // biotech research area 1
+                0x1921876D => (Some(0x000F01D5), Some(0x000F01D6)), // ruined courtyard
+                0xA49B2544 => (Some(0x0028043D), Some(0x0028043C)), // research core
+                _  => (None, None),
+            };
+
+            /* new shield needs to be deactivated when conduits aren't active */
+            if let Some(deactivate_door_id) = deactivate_door_id {
+                let obj = layers[0].objects
+                    .iter_mut()
+                    .find(|obj| obj.instance_id == deactivate_door_id)
+                    .expect(format!("Could not find Deactivate Door relay in room 0x{:X}", mrea_id).as_str());
+
+                obj.connections.as_mut_vec().extend_from_slice(
+                    &vec![
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: door_shield_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: door_force_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: auto_open_relay_id,
+                        },
+                    ]
+                );
+            }
+
+            /* either shield needs to be activated when conduits are activated, not just the old one */
+            if let Some(activate_door_id) = activate_door_id {
+                let obj = layers[0].objects
+                    .iter_mut()
+                    .find(|obj| obj.instance_id == activate_door_id)
+                    .expect(format!("Could not find Activate Door relay in room 0x{:X}", mrea_id).as_str());
+
+                    obj.connections.as_mut_vec().retain(|conn|
+                        !vec![
+                            existing_door_shield_id,
+                            existing_door_force_id,
+                            door_shield_id,
+                            door_force_id,
+                        ].contains(&conn.target_object_id)
+                    );
+
+                obj.connections.as_mut_vec().push(
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::RESET_AND_START,
+                        target_object_id: update_door_timer_id,
+                    }
+                );
+
+                if mrea_id == 0xA49B2544 { // research core
+                    let obj = layers[0].objects
+                        .iter_mut()
+                        .find(|obj| obj.instance_id == 0x0028043F)
+                        .expect("Could not find conduit damageable trigger in research core");
+
+                    obj.connections.as_mut_vec().push(
+                        structs::Connection {
+                            state: structs::ConnectionState::DEAD,
+                            message: structs::ConnectionMsg::RESET_AND_START,
+                            target_object_id: update_door_timer_id,
+                        }
+                    );
+                }
+            }
+        } // end unpowered door special case(s)
 
         /* Create new damageable trigger from existing */
         {
