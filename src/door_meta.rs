@@ -1148,7 +1148,7 @@ impl BlastShieldType {
         }
     }
 
-    pub fn dependencies(&self) -> Vec<(u32, FourCC)> { // dependencies to add to the area
+    pub fn dependencies(&self, do_gibbs: bool) -> Vec<(u32, FourCC)> { // dependencies to add to the area
         
         let mut data: Vec<(u32, FourCC)> = Vec::new();
         data.push((self.cmdl().to_u32(),               FourCC::from_bytes(b"CMDL")));
@@ -1161,39 +1161,41 @@ impl BlastShieldType {
         data.push((self.strg().to_u32(),               FourCC::from_bytes(b"STRG")));
 
         /* Gibbs */
-        data.push((0xCDCBDF04, FourCC::from_bytes(b"PART")));
+        if do_gibbs {
+            data.push((0xCDCBDF04, FourCC::from_bytes(b"PART")));
 
-        data.push((0x185D5B02, FourCC::from_bytes(b"PART")));
-        data.push((0x237B9BBB, FourCC::from_bytes(b"CMDL")));
-        data.push((0x5C7B215C, FourCC::from_bytes(b"TXTR")));
-        data.push((0xFDE0023A, FourCC::from_bytes(b"TXTR")));
-
-        data.push((0x1D80CB59, FourCC::from_bytes(b"PART")));
-        data.push((0x6FCB7BD5, FourCC::from_bytes(b"CMDL")));
-
-        data.push((0x6FEBD6F7, FourCC::from_bytes(b"PART")));
-        data.push((0x6BDD3EB9, FourCC::from_bytes(b"TXTR")));
-
-        data.push((0x8F70D4F0, FourCC::from_bytes(b"PART")));
-        data.push((0x8D680898, FourCC::from_bytes(b"CMDL")));
-
-        data.push((0xA8842880, FourCC::from_bytes(b"PART")));
-        data.push((0x6E84380A, FourCC::from_bytes(b"CMDL")));
-
-        data.push((0xAEEDEF9D, FourCC::from_bytes(b"PART")));
-        data.push((0xD73650EC, FourCC::from_bytes(b"CMDL")));
-        data.push((0x6E09EA6B, FourCC::from_bytes(b"TXTR")));
-        data.push((0x5B97098E, FourCC::from_bytes(b"TXTR")));
-        data.push((0xFA0C2AE8, FourCC::from_bytes(b"TXTR")));
-
-        data.push((0xD71C6D31, FourCC::from_bytes(b"PART")));
-        data.push((0x0034CE07, FourCC::from_bytes(b"CMDL")));
-
-        data.push((0xF0E89141, FourCC::from_bytes(b"PART")));
-        data.push((0xC82B2BFE, FourCC::from_bytes(b"CMDL")));
-
-        data.push((0xFAF20386, FourCC::from_bytes(b"PART")));
-        data.push((0x4EBF5950, FourCC::from_bytes(b"CMDL")));
+            data.push((0x185D5B02, FourCC::from_bytes(b"PART")));
+            data.push((0x237B9BBB, FourCC::from_bytes(b"CMDL")));
+            data.push((0x5C7B215C, FourCC::from_bytes(b"TXTR")));
+            data.push((0xFDE0023A, FourCC::from_bytes(b"TXTR")));
+    
+            data.push((0x1D80CB59, FourCC::from_bytes(b"PART")));
+            data.push((0x6FCB7BD5, FourCC::from_bytes(b"CMDL")));
+    
+            data.push((0x6FEBD6F7, FourCC::from_bytes(b"PART")));
+            data.push((0x6BDD3EB9, FourCC::from_bytes(b"TXTR")));
+    
+            data.push((0x8F70D4F0, FourCC::from_bytes(b"PART")));
+            data.push((0x8D680898, FourCC::from_bytes(b"CMDL")));
+    
+            data.push((0xA8842880, FourCC::from_bytes(b"PART")));
+            data.push((0x6E84380A, FourCC::from_bytes(b"CMDL")));
+    
+            data.push((0xAEEDEF9D, FourCC::from_bytes(b"PART")));
+            data.push((0xD73650EC, FourCC::from_bytes(b"CMDL")));
+            data.push((0x6E09EA6B, FourCC::from_bytes(b"TXTR")));
+            data.push((0x5B97098E, FourCC::from_bytes(b"TXTR")));
+            data.push((0xFA0C2AE8, FourCC::from_bytes(b"TXTR")));
+    
+            data.push((0xD71C6D31, FourCC::from_bytes(b"PART")));
+            data.push((0x0034CE07, FourCC::from_bytes(b"CMDL")));
+    
+            data.push((0xF0E89141, FourCC::from_bytes(b"PART")));
+            data.push((0xC82B2BFE, FourCC::from_bytes(b"CMDL")));
+    
+            data.push((0xFAF20386, FourCC::from_bytes(b"PART")));
+            data.push((0x4EBF5950, FourCC::from_bytes(b"CMDL")));    
+        }
 
         /* Sound */
         data.push((0x57FE7E67, FourCC::from_bytes(b"AGSC")));

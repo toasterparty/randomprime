@@ -581,6 +581,8 @@ fn patch_door<'r>(
     door_resources:&HashMap<(u32, FourCC), structs::Resource<'r>>,
     door_open_mode: DoorOpenMode,
 ) -> Result<(), String> {
+    const DO_GIBBS: bool = false;
+
     let mrea_id = area.mlvl_area.mrea.to_u32();
     let area_internal_id = area.mlvl_area.internal_id;
 
@@ -593,7 +595,7 @@ fn patch_door<'r>(
 
     if blast_shield_type.is_some() {
         // Add dependencies
-        deps.extend_from_slice(&blast_shield_type.as_ref().unwrap().dependencies());
+        deps.extend_from_slice(&blast_shield_type.as_ref().unwrap().dependencies(DO_GIBBS));
     }
 
     let blast_shield_can_change_door = door_type.is_some() && blast_shield_type.is_some();
@@ -913,11 +915,6 @@ fn patch_door<'r>(
                     message: structs::ConnectionMsg::DECREMENT,
                     target_object_id: special_function_id,
                 },
-                structs::Connection { // Make gibbs
-                    state: structs::ConnectionState::ZERO,
-                    message: structs::ConnectionMsg::ACTIVATE,
-                    target_object_id: effect_id,
-                },
                 structs::Connection { // Play explosion sound effect
                     state: structs::ConnectionState::ZERO,
                     message: structs::ConnectionMsg::PLAY,
@@ -949,6 +946,16 @@ fn patch_door<'r>(
                 active: 1,
             }.into(),
         };
+
+        if DO_GIBBS {
+            relay.connections.as_mut_vec().push(
+                structs::Connection { // Make gibbs
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::ACTIVATE,
+                    target_object_id: effect_id,
+                }
+            );
+        }
 
         /* Create damageable trigger to actually handle vulnerability, because actor collision extent/offset/rotation is very unreliable */
         let (dt_pos, dt_scale) = {
@@ -1202,7 +1209,9 @@ fn patch_door<'r>(
         }
 
         // Create Gibbs and activate on DEAD //
-        let effect = structs::SclyObject {
+        let effect: Option<structs::SclyObject<'_>> = match DO_GIBBS {
+            true => {
+                Some(structs::SclyObject {
             instance_id: effect_id,
             connections: vec![].into(),
             property_data: structs::scly_props::Effect {
@@ -1248,6 +1257,9 @@ fn patch_door<'r>(
                     light_layer_id: 0,
                 },
             }.into()
+                })
+            },
+            false => None,
         };
 
         // Create camera shake and activate on DEAD //
@@ -1388,7 +1400,9 @@ fn patch_door<'r>(
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(timer);
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(dt);
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(poi);
-        layers[blast_shield_layer_idx].objects.as_mut_vec().push(effect);
+        if effect.is_some() {
+            layers[blast_shield_layer_idx].objects.as_mut_vec().push(effect.unwrap());
+        }
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(relay);
     } else {
         position = [0.0, 0.0, 0.0].into();

@@ -1023,7 +1023,7 @@ pub fn custom_assets<'r>(
         } else {
             // If vanilla CMDL, then it can't depend on custom textures
             assert!(
-                blast_shield.dependencies()
+                blast_shield.dependencies(true)
                 .iter()
                 .find(|d| d.0 >= 0xDEAF0000 && d.0 <= custom_asset_ids::EXTRA_IDS_START.to_u32() + 50)
                 .is_none()
@@ -1080,7 +1080,7 @@ pub fn collect_game_resources<'r>(
     let mut looking_for = HashSet::<_>::new();
     looking_for.extend(PickupModel::iter().flat_map(|x| x.dependencies().iter().cloned()));
     looking_for.extend(DoorType::iter().flat_map(|x| x.dependencies()));
-    looking_for.extend(BlastShieldType::iter().flat_map(|x| x.dependencies()));
+    looking_for.extend(BlastShieldType::iter().flat_map(|x| x.dependencies(true)));
     looking_for.extend(GenericTexture::iter().flat_map(|x| x.dependencies()));
     looking_for.extend(WaterType::iter().flat_map(|x| x.dependencies()));
 
