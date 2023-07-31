@@ -1427,12 +1427,18 @@ fn patch_door<'r>(
                     {
                         match obj.property_data.object_type() {
                             structs::Actor::OBJECT_TYPE => {
+                                let id = obj.instance_id;
                                 let obj = obj.property_data.as_actor().unwrap();
-                                obj.active != 0 || !this_near_that(obj.position.into(), position.into())
+                                obj.active != 0 || !this_near_that(obj.position.into(), position.into()) || vec![
+                                        0x001B0089,
+                                    ].contains(&id)
                             },
                             structs::DamageableTrigger::OBJECT_TYPE => {
+                                let id = obj.instance_id;
                                 let obj = obj.property_data.as_damageable_trigger().unwrap();
-                                obj.active != 0 || !this_near_that(obj.position.into(), position.into())
+                                obj.active != 0 || !this_near_that(obj.position.into(), position.into()) || vec![
+                                    0x001B0087,
+                                ].contains(&id)
                             },
                             structs::Relay::OBJECT_TYPE => {
                                 let obj = obj.property_data.as_relay().unwrap();
@@ -1621,7 +1627,7 @@ fn patch_door<'r>(
                         break;
                     }
                 }
-                door_shield.unwrap()
+                door_shield.expect(format!("Could not find suitable door shield actor in room 0x{:X}", mrea_id).as_str())
             };
 
             let mut new_door_shield = door_shield.clone();
@@ -1647,7 +1653,7 @@ fn patch_door<'r>(
                     door_force = obj;
                     break;
                 }
-                door_force.unwrap()
+                door_force.expect(format!("Could not find suitable door damageable trigger in room 0x{:X}", mrea_id).as_str())
             };
 
             let mut new_door_force = structs::SclyObject {
