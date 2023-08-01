@@ -780,7 +780,7 @@ fn patch_door<'r>(
             scale = [1.0*scale_scale, 1.5*scale_scale, 1.5*scale_scale].into();
             rotation = door_rotation.into();
 
-            let door_offset: f32 = 0.1;
+            let door_offset: f32 = -0.05;
             let door_offset_z: f32 = 1.8017;
 
             if door_rotation[2] >= 45.0 && door_rotation[2] < 135.0 {
