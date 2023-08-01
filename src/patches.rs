@@ -606,15 +606,21 @@ fn patch_door<'r>(
         DoorOpenMode::PrimaryBlastShield => {
             let door_type = door_type.as_ref().unwrap();
             let door_type_after_open = door_type.to_primary_color();
-            if blast_shield_can_change_door && door_type != &door_type_after_open {
+            if blast_shield_can_change_door 
+                // TODO: optimize
+                // && door_type != &door_type_after_open
+            {
                 Some(door_type_after_open)
             } else {
                 None
             }
         },
         DoorOpenMode::BlueBlastShield => {
-            let door_type = door_type.as_ref().unwrap();
-            if blast_shield_can_change_door && door_type != &DoorType::Blue {
+            // let door_type = door_type.as_ref().unwrap();
+            if blast_shield_can_change_door
+                // TODO: optimize
+                // && door_type != &DoorType::Blue
+            {
                 Some(DoorType::Blue)
             } else {
                 None
