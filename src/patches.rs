@@ -1507,16 +1507,20 @@ fn patch_door<'r>(
                             structs::Actor::OBJECT_TYPE => {
                                 let id = obj.instance_id;
                                 let obj = obj.property_data.as_actor().unwrap();
-                                obj.active != 0 || !this_near_that(obj.position.into(), position.into()) || vec![
-                                        0x001B0089,
-                                    ].contains(&id)
+                                let cmdl = obj.cmdl.to_u32();
+
+                                obj.active != 0 || // remove inactive
+                                !this_near_that(obj.position.into(), position.into()) || // ...and within 3 units
+                                vec![0x001B0089].contains(&id) || // ... and exclude cargo freight lift door
+                                !DoorType::is_door(&cmdl) // ... and exclude non-doors
                             },
                             structs::DamageableTrigger::OBJECT_TYPE => {
                                 let id = obj.instance_id;
                                 let obj = obj.property_data.as_damageable_trigger().unwrap();
-                                obj.active != 0 || !this_near_that(obj.position.into(), position.into()) || vec![
-                                    0x001B0087,
-                                ].contains(&id)
+
+                                obj.active != 0 || // remove inactive
+                                !this_near_that(obj.position.into(), position.into()) || // ...and withing 3 units
+                                vec![0x001B0087].contains(&id) // ... and exclude cargo freight lift door
                             },
                             structs::Relay::OBJECT_TYPE => {
                                 let obj = obj.property_data.as_relay().unwrap();

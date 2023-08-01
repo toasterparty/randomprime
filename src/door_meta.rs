@@ -891,19 +891,38 @@ impl DoorType {
         }
     }
 
-    pub fn from_cmdl (cmdl: &u32) -> Self {
+    fn maybe_from_cmdl (cmdl: &u32) -> Option<Self>
+    {
         match cmdl {
-            0x0734977A => DoorType::Blue,
-            0xD5D49F54 => DoorType::Blue, // Tallon Cargo Freight Lift
-            0x33188D1B => DoorType::Purple,
-            0x59649E9D => DoorType::White,
-            0xBBBA1EC7 => DoorType::Red,
-            0x1E6337B6 => DoorType::Red, // MQB (Save Station Door)
-            0x18D0AEE6 => DoorType::VerticalBlue,
-            0x095B0B93 => DoorType::VerticalPurple,
-            0xB7A8A4C9 => DoorType::VerticalWhite,
-            _ => panic!("Unhandled cmdl id when derriving door type: 0x{:X}", cmdl),
+            0x0734977A => Some(DoorType::Blue),
+            0xD5D49F54 => Some(DoorType::Blue), // Tallon Cargo Freight Lift
+            0x33188D1B => Some(DoorType::Purple),
+            0x59649E9D => Some(DoorType::White),
+            0xBBBA1EC7 => Some(DoorType::Red),
+            0x1E6337B6 => Some(DoorType::Red), // MQB (Save Station Door)
+            0x18D0AEE6 => Some(DoorType::VerticalBlue),
+            0x095B0B93 => Some(DoorType::VerticalPurple),
+            0xB7A8A4C9 => Some(DoorType::VerticalWhite),
+            _ => None,
         }
+    }
+
+    pub fn from_cmdl (cmdl: &u32) -> Self {
+        Self::maybe_from_cmdl(cmdl).expect(format!("Unhandled cmdl id when derriving door type: 0x{:X}", cmdl).as_str())
+    }
+
+    pub fn is_door(cmdl: &u32) -> bool {
+        if Self::maybe_from_cmdl(cmdl).is_some() {
+            return true;
+        }
+
+        for door_type in Self::iter() {
+            if door_type.shield_cmdl().to_u32() == *cmdl {
+                return true;
+            }
+        }
+
+        false
     }
 }
 
