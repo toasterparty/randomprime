@@ -414,13 +414,13 @@
                             "senderId": 2435191, // [Counter] Counter_Deadghost
                             "targetId": 2424943, // [Timer] Stop Stop Music Timer
                             "state": "MAX_REACHED",
-                            "message": "RESET_AND_START"
+                            "message": "START"
                         },
                         {
                             "senderId": 2435191, // [Counter] Counter_Deadghost
                             "targetId": 3424937, // [Timer] Stop Music Again
                             "state": "MAX_REACHED",
-                            "message": "RESET_AND_START"
+                            "message": "ACTIVATE"
                         },
                         {
                             "senderId": 3424937, // [Timer] Stop Music Again
@@ -435,38 +435,19 @@
                             "message": "STOP"
                         },
                         {
-                            "senderId": 3424937, // [Timer] Stop Music Again
-                            "targetId": 2424938, // [Timer] Stop Music Again 2
-                            "state": "ZERO",
-                            "message": "RESET_AND_START"
-                        },
-                        {
-                            "senderId": 2424938, // [Timer] Stop Music Again 2
-                            "targetId": 3424937, // [Timer] Stop Music Again
-                            "state": "ZERO",
-                            "message": "RESET_AND_START"
-                        },
-                        {
                             "senderId": 2424943, // [Timer] Stop Stop Music Timer
                             "targetId": 3424937, // [Timer] Stop Music Again
                             "state": "ZERO",
-                            "message": "STOP"
-                        },
-                        {
-                            "senderId": 2424943, // [Timer] Stop Stop Music Timer
-                            "targetId": 2424938, // [Timer] Stop Music Again 2
-                            "state": "ZERO",
-                            "message": "STOP"
+                            "message": "DEACTIVATE"
                         }
                     ],
                     "timers": [
                         {
                             "id": 3424937, // [Timer] Stop Music Again
-                            "time": 0.001
-                        },
-                        {
-                            "id": 2424938, // [Timer] Stop Music Again 2
-                            "time": 0.001
+                            "time": 0.001,
+                            "active": false,
+                            "looping": true,
+                            "startImmediately": true
                         },
                         {
                             "id": 2424943, // [Timer] Stop Stop Music Timer
@@ -630,6 +611,7 @@
             "rooms": {
                 "Phendrana Shorelines": {
                     "addConnections": [
+                        // Make Reposition happen immediately
                         {
                             "senderId": 131406, // [Relay] Relay-start of cinema
                             "targetId": 131080, // [SpawnPoint] Spawn point
@@ -665,6 +647,21 @@
                             "targetId": 131080, // [SpawnPoint] Spawn point
                             "state": "ENTERED",
                             "message": "DEACTIVATE"
+                        },
+                        // Deactivate Fly-Over Ridley that is making noises before the actual cutscene starts
+                        {
+                            "senderId": 131095, // [Timer] Deactivate Ridley
+                            "targetId": 131747, // [Platform] Platform
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        }
+                    ],
+                    "timers": [
+                        {
+                            "id": 131095, // [Timer] Deactivate Ridley
+                            "time": 0.001,
+                            "active": true,
+                            "startImmediately": true
                         }
                     ]
                 },

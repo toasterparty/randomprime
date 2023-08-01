@@ -11099,13 +11099,13 @@
                             "senderId": 1572876, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1572878, // [Timer] Stop Music Again
                             "state": "ZERO",
-                            "message": "RESET_AND_START"
+                            "message": "ACTIVATE"
                         },
                         {
                             "senderId": 1572876, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 2572878, // [Timer] Stop Stop Music Timer
                             "state": "ZERO",
-                            "message": "RESET_AND_START"
+                            "message": "START"
                         },
                         {
                             "senderId": 1572878, // [Timer] Stop Music Again
@@ -11120,26 +11120,8 @@
                             "message": "STOP"
                         },
                         {
-                            "senderId": 1572878, // [Timer] Stop Music Again
-                            "targetId": 3572878, // [Timer] Stop Music Again 2
-                            "state": "ZERO",
-                            "message": "RESET_AND_START"
-                        },
-                        {
-                            "senderId": 3572878, // [Timer] Stop Music Again 2
-                            "targetId": 1572878, // [Timer] Stop Music Again
-                            "state": "ZERO",
-                            "message": "RESET_AND_START"
-                        },
-                        {
                             "senderId": 2572878, // [Timer] Stop Stop Music Timer
                             "targetId": 1572878, // [Timer] Stop Music Again
-                            "state": "ZERO",
-                            "message": "STOP"
-                        },
-                        {
-                            "senderId": 2572878, // [Timer] Stop Stop Music Timer
-                            "targetId": 3572878, // [Timer] Stop Music Again 2
                             "state": "ZERO",
                             "message": "STOP"
                         },
@@ -11639,11 +11621,9 @@
                     "timers": [
                         {
                             "id": 1572878, // [Timer] Stop Music Again
-                            "time": 0.001
-                        },
-                        {
-                            "id": 3572878, // [Timer] Stop Music Again 2
-                            "time": 0.001
+                            "time": 0.001,
+                            "active": false,
+                            "looping": true
                         },
                         {
                             "id": 2572878, // [Timer] Stop Stop Music Timer
