@@ -143,6 +143,89 @@
                         3211976
                     ]
                 },
+                "Hive Totem": {
+                    // Disable tutorial hudmemos
+                    "deleteIds": [
+                        3211975,
+                        3211976
+                    ],
+                    "addConnections": [
+                        {
+                            "senderId": 689863, // [Trigger] Music Trigger Leave
+                            "targetId": 689886, // [Trigger] Music Trigger Enter
+                            "state": "ENTERED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 689886, // [Trigger] Music Trigger Enter
+                            "targetId": 689863, // [Trigger] Music Trigger Leave
+                            "state": "ENTERED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 2359615, // [Relay] Relay-BeginCinema
+                            "targetId": 689863, // [Trigger] Music Trigger Leave
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 689863, // [Trigger] Music Trigger Leave
+                            "targetId": 2359711, // [StreamedAudio] StreamedAudio - Ruins Hive Totem
+                            "state": "ENTERED",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 689863, // [Trigger] Music Trigger Leave
+                            "targetId": 2359664, // [StreamedAudio] StreamedAudio - Ruins Naka SW
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 689886, // [Trigger] Music Trigger Enter
+                            "targetId": 2359711, // [StreamedAudio] StreamedAudio - Ruins Hive Totem
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 689886, // [Trigger] Music Trigger Enter
+                            "targetId": 2359664, // [StreamedAudio] StreamedAudio - Ruins Naka SW
+                            "state": "ENTERED",
+                            "message": "STOP"
+                        }
+                    ],
+                    "triggers": [
+                        {
+                            "id": 689863, // [Trigger] Music Trigger Leave
+                            "active": false,
+                            "position": [
+                                40.40501,
+                                287.950195,
+                                -1.165903
+                            ],
+                            "scale": [
+                                0.787003,
+                                6.171,
+                                4.699
+                            ],
+                            "deactivateOnEnter": true
+                        },
+                        {
+                            "id": 689886, // [Trigger] Music Trigger Enter
+                            "active": false,
+                            "position": [
+                                42.40501,
+                                287.950195,
+                                -1.165903
+                            ],
+                            "scale": [
+                                0.787003,
+                                6.171,
+                                4.699
+                            ],
+                            "deactivateOnEnter": true
+                        }
+                    ]
+                },
                 "Ruined Shrine": {
                     // Disable tutorial hudmemos
                     "deleteIds": [
@@ -915,6 +998,44 @@
                             "targetId": 272966, // [StreamedAudio] StreamedAudio Lava Main SW
                             "state": "ZERO",
                             "message": "PLAY"
+                        }
+                    ]
+                },
+                "Warrior Shrine": {
+                    "deleteIds": [
+                        // Old Load Trigger
+                        720934
+                    ],
+                    "addConnections": [
+                        // New load trigger that only detects Morphed player (To prevent room reload)
+                        {
+                            "senderId": 720909, // [Trigger] Morph Only Load Trigger
+                            "targetId": 720897, // [Dock] Dock To 09_over_monitortower
+                            "state": "ENTERED",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 720909, // [Trigger] Morph Only Load Trigger
+                            "targetId": 720898, // [Dock] Dock To 12_over_fieryshores
+                            "state": "ENTERED",
+                            "message": "SET_TO_MAX"
+                        }
+                    ],
+                    "triggers": [
+                        {
+                            "id": 720909, // [Trigger] Morph Only Load Trigger
+                            "active": true,
+                            "position": [
+                                309.779419,
+                                -281.603119,
+                                65.075005
+                            ],
+                            "scale": [
+                                20.0,
+                                30.0,
+                                12.945999
+                            ],
+                            "flags": 4096
                         }
                     ]
                 }
