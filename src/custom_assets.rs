@@ -83,6 +83,11 @@ pub mod custom_asset_ids {
         RANDOVANIA_GAMECUBE_ANCS: ANCS,
         RANDOVANIA_GAMECUBE0_TXTR: TXTR,
         RANDOVANIA_GAMECUBE1_TXTR: TXTR,
+        FLAMETHROWER_PICKUP_CMDL: CMDL,
+        FLAMETHROWER_PICKUP_ANCS: ANCS,
+        FLAMETHROWER_PICKUP_TXTR1: TXTR,
+        FLAMETHROWER_PICKUP_TXTR2: TXTR,
+        FLAMETHROWER_PICKUP_TXTR3: TXTR,
 
         // Custom Scans
         SHORELINES_POI_SCAN: SCAN,
@@ -403,14 +408,17 @@ fn extern_assets_compile_time<'r>() -> Vec<Resource<'r>>
         extern_asset!(MAP_PICKUP_ICON_TXTR, "map_pickupdot.txtr"),
 
         /* Pickup Assets */
-        extern_asset!(NOTHING_TXTR             , "nothing_texture.txtr"      ),
-        extern_asset!(PHAZON_SUIT_TXTR1        , "phazon_suit_texure_1.txtr" ),
-        extern_asset!(PHAZON_SUIT_TXTR2        , "phazon_suit_texure_2.txtr" ),
-        extern_asset!(SHINY_MISSILE_TXTR0      , "shiny-missile0.txtr"       ),
-        extern_asset!(SHINY_MISSILE_TXTR1      , "shiny-missile1.txtr"       ),
-        extern_asset!(SHINY_MISSILE_TXTR2      , "shiny-missile2.txtr"       ),
-        extern_asset!(RANDOVANIA_GAMECUBE0_TXTR , "randovania_gamecube.TXTR"),
-        extern_asset!(RANDOVANIA_GAMECUBE1_TXTR , "randovania_gamecube_text.TXTR"),
+        extern_asset!(NOTHING_TXTR              , "nothing_texture.txtr"            ),
+        extern_asset!(PHAZON_SUIT_TXTR1         , "phazon_suit_texure_1.txtr"       ),
+        extern_asset!(PHAZON_SUIT_TXTR2         , "phazon_suit_texure_2.txtr"       ),
+        extern_asset!(SHINY_MISSILE_TXTR0       , "shiny-missile0.txtr"             ),
+        extern_asset!(SHINY_MISSILE_TXTR1       , "shiny-missile1.txtr"             ),
+        extern_asset!(SHINY_MISSILE_TXTR2       , "shiny-missile2.txtr"             ),
+        extern_asset!(FLAMETHROWER_PICKUP_TXTR1 , "flamethrower_vertice_color.TXTR" ),
+        extern_asset!(FLAMETHROWER_PICKUP_TXTR2 , "flamethrower_cap_glow.TXTR"      ),
+        extern_asset!(FLAMETHROWER_PICKUP_TXTR3 , "flamethrower_color_body.TXTR"    ),
+        extern_asset!(RANDOVANIA_GAMECUBE0_TXTR , "randovania_gamecube.TXTR"        ),
+        extern_asset!(RANDOVANIA_GAMECUBE1_TXTR , "randovania_gamecube_text.TXTR"   ),
 
         /* Door/Blast Shield Assets */
         extern_asset!(ORANGE_TXTR  , "orange.txtr"  ),
@@ -597,7 +605,10 @@ pub fn custom_assets<'r>(
         custom_asset_ids::COMBAT_ANCS,
         ResId::<res_id::TXTR>::new(0x1D588B22),
     ));
+    
     assets.extend_from_slice(&create_shiny_missile_assets(resources));
+    assets.extend_from_slice(&create_flamethrower_assets(resources));
+
     assets.extend_from_slice(&create_ice_trap_icon_ancs(
         resources,
         ResId::<res_id::CMDL>::new(0xA3108E43), // new_ice_parasite_bound.CMDL
@@ -1587,6 +1598,52 @@ fn create_shiny_missile_assets<'r>(
         )
     };
     [shiny_missile_cmdl, shiny_missile_ancs, shiny_missile_evnt, shiny_missile_anim]
+}
+
+fn create_flamethrower_assets<'r>(
+    resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+) -> [structs::Resource<'r>; 2]
+{
+    let cmdl = {
+        let cmdl = ResourceData::new(
+            &resources[&resource_info!("plasma_combo.CMDL").into()]
+        );
+        let cmdl_bytes = cmdl.decompress().into_owned();
+        let mut cmdl = Reader::new(&cmdl_bytes[..]).read::<structs::Cmdl>(());
+
+        cmdl.material_sets.as_mut_vec()[0].texture_ids.as_mut_vec()[0] = custom_asset_ids::FLAMETHROWER_PICKUP_TXTR1; // 0x0a515bbb
+        cmdl.material_sets.as_mut_vec()[0].texture_ids.as_mut_vec()[1] = custom_asset_ids::FLAMETHROWER_PICKUP_TXTR2; // 0x3494c49b
+        cmdl.material_sets.as_mut_vec()[0].texture_ids.as_mut_vec()[2] = custom_asset_ids::FLAMETHROWER_PICKUP_TXTR3; // 0x5eddd583
+        // cmdl.material_sets.as_mut_vec()[0].texture_ids.as_mut_vec()[3] = ; // 0xb59eb7e6
+
+        let mut new_cmdl_bytes = vec![];
+        cmdl.write_to(&mut new_cmdl_bytes).unwrap();
+
+        build_resource(
+            custom_asset_ids::FLAMETHROWER_PICKUP_CMDL,
+            structs::ResourceKind::External(new_cmdl_bytes, b"CMDL".into())
+        )
+    };
+
+    let ancs = {
+        let ancs = ResourceData::new(
+            &resources[&resource_info!("power_combo.ANCS").into()]
+        );
+        let ancs_bytes = ancs.decompress().into_owned();
+        let mut ancs = Reader::new(&ancs_bytes[..]).read::<structs::Ancs>(());
+
+        ancs.char_set.char_info.as_mut_vec()[1].cmdl = custom_asset_ids::FLAMETHROWER_PICKUP_CMDL;
+
+        let mut new_ancs_bytes = vec![];
+        ancs.write_to(&mut new_ancs_bytes).unwrap();
+
+        build_resource(
+            custom_asset_ids::FLAMETHROWER_PICKUP_ANCS,
+            structs::ResourceKind::External(new_ancs_bytes, b"ANCS".into())
+        )
+    };
+
+    [cmdl, ancs]
 }
 
 fn create_ice_trap_icon_ancs<'r>(

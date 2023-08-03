@@ -344,6 +344,7 @@ pub enum PickupModel
     Wavebuster,
     IceSpreader,
     Flamethrower,
+    FlamethrowerNew,
     WaveBeam,
     IceBeam,
     PlasmaBeam,
@@ -394,7 +395,8 @@ impl PickupModel
             PickupModel::SuperMissile =>        "Super Missile",
             PickupModel::Wavebuster =>          "Wavebuster",
             PickupModel::IceSpreader =>         "Ice Spreader",
-            PickupModel::Flamethrower =>        "Flamethrower",
+            PickupModel::Flamethrower =>        "FlamethrowerOld",
+            PickupModel::FlamethrowerNew =>     "Flamethrower",
             PickupModel::WaveBeam =>            "Wave Beam",
             PickupModel::IceBeam =>             "Ice Beam",
             PickupModel::PlasmaBeam =>          "Plasma Beam",
@@ -460,6 +462,7 @@ impl PickupModel
             PickupModel::Wavebuster,
             PickupModel::IceSpreader,
             PickupModel::Flamethrower,
+            PickupModel::FlamethrowerNew,
             PickupModel::WaveBeam,
             PickupModel::IceBeam,
             PickupModel::PlasmaBeam,
@@ -526,8 +529,6 @@ impl PickupModel
             return Some(PickupModel::RandovaniaGamecube);
         }
 
-        
-
         None
     }
 
@@ -544,7 +545,7 @@ impl PickupModel
             PickupType::ScanVisor           => PickupModel::Visor,
             PickupType::MorphBallBomb       => PickupModel::MorphBallBomb,
             PickupType::PowerBomb           => PickupModel::PowerBomb,
-            PickupType::Flamethrower        => PickupModel::Flamethrower,
+            PickupType::Flamethrower        => PickupModel::FlamethrowerNew,
             PickupType::ThermalVisor        => PickupModel::ThermalVisor,
             PickupType::ChargeBeam          => PickupModel::ChargeBeam,
             PickupType::SuperMissile        => PickupModel::SuperMissile,
