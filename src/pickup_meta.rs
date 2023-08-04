@@ -431,6 +431,8 @@ impl PickupModel
             pickup.scale[0] = 0.475;
             pickup.scale[1] = 0.475;
             pickup.scale[2] = 0.475;
+        } else if self.name() == PickupModel::PowerBomb.name() {
+            pickup.actor_params.enable_thermal_heat = 1;
         }
         pickup
     }
