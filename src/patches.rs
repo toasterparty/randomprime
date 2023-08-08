@@ -13874,6 +13874,12 @@ fn patch_qol_game_breaking(
         resource_info!("19_hive_totem.MREA").into(),
         patch_hive_totem_softlock
     );
+
+    // Elite Research Platforms
+    patcher.add_scly_patch(
+        resource_info!("03_mines.MREA").into(),
+        patch_elite_research_platforms
+    );
 }
 
 fn make_elite_research_fight_prereq_patches(patcher: &mut PrimePatcher)
@@ -17863,4 +17869,21 @@ fn patch_weaken_conduits<'a>(patcher: &mut PrimePatcher<'_, 'a>)
         resource_info!("10_over_1alavaarea.MREA").into(), // magmoor workstation
         patch_conduit_health
     );
+}
+
+fn patch_elite_research_platforms<'r>(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea) -> Result<(), String>
+{
+    let timer_platform_delay_id: u32 = 0x000D02F2;
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+
+    // Find "Timer Platform Delay"
+    let timer_platform_delay = &mut layer.objects.as_mut_vec().iter_mut()
+        .find(|obj| obj.instance_id == timer_platform_delay_id)
+        .unwrap();
+    
+    // Set start time to be greater than the longest death animation
+    timer_platform_delay.property_data.as_timer_mut().unwrap().start_time = 5.0;
+
+    Ok(())
 }
