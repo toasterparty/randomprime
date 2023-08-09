@@ -7045,6 +7045,11 @@ fn patch_artifact_temple_activate_portal_conditions(
     let totem_layer_idx = area.get_layer_id_from_name("Totem");
     let cinematics_layer_idx = area.get_layer_id_from_name("Cinematics");
     let ridley_layer_idx = area.get_layer_id_from_name("Monoliths and Ridley");
+    let totem_parts_idx = &[
+        (totem_layer_idx << 26) | (area_idx << 16) | 0x1c5,
+        (totem_layer_idx << 26) | (area_idx << 16) | 0x1c7,
+        (totem_layer_idx << 26) | (area_idx << 16) | 0x1c8
+    ];
 
     let scly = area.mrea().scly_section_mut();
     let layers = scly.layers.as_mut_vec();
@@ -7109,6 +7114,38 @@ fn patch_artifact_temple_activate_portal_conditions(
             target_object_id: ((totem_layer_idx << 26) | (area_idx << 16) | 0x39a) as u32,
         }
     ]);
+
+    // disable totem
+    for totem_part_idx in totem_parts_idx {
+        connections2.push(structs::Connection {
+            state: structs::ConnectionState::ZERO,
+            message: structs::ConnectionMsg::DEACTIVATE,
+            target_object_id: *totem_part_idx as u32
+        });
+    }
+
+    for i in 0..12 {
+        connections2.extend_from_slice(&[
+            // deactivate artifact stone used for hinting artifact
+            structs::Connection {
+                state: structs::ConnectionState::ZERO,
+                message: structs::ConnectionMsg::DEACTIVATE,
+                target_object_id: ((ridley_layer_idx << 26) | (area_idx << 16) | (0x0E + i * 0x13)) as u32,
+            },
+            // deactivate hologram
+            structs::Connection {
+                state: structs::ConnectionState::ZERO,
+                message: structs::ConnectionMsg::DEACTIVATE,
+                target_object_id: ((ridley_layer_idx << 26) | (area_idx << 16) | (0x170 + i)) as u32
+            },
+            // deactivate blue lines
+            structs::Connection {
+                state: structs::ConnectionState::ZERO,
+                message: structs::ConnectionMsg::DEACTIVATE,
+                target_object_id: ((ridley_layer_idx << 26) | (area_idx << 16) | (0x1c + i * 0x13)) as u32
+            }
+        ]);
+    }
 
     Ok(())
 }
