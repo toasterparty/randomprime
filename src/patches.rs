@@ -7032,6 +7032,124 @@ fn patch_artifact_hint_availability(
     Ok(())
 }
 
+fn patch_artifact_temple_activate_portal_conditions(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea
+) -> Result<(), String>
+{
+    // constant on every version
+    let area_idx = 16;
+
+    // layer IDs obtained from names so there's no conflict with indexes being
+    // different in some versions
+    let totem_layer_idx = area.get_layer_id_from_name("Totem");
+    let cinematics_layer_idx = area.get_layer_id_from_name("Cinematics");
+    let ridley_layer_idx = area.get_layer_id_from_name("Monoliths and Ridley");
+    let totem_parts_idx = &[
+        (totem_layer_idx << 26) | (area_idx << 16) | 0x1c5,
+        (totem_layer_idx << 26) | (area_idx << 16) | 0x1c7,
+        (totem_layer_idx << 26) | (area_idx << 16) | 0x1c8
+    ];
+
+    let scly = area.mrea().scly_section_mut();
+    let layers = scly.layers.as_mut_vec();
+
+    // Start instantly the effect of the teleporter after checking the artifact
+    // count (if we have the required artifacts)
+    layers[totem_layer_idx].objects.iter_mut()
+        .find(|obj| obj.instance_id & 0xffff == 0x39a)
+        .and_then(|obj| obj.property_data.as_timer_mut())
+        .unwrap()
+        .start_time = 0.1;
+
+    // Do not start activate totem + ridley fight
+    let obj = layers[totem_layer_idx].objects.iter_mut()
+        .find(|obj| obj.instance_id & 0xffff == 0x4da)
+        .unwrap();
+
+    let connections = obj.connections.as_mut_vec();
+    connections.retain(|conn| conn.target_object_id & 0xffff != 0x1ca);
+    connections.push(structs::Connection {
+        state: structs::ConnectionState::ZERO,
+        message: structs::ConnectionMsg::SET_TO_ZERO,
+        target_object_id: ((cinematics_layer_idx << 26) | (area_idx << 16) | 0x213) as u32,
+    });
+
+    // Set to post Ridley
+    let obj2 = layers[cinematics_layer_idx].objects.iter_mut()
+        .find(|obj| obj.instance_id & 0xffff == 0x213)
+        .unwrap();
+
+    let connections2 = obj2.connections.as_mut_vec();
+    connections2.retain(|conn| conn.target_object_id & 0xffff != 0x2db);
+    connections2.extend_from_slice(&[
+        structs::Connection {
+            state: structs::ConnectionState::ZERO,
+            message: structs::ConnectionMsg::ACTIVATE,
+            target_object_id: ((area_idx << 16) | 0x2d2) as u32,
+        },
+        structs::Connection {
+            state: structs::ConnectionState::ZERO,
+            message: structs::ConnectionMsg::SET_TO_ZERO,
+            target_object_id: ((cinematics_layer_idx << 26) | (area_idx << 16) | 0x541) as u32,
+        },
+        structs::Connection {
+            state: structs::ConnectionState::ZERO,
+            message: structs::ConnectionMsg::DECREMENT,
+            target_object_id: ((ridley_layer_idx << 26) | (area_idx << 16) | 0x482) as u32,
+        },
+        structs::Connection {
+            state: structs::ConnectionState::ZERO,
+            message: structs::ConnectionMsg::DECREMENT,
+            target_object_id: ((ridley_layer_idx << 26) | (area_idx << 16) | 0x581) as u32,
+        },
+        structs::Connection {
+            state: structs::ConnectionState::ZERO,
+            message: structs::ConnectionMsg::DECREMENT,
+            target_object_id: ((ridley_layer_idx << 26) | (area_idx << 16) | 0x309) as u32,
+        },
+        structs::Connection {
+            state: structs::ConnectionState::ZERO,
+            message: structs::ConnectionMsg::RESET_AND_START,
+            target_object_id: ((totem_layer_idx << 26) | (area_idx << 16) | 0x39a) as u32,
+        }
+    ]);
+
+    // disable totem
+    for totem_part_idx in totem_parts_idx {
+        connections2.push(structs::Connection {
+            state: structs::ConnectionState::ZERO,
+            message: structs::ConnectionMsg::DEACTIVATE,
+            target_object_id: *totem_part_idx as u32
+        });
+    }
+
+    for i in 0..12 {
+        connections2.extend_from_slice(&[
+            // deactivate artifact stone used for hinting artifact
+            structs::Connection {
+                state: structs::ConnectionState::ZERO,
+                message: structs::ConnectionMsg::DEACTIVATE,
+                target_object_id: ((ridley_layer_idx << 26) | (area_idx << 16) | (0x0E + i * 0x13)) as u32,
+            },
+            // deactivate hologram
+            structs::Connection {
+                state: structs::ConnectionState::ZERO,
+                message: structs::ConnectionMsg::DEACTIVATE,
+                target_object_id: ((ridley_layer_idx << 26) | (area_idx << 16) | (0x170 + i)) as u32
+            },
+            // deactivate blue lines
+            structs::Connection {
+                state: structs::ConnectionState::ZERO,
+                message: structs::ConnectionMsg::DEACTIVATE,
+                target_object_id: ((ridley_layer_idx << 26) | (area_idx << 16) | (0x1c + i * 0x13)) as u32
+            }
+        ]);
+    }
+
+    Ok(())
+}
+
 fn patch_sun_tower_prevent_wild_before_flaahgra(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea
@@ -15476,6 +15594,13 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         resource_info!("07_stonehenge.MREA").into(),
         |ps, area| fix_artifact_of_truth_requirements(ps, area, config)
     );
+
+    if config.skip_ridley {
+        patcher.add_scly_patch(
+            resource_info!("07_stonehenge.MREA").into(),
+            patch_artifact_temple_activate_portal_conditions
+        );
+    }
 
     // Patch end sequence (player size)
     if config.ctwk_config.player_size.is_some() {

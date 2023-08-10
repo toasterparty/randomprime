@@ -830,6 +830,7 @@ pub struct PatchConfig
     // Use RoomConfig::map_default_state instead of global map_default_state
     pub map_default_state: structs::MapState,
     pub auto_enabled_elevators: bool,
+    pub skip_ridley: bool,
     pub multiworld_dol_patches: bool,
     pub update_hint_state_replacement: Option<Vec<u8>>,
     pub quiet: bool,
@@ -921,6 +922,7 @@ struct GameConfig
     phazon_damage_per_sec: Option<f32>,
     phazon_damage_modifier: Option<String>,
     auto_enabled_elevators: Option<bool>,
+    skip_ridley: Option<bool>,
     multiworld_dol_patches: Option<bool>,
     update_hint_state_replacement: Option<Vec<u8>>,
 
@@ -1104,6 +1106,9 @@ impl PatchConfig
                 .long("map-default-state")
                 .help("Change the default state of map for each world (Either default, visible or visited)")
                 .takes_value(true))
+            .arg(Arg::with_name("skip ridley")
+                .long("skip-ridley")
+                .help("Skips Ridley fight when you have all the required artifacts and activate the portal to impact crater"))
             .arg(Arg::with_name("auto enabled elevators")
                 .long("auto-enabled-elevators")
                 .help("Every elevator will be automatically enabled without scaning its terminal"))
@@ -1691,6 +1696,7 @@ impl PatchConfigPrivate
             phazon_damage_per_sec: self.game_config.phazon_damage_per_sec.unwrap_or(0.964),
             phazon_damage_modifier,
             auto_enabled_elevators: self.game_config.auto_enabled_elevators.unwrap_or(false),
+            skip_ridley: self.game_config.skip_ridley.unwrap_or(false),
             multiworld_dol_patches: self.game_config.multiworld_dol_patches.unwrap_or(false),
             update_hint_state_replacement: self.game_config.update_hint_state_replacement.clone(),
             artifact_temple_layer_overrides: self.game_config.artifact_temple_layer_overrides.clone(),
