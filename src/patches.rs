@@ -13875,10 +13875,16 @@ fn patch_qol_game_breaking(
         patch_hive_totem_softlock
     );
 
-    // Elite Research Platforms
+    // Elite Research
+    // Platforms
     patcher.add_scly_patch(
         resource_info!("03_mines.MREA").into(),
         patch_elite_research_platforms
+    );
+    // Door Lock
+    patcher.add_scly_patch(
+        resource_info!("03_mines.MREA").into(),
+        patch_elite_research_door_lock
     );
 }
 
@@ -17886,4 +17892,168 @@ fn patch_elite_research_platforms<'r>(_ps: &mut PatcherState, area: &mut mlvl_wr
     timer_platform_delay.property_data.as_timer_mut().unwrap().start_time = 5.0;
 
     Ok(())
+}
+
+fn patch_elite_research_door_lock<'r>(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea) -> Result<(), String>
+{
+    // Must assign new object id here to keep borrow checker happy
+    let top_door_lock_id: u32 = area.new_object_id_from_layer_id(0);
+    let scly = area.mrea().scly_section_mut();
+
+    let elite_pirate_id: u32 = 0x000D01A4;
+    let relay_disable_lock_id: u32 = 0x000D0407;
+    let artifact_id: u32 = 0x000D0340;
+    let bottom_door_lock_id: u32 = 0x000D0405;
+    let special_function_id: u32 = 0x000D04D1;
+
+    // Create lock for top door
+    let top_door_lock = structs::SclyObject {
+        instance_id: top_door_lock_id,
+        connections: vec![].into(),
+        property_data: structs::SclyProperty::Actor(
+            Box::new(structs::Actor {
+                name: b"Custom Blast Shield\0".as_cstr(),
+                position: [21.35, 166.275131, 51.825].into(),
+                rotation: [0.0, 0.0, 0.0].into(),
+                scale: [1.45, 1.45, 1.45].into(),
+                hitbox: [1.75, 5.0, 5.0].into(),
+                scan_offset: [0.0, 0.0, 0.0].into(),
+                unknown1: 1.0, // mass
+                unknown2: 0.0, // momentum
+                health_info: structs::scly_structs::HealthInfo {
+                    health: 5.0,
+                    knockback_resistance: 1.0,
+                },
+                damage_vulnerability: structs::scly_structs::DamageVulnerability {
+                    power: structs::scly_structs::TypeVulnerability::Reflect as u32,
+                    ice: structs::scly_structs::TypeVulnerability::Reflect as u32,
+                    wave: structs::scly_structs::TypeVulnerability::Reflect as u32,
+                    plasma: structs::scly_structs::TypeVulnerability::Reflect as u32,
+                    bomb: structs::scly_structs::TypeVulnerability::Immune as u32,
+                    power_bomb: structs::scly_structs::TypeVulnerability::Reflect as u32,
+                    missile: structs::scly_structs::TypeVulnerability::Reflect as u32,
+                    boost_ball: structs::scly_structs::TypeVulnerability::Immune as u32,
+                    phazon: structs::scly_structs::TypeVulnerability::Immune as u32,
+        
+                    enemy_weapon0:structs::scly_structs::TypeVulnerability::Immune as u32,
+                    enemy_weapon1:structs::scly_structs::TypeVulnerability::Immune as u32,
+                    enemy_weapon2:structs::scly_structs::TypeVulnerability::Immune as u32,
+                    enemy_weapon3:structs::scly_structs::TypeVulnerability::Immune as u32,
+        
+                    unknown_weapon0:structs::scly_structs::TypeVulnerability::Immune as u32,
+                    unknown_weapon1:structs::scly_structs::TypeVulnerability::Immune as u32,
+                    unknown_weapon2:structs::scly_structs::TypeVulnerability::Immune as u32,
+        
+                    charged_beams:structs::scly_structs::ChargedBeams {
+                        power:structs::scly_structs::TypeVulnerability::Reflect as u32,
+                        ice:structs::scly_structs::TypeVulnerability::Reflect as u32,
+                        wave:structs::scly_structs::TypeVulnerability::Reflect as u32,
+                        plasma:structs::scly_structs::TypeVulnerability::Reflect as u32,
+                        phazon:structs::scly_structs::TypeVulnerability::Reflect as u32,
+                    },
+                    beam_combos:structs::scly_structs::BeamCombos {
+                        power:structs::scly_structs::TypeVulnerability::Reflect as u32,
+                        ice:structs::scly_structs::TypeVulnerability::Reflect as u32,
+                        wave:structs::scly_structs::TypeVulnerability::Reflect as u32,
+                        plasma:structs::scly_structs::TypeVulnerability::Reflect as u32,
+                        phazon:structs::scly_structs::TypeVulnerability::Reflect as u32,
+                    },
+                },
+                cmdl: ResId::new(0x6E5D6796),
+                ancs: structs::scly_structs::AncsProp {
+                    file_id: ResId::invalid(),
+                    node_index: 0,
+                    default_animation: 0xFFFFFFFF,
+                },
+                actor_params: structs::scly_structs::ActorParameters {
+                    light_params: structs::scly_structs::LightParameters {
+                        unknown0: 1,
+                        unknown1: 1.0,
+                        shadow_tessellation: 0,
+                        unknown2: 1.0,
+                        unknown3: 20.0,
+                        color: [1.0, 1.0, 1.0, 1.0].into(), // RGBA
+                        unknown4: 1,
+                        world_lighting: 1,
+                        light_recalculation: 1,
+                        unknown5: [0.0, 0.0, 0.0].into(),
+                        unknown6: 4,
+                        unknown7: 4,
+                        unknown8: 0,
+                        light_layer_id: 0,
+                    },
+                    scan_params: structs::scly_structs::ScannableParameters {
+                        scan: ResId::invalid(),
+                    },
+                    xray_cmdl: ResId::invalid(),
+                    xray_cskr: ResId::invalid(),
+                    thermal_cmdl: ResId::invalid(),
+                    thermal_cskr: ResId::invalid(),
+                    unknown0: 1,
+                    unknown1: 1.0,
+                    unknown2: 1.0,
+                    visor_params: structs::scly_structs::VisorParameters {
+                        unknown0: 0,
+                        target_passthrough: 1,
+                        visor_mask: 15, // Visor Flags : Combat|Scan|Thermal|XRay
+                    },
+                    enable_thermal_heat: 0,
+                    unknown3: 0,
+                    unknown4: 0,
+                    unknown5: 1.0,
+                },
+                looping: 1,
+                snow: 1, // immovable
+                solid: 1,
+                camera_passthrough: 0,
+                active: 0,
+                unknown8: 0,
+                unknown9: 1.0,
+                unknown10: 0,
+                unknown11: 0,
+                unknown12: 0,
+                unknown13: 0,
+        }))};
+    
+    // Add to "3rd Pass Elite Bustout" layer
+    scly.layers.as_mut_vec()[1].objects.as_mut_vec().push(top_door_lock);
+
+    // Adjust connections
+    for layer in scly.layers.as_mut_vec().iter_mut() {
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+
+            // Remove bottom door unlock connection from Elite Pirate
+            if obj.instance_id&0x00FFFFFF == relay_disable_lock_id&0x00FFFFFF {
+                obj.connections.as_mut_vec().retain(|conn| !conn.target_object_id&0x00FFFFFF == elite_pirate_id&0x00FFFFFF);
+            };
+
+            // Add top and bottom door unlock connections to Artifact
+            if obj.instance_id&0x00FFFFFF == artifact_id&0x00FFFFFF { 
+                obj.connections.as_mut_vec().push(
+                    structs::Connection {
+                        state: structs::ConnectionState::ARRIVED,
+                        message: structs::ConnectionMsg::DECREMENT,
+                        target_object_id: bottom_door_lock_id,
+                    });
+                obj.connections.as_mut_vec().push(
+                    structs::Connection {
+                        state: structs::ConnectionState::ARRIVED,
+                         message: structs::ConnectionMsg::DECREMENT,
+                        target_object_id: top_door_lock_id,
+                    });
+            };
+
+            // Add top door lock connection to "SpecialFunction PlayerInAreaRelay"
+            if obj.instance_id&0x00FFFFFF == special_function_id&0x00FFFFFF {
+                obj.connections.as_mut_vec().push(
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::INCREMENT,
+                        target_object_id: top_door_lock_id,
+                    });
+            }
+        }
+    }
+
+    Ok (())
 }
