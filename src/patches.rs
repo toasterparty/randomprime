@@ -3763,7 +3763,7 @@ fn modify_pickups_in_mrea<'r>(
             let model_name = pickup_config.model.as_ref().unwrap();
             let pmt = PickupModel::from_str(&model_name);
             if pmt.is_none() && !extern_model.is_some() {
-                panic!("Unkown Model Type {}", model_name);
+                panic!("Unknown Model Type {}", model_name);
             }
 
             pmt // Some - Native Prime Model
