@@ -2969,13 +2969,13 @@ impl WaterType
                         refl_map_txtr: 4294967295,
                         txtr6: 1899158552,
                         unknown5: [3.0, 3.0, -4.0].into(),
-                        unkown6:  8.0,
-                        unkown7: 15.0,
-                        unkown8: 15.0,
+                        unknown6:  8.0,
+                        unknown7: 15.0,
+                        unknown8: 15.0,
                         active: 1,
                         fluid_type: 0,
-                        unkown11: 0,
-                        unkown12: 0.7,
+                        unknown11: 0,
+                        unknown12: 0.7,
                         fluid_uv_motion:
                             structs::FluidUVMotion
                             {
@@ -3075,13 +3075,13 @@ impl WaterType
                 refl_map_txtr: 4294967295,
                 txtr6: 1899158552,
                 unknown5: [3.0, 3.0, -4.0].into(),
-                unkown6: 48.0,
-                unkown7: 5.0,
-                unkown8: 5.0,
+                unknown6: 48.0,
+                unknown7: 5.0,
+                unknown8: 5.0,
                 active: 1,
                 fluid_type: 1,
-                unkown11: 0,
-                unkown12: 0.8,
+                unknown11: 0,
+                unknown12: 0.8,
                 fluid_uv_motion:
                 structs::FluidUVMotion { fluid_layer_motion1: structs::FluidLayerMotion { fluid_uv_motion: 0,
                 unknown1: 20.0,
@@ -3180,13 +3180,13 @@ impl WaterType
                 unknown5: [3.0,
                 3.0,
                 -4.0].into(),
-                unkown6: 70.0,
-                unkown7: 15.0,
-                unkown8: 15.0,
+                unknown6: 70.0,
+                unknown7: 15.0,
+                unknown8: 15.0,
                 active: 1,
                 fluid_type: 2,
-                unkown11: 0,
-                unkown12: 0.65,
+                unknown11: 0,
+                unknown12: 0.65,
                 fluid_uv_motion: structs::FluidUVMotion { fluid_layer_motion1: structs::FluidLayerMotion { fluid_uv_motion: 0,
                 unknown1: 30.0,
                 unknown2:  0.0,
@@ -3805,7 +3805,7 @@ fn modify_pickups_in_mrea<'r>(
             let model_name = pickup_config.model.as_ref().unwrap();
             let pmt = PickupModel::from_str(&model_name);
             if pmt.is_none() && !extern_model.is_some() {
-                panic!("Unkown Model Type {}", model_name);
+                panic!("Unknown Model Type {}", model_name);
             }
 
             pmt // Some - Native Prime Model
@@ -5150,7 +5150,7 @@ fn patch_edit_water<'r>(
         }
 
         let water = obj.unwrap().property_data.as_water_mut().unwrap();
-        water.unkown7 = morph_in_time;
+        water.unknown7 = morph_in_time;
         water.unknown53 = alpha_out_time;
     }
 
