@@ -6600,15 +6600,32 @@ fn patch_disable_item_loss(
     area: &mut mlvl_wrapper::MlvlArea,
 ) -> Result<(), String>
 {
-    let layer = area.mrea().scly_section_mut().layers.iter_mut().next().unwrap();
-    let camera = layer.objects.iter_mut()
-        .find(|obj| obj.instance_id&0x00FFFFFF == 0x00050115)
-        .unwrap();
-    for conn in camera.connections.as_mut_vec().iter_mut() {
-        if conn.message == structs::ConnectionMsg::RESET {
-            conn.message = structs::ConnectionMsg::SET_TO_ZERO;
+    let scly = area.mrea().scly_section_mut();
+    let layers = &mut scly.layers.as_mut_vec();
+
+    let mut spawn_points: Vec<u32> = Vec::new();
+    for layer in layers.iter_mut() {
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+            if obj.property_data.is_spawn_point() {
+                spawn_points.push(obj.instance_id);
+            }
         }
     }
+
+    for layer in layers.iter_mut() {
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+            for conn in obj.connections.as_mut_vec() {
+                if !spawn_points.contains(&conn.target_object_id) {
+                    continue;
+                }
+
+                if conn.message == structs::ConnectionMsg::RESET {
+                    conn.message = structs::ConnectionMsg::SET_TO_ZERO;
+                }
+            }
+        }
+    }
+
     Ok(())
 }
 
@@ -9789,7 +9806,6 @@ fn patch_starting_pickups<'r>(
 
             if let Some(spawn_point) = obj.property_data.as_spawn_point_mut() {
                 starting_items.update_spawn_point(spawn_point);
-                println!("Updated 0x{:X}", obj.instance_id);
             }
         }
     }
@@ -17057,13 +17073,6 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
             ),
         );
 
-        if config.disable_item_loss {
-            patcher.add_scly_patch(
-                resource_info!("02_intro_elevator.MREA").into(),
-                patch_disable_item_loss
-            );
-        }
-
         if !config.force_vanilla_layout {
             // Patch frigate so that it can be explored any direction without crashing or soft-locking
             patcher.add_scly_patch(
@@ -17569,6 +17578,13 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         patcher.add_scly_patch(
             *room,
             move |ps, area| patch_remove_ids(ps, area, delete_ids.clone())
+        );
+    }
+
+    if config.disable_item_loss && !skip_frigate {
+        patcher.add_scly_patch(
+            resource_info!("02_intro_elevator.MREA").into(),
+            patch_disable_item_loss
         );
     }
 

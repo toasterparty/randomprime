@@ -1187,7 +1187,7 @@
                             "senderId": 327681, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 328000, // [SpawnPoint] Spawn point
                             "state": "ZERO",
-                            "message": "SET_TO_ZERO"
+                            "message": "RESET"
                         },
                         {
                             "senderId": 327681, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
