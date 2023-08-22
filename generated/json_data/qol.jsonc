@@ -691,6 +691,9 @@
                     ]
                 },
                 "Control Tower": {
+                    "deleteIds": [
+                        2557275 // [Trigger] Trigger - Fallen Tower - outside_hole_fixed_deactivate
+                    ],
                     "addConnections": [
                         {
                             "senderId": 3555917, // [Trigger] Activate Reposition
@@ -709,6 +712,23 @@
                             "targetId": 3556929, // [SpawnPoint] Softlock Prevention
                             "state": "ACTIVE",
                             "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 2556922, // [Trigger] Trigger - Fallen Tower - outside_hole_fixed_inc
+                            "targetId": 2555931, // [Relay] Deactivate Trigger
+                            "state": "EXITED",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 2555931, // [Relay] Deactivate Trigger
+                            "targetId": 2556922, // [Trigger] Trigger - Fallen Tower - outside_hole_fixed_inc
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        }
+                    ],
+                    "relays": [
+                        {
+                            "id": 2555931 // [Relay] Deactivate Trigger
                         }
                     ],
                     "triggers": [

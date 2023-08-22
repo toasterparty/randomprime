@@ -9859,96 +9859,6 @@
                             "targetId": 2556306, // [FlyingPirate] FlyingPirate
                             "state": "ZERO",
                             "message": "ALERT"
-                        },
-                        {
-                            "senderId": 2555918, // [Relay] Alert Pirates
-                            "targetId": 2555913, // [Timer] Pirate Cutscene Skip 1
-                            "state": "ZERO",
-                            "message": "RESET_AND_START"
-                        },
-                        {
-                            "senderId": 2555913, // [Timer] Pirate Cutscene Skip 1
-                            "targetId": 2556735, // [FlyingPirate] FlyingPirate
-                            "state": "ZERO",
-                            "message": "NEXT"
-                        },
-                        {
-                            "senderId": 2555913, // [Timer] Pirate Cutscene Skip 1
-                            "targetId": 2556306, // [FlyingPirate] FlyingPirate
-                            "state": "ZERO",
-                            "message": "NEXT"
-                        },
-                        {
-                            "senderId": 2555913, // [Timer] Pirate Cutscene Skip 1
-                            "targetId": 2555914, // [Timer] Pirate Cutscene Skip 2
-                            "state": "ZERO",
-                            "message": "RESET_AND_START"
-                        },
-                        {
-                            "senderId": 2555914, // [Timer] Pirate Cutscene Skip 2
-                            "targetId": 2556735, // [FlyingPirate] FlyingPirate
-                            "state": "ZERO",
-                            "message": "NEXT"
-                        },
-                        {
-                            "senderId": 2555914, // [Timer] Pirate Cutscene Skip 2
-                            "targetId": 2556306, // [FlyingPirate] FlyingPirate
-                            "state": "ZERO",
-                            "message": "NEXT"
-                        },
-                        {
-                            "senderId": 2555914, // [Timer] Pirate Cutscene Skip 2
-                            "targetId": 2555915, // [Timer] Pirate Cutscene Skip 3
-                            "state": "ZERO",
-                            "message": "RESET_AND_START"
-                        },
-                        {
-                            "senderId": 2555915, // [Timer] Pirate Cutscene Skip 3
-                            "targetId": 2556735, // [FlyingPirate] FlyingPirate
-                            "state": "ZERO",
-                            "message": "NEXT"
-                        },
-                        {
-                            "senderId": 2555915, // [Timer] Pirate Cutscene Skip 3
-                            "targetId": 2556306, // [FlyingPirate] FlyingPirate
-                            "state": "ZERO",
-                            "message": "NEXT"
-                        },
-                        {
-                            "senderId": 2555915, // [Timer] Pirate Cutscene Skip 3
-                            "targetId": 2555916, // [Timer] Pirate Cutscene Skip 4
-                            "state": "ZERO",
-                            "message": "RESET_AND_START"
-                        },
-                        {
-                            "senderId": 2555916, // [Timer] Pirate Cutscene Skip 4
-                            "targetId": 2556735, // [FlyingPirate] FlyingPirate
-                            "state": "ZERO",
-                            "message": "NEXT"
-                        },
-                        {
-                            "senderId": 2555916, // [Timer] Pirate Cutscene Skip 4
-                            "targetId": 2556306, // [FlyingPirate] FlyingPirate
-                            "state": "ZERO",
-                            "message": "NEXT"
-                        }
-                    ],
-                    "timers": [
-                        {
-                            "id": 2555913, // [Timer] Pirate Cutscene Skip 1
-                            "time": 0.01
-                        },
-                        {
-                            "id": 2555914, // [Timer] Pirate Cutscene Skip 2
-                            "time": 0.01
-                        },
-                        {
-                            "id": 2555915, // [Timer] Pirate Cutscene Skip 3
-                            "time": 0.01
-                        },
-                        {
-                            "id": 2555916, // [Timer] Pirate Cutscene Skip 4
-                            "time": 0.01
                         }
                     ],
                     "removeConnections": [
@@ -18943,6 +18853,18 @@
                             "targetId": 2098774, // [CameraFilterKeyframe] Camera Filter Keyframe
                             "state": "ZERO",
                             "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 2097167, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 2097332, // [Actor] shield
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 2097167, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 2097884, // [SpacePirate] SpacePirate
+                            "state": "ZERO",
+                            "message": "ALERT"
                         },
                         {
                             "senderId": 2097167, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
