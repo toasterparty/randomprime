@@ -685,9 +685,9 @@ impl DoorType {
             enemy_weapon2:TypeVulnerability::Immune as u32,
             enemy_weapon3:TypeVulnerability::Immune as u32,
 
-            unknown_weapon0:TypeVulnerability::Immune as u32,
-            unknown_weapon1:TypeVulnerability::Immune as u32,
-            unknown_weapon2:TypeVulnerability::Immune as u32,
+            unknown_weapon0:TypeVulnerability::Reflect as u32,
+            unknown_weapon1:TypeVulnerability::Reflect as u32,
+            unknown_weapon2:TypeVulnerability::Normal as u32,
 
             charged_beams:ChargedBeams {
                 power:TypeVulnerability::Reflect as u32,
@@ -724,9 +724,9 @@ impl DoorType {
                 enemy_weapon2:TypeVulnerability::Immune as u32,
                 enemy_weapon3:TypeVulnerability::Immune as u32,
 
-                unknown_weapon0:TypeVulnerability::Immune as u32,
-                unknown_weapon1:TypeVulnerability::Immune as u32,
-                unknown_weapon2:TypeVulnerability::Immune as u32,
+                unknown_weapon0:TypeVulnerability::Reflect as u32,
+                unknown_weapon1:TypeVulnerability::Reflect as u32,
+                unknown_weapon2:TypeVulnerability::Normal as u32,
 
                 charged_beams:ChargedBeams {
                     power:TypeVulnerability::Normal as u32,
@@ -759,23 +759,23 @@ impl DoorType {
                 enemy_weapon2:TypeVulnerability::Immune as u32,
                 enemy_weapon3:TypeVulnerability::Immune as u32,
 
-                unknown_weapon0:TypeVulnerability::Immune as u32,
-                unknown_weapon1:TypeVulnerability::Immune as u32,
-                unknown_weapon2:TypeVulnerability::Immune as u32,
+                unknown_weapon0:TypeVulnerability::Reflect as u32,
+                unknown_weapon1:TypeVulnerability::Reflect as u32,
+                unknown_weapon2:TypeVulnerability::Normal as u32,    
 
                 charged_beams:ChargedBeams {
                     power:TypeVulnerability::Immune as u32,
                     ice:TypeVulnerability::Immune as u32,
                     wave:TypeVulnerability::Immune as u32,
                     plasma:TypeVulnerability::Immune as u32,
-                    phazon:TypeVulnerability::Normal as u32,
+                    phazon:TypeVulnerability::Immune as u32,
                 },
                 beam_combos:BeamCombos {
                     power:TypeVulnerability::Immune as u32,
                     ice:TypeVulnerability::Immune as u32,
                     wave:TypeVulnerability::Immune as u32,
                     plasma:TypeVulnerability::Immune as u32,
-                    phazon:TypeVulnerability::Normal as u32,
+                    phazon:TypeVulnerability::Immune as u32,
                 },
             },
             DoorType::PowerOnly => {
@@ -866,7 +866,6 @@ impl DoorType {
                 vuln.enemy_weapon3   = TypeVulnerability::Normal as u32;
                 vuln.unknown_weapon0 = TypeVulnerability::Normal as u32;
                 vuln.unknown_weapon1 = TypeVulnerability::Normal as u32;
-                vuln.unknown_weapon2 = TypeVulnerability::Normal as u32;
                 vuln
             },
             DoorType::Phazon => {
