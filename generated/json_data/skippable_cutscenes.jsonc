@@ -2880,6 +2880,12 @@
                         },
                         {
                             "senderId": 3407921, // [Relay] EndMoveBridgeRight
+                            "targetId": 3408641, // [Timer] Timer - hud memo
+                            "state": "ZERO",
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 3407921, // [Relay] EndMoveBridgeRight
                             "targetId": 3407997, // [Relay] Overlapping Cutscenes Activator (Wave Slot)
                             "state": "ZERO",
                             "message": "DEACTIVATE"
@@ -2962,6 +2968,12 @@
                             "targetId": 3407926, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip (Ice Slot)
                             "state": "ZERO",
                             "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 3407996, // [Relay] EndMoveBridgeDown
+                            "targetId": 3408641, // [Timer] Timer - hud memo
+                            "state": "ZERO",
+                            "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 3407996, // [Relay] EndMoveBridgeDown
@@ -6452,6 +6464,12 @@
                             "state": "ZERO",
                             "message": "STOP_AND_RESET"
                         },
+                        {
+                            "senderId": 2437143, // [Camera] Cinematic Camera - master shot
+                            "targetId": 2424866, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip Main
+                            "state": "ACTIVE",
+                            "message": "DECREMENT"
+                        },
                         //SLOT 1 STARTS HERE/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                         {
                             "senderId": 2424881, // [Relay] Begin Cinematic Faulty Relay 1
@@ -9269,6 +9287,24 @@
                         },
                         {
                             "senderId": 524293, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 524983, // [Effect] Effect
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 524293, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 524985, // [Trigger] Trigger
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 524293, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 524986, // [WorldLightFader] World Light Fader - on
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 524293, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 524650, // [Camera] Cinematic Camera
                             "state": "ZERO",
                             "message": "DEACTIVATE"
@@ -9298,7 +9334,7 @@
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 524293, // [SpecialFunction] SpecialFunction Arrival Cinematic Skip
+                            "senderId": 524293, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 524726, // [MemoryRelay] Memory Relay - open gate
                             "state": "ZERO",
                             "message": "ACTIVATE"
@@ -9703,6 +9739,18 @@
                             "targetId": 2557027, // [Effect] Effect
                             "state": "ZERO",
                             "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 2555909, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 2557036, // [Timer] Timer
+                            "state": "ZERO",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 2555909, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 2557033, // [CameraFilterKeyframe] Camera Filter Keyframe
+                            "state": "ZERO",
+                            "message": "DECREMENT"
                         },
                         {
                             "senderId": 2555909, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -11123,7 +11171,7 @@
                             "senderId": 2572878, // [Timer] Stop Stop Music Timer
                             "targetId": 1572878, // [Timer] Stop Music Again
                             "state": "ZERO",
-                            "message": "STOP"
+                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 1572876, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -11623,11 +11671,12 @@
                             "id": 1572878, // [Timer] Stop Music Again
                             "time": 0.001,
                             "active": false,
-                            "looping": true
+                            "looping": true,
+                            "startImmediately": true
                         },
                         {
                             "id": 2572878, // [Timer] Stop Stop Music Timer
-                            "time": 10.0
+                            "time": 11.0
                         }
                     ],
                     "relays": [
@@ -12769,7 +12818,7 @@
                             "senderId": 1900551, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1900653, // [CameraFilterKeyframe] Camera Filter Keyframe
                             "state": "ZERO",
-                            "message": "DEACTIVATE"
+                            "message": "DECREMENT"
                         },
                         {
                             "senderId": 666666, // [Camera] Cinematic Camera Hold
@@ -15982,6 +16031,12 @@
                             "message": "SET_TO_ZERO"
                         },
                         {
+                            "senderId": 1770818, // [Drone] Drone
+                            "targetId": 1771101, // [Relay] Relay Unload Rooms
+                            "state": "DEATH_RATTLE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
                             "senderId": 1769480, // [Relay] Relay-start of cinema
                             "targetId": 1769483, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "state": "ZERO",
@@ -16076,12 +16131,6 @@
                             "targetId": 1770488, // [Timer] Timer Activate Maze
                             "state": "ZERO",
                             "message": "STOP"
-                        },
-                        {
-                            "senderId": 1769483, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 1771101, // [Relay] Relay Unload Rooms
-                            "state": "ZERO",
-                            "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 1769483, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -17245,6 +17294,12 @@
                             "targetId": 1050587, // [Actor] Actor Force Shield
                             "state": "ZERO",
                             "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 1048696, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 1050803, // [Timer] Timer
+                            "state": "ZERO",
+                            "message": "STOP"
                         },
                         {
                             "senderId": 1048696, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -19283,6 +19338,12 @@
                             "message": "ACTIVATE"
                         },
                         {
+                            "senderId": 1311376, // [Camera] Cinematic Camera
+                            "targetId": 1310725, // [Relay] Relay-end of cinema
+                            "state": "INACTIVE",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
                             "senderId": 1310721, // [Relay] Relay-start of cinema
                             "targetId": 1310726, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "state": "ZERO",
@@ -19293,12 +19354,6 @@
                             "targetId": 1310726, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "state": "ZERO",
                             "message": "DECREMENT"
-                        },
-                        {
-                            "senderId": 1311376, // [Camera] Cinematic Camera
-                            "targetId": 1310725, // [Relay] Relay-end of cinema
-                            "state": "INACTIVE",
-                            "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 1310726, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
@@ -19314,9 +19369,189 @@
                         },
                         {
                             "senderId": 1310726, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 1311920, // [Relay] Relay Enable Lock (To Trigger_Unlock&Key With Increment)
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1310726, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 1311930, // [Relay] Relay Enable Lock (To Trigger_Unlock&Key With Increment)
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1310726, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 1311938, // [Relay] Relay Enable Lock (To Trigger_Unlock&Key With Increment)
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1310726, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 1311928, // [CameraFilterKeyframe] Camera Filter Keyframe
                             "state": "ZERO",
                             "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 1310726, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 1310733, // [ActorKeyframe] Sprint Forwards
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 1310726, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 1311188, // [Timer] Timer_Energy Field Down
+                            "state": "ZERO",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 1310726, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 1311193, // [Timer] Timer_Energy Field Down_Effect
+                            "state": "ZERO",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 1310726, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 1310734, // [Timer] Energy Field Down Skip
+                            "state": "ZERO",
+                            "message": "START"
+                        },
+                        {
+                            "senderId": 1310726, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 1310737, // [Timer] Energy Field Down Effect Skip
+                            "state": "ZERO",
+                            "message": "START"
+                        },
+                        {
+                            "senderId": 1310726, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 1310731, // [Timer] Stop Sprinting Animation
+                            "state": "ZERO",
+                            "message": "START"
+                        },
+                        {
+                            "senderId": 1310734, // [Timer] Energy Field Down Skip
+                            "targetId": 1311189, // [Platform] Platform
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1310734, // [Timer] Energy Field Down Skip
+                            "targetId": 1311182, // [ElitePirate] ElitePirate
+                            "state": "ZERO",
+                            "message": "ALERT"
+                        },
+                        {
+                            "senderId": 1310734, // [Timer] Energy Field Down Skip
+                            "targetId": 1311191, // [CameraShaker] CameraShakerOld
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 1310734, // [Timer] Energy Field Down Skip
+                            "targetId": 1311853, // [MemoryRelay] Memory Relay - Kill Forcefield
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1310734, // [Timer] Energy Field Down Skip
+                            "targetId": 1311852, // [Sound] Sound - Mines Forcefield Off
+                            "state": "ZERO",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 1310737, // [Timer] Energy Field Down Effect Skip
+                            "targetId": 1311192, // [Effect] Effect - Tapout
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1310737, // [Timer] Energy Field Down Effect Skip
+                            "targetId": 1311194, // [Effect] Effect
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1310737, // [Timer] Energy Field Down Effect Skip
+                            "targetId": 1311979, // [Sound] Sound - Hit Shield
+                            "state": "ZERO",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 1310737, // [Timer] Energy Field Down Effect Skip
+                            "targetId": 1311980, // [Sound] Sound - Hit Shield2
+                            "state": "ZERO",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 1310737, // [Timer] Energy Field Down Effect Skip
+                            "targetId": 1311863, // [Platform] Platform
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1310737, // [Timer] Energy Field Down Effect Skip
+                            "targetId": 1311622, // [Platform] Platform
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1310737, // [Timer] Energy Field Down Effect Skip
+                            "targetId": 1311633, // [Platform] Platform
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1310737, // [Timer] Energy Field Down Effect Skip
+                            "targetId": 1311189, // [Platform] Platform
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1310731, // [Timer] Stop Sprinting Animation
+                            "targetId": 1310732, // [ActorKeyframe] Stop
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 1310733, // [ActorKeyframe] Sprint Forwards
+                            "targetId": 1311182, // [ElitePirate] ElitePirate
+                            "state": "PLAY",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 1310732, // [ActorKeyframe] Stop
+                            "targetId": 1311182, // [ElitePirate] ElitePirate
+                            "state": "PLAY",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 1311193, // [Timer] Timer_Energy Field Down_Effect
+                            "targetId": 1310734, // [Timer] Energy Field Down Skip
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1311193, // [Timer] Timer_Energy Field Down_Effect
+                            "targetId": 1310737, // [Timer] Energy Field Down Effect Skip
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1311193, // [Timer] Timer_Energy Field Down_Effect
+                            "targetId": 1310731, // [Timer] Stop Sprinting Animation
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1311193, // [Timer] Timer_Energy Field Down_Effect
+                            "targetId": 1310733, // [ActorKeyframe] Sprint Forwards
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1311193, // [Timer] Timer_Energy Field Down_Effect
+                            "targetId": 1310732, // [ActorKeyframe] Stop
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
                         }
                     ],
                     "removeConnections": [
@@ -19333,6 +19568,40 @@
                         },
                         {
                             "id": 1310725 // [Relay] Relay-end of cinema
+                        }
+                    ],
+                    "timers": [
+                        {
+                            "id": 1310731, // [Timer] Stop Sprinting Animation
+                            "time": 0.5
+                        },
+                        {
+                            "id": 1310734, // [Timer] Energy Field Down Skip
+                            "time": 0.8
+                        },
+                        {
+                            "id": 1310737, // [Timer] Energy Field Down Effect Skip
+                            "time": 0.4
+                        }
+                    ],
+                    "actorKeyframes": [
+                        {
+                            "id": 1310733, // [ActorKeyframe] Sprint Forwards
+                            "active": true,
+                            "animationId": 44,
+                            "looping": false,
+                            "lifetime": 0.0,
+                            "fadeOut": 0.0,
+                            "totalPlayback": 1.0
+                        },
+                        {
+                            "id": 1310732, // [ActorKeyframe] Stop
+                            "active": true,
+                            "animationId": 50,
+                            "looping": false,
+                            "lifetime": 0.0,
+                            "fadeOut": 0.0,
+                            "totalPlayback": 1.0
                         }
                     ],
                     "cutsceneSkipFns": [
@@ -21623,36 +21892,7 @@
                                 0.0,
                                 0.0,
                                 -180.0
-                            ],
-                            "defaultSpawn": false,
-                            "morphed": false,
-                            "items": { // optional (default: empty inventory) (same format as gameConfig.startingItems)
-                                "combatVisor": true,
-                                "scanVisor": true,
-                                "thermalVisor": true,
-                                "xray": true,
-                                "powerBeam": true,
-                                "missiles": 999,
-                                "energyTanks": 99,
-                                "powerBombs": 99,
-                                "wave": true,
-                                "ice": true,
-                                "plasma": true,
-                                "charge": true,
-                                "morphBall": true,
-                                "bombs": true,
-                                "spiderBall": true,
-                                "boostBall": true,
-                                "variaSuit": true,
-                                "gravitySuit": false,
-                                "phazonSuit": true,
-                                "spaceJump": true,
-                                "grapple": true,
-                                "superMissile": true,
-                                "wavebuster": true,
-                                "iceSpreader": true,
-                                "flamethrower": true
-                            }
+                            ]
                         }
                     ],
                     "cutsceneSkipFns": [

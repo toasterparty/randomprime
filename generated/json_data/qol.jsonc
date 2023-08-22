@@ -20,6 +20,13 @@
                         1098
                     ]
                 },
+                "Emergency Evacuation Area": {
+                    // Disable tutorial hudmemos
+                    "deleteIds": [
+                        262413,
+                        262275
+                    ]
+                },
                 "Map Facility": {
                     // Disable tutorial hudmemos
                     "deleteIds": [
@@ -167,6 +174,24 @@
                             "targetId": 689863, // [Trigger] Music Trigger Leave
                             "state": "ZERO",
                             "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 2359405, // [Relay] Relay - Start Outro Stage
+                            "targetId": 689863, // [Trigger] Music Trigger Leave
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 2359405, // [Relay] Relay - Start Outro Stage
+                            "targetId": 689886, // [Trigger] Music Trigger Enter
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 2359405, // [Relay] Relay - Start Outro Stage
+                            "targetId": 2359664, // [StreamedAudio] StreamedAudio - Ruins Naka SW
+                            "state": "ZERO",
+                            "message": "PLAY"
                         },
                         {
                             "senderId": 689863, // [Trigger] Music Trigger Leave
@@ -662,6 +687,59 @@
                             "time": 0.001,
                             "active": true,
                             "startImmediately": true
+                        }
+                    ]
+                },
+                "Control Tower": {
+                    "addConnections": [
+                        {
+                            "senderId": 3555917, // [Trigger] Activate Reposition
+                            "targetId": 3556929, // [SpawnPoint] Softlock Prevention
+                            "state": "ENTERED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 3555917, // [Trigger] Activate Reposition
+                            "targetId": 3556929, // [SpawnPoint] Softlock Prevention
+                            "state": "EXITED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 2556612, // [Camera] camera1
+                            "targetId": 3556929, // [SpawnPoint] Softlock Prevention
+                            "state": "ACTIVE",
+                            "message": "SET_TO_ZERO"
+                        }
+                    ],
+                    "triggers": [
+                        {
+                            "id": 3555917, // [Trigger] Activate Reposition
+                            "position": [
+                                -8.342122,
+                                -802.716248,
+                                181.3246
+                            ],
+                            "scale": [
+                                20.0,
+                                9.0,
+                                30.0
+                            ]
+                        }
+                    ],
+                    "spawnPoints": [
+                        {
+                            "id": 3556929, // [SpawnPoint] Softlock Prevention
+                            "active": false,
+                            "position": [
+                                -6.084717,
+                                -800.221863,
+                                163.43956
+                            ],
+                            "rotation": [
+                                0.0,
+                                0.0,
+                                -180.0
+                            ]
                         }
                     ]
                 },

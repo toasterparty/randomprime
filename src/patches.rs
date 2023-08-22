@@ -604,7 +604,7 @@ fn patch_door<'r>(
             None
         },
         DoorOpenMode::PrimaryBlastShield => {
-            let door_type = door_type.as_ref().unwrap();
+            let door_type = door_type.as_ref().expect("When PrimaryBlastShield is used, you must specify the door type");
             let door_type_after_open = door_type.to_primary_color();
             if blast_shield_can_change_door 
                 // TODO: optimize

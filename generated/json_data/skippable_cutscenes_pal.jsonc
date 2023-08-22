@@ -82,37 +82,6 @@
                             "state": "ZERO",
                             "message": "STOP"
                         }
-                    ],
-                    "timers": [],
-                    "removeConnections": [
-                        {
-                            "senderId": 458865, // [Camera] Cinematic Camera -Camera1
-                            "targetId": 458854, // [CameraFilterKeyframe] cinema bars
-                            "state": "ACTIVE",
-                            "message": "INCREMENT"
-                        },
-                        {
-                            "senderId": 458866, // [Camera] Cinematic Camera-Camera2
-                            "targetId": 458854, // [CameraFilterKeyframe] cinema bars
-                            "state": "INACTIVE",
-                            "message": "DECREMENT"
-                        },
-                        {
-                            "senderId": 458866, // [Camera] Cinematic Camera-Camera2
-                            "targetId": 458857, // [PlayerActor] PlayerActor-B_RReady_Samus
-                            "state": "INACTIVE",
-                            "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 458866, // [Camera] Cinematic Camera-Camera2
-                            "targetId": 458909, // [SpawnPoint] Spawn point
-                            "state": "INACTIVE",
-                            "message": "SET_TO_ZERO"
-                        }
-                    ],
-                    "relays": [],
-                    "cutsceneSkipFns": [
-                        458754 // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                     ]
                 }
             }
@@ -123,11 +92,54 @@
                 "Elite Control": {
                     "deleteIds": [
                         1048591,
-                        1048701,
                         1048697,
-                        1048698,
-                        1048696,
-                        1048699
+                        1048696
+                    ],
+                    "addConnections": [
+                        {
+                            "senderId": 1051816, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 1050587, // [Actor] Actor Force Shield
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 1051816, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 1050803, // [Timer] Timer
+                            "state": "ZERO",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 1051816, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 1049403, // [Timer] Timer - break out
+                            "state": "ZERO",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 1051816, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 1048706, // [Relay] Skip - Breakout
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1051816, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 1049404, // [Timer] Timer_Shatter
+                            "state": "ZERO",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 1051816, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 1049400, // [ElitePirate] ElitePirate
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        }
+                    ],
+                    "removeConnections": [
+                        {
+                            "senderId": 1051816, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 1051815, // [Relay] Relay Breakout
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        }
                     ]
                 },
                 "Mine Security Station": {
@@ -137,9 +149,7 @@
                         458757,
                         458758,
                         458759,
-                        558760,
-                        458756,
-                        558761
+                        458756
                     ]
                 }
             }
