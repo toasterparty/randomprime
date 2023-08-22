@@ -671,6 +671,7 @@ fn patch_door<'r>(
     let mut sound_id = 0;
     let mut streamed_audio_id = 0;
     let mut timer_id = 0;
+    let mut timer2_id = 0;
     let mut effect_id = 0;
     let mut shaker_id = 0;
     let mut relay_id = 0;
@@ -691,6 +692,7 @@ fn patch_door<'r>(
         shaker_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
         blast_shield_instance_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
         timer_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        timer2_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
         effect_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
         relay_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
         auto_open_relay_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
@@ -915,6 +917,13 @@ fn patch_door<'r>(
 
         assert!(door_open_trigger_id != 0);
 
+        let is_unpowered = vec![
+                0x001E000B, // Biohazard Containment
+                0x0020000D, // Biotech Research Area 1
+                0x000F01D1, // Ruined Courtyard
+                0x001B0088, // Cargo Frieght Lift to Deck Gamma
+            ].contains(&door_open_trigger_id);
+
         /* Create Relay for causing destruction of blast shield */
         let mut relay = structs::SclyObject {
             instance_id: relay_id,
@@ -1082,7 +1091,7 @@ fn patch_door<'r>(
                     }.into()
                 ),
             };
-        
+
         let mut relay_connections_to_add = Vec::new();
 
         relay_connections_to_add.push(
@@ -1110,12 +1119,7 @@ fn patch_door<'r>(
         }
 
         /* Relay should also open the door, but only if this isn't an unpowered door */
-        if vec![
-            0x001E000B, // Biohazard Containment
-            0x0020000D, // Biotech Research Area 1
-            0x000F01D1, // Ruined Courtyard
-            0x001B0088, // Cargo Frieght Lift to Deck Gamma
-        ].contains(&door_open_trigger_id) {
+        if is_unpowered {
             layers[blast_shield_layer_idx].objects.as_mut_vec().push(
                 structs::SclyObject {
                     instance_id: auto_open_relay_id,
@@ -1206,7 +1210,7 @@ fn patch_door<'r>(
         let mut timer = structs::SclyObject {
             instance_id: timer_id,
             property_data: structs::Timer {
-                name: b"disable-dt\0".as_cstr(),
+                name: b"disable-blast-shield\0".as_cstr(),
                 start_time: 0.2,
                 max_random_add: 0.0,
                 looping: 0,
@@ -1214,6 +1218,41 @@ fn patch_door<'r>(
                 active: 1,
             }.into(),
             connections: vec![].into(),
+        };
+
+        /* Door Damageable Trigger Deactivate Timer */
+        let timer2 = {
+            if is_unpowered {
+                None
+            }
+            else {
+                let mut timer2 =  structs::SclyObject {
+                    instance_id: timer2_id,
+                    connections: vec![].into(),
+                        property_data: structs::Timer {
+                        name: b"disable-door-dt\0".as_cstr(),
+                        start_time: 0.5,
+                        max_random_add: 0.0,
+                        looping: 0,
+                        start_immediately: 1,
+                        active: 1,
+                    }.into(),
+                };
+        
+                // Doors can't be shot open with splash damage until the blast shield is gone
+                for door_force in door_loc.door_force_locations.iter()
+                {
+                    timer2.connections.as_mut_vec().push(
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: door_force.instance_id,
+                        }
+                    );
+                }
+
+                Some(timer2)        
+            }
         };
 
         if damageable_trigger_id != 0 {
@@ -1440,6 +1479,9 @@ fn patch_door<'r>(
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(poi);
         if effect.is_some() {
             layers[blast_shield_layer_idx].objects.as_mut_vec().push(effect.unwrap());
+        }
+        if timer2.is_some() {
+            layers[blast_shield_layer_idx].objects.as_mut_vec().push(timer2.unwrap());
         }
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(relay);
     } else {
