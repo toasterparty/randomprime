@@ -5196,42 +5196,8 @@ fn patch_sunchamber_cutscene_hack<'r>(
         for (id, _health) in vec![(0x00500000, 1500.0), (0x00500001, 1000.0), (0x00500002, 5000.0)] {
             let mut new_flaahgra: structs::SclyObject = flaahgra_copy.clone();
             new_flaahgra.instance_id = id;
-            // let data = new_flaahgra.property_data.as_flaahgra_mut().unwrap();
-            // data.patterned_info.health_info.health = health;
-
             layer.objects.as_mut_vec().push(new_flaahgra);
         }
-
-        layer.objects.as_mut_vec().push(
-            structs::SclyObject {
-                instance_id: 0x00500003,
-                property_data: structs::Timer {
-                    name: b"my timer\0".as_cstr(),
-                    start_time: 0.01,
-                    max_random_add: 0.0,
-                    looping: 0,
-                    start_immediately: 1,
-                    active: 1,
-                }.into(),
-                connections: vec![
-                    structs::Connection {
-                        state: structs::ConnectionState::ZERO,
-                        message: structs::ConnectionMsg::DEACTIVATE,
-                        target_object_id: 0x00500000,
-                    },
-                    structs::Connection {
-                        state: structs::ConnectionState::ZERO,
-                        message: structs::ConnectionMsg::DEACTIVATE,
-                        target_object_id: 0x00500001,
-                    },
-                    structs::Connection {
-                        state: structs::ConnectionState::ZERO,
-                        message: structs::ConnectionMsg::DEACTIVATE,
-                        target_object_id: 0x00500002,
-                    },
-                ].into(),
-            },
-        );
     }
 
     Ok(())
