@@ -237,6 +237,7 @@ impl DoorType {
             "icespreader"   => Some(DoorType::Icespreader ) ,
             "flamethrower"  => Some(DoorType::Flamethrower ),
             "ai"            => Some(DoorType::Ai )          ,
+            "enemy"         => Some(DoorType::Ai )          ,
             "grapple"       => Some(DoorType::Grapple)      ,
             "grapplebeam"   => Some(DoorType::Grapple)      ,
             "phazon"        => Some(DoorType::Phazon)       ,
