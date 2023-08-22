@@ -9761,6 +9761,7 @@ fn patch_starting_pickups<'r>(
     starting_items: &StartingItems,
     show_starting_memo: bool,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+    skip_id: u32,
 ) -> Result<(), String>
 {
     let area_internal_id = area.mlvl_area.internal_id;
@@ -9782,8 +9783,13 @@ fn patch_starting_pickups<'r>(
 
     for layer in scly.layers.iter_mut() {
         for obj in layer.objects.iter_mut() {
+            if obj.instance_id == skip_id {
+                continue;
+            }
+
             if let Some(spawn_point) = obj.property_data.as_spawn_point_mut() {
                 starting_items.update_spawn_point(spawn_point);
+                println!("Updated 0x{:X}", obj.instance_id);
             }
         }
     }
@@ -17015,6 +17021,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
             &config.starting_items,
             show_starting_memo,
             &game_resources,
+            0x00050140, // item loss spawn in item loss elevator
         )
     );
 
@@ -17027,6 +17034,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 &config.item_loss_items,
                 false,
                 &game_resources,
+                0x00050002, // default spawn in item loss elevator
             )
         );
 
