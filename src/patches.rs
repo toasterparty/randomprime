@@ -42,6 +42,7 @@ use crate::patch_config::{
     DamageType,
     LockOnPoint,
     DoorOpenMode,
+    SpecialFunctionConfig,
 };
 
 use std::{fs::{self, File}, io::Read, path::Path};
@@ -5637,6 +5638,67 @@ fn patch_add_trigger<'r>(
                 active: trigger_config.active.unwrap_or(true) as u8,
                 deactivate_on_enter: trigger_config.deactivate_on_enter.unwrap_or(false) as u8,
                 deactivate_on_exit: trigger_config.deactivate_on_exit.unwrap_or(false) as u8,
+            }.into(),
+            connections: vec![].into(),
+        }
+    );
+
+    Ok(())
+}
+
+fn patch_add_special_fn<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    config: SpecialFunctionConfig,
+)
+    -> Result<(), String>
+{
+    let instance_id = {
+        if config.id.is_some() {
+            let id = config.id.unwrap();
+            if id_in_use(area, id) {
+                panic!("id 0x{:X} already in use", id);
+            }
+
+            id
+        } else {
+            area.new_object_id_from_layer_id(0)
+        }
+    };
+
+    let unknown0 = {
+        // let mut x = config.unknown1.unwrap_or("".to_string()).clone();
+        // x.push('\0');
+        // let x = CString::new(x).unwrap_or();
+        // x
+
+        b"\0".as_cstr() // TODO
+    };
+
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id,
+            property_data: structs::SpecialFunction {
+                name: b"myspecialfun\0".as_cstr(),
+                position: config.position.unwrap_or_default().into(),
+                rotation: config.rotation.unwrap_or_default().into(),
+                type_: config.type_ as u32,
+                // unknown0: b"\0".as_cstr(),
+                unknown0: unknown0.into(),
+                unknown1: config.unknown2.unwrap_or_default(),
+                unknown2: config.unknown3.unwrap_or_default(),
+                unknown3: config.unknown4.unwrap_or_default(),
+                layer_change_room_id: config.layer_change_room_id.unwrap_or(0xFFFFFFFF),
+                layer_change_layer_id: config.layer_change_layer_id.unwrap_or(0xFFFFFFFF),
+                item_id: config.item_id.unwrap_or(PickupType::PowerBeam) as u32,
+                unknown4: config.active.unwrap_or(true) as u8, // active
+                unknown5: config.unknown6.unwrap_or_default(),
+                unknown6: config.spinner1.unwrap_or(0xFFFFFFFF),
+                unknown7: config.spinner2.unwrap_or(0xFFFFFFFF),
+                unknown8: config.spinner3.unwrap_or(0xFFFFFFFF),
             }.into(),
             connections: vec![].into(),
         }
@@ -15320,6 +15382,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             timers: None,
                             actor_keyframes: None,
                             spawn_points: None,
+                            special_functions: None,
                         }
                     );
                 }
@@ -15863,6 +15926,19 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         ps,
                                         area,
                                         trigger_config.clone(),
+                                    ),
+                                );
+                            }
+                        }
+
+                        if room.special_functions.is_some() {
+                            for special_fn_config in room.special_functions.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_special_fn(
+                                        ps,
+                                        area,
+                                        special_fn_config.clone(),
                                     ),
                                 );
                             }

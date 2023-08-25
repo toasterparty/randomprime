@@ -319,7 +319,6 @@ pub struct LockOnPoint
     pub no_lock: Option<bool>,
 }
 
-
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub enum DamageType {
@@ -352,6 +351,74 @@ pub struct TriggerConfig
     pub flags: Option<u32>,
     pub deactivate_on_enter: Option<bool>,
     pub deactivate_on_exit: Option<bool>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub enum SpecialFunctionType {
+    What = 0,
+    PlayerFollowLocator,
+    SpinnerController,
+    ObjectFollowLocator,
+    ChaffTarget,
+    InventoryActivator,
+    MapStation,
+    SaveStation,
+    IntroBossRingController,
+    ViewFrustumTest,
+    ShotSpinnerController,
+    EscapeSequence,
+    BossEnergyBar,
+    EndGame,
+    HUDFadeIn,
+    CinematicSkip,
+    ScriptLayerController,
+    RainSimulator,
+    AreaDamage,
+    ObjectFollowObject,
+    HintSystem,
+    DropBomb,
+    ScaleActor,
+    MissileStation,
+    Billboard,
+    PlayerInAreaRelay,
+    HUDTarget,
+    FogFader,
+    EnterLogbook,
+    PowerBombStation,
+    Ending,
+    FusionRelay,
+    WeaponSwitch
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SpecialFunctionConfig
+{
+    pub id: Option<u32>,
+
+    pub position: Option<[f32; 3]>,
+    pub rotation: Option<[f32; 3]>,
+
+    #[serde(alias  = "type")]
+    pub type_: SpecialFunctionType,
+
+    pub unknown1: Option<String>,
+    pub unknown2: Option<f32>,
+    pub unknown3: Option<f32>,
+    pub unknown4: Option<f32>,
+
+    pub layer_change_room_id: Option<u32>,
+    pub layer_change_layer_id: Option<u32>,
+    pub item_id: Option<PickupType>,
+
+    pub active: Option<bool>,
+    pub unknown6: Option<f32>,
+
+    // "Used by SpinnerController"
+    pub spinner1: Option<u32>,
+    pub spinner2: Option<u32>,
+    pub spinner3: Option<u32>,
 }
 
 // None = 0,
@@ -597,6 +664,7 @@ pub struct RoomConfig
     pub actor_keyframes: Option<Vec<ActorKeyFrameConfig>>,
     pub spawn_points: Option<Vec<SpawnPointConfig>>,
     pub triggers: Option<Vec<TriggerConfig>>,
+    pub special_functions: Option<Vec<SpecialFunctionConfig>>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
@@ -1658,7 +1726,6 @@ impl PatchConfigPrivate
             remove_mine_security_station_locks: self.game_config.remove_mine_security_station_locks.unwrap_or(false),
             remove_hive_mecha: self.game_config.remove_hive_mecha.unwrap_or(false),
             power_bomb_arboretum_sandstone: self.game_config.power_bomb_arboretum_sandstone.unwrap_or(false),
-
 
             incinerator_drone_config: self.game_config.incinerator_drone_config.clone(),
             maze_seeds: self.game_config.maze_seeds.clone(),
