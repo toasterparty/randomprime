@@ -429,9 +429,9 @@ pub struct ActorRotateConfig
     pub id: Option<u32>,
     pub rotation: [f32; 3],
     pub time_scale: f32,
-    pub update_actors: u8,
-    pub update_on_creation: u8,
-    pub update_active: u8,
+    pub update_actors: bool,
+    pub update_on_creation: bool,
+    pub update_active: bool,
 }
 
 // None = 0,

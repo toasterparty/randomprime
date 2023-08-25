@@ -5738,9 +5738,9 @@ fn patch_add_actor_rotate_fn<'r>(
                 name: b"my actor rotate\0".as_cstr(),
                 rotation: config.rotation.into(),
                 time_scale: config.time_scale,
-                update_actors: config.update_actors,
-                update_on_creation: config.update_on_creation,
-                update_active: config.update_active,
+                update_actors: config.update_actors as u8,
+                update_on_creation: config.update_on_creation as u8,
+                update_active: config.update_active as u8,
             }.into(),
             connections: vec![].into(),
         }
