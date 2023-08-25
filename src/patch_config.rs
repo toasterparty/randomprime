@@ -1395,6 +1395,8 @@ impl PatchConfigPrivate
                 extend_option_vec!(actor_keyframes   , self_room_config, other_room_config);
                 extend_option_vec!(spawn_points      , self_room_config, other_room_config);
                 extend_option_vec!(triggers          , self_room_config, other_room_config);
+                extend_option_vec!(special_functions , self_room_config, other_room_config);
+                extend_option_vec!(actor_rotates     , self_room_config, other_room_config);
             }
         }
     }
