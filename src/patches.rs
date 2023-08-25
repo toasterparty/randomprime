@@ -2268,6 +2268,15 @@ fn patch_add_item<'r>(
         scan_offset[2] += 1.2;
     }
 
+    let mut scale = pickup_model_data.scale.clone();
+    if let Some(scale_modifier) = pickup_config.scale {
+        scale = [
+            scale[0]*scale_modifier[0],
+            scale[1]*scale_modifier[1],
+            scale[2]*scale_modifier[2],
+        ].into();
+    };
+
     let mut pickup = structs::Pickup {
         // Location Pickup Data
         // "How is this pickup integrated into the room?"
@@ -2290,7 +2299,7 @@ fn patch_add_item<'r>(
 
         // Model Pickup Data
         // "What does this pickup look like?"
-        scale: pickup_model_data.scale.clone(),
+        scale,
         cmdl: pickup_model_data.cmdl.clone(),
         ancs: pickup_model_data.ancs.clone(),
         part: pickup_model_data.part.clone(),
@@ -4629,6 +4638,15 @@ fn update_pickup(
         scan_offset[2] += 1.2;
     }
 
+    let mut scale = pickup_model_data.scale.clone();
+    if let Some(scale_modifier) = pickup_config.scale {
+        scale = [
+            scale[0]*scale_modifier[0],
+            scale[1]*scale_modifier[1],
+            scale[2]*scale_modifier[2],
+        ].into();
+    };
+
     *pickup = structs::Pickup {
         // Location Pickup Data
         // "How is this pickup integrated into the room?"
@@ -4651,7 +4669,7 @@ fn update_pickup(
 
         // Model Pickup Data
         // "What does this pickup look like?"
-        scale: pickup_model_data.scale,
+        scale,
         cmdl: pickup_model_data.cmdl.clone(),
         ancs: pickup_model_data.ancs.clone(),
         part: pickup_model_data.part.clone(),
@@ -15501,6 +15519,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                 show_icon: None,
                                 invisible_and_silent: None,
                                 thermal_only: None,
+                                scale: None,
                             }
                         ]
                     );
@@ -16388,6 +16407,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             show_icon: None,
                             invisible_and_silent: None,
                             thermal_only: None,
+                            scale: None,
                         }
                     } else {
                         pickups[idx].clone() // TODO: cloning is suboptimal

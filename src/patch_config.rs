@@ -120,6 +120,7 @@ pub struct PickupConfig
     pub show_icon: Option<bool>,
     pub invisible_and_silent: Option<bool>,
     pub thermal_only: Option<bool>,
+    pub scale: Option<[f32; 3]>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
