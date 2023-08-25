@@ -44,6 +44,7 @@ use crate::patch_config::{
     DoorOpenMode,
     SpecialFunctionConfig,
     ActorRotateConfig,
+    StreamedAudioConfig,
 };
 
 use std::{fs::{self, File}, io::Read, path::Path};
@@ -87,6 +88,7 @@ use reader_writer::{
     FourCC,
     Reader,
     Writable,
+    CStr,
 };
 use structs::{MapState, res_id, ResId, scly_structs::DamageInfo, scly_structs::TypeVulnerability, SclyLayer};
 
@@ -5647,6 +5649,13 @@ fn patch_add_trigger<'r>(
     Ok(())
 }
 
+fn string_to_cstr<'r>(string: String) -> CStr<'r>
+{
+    let x = CString::new(string).expect("CString conversion failed");
+    let x = Cow::Owned(x);
+    x
+}
+
 fn patch_add_special_fn<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
@@ -5667,14 +5676,8 @@ fn patch_add_special_fn<'r>(
         }
     };
 
-    let unknown0 = {
-        // let mut x = config.unknown1.unwrap_or("".to_string()).clone();
-        // x.push('\0');
-        // let x = CString::new(x).unwrap_or();
-        // x
-
-        b"\0".as_cstr() // TODO
-    };
+    let unknown0 = config.unknown1.unwrap_or("".to_string());
+    let unknown0 = string_to_cstr(unknown0);
 
     let scly = area.mrea().scly_section_mut();
     let layer = &mut scly.layers.as_mut_vec()[0];
@@ -5687,8 +5690,7 @@ fn patch_add_special_fn<'r>(
                 position: config.position.unwrap_or_default().into(),
                 rotation: config.rotation.unwrap_or_default().into(),
                 type_: config.type_ as u32,
-                // unknown0: b"\0".as_cstr(),
-                unknown0: unknown0.into(),
+                unknown0: unknown0,
                 unknown1: config.unknown2.unwrap_or_default(),
                 unknown2: config.unknown3.unwrap_or_default(),
                 unknown3: config.unknown4.unwrap_or_default(),
@@ -5741,6 +5743,52 @@ fn patch_add_actor_rotate_fn<'r>(
                 update_actors: config.update_actors as u8,
                 update_on_creation: config.update_on_creation as u8,
                 update_active: config.update_active as u8,
+            }.into(),
+            connections: vec![].into(),
+        }
+    );
+
+    Ok(())
+}
+
+fn patch_add_streamed_audio<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    config: StreamedAudioConfig,
+)
+    -> Result<(), String>
+{
+    let instance_id = {
+        if config.id.is_some() {
+            let id = config.id.unwrap();
+            if id_in_use(area, id) {
+                panic!("id 0x{:X} already in use", id);
+            }
+
+            id
+        } else {
+            area.new_object_id_from_layer_id(0)
+        }
+    };
+
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+
+    let audio_file_name = string_to_cstr(config.audio_file_name);
+
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id,
+            property_data: structs::StreamedAudio {
+                name: b"mystreamedaudio\0".as_cstr(),
+                active: config.active.unwrap_or(true) as u8,
+                audio_file_name: audio_file_name,
+                no_stop_on_deactivate: config.active.unwrap_or(true) as u8,
+                fade_in_time: config.fade_in_time.unwrap_or(0.1),
+                fade_out_time: config.fade_out_time.unwrap_or(1.5),
+                volume: config.volume.unwrap_or(100),
+                oneshot: config.oneshot.unwrap_or(0),
+                is_music: config.is_music as u8,
             }.into(),
             connections: vec![].into(),
         }
@@ -15426,6 +15474,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             spawn_points: None,
                             special_functions: None,
                             actor_rotates: None,
+                            streamed_audios: None,
                         }
                     );
                 }
@@ -15992,6 +16041,19 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
                                     move |ps, area| patch_add_actor_rotate_fn(
+                                        ps,
+                                        area,
+                                        config.clone(),
+                                    ),
+                                );
+                            }
+                        }
+
+                        if room.streamed_audios.is_some() {
+                            for config in room.streamed_audios.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_streamed_audio(
                                         ps,
                                         area,
                                         config.clone(),

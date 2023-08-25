@@ -434,6 +434,21 @@ pub struct ActorRotateConfig
     pub update_active: bool,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct StreamedAudioConfig
+{
+    pub id: Option<u32>,
+    pub active: Option<bool>,
+    pub audio_file_name: String,
+    pub no_stop_on_deactivate: Option<bool>,
+    pub fade_in_time: Option<f32>,
+    pub fade_out_time: Option<f32>,
+    pub volume: Option<u32>,
+    pub oneshot: Option<u32>,
+    pub is_music: bool,
+}
+
 // None = 0,
 // PerspLin = 2,
 // PerspExp = 4,
@@ -679,6 +694,7 @@ pub struct RoomConfig
     pub triggers: Option<Vec<TriggerConfig>>,
     pub special_functions: Option<Vec<SpecialFunctionConfig>>,
     pub actor_rotates: Option<Vec<ActorRotateConfig>>,
+    pub streamed_audios: Option<Vec<StreamedAudioConfig>>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
@@ -1397,6 +1413,7 @@ impl PatchConfigPrivate
                 extend_option_vec!(triggers          , self_room_config, other_room_config);
                 extend_option_vec!(special_functions , self_room_config, other_room_config);
                 extend_option_vec!(actor_rotates     , self_room_config, other_room_config);
+                extend_option_vec!(streamed_audios   , self_room_config, other_room_config);
             }
         }
     }
