@@ -43,6 +43,7 @@ use crate::patch_config::{
     LockOnPoint,
     DoorOpenMode,
     SpecialFunctionConfig,
+    ActorRotateConfig,
 };
 
 use std::{fs::{self, File}, io::Read, path::Path};
@@ -5699,6 +5700,47 @@ fn patch_add_special_fn<'r>(
                 unknown6: config.spinner1.unwrap_or(0xFFFFFFFF),
                 unknown7: config.spinner2.unwrap_or(0xFFFFFFFF),
                 unknown8: config.spinner3.unwrap_or(0xFFFFFFFF),
+            }.into(),
+            connections: vec![].into(),
+        }
+    );
+
+    Ok(())
+}
+
+fn patch_add_actor_rotate_fn<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    config: ActorRotateConfig,
+)
+    -> Result<(), String>
+{
+    let instance_id = {
+        if config.id.is_some() {
+            let id = config.id.unwrap();
+            if id_in_use(area, id) {
+                panic!("id 0x{:X} already in use", id);
+            }
+
+            id
+        } else {
+            area.new_object_id_from_layer_id(0)
+        }
+    };
+
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id,
+            property_data: structs::ActorRotate {
+                name: b"my actor rotate\0".as_cstr(),
+                rotation: config.rotation.into(),
+                time_scale: config.time_scale,
+                update_actors: config.update_actors,
+                update_on_creation: config.update_on_creation,
+                update_active: config.update_active,
             }.into(),
             connections: vec![].into(),
         }
@@ -15383,6 +15425,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             actor_keyframes: None,
                             spawn_points: None,
                             special_functions: None,
+                            actor_rotates: None,
                         }
                     );
                 }
@@ -15939,6 +15982,19 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         ps,
                                         area,
                                         special_fn_config.clone(),
+                                    ),
+                                );
+                            }
+                        }
+
+                        if room.actor_rotates.is_some() {
+                            for config in room.actor_rotates.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_actor_rotate_fn(
+                                        ps,
+                                        area,
+                                        config.clone(),
                                     ),
                                 );
                             }

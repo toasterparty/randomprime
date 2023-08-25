@@ -421,6 +421,19 @@ pub struct SpecialFunctionConfig
     pub spinner3: Option<u32>,
 }
 
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ActorRotateConfig
+{
+    pub id: Option<u32>,
+    pub rotation: [f32; 3],
+    pub time_scale: f32,
+    pub update_actors: u8,
+    pub update_on_creation: u8,
+    pub update_active: u8,
+}
+
 // None = 0,
 // PerspLin = 2,
 // PerspExp = 4,
@@ -665,6 +678,7 @@ pub struct RoomConfig
     pub spawn_points: Option<Vec<SpawnPointConfig>>,
     pub triggers: Option<Vec<TriggerConfig>>,
     pub special_functions: Option<Vec<SpecialFunctionConfig>>,
+    pub actor_rotates: Option<Vec<ActorRotateConfig>>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
