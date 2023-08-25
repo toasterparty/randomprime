@@ -9844,21 +9844,141 @@
                         },
                         {
                             "senderId": 2555912, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                            "targetId": 2555918, // [Relay] Alert Pirates
+                            "targetId": 2555918, // [Relay] Start Pirates
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
                         },
                         {
-                            "senderId": 2555918, // [Relay] Alert Pirates
+                            "senderId": 2555918, // [Relay] Start Pirates
+                            "targetId": 2556735, // [FlyingPirate] FlyingPirate
+                            "state": "ZERO",
+                            "message": "START"
+                        },
+                        {
+                            "senderId": 2555918, // [Relay] Start Pirates
+                            "targetId": 2556306, // [FlyingPirate] FlyingPirate
+                            "state": "ZERO",
+                            "message": "START"
+                        },
+                        {
+                            "senderId": 2555912, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 8475912, // [SpecialFunction] Move Pirate 1
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 2555912, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 8475944, // [SpecialFunction] Move Pirate 2
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 8475912, // [SpecialFunction] Move Pirate 1
+                            "targetId": 2556735, // [FlyingPirate] FlyingPirate
+                            "state": "PLAY",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 2555911, // [Relay] End of Flying Pirates Cinematic
+                            "targetId": 8475912, // [SpecialFunction] Move Pirate 1
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 2555911, // [Relay] End of Flying Pirates Cinematic
+                            "targetId": 8475944, // [SpecialFunction] Move Pirate 2
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 8475912, // [SpecialFunction] Move Pirate 1
+                            "targetId": 2556885, // [Waypoint] Waypoint
+                            "state": "PLAY",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 8475944, // [SpecialFunction] Move Pirate 2
+                            "targetId": 2556306, // [FlyingPirate] FlyingPirate
+                            "state": "PLAY",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 8475944, // [SpecialFunction] Move Pirate 2
+                            "targetId": 2556728, // [Waypoint] Waypoint
+                            "state": "PLAY",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 2555912, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 2556306, // [FlyingPirate] FlyingPirate
+                            "state": "ZERO",
+                            "message": "ALERT"
+                        },
+                        {
+                            "senderId": 2555912, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "targetId": 2556735, // [FlyingPirate] FlyingPirate
                             "state": "ZERO",
                             "message": "ALERT"
                         },
                         {
-                            "senderId": 2555918, // [Relay] Alert Pirates
-                            "targetId": 2556306, // [FlyingPirate] FlyingPirate
+                            "senderId": 2555912, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 2556730, // [Waypoint] Waypoint
                             "state": "ZERO",
-                            "message": "ALERT"
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 2555912, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 2556731, // [Waypoint] Waypoint
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 2555912, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 2556732, // [Waypoint] Waypoint
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 2555912, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 2556703, // [Waypoint] Waypoint
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 2555912, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 2556721, // [Waypoint] Waypoint
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 2555912, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 2556726, // [Waypoint] Waypoint
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 2555912, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 2556727, // [Waypoint] Waypoint
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 2555912, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 2556734, // [Waypoint] Waypoint
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 2555912, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 2556725, // [Waypoint] Waypoint
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 2555912, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "targetId": 2556733, // [Waypoint] Waypoint
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
                         }
                     ],
                     "removeConnections": [
@@ -9886,10 +10006,29 @@
                             "id": 2555918 // [Relay] Alert Pirates
                         }
                     ],
-                    "cutsceneSkipFns": [
-                        2555909, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                        2555930, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
-                        2555912 // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                    "specialFunctions": [
+                        {
+                            "id": 8475912, // [SpecialFunction] Move Pirate 1
+                            "type": "objectFollowObject",
+                            "active": false
+                        },
+                        {
+                            "id": 8475944, // [SpecialFunction] Move Pirate 2
+                            "type": "objectFollowObject",
+                            "active": false
+                        },
+                        {
+                            "id": 2555909, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "type": "cinematicSkip"
+                        },
+                        {
+                            "id": 2555930, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "type": "cinematicSkip"
+                        },
+                        {
+                            "id": 2555912, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
+                            "type": "cinematicSkip"
+                        }
                     ]
                 },
                 "Frost Cave": {
@@ -12427,7 +12566,7 @@
                             "targetId": 983042, // [SpecialFunction] SpecialFunction Cinematic Cutscene Skip
                             "state": "ZERO",
                             "message": "DECREMENT"
-                        },                        
+                        },
                         {
                             "senderId": 983364, // [Relay] Relay - [IN] Start Ball Slot Activate Cinematic
                             "targetId": 983058, // [Timer] Keep Trying
@@ -12623,13 +12762,13 @@
                             "message": "RESET_AND_START"
                         }
                     ],
-                    "timers":[
+                    "timers": [
                         {
                             "id": 983058, // [Timer] Keep Trying
                             "time": 0.001,
                             "active": false,
                             "looping": true,
-                            "startImmediately": true                            
+                            "startImmediately": true
                         }
                     ],
                     "relays": [
@@ -17105,7 +17244,7 @@
                     ]
                 },
                 "Elite Control": {
-                    "deleteIds":[
+                    "deleteIds": [
                         1051525 // [Timer] Timer Start Elite Pirate Music
                     ],
                     "addConnections": [
