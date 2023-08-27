@@ -702,7 +702,10 @@ pub struct RoomConfig
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct LevelConfig
 {
+    #[serde(default)]
     pub transports: HashMap<String, String>,
+
+    #[serde(default)]
     pub rooms: HashMap<String, RoomConfig>,
 }
 
@@ -1070,6 +1073,9 @@ struct GameConfig
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct PatchConfigPrivate
 {
+    #[serde(alias = "$schema")]
+    _schema: Option<String>,
+
     run_mode: Option<String>,
     logbook_filename: Option<String>,
     export_asset_dir: Option<String>,
@@ -1568,6 +1574,11 @@ impl PatchConfigPrivate
         };
         if !item_max_capacity.contains_key(&PickupType::EnergyTank) && !force_vanilla_layout {
             item_max_capacity.insert(PickupType::EnergyTank, 200);
+        }
+
+        if item_max_capacity.contains_key(&PickupType::Nothing) || item_max_capacity.contains_key(&PickupType::FloatyJump) || item_max_capacity.contains_key(&PickupType::IceTrap)
+        {
+            panic!("Illegal pickup name in 'itemMaxCapacity'");
         }
 
         let qol_game_breaking = self.preferences.qol_game_breaking.unwrap_or(!force_vanilla_layout);
