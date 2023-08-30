@@ -1,0 +1,2912 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "title": "Randomprime API",
+    "description": "Input format for randomprime's JSON API.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "description": "The URL of the JSON schema.",
+            "type": "string"
+        },
+        "runMode": {
+            "description": "Sets the output mode of randomprime.",
+            "type": "string",
+            "enum": [
+                "CreateIso",
+                "ExportLogbook",
+                "ExportAssets"
+            ],
+            "default": "CreateIso"
+        },
+        "logbookFilename": {
+            "description": "The filepath to write the output from the `ExportLogbook` run mode.",
+            "type": "string",
+            "default": "logbook.json"
+        },
+        "inputIso": {
+            "description": "The filepath of the ISO to be patched.",
+            "type": "string",
+            "default": "prime.iso"
+        },
+        "outputIso": {
+            "description": "The filepath of the ISO after patching.",
+            "type": "string",
+            "default": "prime_out.iso"
+        },
+        "forceVanillaLayout": {
+            "description": "If true prevent the patcher from defaulting pickups to `Nothing` items. Also changes the default of many options to be more vanilla-like.",
+            "type": "boolean",
+            "default": false
+        },
+        "externAssetsDir": {
+            "description": "The directory path for custom assets (e.g. Echoes pickup models) to be used during patching.",
+            "type": "string",
+            "default": null
+        },
+        "seed": {
+            "description": "Used for item position rando. [Deprecated]",
+            "type": "integer",
+            "minimum": 0,
+            "deprecated": true
+        },
+        "uuid": {
+            "description": "Specify a UUID to \"etch\" into the ISO. It gets placed somewhere around the build version #",
+            "type": "array",
+            "minItems": 16,
+            "maxItems": 16,
+            "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+            }
+        },
+        "strg": {
+            "description": "Replace the contents of the specified STRG asset id. STRG are text 'table' files that typically follows the following format: [<initial text>, <logbook category>, <logbook entry>]",
+            "type": "object",
+            "patternProperties": {
+                "^[0-9]+$": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "required": [],
+            "additionalProperties": false
+        },
+        "preferences": {
+            "description": "User-preference options like default in-game options, suit colors, Fusion Suit, and more.",
+            "type": "object",
+            "properties": {
+                "defaultGameOptions": {
+                    "description": "Default values for in-game options used when a new save file is created",
+                    "type": "object",
+                    "properties": {
+                        "screenBrightness": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 8,
+                            "default": 5
+                        },
+                        "screenOffsetX": {
+                            "type": "integer",
+                            "minimum": -30,
+                            "maximum": 30,
+                            "default": 0
+                        },
+                        "screenOffsetY": {
+                            "type": "integer",
+                            "minimum": -30,
+                            "maximum": 30,
+                            "default": 0
+                        },
+                        "screenStretch": {
+                            "type": "integer",
+                            "minimum": -10,
+                            "maximum": 10,
+                            "default": 0
+                        },
+                        "soundMode": {
+                            "description": "0 = mono, 1 = stereo, 2 = dolby",
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 2,
+                            "default": 1
+                        },
+                        "sfxVolume": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 127,
+                            "default": 127
+                        },
+                        "musicVolume": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 127,
+                            "default": 127
+                        },
+                        "visorOpacity": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 255,
+                            "default": 255
+                        },
+                        "helmetOpacity": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 255,
+                            "default": 255
+                        },
+                        "hudLag": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "reverseYAxis": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "rumble": {
+                            "type": "boolean",
+                            "default": true
+                        },
+                        "swapBeamControls": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    "required": [],
+                    "additionalProperties": false
+                },
+                "skipSplashScreens": {
+                    "description": "Whether or not the Nintendo, Retro Studios, and Dolby splash screens are shown before the title screen.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "suitColors": {
+                    "description": "Change the colors of the in-game suits by rotating their values along the color wheel. (This currently does not apply to Fusion Suit)",
+                    "type": "object",
+                    "properties": {
+                        "powerDeg": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 360,
+                            "default": 0
+                        },
+                        "variaDeg": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 360,
+                            "default": 0
+                        },
+                        "gravityDeg": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 360,
+                            "default": 0
+                        },
+                        "phazonDeg": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 360,
+                            "default": 0
+                        }
+                    },
+                    "required": [],
+                    "additionalProperties": false
+                },
+                "forceFusion": {
+                    "description": "If true, force fusion suit to be enabled by default and stay on after system resets",
+                    "type": "boolean",
+                    "default": false
+                },
+                "cacheDir": {
+                    "description": "Path to a directory which randomprime can use to cache a copies of suit color rotations.",
+                    "type": "string",
+                    "default": "cache"
+                },
+                "qolGeneral": {
+                    "description": "Non-critical fixes and improvements to the base game such as fixed sound effects and removed tutorial popups",
+                    "type": "boolean",
+                    "default": true
+                },
+                "qolGameBreaking": {
+                    "description": "Fixe crashes, softlocks, undo non-NTSC sequence break patches and more.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "qolCosmetic": {
+                    "description": "- Remove all of the item aquisition cutscenes (e.g. Space Jump)\n- Remove all but 1 of the file select background videos so that during races, everyone spawns into the game at the same RTA\n- Remove all but 1 of the attract videos to make copying the game to your wii faster\n- Skip item acquisition pop-up message\n- Make the morph ball and missile HUD says `X/Y` instead of just `X`",
+                    "type": "boolean",
+                    "default": false
+                },
+                "qolCutscenes": {
+                    "description": "Changes made to in-game cutscenes.\n- `Original`: No changes to cutscenes are made.\n- `Competitive`: Similar to Minor but leaves a few rooms alone where skipping cutscenes would be inappropriate for races.\n- `Skippable`: Keeps all of the cutscenes in the game, but makes it so that they can be skipped with the START button.\n- `SkippableCompetitive`: Similar to skippable, but removes some cutscenes from the game which hinder the flow of competitive play. All others are skippable.\n- `Minor (Deprecated)`: Removes cutscenes that don't affect the game very much when removed.\n- `Major (Deprecated)`: Allows you to continue playing the game while cutscenes happen.",
+                    "type": "string",
+                    "enum": [
+                        "Original",
+                        "Competitive",
+                        "Skippable",
+                        "SkippableCompetitive",
+                        "Minor",
+                        "Major"
+                    ]
+                },
+                "qolPickupScans": {
+                    "description": "Rewrites some scan point text which would otherwise obscure a pickup's identity. Also adds scans where pickups are normally visible but not scannable.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mapDefaultState": {
+                    "description": "Changes the in-game map state.\n- `Default`: No changes to the in-game map behavior.\n`Visible`: Show all rooms on the in-game map as blue until they've been visted.\n- `Visited`: Show all rooms on the in-game map and marks them as visited.",
+                    "type": "string",
+                    "enum": [
+                        "Default",
+                        "Visible",
+                        "Visited"
+                    ],
+                    "default": "Default",
+                    "required": [],
+                    "additionalProperties": false
+                },
+                "artifactHintBehavior": {
+                    "description": "Set the state of Artifact Temple's hint totems and how they displays hints.\n`All`: Allow all hint scans to be collected immediately.\n- `None`: Do not allow hint scans to be collected at all.\n`Default`: Allow only certain hints to be scanned until more artifacts are collected.",
+                    "type": "string",
+                    "enum": [
+                        "All",
+                        "None",
+                        "Default"
+                    ],
+                    "default": "All",
+                    "required": [],
+                    "additionalProperties": false
+                },
+                "automaticCrashScreen": {
+                    "description": "If true, the debug crash screen is displayed immediately instead of requiring a controller input from the Player 2 controller port.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "visibleBoundingBox": {
+                    "description": "If true, the corners of aether boxes are outlined to be visible in-game.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "trilogyDiscPath": {
+                    "description": "The filepath to a Trilogy ISO to restore the intended Flaahgra music.",
+                    "type": "string"
+                },
+                "quickplay": {
+                    "description": "Skip the file select screen and start the game directly in the starting room. Useful for testing.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "quickpatch": {
+                    "description": "Removes all video and audio tracks from the ISO. Useful for testing game changes.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "quiet": {
+                    "description": "Suppresses all standard output from randomprime in the console/terminal window.",
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "required": [],
+            "additionalProperties": false
+        },
+        "gameConfig": {
+            "description": "Configuration options affecting the player, their starting equipment, the game world, suit properties, and more.",
+            "type": "object",
+            "properties": {
+                "startingRoom": {
+                    "description": "The room in which the player will spawn when starting the game from a new save file.",
+                    "$ref": "#/$defs/allRooms"
+                },
+                "startingMemo": {
+                    "description": "A text box displayed at the start of the game to convey information to they player like starting items or a message to the player.",
+                    "type": "string"
+                },
+                "springBall": {
+                    "description": "Restores the Spring Ball feature from Metroid Prime Trilogy. Use C-Stick Up while being morphed to use Spring Ball. NOTE: You need Morph Ball Bombs to use Spring Ball just like in Metroid Prime Trilogy.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "warpToStart": {
+                    "description": "Refusing to save at any Save Station while holding L + R will warp you to the starting location (by default, Samus' Ship in Tallon Overworld: Landing Site)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "warpToStartDelayS": {
+                    "description": "The delay, in seconds, before the player is warped to their starting location when using the feature at a Save Station. Using a value lower than 3 will very likely cause crashing and is not recommended.",
+                    "type": "number",
+                    "exclusiveMinimum": 0.0,
+                    "maximum": 99,
+                    "default": 3.0
+                },
+                "shufflePickupPosition": {
+                    "description": "Item locations are randomized within the aether box of the rooms they reside in. There is no checking to ensure items are placed inbounds, so seeds are not guaranteed to be logical or even completable. Item scan points are adjusted in this mode to be larger and can be seen through walls.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "shufflePickupPosAllRooms": {
+                    "description": "[Deprecated] Adds pickups to rooms which normally have none at random positions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "removeVanillaBlastShields": {
+                    "description": "Removes all blast shields from all doors that have them in the vanilla game.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "nonvariaHeatDamage": {
+                    "description": "Removes heat protection from Gravity Suit and Phazon Suit, giving more usefulness to the Varia Suit pickup.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "staggeredSuitDamage": {
+                    "description": "Damage reduction depends on how many suits you have, not which.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "heatDamagePerSec": {
+                    "description": "Configure how much damage per second you take in heated rooms when you don't have the proper protection.",
+                    "type": "number",
+                    "minimum": 0.0,
+                    "default": 10.0
+                },
+                "poisonDamagePerSec": {
+                    "description": "Configure how much damage per second you take in poison water.",
+                    "type": "number",
+                    "minimum": 0.0,
+                    "default": 0.11
+                },
+                "phazonDamagePerSec": {
+                    "description": "Configure how much damage per second you take in Phazon. NOTE: By default, this value scales exponentially over time. Use phazonDamageModifier to change this if you wish to greatly raise the damage value and have the player survive for >1 second.",
+                    "type": "number",
+                    "default": 0.964
+                },
+                "phazonDamageModifier": {
+                    "description": "Configure how the damage value for Phazon is calculated.\n- `Default`: Exponential damage per second.\n- `Linear`: Consistent damager per second.\n- `Linear_Delayed` - Unknown",
+                    "type": "string",
+                    "enum": [
+                        "Default",
+                        "Linear",
+                        "Linear_Delayed"
+                    ],
+                    "default": "Default"
+                },
+                "autoEnabledElevators": {
+                    "description": "Whether or not the region elevators start active without the need of Scan Visor to activate the holograms. This settings does not affect the elevators within rooms of a region, like the elevators to/from Control Tower in Phendrana Drifts.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "skipRidley": {
+                    "description": "An option to skip the Ridley fight in Artifact Temple once all the Artifacts have been collected, providing immediate access to the Impact Crater teleporter.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "multiworldDolPatches": {
+                    "description": "Apply patches to replace the hint state logic with logic needed for Randovania's multiworld functionality.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "updateHintStateReplacement": {
+                    "description": "For Randovania use only",
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                    }
+                },
+                "startingItems": {
+                    "description": "The items with which the player starts the game.",
+                    "$ref": "#/$defs/inventory"
+                },
+                "itemLossItems": {
+                    "description": "The items the player has after the item loss sequence, if enabled.",
+                    "$ref": "#/$defs/inventory"
+                },
+                "disableItemLoss": {
+                    "description": "Controls or not the player experiences item loss from the Connection Elevator to Deck Alpha cutscene.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "startingVisor": {
+                    "description": "Visor which is open when the player spawns viewing, regardless of if they have the corresponding item. Also the visor which the player unmorphs into. Defaults to the first included item specified in startingItems in order of: Combat, Thermal, XRay, and Scan.",
+                    "type": "string",
+                    "enum": [
+                        "Combat",
+                        "Thermal",
+                        "XRay",
+                        "Scan"
+                    ]
+                },
+                "startingBeam": {
+                    "description": "Beam which the player starts the game holding, regardless if they have the corresponding item. Defaults to the first item specified in startingItems in order of: Power, Plasma, Ice, Wave.",
+                    "type": "string",
+                    "enum": [
+                        "Power",
+                        "Plasma",
+                        "Ice",
+                        "Wave"
+                    ]
+                },
+                "escapeSequenceCountsUp": {
+                    "description": "Modifies escape sequence timers such as the one in Frigate Orpheon to count up instead of down.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "enableIceTraps": {
+                    "description": "Set to true if Ice Traps items are used in this layout.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "missileStationPbRefill": {
+                    "description": "If enabled, Missile Stations also refill Power Bomb ammunition.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "doorOpenMode": {
+                    "description": "Affects door behavior when a blast shield is destroyed.\n- `Original`: Doors always stay the same color after opening.\n- `PrimaryBlastShield`: Doors under blast shields downgrade their vulnerability to Blue/Wave/Ice/Plasma from vulnerabilities with more requirements after opening.\n- `BlueBlastShield`: Doors under blast shields downgrade to Blue doors after opening.",
+                    "type": "string",
+                    "enum": [
+                        "Original",
+                        "PrimaryBlastShield",
+                        "BlueBlastShield"
+                    ],
+                    "default": "Original"
+                },
+                "etankCapacity": {
+                    "description": "The amount of energy provided by an Energy Tank.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "default": 100
+                },
+                "itemMaxCapacity": {
+                    "description": "The maximum capacity which a player can have of an item.",
+                    "type": "object",
+                    "properties": {
+                        "Power Beam": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Ice Beam": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Wave Beam": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Plasma Beam": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Missile": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 999
+                        },
+                        "Scan Visor": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Morph Ball Bomb": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Power Bomb": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 99
+                        },
+                        "Flamethrower": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Thermal Visor": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Charge Beam": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Super Missile": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Grapple Beam": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "X-Ray Visor": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Ice Spreader": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Space Jump Boots": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Morph Ball": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Combat Visor": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Boost Ball": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Spider Ball": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Power Suit": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Gravity Suit": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Varia Suit": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Phazon Suit": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Energy Tank": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 99
+                        },
+                        "Unknown Item 1": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 65536
+                        },
+                        "Health Refill": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 999
+                        },
+                        "Unknown Item 2": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Wavebuster": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Artifact Of Truth": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Artifact Of Strength": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Artifact Of Elder": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Artifact Of Wild": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Artifact Of Lifegiver": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Artifact Of Warrior": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Artifact Of Chozo": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Artifact Of Nature": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Artifact Of Sun": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Artifact Of World": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Artifact Of Spirit": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        },
+                        "Artifact Of Newborn": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 1
+                        }
+                    },
+                    "required": [],
+                    "additionalProperties": false
+                },
+                "phazonEliteWithoutDynamo": {
+                    "description": "Removes the Central Dynamo item requirement for activating the Phazon Elite boss fight.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "mainPlazaDoor": {
+                    "description": "Allows acess to Vault from Main Plaza.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "backwardsLabs": {
+                    "description": "Scan through barrier of Research Lab Hydra when approached from behind.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "backwardsFrigate": {
+                    "description": "Power door in Main Ventilation Shaft Section B when approached from behind.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "backwardsUpperMines": {
+                    "description": "Disable Main Quarry barrier automatically when approached from Mine Security Station.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "backwardsLowerMines": {
+                    "description": "Remove PCA locks and allow passing through lower mines scan barriers from the back.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "patchPowerConduits": {
+                    "description": "Decrease conduit health from 5.0 to 1.0, allowing activation even if 1 out of 3 Wave shots hit.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "removeMineSecurityStationLocks": {
+                    "description": "Remove the locks from Mine Security Station, allowing the player to leave without completing the fight encounter.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "removeHiveMecha": {
+                    "description": "Remove the trigger that initiates the Hive Mecha miniboss fight.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "powerBombArboretumSandstone": {
+                    "description": "Modifies the Sandstone block in Arboretum on the path to Flaahgra to be weak to power bombs.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "incineratorDroneConfig": {
+                    "description": "Replace the 'random add' timer values us in the Incinerator Drone miniboss fight with constants.",
+                    "type": "object",
+                    "properties": {
+                        "contraptionStartDelayMinimumTime": {
+                            "type": "number",
+                            "minimum": 0.0
+                        },
+                        "contraptionStartDelayRandomTime": {
+                            "type": "number",
+                            "minimum": 0.0
+                        },
+                        "eyeStayUpMinimumTime": {
+                            "type": "number",
+                            "minimum": 0.0
+                        },
+                        "eyeStayUpRandomTime": {
+                            "type": "number",
+                            "minimum": 0.0
+                        },
+                        "eyeWaitInitialMinimumTime": {
+                            "type": "number",
+                            "minimum": 0.0
+                        },
+                        "eyeWaitInitialRandomTime": {
+                            "type": "number",
+                            "minimum": 0.0
+                        },
+                        "eyeWaitMinimumTime": {
+                            "type": "number",
+                            "minimum": 0.0
+                        },
+                        "eyeWaitRandomTime": {
+                            "type": "number",
+                            "minimum": 0.0
+                        },
+                        "resetContraptionMinimumTime": {
+                            "type": "number",
+                            "minimum": 0.0
+                        },
+                        "resetContraptionRandomTime": {
+                            "type": "number",
+                            "minimum": 0.0
+                        }
+                    },
+                    "required": [],
+                    "additionalProperties": false
+                },
+                "mazeSeeds": {
+                    "description": "Set the seed of the maze in Central Dynamo. Note that this exposes mazes not normally accessible in vanilla. Most mazes are bad, so be sure to test in-game.",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "hallOfTheEldersBombSlotCovers": {
+                    "description": "Changes the vulnerabilities to the shields covering the bomb slots in Hall of the Elders.",
+                    "type": "object",
+                    "properties": {
+                        "wave": {
+                            "type": "string",
+                            "enum": [
+                                "Wave",
+                                "Ice",
+                                "Plasma"
+                            ]
+                        },
+                        "ice": {
+                            "type": "string",
+                            "enum": [
+                                "Wave",
+                                "Ice",
+                                "Plasma"
+                            ]
+                        },
+                        "plasma": {
+                            "type": "string",
+                            "enum": [
+                                "Wave",
+                                "Ice",
+                                "Plasma"
+                            ]
+                        }
+                    },
+                    "required": [],
+                    "additionalProperties": false
+                },
+                "gameBanner": {
+                    "description": "Change the game information displayed by emulators/loaders.",
+                    "type": "object",
+                    "properties": {
+                        "gameName": {
+                            "type": "string",
+                            "default": null
+                        },
+                        "gameNameFull": {
+                            "type": "string",
+                            "default": null
+                        },
+                        "developer": {
+                            "type": "string",
+                            "default": null
+                        },
+                        "developerFull": {
+                            "type": "string",
+                            "default": null
+                        },
+                        "description": {
+                            "type": "string",
+                            "default": null
+                        }
+                    },
+                    "required": [],
+                    "additionalProperties": false
+                },
+                "mainMenuMessage": {
+                    "description": "Message text displayed inthe bottom-right of the file select menu.",
+                    "type": "string",
+                    "default": "randomprime"
+                },
+                "creditsString": {
+                    "description": "Defaults to an auto-generated spoiler of all local pickups.",
+                    "type": "string"
+                },
+                "resultsString": {
+                    "description": "The message displayed on the mission complete screen at the end of the game.",
+                    "type": "string",
+                    "default": null
+                },
+                "artifactHints": {
+                    "description": "The hint provided to the player when scanning the respective Artifact's totem in Artifact Temple. Supports color modification with &push and &pop delimiters. If left unspecified, defaults to humorous hints which include the room name of the corresponding artifact.",
+                    "type": "object",
+                    "properties": {
+                        "Artifact of Chozo": {
+                            "type": "string"
+                        },
+                        "Artifact of Nature": {
+                            "type": "string"
+                        },
+                        "Artifact of Sun": {
+                            "type": "string"
+                        },
+                        "Artifact of World": {
+                            "type": "string"
+                        },
+                        "Artifact of Spirit": {
+                            "type": "string"
+                        },
+                        "Artifact of Newborn": {
+                            "type": "string"
+                        },
+                        "Artifact of Truth": {
+                            "type": "string"
+                        },
+                        "Artifact of Strength": {
+                            "type": "string"
+                        },
+                        "Artifact of Elder": {
+                            "type": "string"
+                        },
+                        "Artifact of Wild": {
+                            "type": "string"
+                        },
+                        "Artifact of Lifegiver": {
+                            "type": "string"
+                        },
+                        "Artifact of Warrior": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [],
+                    "additionalProperties": false
+                },
+                "artifactTempleLayerOverrides": {
+                    "description": "Override layer(s) in Artifact Temple to remove Artifact it's collection requirement(s). If unspecified, these layers are set only if the Artifact is not placed anywhere in `levelData`.",
+                    "type": "object",
+                    "properties": {
+                        "Artifact of Truth": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "Artifact of Strength": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "Artifact of Elder": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "Artifact of Wild": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "Artifact of Lifegiver": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "Artifact of Warrior": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "Artifact of Chozo": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "Artifact of Nature": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "Artifact of Sun": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "Artifact of World": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "Artifact of Spirit": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "Artifact of Newborn": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    "required": [],
+                    "additionalProperties": false
+                },
+                "requiredArtifactCount": {
+                    "description": "Set the number of totems which need to be activated for the ridley fight to be triggered. Totems can be activated by:\n1. Collecting the artifact corresponding to the totem\n2. Excluding the artifact from `levelData`\n3.`artifactTempleLayerOverrides` is set to `true` for the artifact corresponding to the totem",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 12,
+                    "default": 12
+                },
+                "noDoors": {
+                    "description": "Option to remove doors and let the player walk directly through the dock to the next room. Can be dangerous if the next room has not finished loading.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "bossSizes": {
+                    "description": "Modifiers to the size of bosses and minibosses. Settings this value too high or low can render the encounter impossible.",
+                    "type": "object",
+                    "properties": {
+                        "parasiteQueen": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "incineratorDrone": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "flaahgra": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "adultSheegoth": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "thardus": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "elitePirate1": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "elitePirate2": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "elitePirate3": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "phazonElite": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "omegaPirate": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "Ridley": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "Exo": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "Essence": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0
+                        }
+                    },
+                    "required": [],
+                    "additionalProperties": false
+                }
+            },
+            "required": [],
+            "additionalProperties": false
+        },
+        "levelData": {
+            "type": "object",
+            "properties": {
+                "Frigate Orpheon": {
+                    "type": "object",
+                    "properties": {
+                        "transports": {
+                            "type": "object",
+                            "propertyNames": {
+                                "$ref": "#/$defs/frigateTransports"
+                            },
+                            "additionalProperties": {
+                                "$ref": "#/$defs/transportDestinations"
+                            },
+                            "default": {}
+                        },
+                        "rooms": {
+                            "type": "object",
+                            "propertyNames": {
+                                "$ref": "#/$defs/frigateRooms"
+                            },
+                            "additionalProperties": {
+                                "$ref": "#/$defs/room"
+                            }
+                        }
+                    },
+                    "required": []
+                },
+                "Tallon Overworld": {
+                    "type": "object",
+                    "properties": {
+                        "transports": {
+                            "type": "object",
+                            "propertyNames": {
+                                "$ref": "#/$defs/tallonTransports"
+                            },
+                            "additionalProperties": {
+                                "$ref": "#/$defs/transportDestinations"
+                            },
+                            "default": {}
+                        },
+                        "rooms": {
+                            "type": "object",
+                            "propertyNames": {
+                                "$ref": "#/$defs/tallonRooms"
+                            },
+                            "additionalProperties": {
+                                "$ref": "#/$defs/room"
+                            }
+                        }
+                    },
+                    "required": []
+                },
+                "Chozo Ruins": {
+                    "type": "object",
+                    "properties": {
+                        "transports": {
+                            "type": "object",
+                            "propertyNames": {
+                                "$ref": "#/$defs/chozoTransports"
+                            },
+                            "additionalProperties": {
+                                "$ref": "#/$defs/transportDestinations"
+                            },
+                            "default": {}
+                        },
+                        "rooms": {
+                            "type": "object",
+                            "propertyNames": {
+                                "$ref": "#/$defs/chozoRooms"
+                            },
+                            "additionalProperties": {
+                                "$ref": "#/$defs/room"
+                            }
+                        }
+                    },
+                    "required": []
+                },
+                "Magmoor Caverns": {
+                    "type": "object",
+                    "properties": {
+                        "transports": {
+                            "type": "object",
+                            "propertyNames": {
+                                "$ref": "#/$defs/magmoorTransports"
+                            },
+                            "additionalProperties": {
+                                "$ref": "#/$defs/transportDestinations"
+                            },
+                            "default": {}
+                        },
+                        "rooms": {
+                            "type": "object",
+                            "propertyNames": {
+                                "$ref": "#/$defs/magmoorRooms"
+                            },
+                            "additionalProperties": {
+                                "$ref": "#/$defs/room"
+                            }
+                        }
+                    },
+                    "required": []
+                },
+                "Phendrana Drifts": {
+                    "type": "object",
+                    "properties": {
+                        "transports": {
+                            "type": "object",
+                            "propertyNames": {
+                                "$ref": "#/$defs/phendranaTransports"
+                            },
+                            "additionalProperties": {
+                                "$ref": "#/$defs/transportDestinations"
+                            },
+                            "default": {}
+                        },
+                        "rooms": {
+                            "type": "object",
+                            "propertyNames": {
+                                "$ref": "#/$defs/phendranaRooms"
+                            },
+                            "additionalProperties": {
+                                "$ref": "#/$defs/room"
+                            }
+                        }
+                    },
+                    "required": []
+                },
+                "Phazon Mines": {
+                    "type": "object",
+                    "properties": {
+                        "transports": {
+                            "type": "object",
+                            "propertyNames": {
+                                "$ref": "#/$defs/minesTransports"
+                            },
+                            "additionalProperties": {
+                                "$ref": "#/$defs/transportDestinations"
+                            },
+                            "default": {}
+                        },
+                        "rooms": {
+                            "type": "object",
+                            "propertyNames": {
+                                "$ref": "#/$defs/minesRooms"
+                            },
+                            "additionalProperties": {
+                                "$ref": "#/$defs/room"
+                            }
+                        }
+                    },
+                    "required": []
+                },
+                "Impact Crater": {
+                    "type": "object",
+                    "properties": {
+                        "transports": {
+                            "type": "object",
+                            "propertyNames": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/$defs/craterTransports"
+                                    },
+                                    {
+                                        "$ref": "#/$defs/specialTransports"
+                                    }
+                                ]
+                            },
+                            "additionalProperties": {
+                                "$ref": "#/$defs/transportDestinations"
+                            },
+                            "default": {}
+                        },
+                        "rooms": {
+                            "type": "object",
+                            "propertyNames": {
+                                "$ref": "#/$defs/craterRooms"
+                            },
+                            "additionalProperties": {
+                                "$ref": "#/$defs/room"
+                            }
+                        }
+                    },
+                    "required": []
+                },
+                "End Cinema": {
+                    "type": "object",
+                    "properties": {
+                        "transports": {
+                            "type": "object",
+                            "default": {},
+                            "additionalProperties": false
+                        },
+                        "rooms": {
+                            "type": "object",
+                            "properties": {
+                                "End Cinema": {
+                                    "$ref": "#/$defs/room"
+                                }
+                            },
+                            "default": {}
+                        }
+                    }
+                }
+            }
+        },
+        "tweaks": {
+            "description": "Change the value of various CTWK values found in `Tweaks.Pak`. Many of these values are either relative or multiplicative to the default values.",
+            "type": "object",
+            "properties": {
+                "fov": {
+                    "type": "number"
+                },
+                "playerSize": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "morphBallSize": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "easyLavaEscape": {
+                    "type": "boolean"
+                },
+                "moveWhileScan": {
+                    "type": "boolean"
+                },
+                "scanRange": {
+                    "type": "number"
+                },
+                "bombJumpHeight": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "bombJumpRadius": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "grappleBeamSpeed": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "aimAssistAngle": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "gravity": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "iceBreakTimeout": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "iceBreakJumpCount": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                },
+                "groundFriction": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "coyoteFrames": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "moveDuringFreeLook": {
+                    "type": "boolean"
+                },
+                "recenterAfterFreeLook": {
+                    "type": "boolean"
+                },
+                "maxSpeed": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "maxAcceleration": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "spaceJumpImpulse": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "verticalSpaceJumpAccel": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "horizontalSpaceJumpAccel": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "eyeOffset": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "toggleFreeLook": {
+                    "type": "boolean"
+                },
+                "twoButtonsForFreeLook": {
+                    "type": "boolean"
+                },
+                "disableDash": {
+                    "type": "boolean"
+                },
+                "variaDamageReduction": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "gravityDamageReduction": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "phazonDamageReduction": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "hardmodeDamageMult": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "hardmodeWeaponMult": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "turnSpeed": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "underwaterFogDistance": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "stepUpHeight": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "allowedJumpTime": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "allowedSpaceJumpTime": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "minSpaceJumpWindow": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "maxSpaceJumpWindow": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "minJumpWindow": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "fallingSpaceJump": {
+                    "type": "boolean"
+                },
+                "impulseSpaceJump": {
+                    "type": "boolean"
+                },
+                "gunPosition": {
+                    "type": "array"
+                },
+                "gunDamage": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "gunCooldown": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "maxTranslationAccel": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "translationFriction": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "translationMaxSpeed": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "ballForwardBrakingAccel": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "ballGravity": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "ballWaterGravity": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "boostDrainTime": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "boostMinChargeTime": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "boostMinRelSpeedForDamage": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "boostChargeTime0": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "boostChargeTime1": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "boostChargeTime2": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "boostIncrementalSpeed0": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "boostIncrementalSpeed1": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "boostIncrementalSpeed2": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "hudColor": {
+                    "description": "RGB scaled from 0.0 to 1.0",
+                    "type": "array",
+                    "items": {
+                        "type": "number",
+                        "minimum": 0.0,
+                        "maximum": 1.0
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                }
+            },
+            "required": [],
+            "additionalProperties": false
+        }
+    },
+    "required": [],
+    "additionalProperties": false,
+    "$defs": {
+        "inventory": {
+            "type": "object",
+            "properties": {
+                "combatVisor": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "powerBeam": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "scanVisor": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "missiles": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "energyTanks": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "powerBombs": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "wave": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "ice": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "plasma": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "charge": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "morphBall": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "bombs": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "spiderBall": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "boostBall": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "variaSuit": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "gravitySuit": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "phazonSuit": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "thermalVisor": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "xray": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "spaceJump": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "grapple": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "superMissile": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "wavebuster": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "iceSpreader": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "flamethrower": {
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "required": [
+                "combatVisor",
+                "powerBeam",
+                "scanVisor",
+                "missiles",
+                "energyTanks",
+                "powerBombs",
+                "wave",
+                "ice",
+                "plasma",
+                "charge",
+                "morphBall",
+                "bombs",
+                "spiderBall",
+                "boostBall",
+                "variaSuit",
+                "gravitySuit",
+                "phazonSuit",
+                "thermalVisor",
+                "xray",
+                "spaceJump",
+                "grapple",
+                "superMissile",
+                "wavebuster",
+                "iceSpreader",
+                "flamethrower"
+            ],
+            "default": {
+                "combatVisor": true,
+                "powerBeam": true,
+                "scanVisor": true,
+                "missiles": 0,
+                "energyTanks": 0,
+                "powerBombs": 0,
+                "wave": false,
+                "ice": false,
+                "plasma": false,
+                "charge": false,
+                "morphBall": false,
+                "bombs": false,
+                "spiderBall": false,
+                "boostBall": false,
+                "variaSuit": false,
+                "gravitySuit": false,
+                "phazonSuit": false,
+                "thermalVisor": false,
+                "xray": false,
+                "spaceJump": false,
+                "grapple": false,
+                "superMissile": false,
+                "wavebuster": false,
+                "iceSpreader": false,
+                "flamethrower": false
+            },
+            "additionalProperties": false
+        },
+        "room": {
+            "description": "Patches for modifying the contents of a specific room.",
+            "type": "object",
+            "properties": {
+                "doors": {
+                    "description": "Patches for modifying the behavior of doors within a room. In this object, doors are specified by their `Dock Number`. See <TODO> for a map of all Dock Numbers in the game.",
+                    "type": "object",
+                    "propertyNames": {
+                        "type": "string",
+                        "enum": [
+                            "0",
+                            "1",
+                            "2",
+                            "3",
+                            "4",
+                            "5"
+                        ]
+                    },
+                    "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                            "shieldType": {
+                                "description": "Choose the \"door color\" for this door. This replaces the glowing shield actor and updates it's damage vulnerability to match. Defaults to vanilla if unspecified.",
+                                "type": "string",
+                                "enum": [
+                                    "Blue",
+                                    "Power Beam Only",
+                                    "Wave Beam",
+                                    "Ice Beam",
+                                    "Plasma Beam",
+                                    "Charge Beam",
+                                    "Missile",
+                                    "Super Missile",
+                                    "Wavebuster",
+                                    "Ice Spreader",
+                                    "Flamethrower",
+                                    "Bomb",
+                                    "Power Bomb",
+                                    "Phazon",
+                                    "Disabled",
+                                    "Enemy"
+                                ]
+                            },
+                            "blastShieldType": {
+                                "description": "Choose the \"shield\" to go over this door and it's vulnerability. Picking `None` will remove the vanilla blast shield if it exists and picking `Unchanged` will change nothing from vanilla.",
+                                "type": "string",
+                                "enum": [
+                                    "None",
+                                    "Unchanged",
+                                    "Missile",
+                                    "Charge Beam",
+                                    "Super Missile",
+                                    "Wavebuster",
+                                    "Ice Spreader",
+                                    "Flamethrower",
+                                    "Bomb",
+                                    "Power Bomb",
+                                    "Phazon"
+                                ],
+                                "default": "Unchanged"
+                            },
+                            "destination": {
+                                "description": "Re-route this door to move the player to a different room instead of the room typically adjacent to this door. This works best when connections are specified bi-directionally, but it is not strictly requried. The mini-map does not update to reflect these changes at this time.",
+                                "type": "object",
+                                "properties": {
+                                    "roomName": {
+                                        "description": "Name of a room in this same region which this door should connect to",
+                                        "type": "string"
+                                    },
+                                    "dockNum": {
+                                        "description": "The dock number in the destination room which to connect to.",
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": [
+                                    "roomName",
+                                    "dockNum"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "default": {},
+                        "additionalProperties": false
+                    },
+                    "default": {}
+                },
+                "pickups": {
+                    "description": "Modify or add pickups in this room. If the length of this array is greater than the number of pickups found in the room normally, additional pickups will be added to the room. Note that additional pickups require a `position`.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "description": "Defines what is acquired when the pickup is obtained.",
+                                "type": "string",
+                                "enum": [
+                                    "Power Beam",
+                                    "Ice Beam",
+                                    "Wave Beam",
+                                    "Plasma Beam",
+                                    "Missile",
+                                    "Scan Visor",
+                                    "Morph Ball Bomb",
+                                    "Power Bomb",
+                                    "Flamethrower",
+                                    "Thermal Visor",
+                                    "Charge Beam",
+                                    "Super Missile",
+                                    "Grapple Beam",
+                                    "X-Ray Visor",
+                                    "Ice Spreader",
+                                    "Space Jump Boots",
+                                    "Morph Ball",
+                                    "Combat Visor",
+                                    "Boost Ball",
+                                    "Spider Ball",
+                                    "Power Suit",
+                                    "Gravity Suit",
+                                    "Varia Suit",
+                                    "Phazon Suit",
+                                    "Energy Tank",
+                                    "Unknown Item 1",
+                                    "Health Refill",
+                                    "Unknown Item 2",
+                                    "Wavebuster",
+                                    "Artifact of Truth",
+                                    "Artifact of Strength",
+                                    "Artifact of Elder",
+                                    "Artifact of Wild",
+                                    "Artifact of Lifegiver",
+                                    "Artifact of Warrior",
+                                    "Artifact of Chozo",
+                                    "Artifact of Nature",
+                                    "Artifact of Sun",
+                                    "Artifact of World",
+                                    "Artifact of Spirit",
+                                    "Artifact of Newborn",
+                                    "Nothing",
+                                    "Floaty Jump",
+                                    "Ice Trap"
+                                ],
+                                "default": "Nothing"
+                            },
+                            "scanText": {
+                                "description": "The text displayed to the user when the pickup is scanned. Defaults to the pickup `type`.",
+                                "type": "string"
+                            },
+                            "hudmemoText": {
+                                "description": "The text displayed to the user when the pickup is obtained. Defaults to `type acquired!`.",
+                                "type": "string"
+                            },
+                            "maxIncrease": {
+                                "description": "The amount which the player's inventory capacity for this item increases when the pickup is obtained. Defaults to `1`, except for `Missile`, which defaults to `5`.",
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            "currIncrease": {
+                                "description": "The amount of missiles/energy that this pickup refills. Defaults to `maxIncrease`.",
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            "respawn": {
+                                "description": "If true, this pickup will respawn every time the room is reloaded.",
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "model": {
+                                "description": "The model which is displayed in-game. Defaults to the pickup `type` or an item closely related. Note that the available models can be expanded by specifying an `externAssetsDir` with additional model assets.",
+                                "type": "string",
+                                "enum": [
+                                    "Missile",
+                                    "Energy Tank",
+                                    "Scan Visor",
+                                    "Combat Visor",
+                                    "Thermal Visor",
+                                    "X-Ray Visor",
+                                    "Varia Suit",
+                                    "Gravity Suit",
+                                    "Phazon Suit",
+                                    "Morph Ball",
+                                    "Boost Ball",
+                                    "Spider Ball",
+                                    "Morph Ball Bomb",
+                                    "Power Bomb Expansion",
+                                    "Power Bomb",
+                                    "Charge Beam",
+                                    "Space Jump Boots",
+                                    "Grapple Beam",
+                                    "Super Missile",
+                                    "Wavebuster",
+                                    "Ice Spreader",
+                                    "Flamethrower",
+                                    "Wave Beam",
+                                    "Ice Beam",
+                                    "Plasma Beam",
+                                    "Artifact of Lifegiver",
+                                    "Artifact of Wild",
+                                    "Artifact of World",
+                                    "Artifact of Sun",
+                                    "Artifact of Elder",
+                                    "Artifact of Spirit",
+                                    "Artifact of Truth",
+                                    "Artifact of Chozo",
+                                    "Artifact of Warrior",
+                                    "Artifact of Newborn",
+                                    "Artifact of Nature",
+                                    "Artifact of Strength",
+                                    "Nothing",
+                                    "Gamecube",
+                                    "Health Refill",
+                                    "Missile Refill",
+                                    "Power Bomb Refill",
+                                    "Shiny Missile",
+                                    "Ice Trap"
+                                ]
+                            },
+                            "position": {
+                                "description": "The `[X, Y, Z]` coordinates of the pickup. Required for any number of pickups beyond what is found in the vanilla room.",
+                                "$ref": "#/$defs/vector3"
+                            },
+                            "modalHudmemo": {
+                                "description": "If true, show a pop-up dialog with `hudmemoText` for 3 seconds which must be dismissed with the A Button.",
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "jumboScan": {
+                                "description": "If true, modify the pickup's scan point to be larger and scannable through terrain.",
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "destination": {
+                                "description": "Teleports the player to the specified room when the pickup is obtained.",
+                                "$ref": "#/$defs/transportDestinations"
+                            },
+                            "showIcon": {
+                                "type": "boolean",
+                                "default": true
+                            },
+                            "invisibleAndSilent": {
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "thermalOnly": {
+                                "type": "boolean",
+                                "default": false
+                            }
+                        },
+                        "required": [
+                            "type"
+                        ],
+                        "default": {
+                            "type": "Nothing"
+                        },
+                        "additionalProperties": false
+                    },
+                    "default": []
+                },
+                "superheated": {
+                    "type": "boolean"
+                },
+                "removeWater": {
+                    "type": "boolean"
+                },
+                "submerge": {
+                    "type": "boolean"
+                },
+                "mapDefaultState": {
+                    "type": "string"
+                },
+                "liquids": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string"
+                            },
+                            "position": {
+                                "$ref": "#/$defs/vector3"
+                            },
+                            "scale": {
+                                "$ref": "#/$defs/vector3"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                },
+                "extraScans": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "position": {
+                                "$ref": "#/$defs/vector3"
+                            },
+                            "combatVisible": {
+                                "type": "boolean"
+                            },
+                            "text": {
+                                "type": "string"
+                            },
+                            "rotation": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 360
+                            },
+                            "isRed": {
+                                "type": "boolean"
+                            },
+                            "logbookTitle": {
+                                "type": "string"
+                            },
+                            "logbookCategory": {
+                                "type": "integer"
+                            }
+                        },
+                        "required": [
+                            "position",
+                            "text"
+                        ],
+                        "additionalProperties": false
+                    }
+                },
+                "spawnPositionOverride": {
+                    "$ref": "#/$defs/vector3"
+                },
+                "boundingBoxOffset": {
+                    "$ref": "#/$defs/vector3"
+                },
+                "boundingBoxScale": {
+                    "$ref": "#/$defs/vector3"
+                },
+                "platforms": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "position": {
+                                "$ref": "#/$defs/vector3"
+                            },
+                            "rotation": {
+                                "$ref": "#/$defs/vector3"
+                            },
+                            "altPlatform": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "position"
+                        ],
+                        "additionalProperties": false
+                    }
+                },
+                "cameraHints": {},
+                "blocks": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "position": {
+                                "$ref": "#/$defs/vector3"
+                            },
+                            "scale": {
+                                "$ref": "#/$defs/vector3"
+                            },
+                            "texture": {
+                                "type": "string",
+                                "enum": [
+                                    "grass",
+                                    "crater",
+                                    "mine",
+                                    "snow",
+                                    "sandstone"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "position",
+                            "scale",
+                            "texture"
+                        ],
+                        "additionalProperties": false
+                    }
+                },
+                "lockOnPoints": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "position": {
+                                "$ref": "#/$defs/vector3"
+                            },
+                            "isGrapple": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "position"
+                        ],
+                        "additionalProperties": false
+                    }
+                },
+                "fog": {
+                    "type": "object",
+                    "properties": {
+                        "mode": {
+                            "type": "integer"
+                        },
+                        "explicit": {
+                            "type": "boolean",
+                            "default": true
+                        },
+                        "color": {
+                            "type": "array",
+                            "items": {
+                                "type": "number",
+                                "minimum": 0.0,
+                                "maximum": 1.0
+                            },
+                            "minItems": 4,
+                            "maxItems": 4
+                        },
+                        "range": {
+                            "type": "array",
+                            "items": {
+                                "type": "number",
+                                "minimum": 0.01
+                            },
+                            "minItems": 2,
+                            "maxItems": 2
+                        },
+                        "colorDelta": {
+                            "type": "number",
+                            "minimum": 0.0
+                        },
+                        "rangeDelta": {
+                            "type": "array",
+                            "items": {
+                                "type": "number",
+                                "minimum": 0.01
+                            },
+                            "minItems": 2,
+                            "maxItems": 2
+                        },
+                        "keepOriginal": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    "required": [
+                        "mode",
+                        "explicit",
+                        "color",
+                        "range"
+                    ],
+                    "additionalProperties": false
+                },
+                "ambientLightingScale": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "environmentalEffect": {},
+                "initialEnvironmentalEffect": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "initialThermalHeatLevel": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "xrayFogDistance": {
+                    "type": "number",
+                    "minimum": 0.0
+                },
+                "escapeSequences": {},
+                "repositions": {},
+                "hudmemos": {},
+                "enabledLayers": {},
+                "disabledLayers": {},
+                "deleteIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "audioOverride": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "description": "This layout is important otherwise the left and right ear will play different audio tracks. Format Example: '91': '/audio/crash-ship-maeL.dsp|/audio/crash-ship-maeR.dsp'",
+                        "type": "string"
+                    }
+                },
+                "addConnections": {},
+                "removeConnections": {},
+                "relays": {},
+                "cutsceneSkipFns": {},
+                "timers": {},
+                "actorKeyframes": {},
+                "spawnPoints": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            "active": {
+                                "type": "boolean"
+                            },
+                            "position": {
+                                "$ref": "#/$defs/vector3"
+                            },
+                            "rotation": {
+                                "$ref": "#/$defs/vector3"
+                            },
+                            "defaultSpawn": {
+                                "type": "boolean"
+                            },
+                            "morphed": {
+                                "type": "boolean"
+                            },
+                            "items": {
+                                "$ref": "#/$defs/inventory"
+                            }
+                        }
+                    }
+                },
+                "triggers": {}
+            },
+            "default": {},
+            "additionalProperties": false
+        },
+        "allRooms": {
+            "type": "string",
+            "enum": [
+                "Frigate Orpheon:Exterior Docking Hangar",
+                "Frigate Orpheon:Main Docking Bay",
+                "Frigate Orpheon:Air Lock",
+                "Frigate Orpheon:Deck Alpha Access Hall",
+                "Frigate Orpheon:Emergency Evacuation Area",
+                "Frigate Orpheon:Deck Alpha Umbilical Hall",
+                "Frigate Orpheon:Map Facility",
+                "Frigate Orpheon:Connection Elevator to Deck Beta (Deck Alpha)",
+                "Frigate Orpheon:Deck Beta Conduit Hall",
+                "Frigate Orpheon:Biotech Research Area 1",
+                "Frigate Orpheon:Deck Beta Security Hall",
+                "Frigate Orpheon:Biohazard Containment",
+                "Frigate Orpheon:Deck Beta Transit Hall",
+                "Frigate Orpheon:Cargo Freight Lift to Deck Gamma",
+                "Frigate Orpheon:Reactor Core Entrance",
+                "Frigate Orpheon:Save Station",
+                "Frigate Orpheon:Reactor Core",
+                "Frigate Orpheon:Deck Gamma Monitor Hall",
+                "Frigate Orpheon:Connection Elevator to Deck Beta (Deck Gamma)",
+                "Frigate Orpheon:Subventilation Shaft Section A",
+                "Frigate Orpheon:Subventilation Shaft Section B",
+                "Frigate Orpheon:Main Ventilation Shaft Section A",
+                "Frigate Orpheon:Main Ventilation Shaft Section B",
+                "Frigate Orpheon:Main Ventilation Shaft Section C",
+                "Frigate Orpheon:Main Ventilation Shaft Section D",
+                "Frigate Orpheon:Main Ventilation Shaft Section E",
+                "Frigate Orpheon:Main Ventilation Shaft Section F",
+                "Frigate Orpheon:Biotech Research Area 2",
+                "Frigate Orpheon:Connection Elevator to Deck Alpha",
+                "Frigate Orpheon:Deck Alpha Mech Shaft",
+                "Tallon Overworld:Landing Site",
+                "Tallon Overworld:Canyon Cavern",
+                "Tallon Overworld:Tallon Canyon",
+                "Tallon Overworld:Transport Tunnel A",
+                "Tallon Overworld:Transport to Chozo Ruins West",
+                "Tallon Overworld:Root Tunnel",
+                "Tallon Overworld:Root Cave",
+                "Tallon Overworld:Arbor Chamber",
+                "Tallon Overworld:Transport Tunnel B",
+                "Tallon Overworld:Transport to Magmoor Caverns East",
+                "Tallon Overworld:Gully",
+                "Tallon Overworld:Alcove",
+                "Tallon Overworld:Waterfall Cavern",
+                "Tallon Overworld:Temple Hall",
+                "Tallon Overworld:Temple Security Station",
+                "Tallon Overworld:Temple Lobby",
+                "Tallon Overworld:Artifact Temple",
+                "Tallon Overworld:Frigate Crash Site",
+                "Tallon Overworld:Overgrown Cavern",
+                "Tallon Overworld:Transport Tunnel C",
+                "Tallon Overworld:Transport to Chozo Ruins East",
+                "Tallon Overworld:Frigate Access Tunnel",
+                "Tallon Overworld:Main Ventilation Shaft Section C",
+                "Tallon Overworld:Main Ventilation Shaft Section B",
+                "Tallon Overworld:Main Ventilation Shaft Section A",
+                "Tallon Overworld:Reactor Core",
+                "Tallon Overworld:Reactor Access",
+                "Tallon Overworld:Save Station",
+                "Tallon Overworld:Cargo Freight Lift to Deck Gamma",
+                "Tallon Overworld:Deck Beta Transit Hall",
+                "Tallon Overworld:Biohazard Containment",
+                "Tallon Overworld:Deck Beta Security Hall",
+                "Tallon Overworld:Biotech Research Area 1",
+                "Tallon Overworld:Deck Beta Conduit Hall",
+                "Tallon Overworld:Connection Elevator to Deck Beta",
+                "Tallon Overworld:Hydro Access Tunnel",
+                "Tallon Overworld:Great Tree Hall",
+                "Tallon Overworld:Great Tree Chamber",
+                "Tallon Overworld:Transport to Chozo Ruins South",
+                "Tallon Overworld:Transport Tunnel D",
+                "Tallon Overworld:Transport Tunnel E",
+                "Tallon Overworld:Transport to Phazon Mines East",
+                "Tallon Overworld:Life Grove Tunnel",
+                "Tallon Overworld:Life Grove",
+                "Chozo Ruins:Ruined Fountain",
+                "Chozo Ruins:Main Plaza",
+                "Chozo Ruins:North Atrium",
+                "Chozo Ruins:Training Chamber Access",
+                "Chozo Ruins:Training Chamber",
+                "Chozo Ruins:Morph Ball Tunnel",
+                "Chozo Ruins:Burn Dome",
+                "Chozo Ruins:Burn Dome Access",
+                "Chozo Ruins:Ruined Shrine",
+                "Chozo Ruins:Ruined Shrine Access",
+                "Chozo Ruins:North Core Tunnel",
+                "Chozo Ruins:Hive Totem",
+                "Chozo Ruins:Hive Totem Access",
+                "Chozo Ruins:Save Station 2",
+                "Chozo Ruins:Totem Access",
+                "Chozo Ruins:Transport to Magmoor Caverns North",
+                "Chozo Ruins:Save Station 1",
+                "Chozo Ruins:Transport Access North",
+                "Chozo Ruins:Main Plaza",
+                "Chozo Ruins:North Atrium",
+                "Chozo Ruins:Ruined Shrine Access",
+                "Chozo Ruins:Ruined Shrine",
+                "Chozo Ruins:Ruined Nursery",
+                "Chozo Ruins:Save Station 3",
+                "Chozo Ruins:Ruined Gallery",
+                "Chozo Ruins:Transport Access South",
+                "Chozo Ruins:Transport to Tallon Overworld South",
+                "Chozo Ruins:Main Plaza",
+                "Chozo Ruins:North Atrium",
+                "Chozo Ruins:Ruined Shrine",
+                "Chozo Ruins:Ruined Shrine Access",
+                "Chozo Ruins:Burn Dome Access",
+                "Chozo Ruins:Burn Dome",
+                "Chozo Ruins:West Furnace Access",
+                "Chozo Ruins:Furnace",
+                "Chozo Ruins:East Furnace Access",
+                "Chozo Ruins:Crossway",
+                "Chozo Ruins:Crossway Access West",
+                "Chozo Ruins:Crossway Access South",
+                "Chozo Ruins:Elder Chamber",
+                "Chozo Ruins:Reflecting Pool",
+                "Chozo Ruins:Antechamber",
+                "Chozo Ruins:Transport to Tallon Overworld East",
+                "Chozo Ruins:Energy Core",
+                "Chozo Ruins:Energy Core Access",
+                "Chozo Ruins:East Atrium",
+                "Chozo Ruins:Sunchamber",
+                "Chozo Ruins:Sunchamber Access",
+                "Chozo Ruins:Sunchamber Lobby",
+                "Chozo Ruins:Arboretum",
+                "Chozo Ruins:Arboretum Access",
+                "Chozo Ruins:Piston Tunnel",
+                "Chozo Ruins:Transport to Magmoor Caverns West",
+                "Chozo Ruins:Tower of Light",
+                "Chozo Ruins:Tower of Light Access",
+                "Chozo Ruins:Tower Chamber",
+                "Chozo Ruins:Transport to Tallon Overworld West",
+                "Chozo Ruins:Totem Access",
+                "Chozo Ruins:Save Station 1",
+                "Chozo Ruins:Ruined Nursery",
+                "Chozo Ruins:Ruined Fountain",
+                "Chozo Ruins:Ruined Shrine Access",
+                "Chozo Ruins:Main Plaza",
+                "Chozo Ruins:North Atrium",
+                "Chozo Ruins:Transport to Tallon Overworld North",
+                "Chozo Ruins:Transport Access North",
+                "Chozo Ruins:Save Station 2",
+                "Magmoor Caverns:Transport to Chozo Ruins North",
+                "Magmoor Caverns:Burning Trail",
+                "Magmoor Caverns:Save Station Magmoor A",
+                "Magmoor Caverns:Lake Tunnel",
+                "Magmoor Caverns:Lava Lake",
+                "Magmoor Caverns:Pit Tunnel",
+                "Magmoor Caverns:Triclops Pit",
+                "Magmoor Caverns:Storage Cavern",
+                "Magmoor Caverns:Monitor Tunnel",
+                "Magmoor Caverns:Monitor Station",
+                "Magmoor Caverns:Transport Tunnel A",
+                "Magmoor Caverns:Transport to Phendrana Drifts North",
+                "Magmoor Caverns:Warrior Shrine",
+                "Magmoor Caverns:Shore Tunnel",
+                "Magmoor Caverns:Fiery Shores",
+                "Magmoor Caverns:Transport Tunnel B",
+                "Magmoor Caverns:Transport to Tallon Overworld West",
+                "Magmoor Caverns:Twin Fires Tunnel",
+                "Magmoor Caverns:Twin Fires",
+                "Magmoor Caverns:North Core Tunnel",
+                "Magmoor Caverns:Geothermal Core",
+                "Magmoor Caverns:Plasma Processing",
+                "Magmoor Caverns:South Core Tunnel",
+                "Magmoor Caverns:Magmoor Workstation",
+                "Magmoor Caverns:Workstation Tunnel",
+                "Magmoor Caverns:Transport Tunnel C",
+                "Magmoor Caverns:Transport to Phendrana Drifts South",
+                "Magmoor Caverns:Save Station Magmoor B",
+                "Magmoor Caverns:Transport to Phazon Mines West",
+                "Phendrana Drifts:Transport to Magmoor Caverns West",
+                "Phendrana Drifts:Shoreline Entrance",
+                "Phendrana Drifts:Phendrana Shorelines",
+                "Phendrana Drifts:Save Station B",
+                "Phendrana Drifts:Ice Ruins Access",
+                "Phendrana Drifts:Ice Ruins East",
+                "Phendrana Drifts:Plaza Walkway",
+                "Phendrana Drifts:Ruins Entryway",
+                "Phendrana Drifts:Ice Ruins West",
+                "Phendrana Drifts:Canyon Entryway",
+                "Phendrana Drifts:Phendrana Canyon",
+                "Phendrana Drifts:Temple Entryway",
+                "Phendrana Drifts:Chozo Ice Temple",
+                "Phendrana Drifts:Chapel Tunnel",
+                "Phendrana Drifts:Chapel of the Elders",
+                "Phendrana Drifts:Courtyard Entryway",
+                "Phendrana Drifts:Ruined Courtyard",
+                "Phendrana Drifts:Save Station A",
+                "Phendrana Drifts:Specimen Storage",
+                "Phendrana Drifts:Research Entrance",
+                "Phendrana Drifts:Map Station",
+                "Phendrana Drifts:Hydra Lab Entryway",
+                "Phendrana Drifts:Research Lab Hydra",
+                "Phendrana Drifts:Observatory Access",
+                "Phendrana Drifts:Observatory",
+                "Phendrana Drifts:Save Station D",
+                "Phendrana Drifts:West Tower Entrance",
+                "Phendrana Drifts:West Tower",
+                "Phendrana Drifts:Control Tower",
+                "Phendrana Drifts:East Tower",
+                "Phendrana Drifts:Aether Lab Entryway",
+                "Phendrana Drifts:Research Lab Aether",
+                "Phendrana Drifts:Research Core Access",
+                "Phendrana Drifts:Research Core",
+                "Phendrana Drifts:Quarantine Access",
+                "Phendrana Drifts:North Quarantine Tunnel",
+                "Phendrana Drifts:Quarantine Cave",
+                "Phendrana Drifts:Quarantine Monitor",
+                "Phendrana Drifts:South Quarantine Tunnel",
+                "Phendrana Drifts:Transport to Magmoor Caverns South",
+                "Phendrana Drifts:Transport Access",
+                "Phendrana Drifts:Frozen Pike",
+                "Phendrana Drifts:Pike Access",
+                "Phendrana Drifts:Frost Cave Access",
+                "Phendrana Drifts:Frost Cave",
+                "Phendrana Drifts:Save Station C",
+                "Phendrana Drifts:Upper Edge Tunnel",
+                "Phendrana Drifts:Phendrana's Edge",
+                "Phendrana Drifts:Storage Cave",
+                "Phendrana Drifts:Security Cave",
+                "Phendrana Drifts:Lower Edge Tunnel",
+                "Phendrana Drifts:Hunter Cave",
+                "Phendrana Drifts:Lake Tunnel",
+                "Phendrana Drifts:Gravity Chamber",
+                "Phendrana Drifts:Chamber Access",
+                "Phendrana Drifts:Hunter Cave Access",
+                "Phazon Mines:Transport to Tallon Overworld South",
+                "Phazon Mines:Quarry Access",
+                "Phazon Mines:Main Quarry",
+                "Phazon Mines:Save Station Mines A",
+                "Phazon Mines:Security Access A",
+                "Phazon Mines:Mine Security Station",
+                "Phazon Mines:Security Access B",
+                "Phazon Mines:Storage Depot A",
+                "Phazon Mines:Elite Research",
+                "Phazon Mines:Research Access",
+                "Phazon Mines:Ore Processing",
+                "Phazon Mines:Elevator Access A",
+                "Phazon Mines:Elevator A",
+                "Phazon Mines:Storage Depot B",
+                "Phazon Mines:Waste Disposal",
+                "Phazon Mines:Elite Control Access",
+                "Phazon Mines:Elite Control",
+                "Phazon Mines:Maintenance Tunnel",
+                "Phazon Mines:Ventilation Shaft",
+                "Phazon Mines:Control Room",
+                "Phazon Mines:Omega Research",
+                "Phazon Mines:Map Station Mines",
+                "Phazon Mines:Dynamo Access",
+                "Phazon Mines:Central Dynamo",
+                "Phazon Mines:Save Station Mines B",
+                "Phazon Mines:Quarantine Access A",
+                "Phazon Mines:Metroid Quarantine A",
+                "Phazon Mines:Elevator Access B",
+                "Phazon Mines:Elevator B",
+                "Phazon Mines:Fungal Hall Access",
+                "Phazon Mines:Fungal Hall A",
+                "Phazon Mines:Phazon Mining Tunnel",
+                "Phazon Mines:Fungal Hall B",
+                "Phazon Mines:Missile Station Mines",
+                "Phazon Mines:Quarantine Access B",
+                "Phazon Mines:Metroid Quarantine B",
+                "Phazon Mines:Save Station Mines C",
+                "Phazon Mines:Elite Quarters Access",
+                "Phazon Mines:Elite Quarters",
+                "Phazon Mines:Processing Center Access",
+                "Phazon Mines:Phazon Processing Center",
+                "Phazon Mines:Transport Access",
+                "Phazon Mines:Transport to Magmoor Caverns South",
+                "Impact Crater:Crater Entry Point",
+                "Impact Crater:Crater Tunnel A",
+                "Impact Crater:Phazon Core",
+                "Impact Crater:Crater Missile Station",
+                "Impact Crater:Crater Tunnel B",
+                "Impact Crater:Phazon Infusion Chamber",
+                "Impact Crater:Subchamber 1",
+                "Impact Crater:Subchamber 2",
+                "Impact Crater:Subchamber 3",
+                "Impact Crater:Subchamber 4",
+                "Impact Crater:Subchamber 5",
+                "Impact Crater:Metroid Prime Lair",
+                "End Cinema:End Cinema"
+            ]
+        },
+        "frigateTransports": {
+            "type": "string",
+            "enum": [
+                "Frigate Escape Cutscene"
+            ]
+        },
+        "tallonTransports": {
+            "type": "string",
+            "enum": [
+                "Tallon Overworld North (Tallon Canyon)",
+                "Tallon Overworld West (Root Cave)",
+                "Tallon Overworld East (Frigate Crash Site)",
+                "Tallon Overworld South (Great Tree Hall, Upper)",
+                "Tallon Overworld South (Great Tree Hall, Lower)",
+                "Tallon Overworld Central (Artifact Temple)"
+            ]
+        },
+        "chozoTransports": {
+            "type": "string",
+            "enum": [
+                "Chozo Ruins West (Main Plaza)",
+                "Chozo Ruins North (Sun Tower)",
+                "Chozo Ruins East (Reflecting Pool, Save Station)",
+                "Chozo Ruins South (Reflecting Pool, Far End)"
+            ]
+        },
+        "magmoorTransports": {
+            "type": "string",
+            "enum": [
+                "Magmoor Caverns North (Lava Lake)",
+                "Magmoor Caverns West (Monitor Station)",
+                "Magmoor Caverns East (Twin Fires)",
+                "Magmoor Caverns South (Magmoor Workstation, Save Station)",
+                "Magmoor Caverns South (Magmoor Workstation, Debris)"
+            ]
+        },
+        "phendranaTransports": {
+            "type": "string",
+            "enum": [
+                "Phendrana Drifts North (Phendrana Shorelines)",
+                "Phendrana Drifts South (Quarantine Cave)"
+            ]
+        },
+        "minesTransports": {
+            "type": "string",
+            "enum": [
+                "Phazon Mines East (Main Quarry)",
+                "Phazon Mines West (Phazon Processing Center)"
+            ]
+        },
+        "craterTransports": {
+            "type": "string",
+            "enum": [
+                "Crater Entry Point (Impact Crater)"
+            ]
+        },
+        "specialTransports": {
+            "type": "string",
+            "enum": [
+                "Essence Dead Cutscene"
+            ]
+        },
+        "transportDestinations": {
+            "type": "string",
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/specialDestinations"
+                },
+                {
+                    "$ref": "#/$defs/frigateTransports"
+                },
+                {
+                    "$ref": "#/$defs/tallonTransports"
+                },
+                {
+                    "$ref": "#/$defs/chozoTransports"
+                },
+                {
+                    "$ref": "#/$defs/magmoorTransports"
+                },
+                {
+                    "$ref": "#/$defs/phendranaTransports"
+                },
+                {
+                    "$ref": "#/$defs/minesTransports"
+                },
+                {
+                    "$ref": "#/$defs/craterTransports"
+                },
+                {
+                    "$ref": "#/$defs/frigateRooms"
+                },
+                {
+                    "$ref": "#/$defs/tallonRooms"
+                },
+                {
+                    "$ref": "#/$defs/chozoRooms"
+                },
+                {
+                    "$ref": "#/$defs/magmoorRooms"
+                },
+                {
+                    "$ref": "#/$defs/phendranaRooms"
+                },
+                {
+                    "$ref": "#/$defs/minesRooms"
+                },
+                {
+                    "$ref": "#/$defs/craterRooms"
+                },
+                {
+                    "$ref": "#/$defs/allRooms"
+                }
+            ]
+        },
+        "specialDestinations": {
+            "type": "string",
+            "enum": [
+                "Exterior Docking Hangar (Frigate Orpheon)",
+                "Credits",
+                "End Cinema:End Cinema"
+            ]
+        },
+        "frigateRooms": {
+            "type": "string",
+            "enum": [
+                "Exterior Docking Hangar",
+                "Air Lock",
+                "Deck Alpha Access Hall",
+                "Deck Alpha Mech Shaft",
+                "Emergency Evacuation Area",
+                "Connection Elevator to Deck Alpha",
+                "Deck Alpha Umbilical Hall",
+                "Biotech Research Area 2",
+                "Map Facility",
+                "Main Ventilation Shaft Section F",
+                "Connection Elevator to Deck Beta",
+                "Main Ventilation Shaft Section E",
+                "Deck Beta Conduit Hall",
+                "Main Ventilation Shaft Section D",
+                "Biotech Research Area 1",
+                "Main Ventilation Shaft Section C",
+                "Deck Beta Security Hall",
+                "Connection Elevator to Deck Beta (2)",
+                "Subventilation Shaft Section A",
+                "Main Ventilation Shaft Section B",
+                "Biohazard Containment",
+                "Deck Gamma Monitor Hall",
+                "Subventilation Shaft Section B",
+                "Main Ventilation Shaft Section A",
+                "Deck Beta Transit Hall",
+                "Reactor Core",
+                "Cargo Freight Lift to Deck Gamma",
+                "Reactor Core Entrance"
+            ]
+        },
+        "tallonRooms": {
+            "type": "string",
+            "enum": [
+                "Landing Site",
+                "Gully",
+                "Canyon Cavern",
+                "Temple Hall",
+                "Alcove",
+                "Waterfall Cavern",
+                "Tallon Canyon",
+                "Temple Security Station",
+                "Frigate Crash Site",
+                "Transport Tunnel A",
+                "Root Tunnel",
+                "Temple Lobby",
+                "Frigate Access Tunnel",
+                "Overgrown Cavern",
+                "Transport to Chozo Ruins West",
+                "Root Cave",
+                "Artifact Temple",
+                "Main Ventilation Shaft Section C",
+                "Transport Tunnel C",
+                "Transport Tunnel B",
+                "Arbor Chamber",
+                "Main Ventilation Shaft Section B",
+                "Transport to Chozo Ruins East",
+                "Transport to Magmoor Caverns East",
+                "Main Ventilation Shaft Section A",
+                "Reactor Core",
+                "Reactor Access",
+                "Cargo Freight Lift to Deck Gamma",
+                "Savestation",
+                "Deck Beta Transit Hall",
+                "Biohazard Containment",
+                "Deck Beta Security Hall",
+                "Biotech Research Area 1",
+                "Deck Beta Conduit Hall",
+                "Connection Elevator to Deck Beta",
+                "Hydro Access Tunnel",
+                "Great Tree Hall",
+                "Great Tree Chamber",
+                "Transport Tunnel D",
+                "Life Grove Tunnel",
+                "Transport Tunnel E",
+                "Transport to Chozo Ruins South",
+                "Life Grove",
+                "Transport to Phazon Mines East"
+            ]
+        },
+        "chozoRooms": {
+            "type": "string",
+            "enum": [
+                "Transport to Tallon Overworld North",
+                "Ruins Entrance",
+                "Main Plaza",
+                "Ruined Fountain Access",
+                "Ruined Shrine Access",
+                "Nursery Access",
+                "Plaza Access",
+                "Piston Tunnel",
+                "Ruined Fountain",
+                "Ruined Shrine",
+                "Eyon Tunnel",
+                "Vault",
+                "Training Chamber",
+                "Arboretum Access",
+                "Meditation Fountain",
+                "Tower of Light Access",
+                "Ruined Nursery",
+                "Vault Access",
+                "Training Chamber Access",
+                "Arboretum",
+                "Magma Pool",
+                "Tower of Light",
+                "Save Station 1",
+                "North Atrium",
+                "Transport to Magmoor Caverns North",
+                "Sunchamber Lobby",
+                "Gathering Hall Access",
+                "Tower Chamber",
+                "Ruined Gallery",
+                "Sun Tower",
+                "Transport Access North",
+                "Sunchamber Access",
+                "Gathering Hall",
+                "Totem Access",
+                "Map Station",
+                "Sun Tower Access",
+                "Hive Totem",
+                "Sunchamber",
+                "Watery Hall Access",
+                "Save Station 2",
+                "East Atrium",
+                "Watery Hall",
+                "Energy Core Access",
+                "Dynamo Access",
+                "Energy Core",
+                "Dynamo",
+                "Burn Dome Access",
+                "West Furnace Access",
+                "Burn Dome",
+                "Furnace",
+                "East Furnace Access",
+                "Crossway Access West",
+                "Hall of the Elders",
+                "Crossway",
+                "Reflecting Pool Access",
+                "Elder Hall Access",
+                "Crossway Access South",
+                "Elder Chamber",
+                "Reflecting Pool",
+                "Save Station 3",
+                "Transport Access South",
+                "Antechamber",
+                "Transport to Tallon Overworld East",
+                "Transport to Tallon Overworld South"
+            ]
+        },
+        "magmoorRooms": {
+            "type": "string",
+            "enum": [
+                "Transport to Chozo Ruins North",
+                "Burning Trail",
+                "Lake Tunnel",
+                "Save Station Magmoor A",
+                "Lava Lake",
+                "Pit Tunnel",
+                "Triclops Pit",
+                "Monitor Tunnel",
+                "Storage Cavern",
+                "Monitor Station",
+                "Transport Tunnel A",
+                "Warrior Shrine",
+                "Shore Tunnel",
+                "Transport to Phendrana Drifts North",
+                "Fiery Shores",
+                "Transport Tunnel B",
+                "Transport to Tallon Overworld West",
+                "Twin Fires Tunnel",
+                "Twin Fires",
+                "North Core Tunnel",
+                "Geothermal Core",
+                "Plasma Processing",
+                "South Core Tunnel",
+                "Magmoor Workstation",
+                "Workstation Tunnel",
+                "Transport Tunnel C",
+                "Transport to Phazon Mines West",
+                "Transport to Phendrana Drifts South",
+                "Save Station Magmoor B"
+            ]
+        },
+        "phendranaRooms": {
+            "type": "string",
+            "enum": [
+                "Transport to Magmoor Caverns West",
+                "Shoreline Entrance",
+                "Phendrana Shorelines",
+                "Temple Entryway",
+                "Save Station B",
+                "Ruins Entryway",
+                "Plaza Walkway",
+                "Ice Ruins Access",
+                "Chozo Ice Temple",
+                "Ice Ruins West",
+                "Ice Ruins East",
+                "Chapel Tunnel",
+                "Courtyard Entryway",
+                "Canyon Entryway",
+                "Chapel of the Elders",
+                "Ruined Courtyard",
+                "Phendrana Canyon",
+                "Save Station A",
+                "Specimen Storage",
+                "Quarantine Access",
+                "Research Entrance",
+                "North Quarantine Tunnel",
+                "Map Station",
+                "Hydra Lab Entryway",
+                "Quarantine Cave",
+                "Research Lab Hydra",
+                "South Quarantine Tunnel",
+                "Quarantine Monitor",
+                "Observatory Access",
+                "Transport to Magmoor Caverns South",
+                "Observatory",
+                "Transport Access",
+                "West Tower Entrance",
+                "Save Station D",
+                "Frozen Pike",
+                "West Tower",
+                "Pike Access",
+                "Frost Cave Access",
+                "Hunter Cave Access",
+                "Control Tower",
+                "Research Core",
+                "Frost Cave",
+                "Hunter Cave",
+                "East Tower",
+                "Research Core Access",
+                "Save Station C",
+                "Upper Edge Tunnel",
+                "Lower Edge Tunnel",
+                "Chamber Access",
+                "Lake Tunnel",
+                "Aether Lab Entryway",
+                "Research Lab Aether",
+                "Phendrana's Edge",
+                "Gravity Chamber",
+                "Storage Cave",
+                "Security Cave"
+            ]
+        },
+        "minesRooms": {
+            "type": "string",
+            "enum": [
+                "Transport to Tallon Overworld South",
+                "Quarry Access",
+                "Main Quarry",
+                "Waste Disposal",
+                "Save Station Mines A",
+                "Security Access A",
+                "Ore Processing",
+                "Mine Security Station",
+                "Research Access",
+                "Storage Depot B",
+                "Elevator Access A",
+                "Security Access B",
+                "Storage Depot A",
+                "Elite Research",
+                "Elevator A",
+                "Elite Control Access",
+                "Elite Control",
+                "Maintenance Tunnel",
+                "Ventilation Shaft",
+                "Phazon Processing Center",
+                "Omega Research",
+                "Transport Access",
+                "Processing Center Access",
+                "Map Station Mines",
+                "Dynamo Access",
+                "Transport to Magmoor Caverns South",
+                "Elite Quarters",
+                "Central Dynamo",
+                "Elite Quarters Access",
+                "Quarantine Access A",
+                "Save Station Mines B",
+                "Metroid Quarantine B",
+                "Metroid Quarantine A",
+                "Quarantine Access B",
+                "Save Station Mines C",
+                "Elevator Access B",
+                "Fungal Hall B",
+                "Elevator B",
+                "Missile Station Mines",
+                "Phazon Mining Tunnel",
+                "Fungal Hall Access",
+                "Fungal Hall A"
+            ]
+        },
+        "craterRooms": {
+            "type": "string",
+            "enum": [
+                "Crater Entry Point",
+                "Crater Tunnel A",
+                "Phazon Core",
+                "Crater Missile Station",
+                "Crater Tunnel B",
+                "Phazon Infusion Chamber",
+                "Subchamber One",
+                "Subchamber Two",
+                "Subchamber Three",
+                "Subchamber Four",
+                "Subchamber Five",
+                "Metroid Prime Lair"
+            ]
+        },
+        "vector3": {
+            "type": "array",
+            "items": {
+                "type": "number"
+            },
+            "minItems": 3,
+            "maxItems": 3
+        }
+    }
+}

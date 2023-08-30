@@ -213,6 +213,7 @@ impl DoorType {
         match test_str {
             "blue"          => Some(DoorType::Blue )        ,
             "poweronly"     => Some(DoorType::PowerOnly )   ,
+            "powerbeamonly" => Some(DoorType::PowerOnly )   ,
             "purple"        => Some(DoorType::Purple )      ,
             "wave"          => Some(DoorType::Purple )      ,
             "wavebeam"      => Some(DoorType::Purple )      ,
