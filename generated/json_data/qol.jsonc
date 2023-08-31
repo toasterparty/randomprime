@@ -692,7 +692,12 @@
                 },
                 "Control Tower": {
                     "deleteIds": [
-                        2557275 // [Trigger] Trigger - Fallen Tower - outside_hole_fixed_deactivate
+                        // Fix camera getting stuck
+                        2557275, // [Trigger] Trigger - Fallen Tower - outside_hole_fixed_deactivate
+                        // Remove White Flashes from Explosions
+                        2556985,
+                        2556990,
+                        2556986
                     ],
                     "addConnections": [
                         {
@@ -894,6 +899,43 @@
                         1769739
                     ]
                 },
+                "Frigate Crash Site": {
+                    "deleteIds": [
+                        // Remove White Flashes from Explosions
+                        524576,
+                        524614,
+                        524652,
+                        524653,
+                        524577,
+                        524615
+                    ]
+                },
+                "Great Tree Hall": {
+                    "deleteIds": [
+                        // Remove White Flashes from Explosions
+                        2359647,
+                        2359658,
+                        2359669,
+                        2359680,
+                        2359691,
+                        2359702,
+                        2359648,
+                        2359659,
+                        2359670,
+                        2359681,
+                        2359692,
+                        2359703
+                    ]
+                },
+                "Gully": {
+                    "deleteIds": [
+                        // Remove White Flashes from Explosions
+                        65624,
+                        65586,
+                        65623,
+                        65585
+                    ]
+                },
                 "Landing Site": {
                     "addConnections": [
                         // Activate Ship Noises MemoryRelay upon Vanilla Intro Cutscene Skip
@@ -923,6 +965,94 @@
                             "message": "PLAY"
                         }
                     ]
+                },
+                "Life Grove": {
+                    "deleteIds": [
+                        // Remove White Flashes from Explosions
+                        2752911,
+                        2752912
+                    ]
+                },
+                "Life Grove Tunnel": {
+                    "deleteIds": [
+                        // Remove White Flashes from Explosions
+                        2555998,
+                        2556038,
+                        2556090,
+                        2555999,
+                        2556039,
+                        2556091
+                    ]
+                },
+                "Main Ventilation Shaft Section B": {
+                    "deleteIds": [
+                        // Remove White Flashes from Explosions
+                        1376292,
+                        1376293
+                    ]
+                },
+                "Root Tunnel": {
+                    "deleteIds": [
+                        // Remove White Flashes from Explosions
+                        655532,
+                        655570,
+                        655608,
+                        655646,
+                        655684,
+                        655533,
+                        655571,
+                        655609,
+                        655647,
+                        655685
+                    ]
+                },
+                "Tallon Canyon": {
+                    "deleteIds": [
+                        // Remove White Flashes from Explosions
+                        393485,
+                        393531,
+                        393486,
+                        393532
+                    ]
+                },
+                "Transport Tunnel A": {
+                    "deleteIds": [
+                        // Remove White Flashes from Explosions
+                        590068,
+                        590030,
+                        589992,
+                        589954,
+                        590069,
+                        590031,
+                        589993,
+                        589955
+                    ]
+                },
+                "Transport Tunnel B": {
+                    "deleteIds": [
+                        // Remove White Flashes from Explosions
+                        1245318,
+                        1245356,
+                        1245394,
+                        1245432,
+                        1245319,
+                        1245357,
+                        1245395,
+                        1245433
+                    ]
+                },
+                "Transport Tunnel D": {
+                    "deleteIds": [
+                        // Remove White Flashes from Explosions
+                        2490400,
+                        2490455,
+                        2490647,
+                        2490687,
+                        2490401,
+                        2490456,
+                        2490648,
+                        2490688
+                    ]
                 }
             }
         },
@@ -938,6 +1068,24 @@
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         }
+                    ]
+                },
+                "Elevator A": {
+                    "deleteIds": [
+                        // Remove White Flashes from Explosions
+                        917596,
+                        917584,
+                        917608,
+                        917607,
+                        917583,
+                        917595
+                    ]
+                },
+                "Elite Control Access": {
+                    "deleteIds": [
+                        // Remove White Flashes from Explosions
+                        983177,
+                        983176
                     ]
                 },
                 "Elite Control": {
@@ -1003,6 +1151,65 @@
                             "time": 0.1,
                             "startImmediately": false
                         }
+                    ]
+                },
+                "Main Quarry": {
+                    "deleteIds": [
+                        // Remove White Flashes from Explosions
+                        131788,
+                        131789,
+                        131793
+                    ]
+                },
+                "Metroid Quarantine A": {
+                    "deleteIds": [
+                        // Remove White Flashes from Explosions
+                        2097712,
+                        2097743,
+                        2098132,
+                        2098138,
+                        2097711,
+                        2097742,
+                        2098131,
+                        2098137
+                    ]
+                },
+                "Metroid Quarantine B": {
+                    "deleteIds": [
+                        // Remove White Flashes from Explosions
+                        2031962,
+                        2031961
+                    ]
+                },
+                "Omega Research": {
+                    "deleteIds": [
+                        // Remove White Flashes from Explosions
+                        1311270,
+                        1311252,
+                        1311271,
+                        1311253
+                    ]
+                },
+                "Quarry Access": {
+                    "deleteIds": [
+                        // Remove White Flashes from Explosions
+                        65627,
+                        65657,
+                        65631,
+                        65661,
+                        65656,
+                        65626
+                    ]
+                },
+                "Security Access A": {
+                    "deleteIds": [
+                        // Remove White Flashes from Explosions
+                        327942,
+                        327912,
+                        327947,
+                        327917,
+                        327913,
+                        327943
                     ]
                 },
                 "Ventilation Shaft": {
