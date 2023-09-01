@@ -47,6 +47,7 @@
             "description": "Used for item position rando. [Deprecated]",
             "type": "integer",
             "minimum": 0,
+            "maximum": 18446744073709551615,
             "deprecated": true
         },
         "uuid": {
@@ -169,25 +170,25 @@
                         "powerDeg": {
                             "type": "integer",
                             "minimum": 0,
-                            "maximum": 360,
+                            "exclusiveMaximum": 360,
                             "default": 0
                         },
                         "variaDeg": {
                             "type": "integer",
                             "minimum": 0,
-                            "maximum": 360,
+                            "exclusiveMaximum": 360,
                             "default": 0
                         },
                         "gravityDeg": {
                             "type": "integer",
                             "minimum": 0,
-                            "maximum": 360,
+                            "exclusiveMaximum": 360,
                             "default": 0
                         },
                         "phazonDeg": {
                             "type": "integer",
                             "minimum": 0,
-                            "maximum": 360,
+                            "exclusiveMaximum": 360,
                             "default": 0
                         }
                     },
@@ -470,206 +471,247 @@
                         "Power Beam": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Ice Beam": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Wave Beam": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Plasma Beam": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Missile": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 999
                         },
                         "Scan Visor": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Morph Ball Bomb": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Power Bomb": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 99
                         },
                         "Flamethrower": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Thermal Visor": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Charge Beam": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Super Missile": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Grapple Beam": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "X-Ray Visor": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Ice Spreader": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Space Jump Boots": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Morph Ball": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Combat Visor": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Boost Ball": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Spider Ball": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Power Suit": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Gravity Suit": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Varia Suit": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Phazon Suit": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Energy Tank": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 99
                         },
                         "Unknown Item 1": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 65536
                         },
                         "Health Refill": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 999
                         },
                         "Unknown Item 2": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Wavebuster": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Artifact Of Truth": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Artifact Of Strength": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Artifact Of Elder": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Artifact Of Wild": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Artifact Of Lifegiver": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Artifact Of Warrior": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Artifact Of Chozo": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Artifact Of Nature": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Artifact Of Sun": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Artifact Of World": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Artifact Of Spirit": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         },
                         "Artifact Of Newborn": {
                             "type": "integer",
                             "minimum": 0,
+                            "maximum": 4294967295,
                             "default": 1
                         }
                     },
@@ -778,7 +820,9 @@
                     "description": "Set the seed of the maze in Central Dynamo. Note that this exposes mazes not normally accessible in vanilla. Most mazes are bad, so be sure to test in-game.",
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 4294967295
                     }
                 },
                 "hallOfTheEldersBombSlotCovers": {
@@ -1287,7 +1331,8 @@
                 },
                 "iceBreakJumpCount": {
                     "type": "integer",
-                    "exclusiveMinimum": 0
+                    "minimum": 0,
+                    "maximum": 4294967295
                 },
                 "groundFriction": {
                     "type": "number",
@@ -1295,7 +1340,8 @@
                 },
                 "coyoteFrames": {
                     "type": "integer",
-                    "minimum": 0
+                    "minimum": 0,
+                    "maximum": 4294967295
                 },
                 "moveDuringFreeLook": {
                     "type": "boolean"
@@ -1502,16 +1548,19 @@
                 "missiles": {
                     "type": "integer",
                     "minimum": 0,
+                    "maximum": 4294967295,
                     "default": 0
                 },
                 "energyTanks": {
                     "type": "integer",
                     "minimum": 0,
+                    "maximum": 4294967295,
                     "default": 0
                 },
                 "powerBombs": {
                     "type": "integer",
                     "minimum": 0,
+                    "maximum": 4294967295,
                     "default": 0
                 },
                 "wave": {
@@ -1718,7 +1767,9 @@
                                     },
                                     "dockNum": {
                                         "description": "The dock number in the destination room which to connect to.",
-                                        "type": "integer"
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 5
                                     }
                                 },
                                 "required": [
@@ -1801,12 +1852,14 @@
                             "maxIncrease": {
                                 "description": "The amount which the player's inventory capacity for this item increases when the pickup is obtained. Defaults to `1`, except for `Missile`, which defaults to `5`.",
                                 "type": "integer",
-                                "minimum": 0
+                                "minimum": 0,
+                                "maximum": 4294967295
                             },
                             "currIncrease": {
                                 "description": "The amount of missiles/energy that this pickup refills. Defaults to `maxIncrease`.",
                                 "type": "integer",
-                                "minimum": 0
+                                "minimum": 0,
+                                "maximum": 4294967295
                             },
                             "respawn": {
                                 "description": "If true, this pickup will respawn every time the room is reloaded.",
@@ -1868,7 +1921,7 @@
                                 "$ref": "#/$defs/vector3"
                             },
                             "modalHudmemo": {
-                                "description": "If true, show a pop-up dialog with `hudmemoText` for 3 seconds which must be dismissed with the A Button.",
+                                "description": "If true, show a pop-up dialog to display the `hudmemoText` for 3 seconds before it can be dismissed with the A Button.",
                                 "type": "boolean",
                                 "default": false
                             },
@@ -1882,14 +1935,7 @@
                                 "$ref": "#/$defs/transportDestinations"
                             },
                             "showIcon": {
-                                "type": "boolean",
-                                "default": true
-                            },
-                            "invisibleAndSilent": {
-                                "type": "boolean",
-                                "default": false
-                            },
-                            "thermalOnly": {
+                                "description": "If true, marks the pickup location with a white dot on the map",
                                 "type": "boolean",
                                 "default": false
                             }
@@ -1905,63 +1951,113 @@
                     "default": []
                 },
                 "superheated": {
-                    "type": "boolean"
+                    "description": "If true, makes the room superheated while the player does not have Varia",
+                    "type": "boolean",
+                    "default": false
                 },
                 "removeWater": {
-                    "type": "boolean"
+                    "description": "If true, removes all water/lava in the room, excluding volumes added by `liquids` and `submerge`.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "submerge": {
-                    "type": "boolean"
-                },
-                "mapDefaultState": {
-                    "type": "string"
+                    "description": "If true, adds a water box the size of the room's bounding box, thus fully submerging the room in water.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "liquids": {
+                    "description": "Add liquid volumes to this room.",
                     "type": "array",
                     "items": {
                         "type": "object",
                         "properties": {
                             "type": {
-                                "type": "string"
+                                "description": "Define what kind of liquid. Note that Phazon water is unused in the base game and acts similarly to Phazon pools.",
+                                "type": "string",
+                                "enum": [
+                                    "Water",
+                                    "Poison",
+                                    "Lava",
+                                    "Phazon"
+                                ]
                             },
                             "position": {
+                                "description": "Point at which the liquid is centerd.",
                                 "$ref": "#/$defs/vector3"
                             },
                             "scale": {
-                                "$ref": "#/$defs/vector3"
+                                "description": "The extent of the liquid volume.",
+                                "$ref": "#/$defs/vector3Positive"
                             }
                         },
+                        "required": [
+                            "type",
+                            "position",
+                            "scale"
+                        ],
                         "additionalProperties": false
                     }
                 },
+                "mapDefaultState": {
+                    "description": "Define this room's behavior regarding when/how it is displayed on the map.",
+                    "type": "string",
+                    "enum": [
+                        "Always",
+                        "MapStationOrVisit",
+                        "Visit",
+                        "Never",
+                        "MapStationOrVisit2"
+                    ],
+                    "default": "MapStationOrVisit"
+                },
                 "extraScans": {
+                    "description": "Add scan points to this room.",
                     "type": "array",
                     "items": {
                         "type": "object",
                         "properties": {
                             "position": {
+                                "description": "Position of the scan point.",
                                 "$ref": "#/$defs/vector3"
                             },
-                            "combatVisible": {
-                                "type": "boolean"
-                            },
                             "text": {
+                                "description": "Text to display when scanned.",
                                 "type": "string"
                             },
+                            "combatVisible": {
+                                "description": "If true, places a \"Elevator Scan\" actor over the scan point so it visible in all visors.",
+                                "type": "boolean",
+                                "default": false
+                            },
                             "rotation": {
+                                "description": "Rotation of the scan point. This is only needed if `combatVisible: true`.",
                                 "type": "number",
                                 "minimum": 0,
-                                "maximum": 360
+                                "exclusiveMaximum": 360,
+                                "default": 0
                             },
                             "isRed": {
-                                "type": "boolean"
+                                "description": "If true, this scan point is *important* and will be displayed with the red scan icon instead of the normal yellow.",
+                                "type": "boolean",
+                                "default": false
                             },
                             "logbookTitle": {
+                                "description": "Title to display in the logbook for this research entry.",
                                 "type": "string"
                             },
                             "logbookCategory": {
-                                "type": "integer"
+                                "description": "Which logbook category to file this research entry under.",
+                                "type": "integer",
+                                "minimum": 0
                             }
+                        },
+                        "dependencies": {
+                            "logbookTitle": [
+                                "logbookCategory"
+                            ],
+                            "logbookCategory": [
+                                "logbookTitle"
+                            ]
                         },
                         "required": [
                             "position",
@@ -1971,27 +2067,50 @@
                     }
                 },
                 "spawnPositionOverride": {
+                    "description": "Moves the default spawn of this room to the provided position. This is used when starting a new game, and when taking an elevator to this room.",
                     "$ref": "#/$defs/vector3"
                 },
                 "boundingBoxOffset": {
-                    "$ref": "#/$defs/vector3"
+                    "description": "Offset the bounding box used for physics calculations in any direction. This effectly moves aether walls and ceilings.",
+                    "$ref": "#/$defs/vector3",
+                    "default": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
                 },
                 "boundingBoxScale": {
-                    "$ref": "#/$defs/vector3"
+                    "description": "Scale the bounding box extent to be larger/smaller in any direction.",
+                    "$ref": "#/$defs/vector3Positive",
+                    "default": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
                 },
                 "platforms": {
+                    "description": "Add platforms to this room.",
                     "type": "array",
                     "items": {
                         "type": "object",
                         "properties": {
                             "position": {
+                                "description": "The position of the platform.",
                                 "$ref": "#/$defs/vector3"
                             },
                             "rotation": {
-                                "$ref": "#/$defs/vector3"
+                                "description": "The rotation of the platform.",
+                                "$ref": "#/$defs/vector3",
+                                "default": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
                             },
                             "altPlatform": {
-                                "type": "boolean"
+                                "description": "`false` - The platform is made out of metal.\n`true` - The platform is made out of snow with rounded edges.",
+                                "type": "boolean",
+                                "default": false
                             }
                         },
                         "required": [
@@ -2000,47 +2119,118 @@
                         "additionalProperties": false
                     }
                 },
-                "cameraHints": {},
+                "cameraHints": {
+                    "description": "Add camera hint + camera hint trigger pairs to this room. They are somewhat broken.",
+                    "type": "object",
+                    "properties": {
+                        "triggerPos": {
+                            "description": "Position of the trigger.",
+                            "$ref": "#/$defs/vector3"
+                        },
+                        "triggerScale": {
+                            "description": "Extent of the trigger.",
+                            "$ref": "#/$defs/vector3Positive"
+                        },
+                        "cameraPos": {
+                            "description": "Position of the Camera Hint.",
+                            "$ref": "#/$defs/vector3"
+                        },
+                        "cameraRot": {
+                            "description": "Facing angle of the Camera Hint.",
+                            "$ref": "#/$defs/vector3"
+                        },
+                        "behavior": {
+                            "description": "- `0`: `Default`\n- `1`: `FreezeLookPosition`\n- `2`: `HintBallToCam`\n- `3`: `HintInitializePosition`\n- `4`: `HintFixedPosition`\n- `5`: `HintFixedTransform`\n- `6`: `PathCameraDesiredPos`\n- `7`: `PathCamera`\n- `8`: `SpindleCamer`\n",
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 8
+                        }
+                    },
+                    "required": [
+                        "triggerPos",
+                        "triggerScale",
+                        "cameraPos",
+                        "cameraRot",
+                        "behavior"
+                    ],
+                    "additionalProperties": false
+                },
                 "blocks": {
+                    "description": "Add blocks to this room. They are specifically the sandstone blocks found in Ruined nursery as they are the closest thing to a 1x1x1 perfect square as I could find.",
                     "type": "array",
                     "items": {
                         "type": "object",
                         "properties": {
                             "position": {
+                                "description": "Position of the block",
                                 "$ref": "#/$defs/vector3"
                             },
                             "scale": {
-                                "$ref": "#/$defs/vector3"
+                                "description": "Extent of the block. While it is close, it should be noted this is not exactly 1:1 with game units.",
+                                "$ref": "#/$defs/vector3Positive"
                             },
                             "texture": {
+                                "description": "Texture to use across the block's surface.",
                                 "type": "string",
                                 "enum": [
-                                    "grass",
-                                    "crater",
-                                    "mine",
-                                    "snow",
-                                    "sandstone"
-                                ]
+                                    "Grass",
+                                    "Crater",
+                                    "Mine",
+                                    "Snow",
+                                    "Sandstone"
+                                ],
+                                "default": "Grass"
                             }
                         },
                         "required": [
                             "position",
-                            "scale",
-                            "texture"
+                            "scale"
                         ],
                         "additionalProperties": false
                     }
                 },
                 "lockOnPoints": {
+                    "description": "Add lock-on/grapple points to this room.",
                     "type": "array",
                     "items": {
                         "type": "object",
                         "properties": {
                             "position": {
+                                "description": "Position of the point",
                                 "$ref": "#/$defs/vector3"
                             },
                             "isGrapple": {
-                                "type": "boolean"
+                                "description": "If true, adds grapple functionality to this point.",
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "noLock": {
+                                "description": "If true, removes the ability to lock on, making this just a point.",
+                                "type": "boolean",
+                                "default": false,
+                                "deprecated": true
+                            },
+                            "id1": {
+                                "description": "Instance ID of the actor object. Defaults to next unused ID.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295
+                            },
+                            "id2": {
+                                "description": "Instance ID of the lock-on target. Defaults to next unused ID.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295
+                            },
+                            "active1": {
+                                "description": "Set to false to disable the actor by default.",
+                                "type": "bool",
+                                "default": true
+                            },
+                            "active2": {
+                                "description": "Set to false to disable the lock-on target by default.",
+                                "type": "bool",
+                                "default": true
                             }
                         },
                         "required": [
@@ -2050,16 +2240,22 @@
                     }
                 },
                 "fog": {
+                    "description": "Edit the ambient fog settings for this room.",
                     "type": "object",
                     "properties": {
                         "mode": {
-                            "type": "integer"
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 15,
+                            "default": 1,
+                            "deprecated": true
                         },
                         "explicit": {
                             "type": "boolean",
                             "default": true
                         },
                         "color": {
+                            "description": "RGBA fog color for this room.",
                             "type": "array",
                             "items": {
                                 "type": "number",
@@ -2067,115 +2263,693 @@
                                 "maximum": 1.0
                             },
                             "minItems": 4,
-                            "maxItems": 4
+                            "maxItems": 4,
+                            "default": [
+                                0.8,
+                                0.8,
+                                0.9,
+                                0.0
+                            ]
                         },
                         "range": {
+                            "description": "X and Y axis ranges for the fog of this room.",
                             "type": "array",
                             "items": {
                                 "type": "number",
-                                "minimum": 0.01
+                                "exclusiveMinimum": 0.0
                             },
                             "minItems": 2,
-                            "maxItems": 2
+                            "maxItems": 2,
+                            "default": [
+                                30.0,
+                                40.0
+                            ]
                         },
                         "colorDelta": {
                             "type": "number",
-                            "minimum": 0.0
+                            "default": 0.0
                         },
                         "rangeDelta": {
                             "type": "array",
                             "items": {
-                                "type": "number",
-                                "minimum": 0.01
+                                "type": "number"
                             },
                             "minItems": 2,
-                            "maxItems": 2
-                        },
-                        "keepOriginal": {
-                            "type": "boolean",
-                            "default": false
+                            "maxItems": 2,
+                            "default": [
+                                0.0,
+                                0.0
+                            ]
                         }
                     },
-                    "required": [
-                        "mode",
-                        "explicit",
-                        "color",
-                        "range"
-                    ],
+                    "required": [],
                     "additionalProperties": false
                 },
                 "ambientLightingScale": {
+                    "description": "Scale the ambient brightness of this room up or down. This mostly affects areas of the room which have no nearby light sources.",
                     "type": "number",
-                    "minimum": 0.0
+                    "exclusiveMinimum": 0.0,
+                    "default": 1.0
                 },
-                "environmentalEffect": {},
-                "initialEnvironmentalEffect": {
-                    "type": "number",
-                    "minimum": 0.0
-                },
-                "initialThermalHeatLevel": {
-                    "type": "number",
-                    "minimum": 0.0
-                },
-                "xrayFogDistance": {
-                    "type": "number",
-                    "minimum": 0.0
-                },
-                "escapeSequences": {},
-                "repositions": {},
-                "hudmemos": {},
-                "enabledLayers": {},
-                "disabledLayers": {},
-                "deleteIds": {
+                "escapeSequences": {
+                    "description": "Adds a pair of triggers to start/stop an escape sequence timer. Note that the escape sequence timers can be modified to count up in `gameConfig`.",
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "type": "object",
+                        "properties": {
+                            "time": {
+                                "description": "Time in seconds with which to initialize the escape sequence counter with.",
+                                "minimum": 0.02,
+                                "default": 0.02
+                            },
+                            "startTriggerPos": {
+                                "description": "Position to place the start trigger.",
+                                "$ref": "#/$defs/vector3"
+                            },
+                            "startTriggerScale": {
+                                "description": "Extent of the start trigger.",
+                                "$ref": "#/$defs/vector3Positive"
+                            },
+                            "stopTriggerPos": {
+                                "description": "Position to place the stop trigger. If you don't want a stop trigger, just place this at Z -1000.",
+                                "$ref": "#/$defs/vector3"
+                            },
+                            "stopTriggerScale": {
+                                "description": "Extent of the stop trigger.",
+                                "$ref": "#/$defs/vector3Positive"
+                            }
+                        },
+                        "required": [
+                            "startTriggerPos",
+                            "startTriggerScale",
+                            "stopTriggerPos",
+                            "stopTriggerScale"
+                        ],
+                        "additionalProperties": false
+                    }
+                },
+                "repositions": {
+                    "description": "Add triggers to this room which teleport the player to a specific location when entered.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "triggerPosition": {
+                                "description": "Position of the reposition trigger.",
+                                "$ref": "#/$defs/vector3"
+                            },
+                            "triggerScale": {
+                                "description": "Extent of the reposition trigger.",
+                                "$ref": "#/$defs/vector3Positive"
+                            },
+                            "destinationPosition": {
+                                "description": "Position to send the player to when the trigger is entered.",
+                                "$ref": "#/$defs/vector3"
+                            },
+                            "destinationRotation": {
+                                "description": "Facing angle of the player when they are repositioned.",
+                                "type": "number",
+                                "minimum": 0,
+                                "exclusiveMaximum": 360
+                            }
+                        },
+                        "required": [
+                            "triggerPosition",
+                            "triggerScale",
+                            "destinationPosition",
+                            "destinationRotation"
+                        ],
+                        "additionalProperties": false
+                    }
+                },
+                "hudmemos": {
+                    "description": "Add Trigger + Hudmemo pairs to this room.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "triggerPosition": {
+                                "description": "Position of the trigger which triggers the display of the hudmemo.",
+                                "$ref": "#/$defs/vector3"
+                            },
+                            "triggerScale": {
+                                "description": "The extent of the trigger.",
+                                "$ref": "#/$defs/vector3"
+                            },
+                            "text": {
+                                "description": "The text to display.",
+                                "type": "string"
+                            },
+                            "disableOnEnter": {
+                                "description": "If true, only display the text once until the room is reloaded.",
+                                "type": "boolean",
+                                "default": true
+                            }
+                        },
+                        "required": [
+                            "triggerPosition",
+                            "triggerScale",
+                            "text"
+                        ],
+                        "additionalProperties": false
+                    }
+                },
+                "deleteIds": {
+                    "description": "List of Instance IDs (in decimal form) to remove from this room.",
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 4294967295
                     }
                 },
                 "audioOverride": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "description": "This layout is important otherwise the left and right ear will play different audio tracks. Format Example: '91': '/audio/crash-ship-maeL.dsp|/audio/crash-ship-maeR.dsp'",
-                        "type": "string"
+                    "description": "Replace audio file(s) specified by existing StreamedAudio objects in this room.",
+                    "patternProperties": {
+                        "^[0-9]+$": {
+                            "description": "The filename(s) of the new audio file. Example: `/audio/min_phazonL.dsp|/audio/min_phazonR.dsp`.",
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "addConnections": {
+                    "description": "Add additional connections between objects in this room.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/connectionConfig"
                     }
                 },
-                "addConnections": {},
-                "removeConnections": {},
-                "relays": {},
-                "cutsceneSkipFns": {},
-                "timers": {},
-                "actorKeyframes": {},
-                "spawnPoints": {
+                "removeConnections": {
+                    "description": "Remove connections between objects in this room.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/connectionConfig"
+                    }
+                },
+                "relays": {
+                    "description": "Add relays to this room.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "The Instance ID to use for the relay.",
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            "active": {
+                                "description": "Default active state of the relay.",
+                                "type": "boolean",
+                                "default": true
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                },
+                "cutsceneSkipFns": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    },
+                    "deprecated": true
+                },
+                "timers": {
+                    "description": "Add timers to this room.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "The Instance ID to use for the timer.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295
+                            },
+                            "active": {
+                                "description": "Default active state of the timer.",
+                                "type": "boolean",
+                                "default": true
+                            },
+                            "time": {
+                                "description": "Start time in seconds.",
+                                "type": "number",
+                                "minimum": 0.0
+                            },
+                            "maxRandomAdd": {
+                                "description": "Used apply random offset to the timer each time it resets.",
+                                "type": "number",
+                                "minimum": 0.0
+                            },
+                            "looping": {
+                                "description": "If true, this timer restarts itself every time it expires.",
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "startImmediately": {
+                                "description": "If true, this timer starts the frame the room finishes loading.",
+                                "type": "boolean",
+                                "default": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "time"
+                        ],
+                        "additionalProperties": false
+                    }
+                },
+                "actorKeyframes": {
+                    "description": "",
                     "type": "array",
                     "items": {
                         "type": "object",
                         "properties": {
                             "id": {
                                 "type": "integer",
-                                "minimum": 0
+                                "minimum": 0,
+                                "maximum": 4294967295
                             },
                             "active": {
+                                "type": "boolean",
+                                "default": true
+                            },
+                            "animationId": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295
+                            },
+                            "looping": {
                                 "type": "boolean"
                             },
+                            "lifetime": {
+                                "type": "number"
+                            },
+                            "fadeOut": {
+                                "type": "number"
+                            },
+                            "totalPlayback": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "animationId",
+                            "looping",
+                            "lifetime",
+                            "fadeOut",
+                            "totalPlayback"
+                        ],
+                        "additionalProperties": false
+                    }
+                },
+                "spawnPoints": {
+                    "description": "Add spawn points to this room.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "The Instance ID to use for the spawn point.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295
+                            },
+                            "active": {
+                                "description": "Default active state of the spawn point.",
+                                "type": "boolean",
+                                "default": true
+                            },
                             "position": {
+                                "description": "Position which the player should spawn.",
                                 "$ref": "#/$defs/vector3"
+                            },
+                            "rotation": {
+                                "description": "Orientation which the player should spawn. It appears that only the Z value matters (0-360).",
+                                "$ref": "#/$defs/vector3",
+                                "default": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            },
+                            "defaultSpawn": {
+                                "description": "Sets whether this spawn point is to be used as the default for this room. Default spawn points are used when starting a new game and using teleporters.",
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "morphed": {
+                                "description": "If true, the player will spawn morphed when repositioned to this spawn point.",
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "items": {
+                                "description": "Inventory which the player will start with if:\nA - The player starts a new game in this room and this spawn point is the only default spawn point.\nB - This spawn point receives a `RESET` message from another object.",
+                                "$ref": "#/$defs/inventory"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "position"
+                        ],
+                        "additionalProperties": false
+                    }
+                },
+                "triggers": {
+                    "description": "Add triggers to this room.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "Instance ID to use for the trigger. If unspecified, uses the next ID available.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295
+                            },
+                            "active": {
+                                "description": "Default activate state of the trigger",
+                                "type": "boolean",
+                                "default": true
+                            },
+                            "position": {
+                                "description": "Position of the trigger.",
+                                "$ref": "#/$defs/vector3"
+                            },
+                            "scale": {
+                                "description": "Extent of the trigger.",
+                                "$ref": "#/$defs/vector3Positive"
+                            },
+                            "force": {
+                                "description": "If the apply force flag is enabled, this is the force applied.",
+                                "$ref": "#/$defs/vector3",
+                                "default": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            },
+                            "damageType": {
+                                "description": "If the `damageAmount` is non-zero this is the type of damage which is applied.",
+                                "$ref": "#/$defs/damageType",
+                                "default": "Power"
+                            },
+                            "damageAmount": {
+                                "description": "Damage per second to apply.",
+                                "type": "number",
+                                "default": 0.0
+                            },
+                            "flags": {
+                                "description": "Defines various attributes of the trigger. Use PWE on any existing trigger to calculate this as a number.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 262143,
+                                "default": 1
+                            },
+                            "deactivateOnEnter": {
+                                "description": "Disable this trigger when entered.",
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "deactivateOnExit": {
+                                "description": "Disable this trigger when exited.",
+                                "type": "boolean",
+                                "default": false
+                            }
+                        },
+                        "required": [
+                            "position",
+                            "scale"
+                        ],
+                        "additionalProperties": false
+                    }
+                },
+                "specialFunctions": {
+                    "description": "Add special functions to this room. These do vastly different things based on the `type`.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295
+                            },
+                            "position": {
+                                "$ref": "#/$defs/vector3",
+                                "default": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            },
+                            "rotation": {
+                                "$ref": "#/$defs/vector3",
+                                "default": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "What",
+                                    "PlayerFollowLocator",
+                                    "SpinnerController",
+                                    "ObjectFollowLocator",
+                                    "ChaffTarget",
+                                    "InventoryActivator",
+                                    "MapStation",
+                                    "SaveStation",
+                                    "IntroBossRingController",
+                                    "ViewFrustumTest",
+                                    "ShotSpinnerController",
+                                    "EscapeSequence",
+                                    "BossEnergyBar",
+                                    "EndGame",
+                                    "HUDFadeIn",
+                                    "CinematicSkip",
+                                    "ScriptLayerController",
+                                    "RainSimulator",
+                                    "AreaDamage",
+                                    "ObjectFollowObject",
+                                    "HintSystem",
+                                    "DropBomb",
+                                    "ScaleActor",
+                                    "MissileStation",
+                                    "Billboard",
+                                    "PlayerInAreaRelay",
+                                    "HUDTarget",
+                                    "FogFader",
+                                    "EnterLogbook",
+                                    "PowerBombStation",
+                                    "Ending",
+                                    "FusionRelay",
+                                    "WeaponSwitch"
+                                ]
+                            },
+                            "unknown1": {
+                                "type": "string",
+                                "default": ""
+                            },
+                            "unknown2": {
+                                "type": "number",
+                                "default": 0.0
+                            },
+                            "unknown3": {
+                                "type": "number",
+                                "default": 0.0
+                            },
+                            "unknown4": {
+                                "type": "number",
+                                "default": 0.0
+                            },
+                            "layerChangeRoomId": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295,
+                                "default": 0
+                            },
+                            "layerChangeLayerId": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 63,
+                                "default": 0
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "enum": [
+                                    "PowerBeam",
+                                    "IceBeam",
+                                    "WaveBeam",
+                                    "PlasmaBeam",
+                                    "Missile",
+                                    "ScanVisor",
+                                    "MorphBallBomb",
+                                    "PowerBomb",
+                                    "Flamethrower",
+                                    "ThermalVisor",
+                                    "ChargeBeam",
+                                    "SuperMissile",
+                                    "GrappleBeam",
+                                    "XRayVisor",
+                                    "IceSpreader",
+                                    "SpaceJumpBoots",
+                                    "MorphBall",
+                                    "CombatVisor",
+                                    "BoostBall",
+                                    "SpiderBall",
+                                    "PowerSuit",
+                                    "GravitySuit",
+                                    "VariaSuit",
+                                    "PhazonSuit",
+                                    "EnergyTank",
+                                    "UnknownItem1",
+                                    "HealthRefill",
+                                    "UnknownItem2",
+                                    "Wavebuster",
+                                    "ArtifactOfTruth",
+                                    "ArtifactOfStrength",
+                                    "ArtifactOfElder",
+                                    "ArtifactOfWild",
+                                    "ArtifactOfLifegiver",
+                                    "ArtifactOfWarrior",
+                                    "ArtifactOfChozo",
+                                    "ArtifactOfNature",
+                                    "ArtifactOfSun",
+                                    "ArtifactOfWorld",
+                                    "ArtifactOfSpirit",
+                                    "ArtifactOfNewborn"
+                                ],
+                                "default": "PowerBeam"
+                            },
+                            "active": {
+                                "type": "boolean",
+                                "default": true
+                            },
+                            "unknown6": {
+                                "type": "number",
+                                "default": 0.0
+                            },
+                            "spinner1": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295,
+                                "default": 4294967295
+                            },
+                            "spinner2": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295,
+                                "default": 4294967295
+                            },
+                            "spinner3": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295,
+                                "default": 4294967295
+                            }
+                        },
+                        "required": [
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    }
+                },
+                "streamedAudios": {
+                    "description": "Add streamed audio objects to this room. Useful for playing music or musical stings.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295
+                            },
+                            "active": {
+                                "type": "boolean",
+                                "default": true
+                            },
+                            "audioFileName": {
+                                "type": "string"
+                            },
+                            "noStopOnDeactivate": {
+                                "type": "boolean",
+                                "default": true
+                            },
+                            "fadeInTime": {
+                                "type": "number",
+                                "default": 0.1
+                            },
+                            "fadeOutTime": {
+                                "type": "number",
+                                "default": 1.5
+                            },
+                            "volume": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 100,
+                                "default": 100
+                            },
+                            "oneshot": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295,
+                                "default": 0
+                            },
+                            "isMusic": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "audioFileName",
+                            "isMusic"
+                        ],
+                        "additionalProperties": false
+                    }
+                },
+                "actorRotates": {
+                    "description": "",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295
                             },
                             "rotation": {
                                 "$ref": "#/$defs/vector3"
                             },
-                            "defaultSpawn": {
+                            "timeScale": {
+                                "type": "number"
+                            },
+                            "updateActors": {
                                 "type": "boolean"
                             },
-                            "morphed": {
+                            "updateOnCreation": {
                                 "type": "boolean"
                             },
-                            "items": {
-                                "$ref": "#/$defs/inventory"
+                            "updateActive": {
+                                "type": "boolean"
                             }
-                        }
+                        },
+                        "required": [
+                            "rotation",
+                            "timeScale",
+                            "updateActors",
+                            "updateOnCreation",
+                            "updateActive"
+                        ],
+                        "additionalProperties": false
                     }
-                },
-                "triggers": {}
+                }
             },
             "default": {},
             "additionalProperties": false
@@ -2907,6 +3681,150 @@
             },
             "minItems": 3,
             "maxItems": 3
+        },
+        "vector3Positive": {
+            "type": "array",
+            "items": {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+            },
+            "minItems": 3,
+            "maxItems": 3
+        },
+        "connectionConfig": {
+            "type": "object",
+            "properties": {
+                "senderId": {
+                    "description": "Instance ID of the object which contains the connection.",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "targetId": {
+                    "description": "Instance ID of the object which the message is to be sent to.",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "state": {
+                    "description": "Object state which to send the message when reached.",
+                    "type": "string",
+                    "enum": [
+                        "ANY",
+                        "ACTIVE",
+                        "ARRIVED",
+                        "CLOSED",
+                        "ENTERED",
+                        "EXITED",
+                        "INACTIVE",
+                        "INSIDE",
+                        "MAX_REACHED",
+                        "OPEN",
+                        "ZERO",
+                        "ATTACK",
+                        "RETREAT",
+                        "PATROL",
+                        "DEAD",
+                        "CAMERA_PATH",
+                        "CAMERA_TARGET",
+                        "DEACTIVATE_STATE",
+                        "PLAY",
+                        "MASSIVE_DEATH",
+                        "DEATH_RATTLE",
+                        "ABOUT_TO_MASSIVELY_DIE",
+                        "DAMAGE",
+                        "INVULN_DAMAGE",
+                        "MASSIVE_FROZEN_DEATH",
+                        "MODIFY",
+                        "SCAN_START",
+                        "SCAN_PROCESSING",
+                        "SCAN_DONE",
+                        "UNFROZEN",
+                        "DEFAULT",
+                        "REFLECTED_DAMAGE",
+                        "INHERIT_BOUNDS"
+                    ]
+                },
+                "message": {
+                    "description": "Message which is sent.",
+                    "type": "string",
+                    "enum": [
+                        "NONE",
+                        "UNKM0",
+                        "ACTIVATE",
+                        "ARRIVED",
+                        "CLOSE",
+                        "DEACTIVATE",
+                        "DECREMENT",
+                        "FOLLOW",
+                        "INCREMENT",
+                        "NEXT",
+                        "OPEN",
+                        "RESET",
+                        "RESET_AND_START",
+                        "SET_TO_MAX",
+                        "SET_TO_ZERO",
+                        "START",
+                        "STOP",
+                        "STOP_AND_RESET",
+                        "TOGGLE_ACTIVE",
+                        "UNKM18",
+                        "ACTION",
+                        "PLAY",
+                        "ALERT",
+                        "INTERNAL_MESSAGE00",
+                        "ON_FLOOR",
+                        "INTERNAL_MESSAGE02",
+                        "INTERNAL_MESSAGE03",
+                        "FALLING",
+                        "ON_ICE_SURFACE",
+                        "ON_MUD_SLOW_SURFACE",
+                        "ON_NORMAL_SURFACE",
+                        "TOUCHED",
+                        "ADD_PLATFORM_RIDER",
+                        "LAND_ON_NOT_FLOOR",
+                        "REGISTERED",
+                        "DELETED",
+                        "INITIALIZED_IN_AREA",
+                        "WORLD_INITIALIZED",
+                        "ADD_SPLASH_INHABITANT",
+                        "UPDATE_SPLASH_INHABITANT",
+                        "REMOVE_SPLASH_INHABITANT",
+                        "JUMPED",
+                        "DAMAGE",
+                        "INVULN_DAMAGE",
+                        "PROJECTILE_COLLIDE",
+                        "IN_SNAKE_WEED",
+                        "ADD_PHAZON_POOOL_INHABITANT",
+                        "UPDATE_PHAZON_POOL_INHABITANT",
+                        "REMOVE_PHAZON_POOL_INHABITANT",
+                        "SUSPENDED_MOVE"
+                    ]
+                }
+            },
+            "required": [
+                "senderId",
+                "targetId",
+                "state",
+                "message"
+            ],
+            "additionalProperties": false
+        },
+        "damageType": {
+            "type": "string",
+            "enum": [
+                "Power",
+                "Ice",
+                "Wave",
+                "Plasma",
+                "Bomb",
+                "PowerBomb",
+                "Missile",
+                "BoostBall",
+                "Phazon",
+                "Ai",
+                "PoisonWater",
+                "Lava",
+                "Hot"
+            ]
         }
     }
 }
