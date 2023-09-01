@@ -6062,12 +6062,15 @@ fn patch_edit_fog<'r>(
         }
         let distance_fog = distance_fog.unwrap();
 
-        distance_fog.mode = fog.mode;
-        distance_fog.color = [fog.color[0], fog.color[1], fog.color[2], fog.color[3]].into();
-        distance_fog.range = [fog.range[0], fog.range[1]].into();
+        distance_fog.mode = fog.mode.unwrap_or(1);
+
+        let color = fog.color.unwrap_or([0.8, 0.8, 0.9, 0.0]);
+        distance_fog.color = color.into();
+        let range = fog.range.unwrap_or([30.0, 40.0]);
+        distance_fog.range = range.into();
         distance_fog.color_delta = fog.color_delta.unwrap_or(0.0);
         distance_fog.range_delta = range_delta.into();
-        distance_fog.explicit = fog.explicit as u8;
+        distance_fog.explicit = fog.explicit.unwrap_or(true) as u8;
         distance_fog.active = 1;
     }
 
@@ -6238,7 +6241,7 @@ fn patch_visible_aether_boundaries<'r>(
 fn patch_add_escape_sequence<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
-    // mut time_s: f32,
+    time: f32,
     start_trigger_pos: [f32;3],
     start_trigger_scale: [f32;3],
     stop_trigger_pos: [f32;3],
@@ -6264,7 +6267,7 @@ fn patch_add_escape_sequence<'r>(
                     rotation: [0.0, 0.0, 0.0].into(),
                     type_: 11, // escape sequence
                     unknown0: b"\0".as_cstr(),
-                    unknown1: 1.0/60.0,
+                    unknown1: time,
                     unknown2: 0.0,
                     unknown3: 0.0,
                     layer_change_room_id: 0,
@@ -16303,7 +16306,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                     move |ps, area| patch_add_escape_sequence(
                                         ps,
                                         area,
-                                        // es.time_s,
+                                        es.time.unwrap_or(0.02),
                                         es.start_trigger_pos,
                                         es.start_trigger_scale,
                                         es.stop_trigger_pos,

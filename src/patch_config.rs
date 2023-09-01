@@ -275,7 +275,7 @@ pub struct BlockConfig
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct EscapeSequenceConfig
 {
-    // pub time_s: f32,
+    pub time: Option<f32>,
     pub start_trigger_pos: [f32;3],
     pub start_trigger_scale: [f32;3],
     pub stop_trigger_pos: [f32;3],
@@ -466,13 +466,12 @@ pub struct StreamedAudioConfig
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct FogConfig
 {
-    pub mode: u32,
-    pub explicit: bool,
-    pub color: [f32;4], // RGBA
-    pub range: [f32;2], // X, Y
+    pub mode: Option<u32>,
+    pub explicit: Option<bool>,
+    pub color: Option<[f32;4]>, // RGBA
+    pub range: Option<[f32;2]>, // X, Y
     pub color_delta: Option<f32>,
     pub range_delta: Option<[f32;2]>,
-    pub keep_original: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
