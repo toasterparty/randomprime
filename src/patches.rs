@@ -43,6 +43,7 @@ use crate::patch_config::{
     LockOnPoint,
     DoorOpenMode,
     SpecialFunctionConfig,
+    SpecialFunctionType,
     ActorRotateConfig,
     StreamedAudioConfig,
 };
@@ -5257,9 +5258,106 @@ fn patch_sunchamber_cutscene_hack<'r>(
 
         let flaahgra_copy = layer.objects.as_mut_vec()[flaahgra_index].clone();
 
-        for (id, _health) in vec![(0x00500000, 1500.0), (0x00500001, 1000.0), (0x00500002, 5000.0)] {
+        let ids = vec![
+            (0x00500000, 0x00600000, 0x00700000),
+            (0x00500001, 0x00600001, 0x00700001),
+            (0x00500002, 0x00600002, 0x00700002)
+        ];
+
+        for (flaahgra_id, drops_sf_id, sound_sf_id) in ids {
+            /* Copy Flaahgra */
             let mut new_flaahgra: structs::SclyObject = flaahgra_copy.clone();
-            new_flaahgra.instance_id = id;
+            new_flaahgra.instance_id = flaahgra_id;
+
+            /* Add object follow SF for drops */
+            layer.objects.as_mut_vec().push(
+                structs::SclyObject {
+                    instance_id: drops_sf_id,
+                    property_data: structs::SpecialFunction {
+                        name: b"mysf\0".as_cstr(),
+                        position: [271.656, 54.095, 62.225].into(),
+                        rotation: [0.0, 0.0, 180.0].into(),
+                        type_: SpecialFunctionType::ObjectFollowLocator as u32,
+                        unknown0: b"Head_1\0".as_cstr(),
+                        unknown1: 0.0,
+                        unknown2: 0.0,
+                        unknown3: 0.0,
+                        layer_change_room_id: 0xFFFFFFFF,
+                        layer_change_layer_id: 0xFFFFFFFF,
+                        item_id: 0,
+                        unknown4: 0, // active
+                        unknown5: 0.0,
+                        unknown6: 0xFFFFFFFF,
+                        unknown7: 0xFFFFFFFF,
+                        unknown8: 0xFFFFFFFF,
+                    }.into(),
+                    connections: vec![
+                        structs::Connection {
+                            state: structs::ConnectionState::PLAY,
+                            message: structs::ConnectionMsg::ACTIVATE,
+                            target_object_id: flaahgra_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::PLAY,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: 0x00252ACC, // waypoint
+                        },
+                    ].into(),
+                },
+            );
+
+            /* Add object follow SF for sound */
+            layer.objects.as_mut_vec().push(
+                structs::SclyObject {
+                    instance_id: sound_sf_id,
+                    property_data: structs::SpecialFunction {
+                        name: b"mysf\0".as_cstr(),
+                        position: [270.656, 54.095, 62.225].into(),
+                        rotation: [0.0, 0.0, 180.0].into(),
+                        type_: SpecialFunctionType::ObjectFollowLocator as u32,
+                        unknown0: b"Head_1\0".as_cstr(),
+                        unknown1: 0.0,
+                        unknown2: 0.0,
+                        unknown3: 0.0,
+                        layer_change_room_id: 0xFFFFFFFF,
+                        layer_change_layer_id: 0xFFFFFFFF,
+                        item_id: 0,
+                        unknown4: 0, // active
+                        unknown5: 0.0,
+                        unknown6: 0xFFFFFFFF,
+                        unknown7: 0xFFFFFFFF,
+                        unknown8: 0xFFFFFFFF,
+                    }.into(),
+                    connections: vec![
+                        structs::Connection {
+                            state: structs::ConnectionState::PLAY,
+                            message: structs::ConnectionMsg::ACTIVATE,
+                            target_object_id: flaahgra_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::PLAY,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: 0x00252FD3, // sound
+                        },
+                    ].into(),
+                },
+            );
+
+            /* Add connections to new flaahgra to enable the new object follow locators */
+            new_flaahgra.connections.as_mut_vec().extend_from_slice(&vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ACTIVE,
+                    message: structs::ConnectionMsg::ACTIVATE,
+                    target_object_id: drops_sf_id,
+                },
+                structs::Connection {
+                    state: structs::ConnectionState::ACTIVE,
+                    message: structs::ConnectionMsg::ACTIVATE,
+                    target_object_id: sound_sf_id,
+                },
+            ]);
+
+            /* Add new flaahgra to layer 1 */
             layer.objects.as_mut_vec().push(new_flaahgra);
         }
     }
