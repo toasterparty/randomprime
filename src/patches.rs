@@ -5226,7 +5226,7 @@ fn patch_sunchamber_cutscene_hack<'r>(
             let mut flaahgra_connections = vec![];
             for conn in obj.connections.as_mut_vec() {
 
-                if conn.message == structs::ConnectionMsg::ACTIVATE && vec![0x00250065, 0x0025309C].contains(&(obj.instance_id & 0x00FFFFFF)) {
+                if conn.message == structs::ConnectionMsg::ACTIVATE {
                     continue;
                 }
 
