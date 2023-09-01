@@ -14380,6 +14380,10 @@ fn patch_qol_logical(patcher: &mut PrimePatcher, config: &PatchConfig, version: 
             resource_info!("05_mines_forcefields.MREA").into(),
             patch_backwards_lower_mines_elite_control
         );
+        patcher.add_scly_patch(
+            resource_info!("07_mines_electric.MREA").into(),
+            move |ps, area| patch_remove_ids(ps, area, vec![0x001B065F])
+        );
     }
 }
 
