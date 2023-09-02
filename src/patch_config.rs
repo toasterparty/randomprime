@@ -32,7 +32,7 @@ use crate::elevators::World;
 /*** Parsed Config (fn patch_iso) ***/
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(deny_unknown_fields)]
 pub enum RunMode
 {
     CreateIso,
@@ -41,7 +41,7 @@ pub enum RunMode
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(deny_unknown_fields)]
 pub enum IsoFormat
 {
     Iso,
@@ -50,7 +50,7 @@ pub enum IsoFormat
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(deny_unknown_fields)]
 pub enum ArtifactHintBehavior
 {
     Default,
@@ -59,7 +59,7 @@ pub enum ArtifactHintBehavior
 }
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Copy, Clone)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(deny_unknown_fields)]
 pub enum CutsceneMode
 {
     Original,
@@ -71,7 +71,7 @@ pub enum CutsceneMode
 }
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Copy, Clone)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(deny_unknown_fields)]
 pub enum Visor
 {
     Combat,
@@ -81,7 +81,7 @@ pub enum Visor
 }
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Copy, Clone)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(deny_unknown_fields)]
 pub enum Beam
 {
     Power,
@@ -209,10 +209,15 @@ pub struct PlatformConfig
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub enum GenericTexture
 {
+    #[serde(alias="grass", alias="GRASS")]
     Grass,     // TXTR_BE288047
+    #[serde(alias="crater", alias="CRATER")]
     Crater,    // TXTR_8E899523
+    #[serde(alias="mine", alias="MINE")]
     Mine,      // TXTR_7D77CEE0
+    #[serde(alias="snow", alias="SNOW")]
     Snow,      // TXTR_2E6E5FC1
+    #[serde(alias="sandstone", alias="SANDSTONE")]
     Sandstone, // TXTR_AA452C33
 }
 
@@ -321,20 +326,33 @@ pub struct LockOnPoint
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(deny_unknown_fields)]
 pub enum DamageType {
+    #[serde(alias="power", alias="POWER")]
     Power,
+    #[serde(alias="ice", alias="ICE")]
     Ice,
+    #[serde(alias="wave", alias="WAVE")]
     Wave,
+    #[serde(alias="plasma", alias="PLASMA")]
     Plasma,
+    #[serde(alias="bomb", alias="BOMB")]
     Bomb,
+    #[serde(alias="powerbomb", alias="POWERBOMB")]
     PowerBomb,
+    #[serde(alias="missile", alias="MISSILE")]
     Missile,
+    #[serde(alias="boostball", alias="BOOSTBALL")]
     BoostBall,
+    #[serde(alias="phazon", alias="PHAZON")]
     Phazon,
+    #[serde(alias="ai", alias="AI")]
     Ai,
+    #[serde(alias="poisonwater", alias="POISONWATER")]
     PoisonWater,
+    #[serde(alias="lava", alias="LAVA")]
     Lava,
+    #[serde(alias="hot", alias="HOT")]
     Hot,
 }
 
@@ -355,41 +373,73 @@ pub struct TriggerConfig
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(deny_unknown_fields)]
 pub enum SpecialFunctionType {
     What = 0,
+    #[serde(alias="playerFollowLocator", alias="PLAYERFOLLOWLOCATOR")]
     PlayerFollowLocator,
+    #[serde(alias="spinnerController", alias="SPINNERCONTROLLER")]
     SpinnerController,
+    #[serde(alias="objectFollowLocator", alias="OBJECTFOLLOWLOCATOR")]
     ObjectFollowLocator,
+    #[serde(alias="chaffTarget", alias="CHAFFTARGET")]
     ChaffTarget,
+    #[serde(alias="inventoryActivator", alias="INVENTORYACTIVATOR")]
     InventoryActivator,
+    #[serde(alias="mapStation", alias="MAPSTATION")]
     MapStation,
+    #[serde(alias="saveStation", alias="SAVESTATION")]
     SaveStation,
+    #[serde(alias="introBossRingController", alias="INTROBOSSRINGCONTROLLER")]
     IntroBossRingController,
+    #[serde(alias="viewFrustumTest", alias="VIEWFRUSTUMTEST")]
     ViewFrustumTest,
+    #[serde(alias="shotSpinnerController", alias="SHOTSPINNERCONTROLLER")]
     ShotSpinnerController,
+    #[serde(alias="escapeSequence", alias="ESCAPESEQUENCE")]
     EscapeSequence,
+    #[serde(alias="bossEnergyBar", alias="BOSSENERGYBAR")]
     BossEnergyBar,
+    #[serde(alias="endGame", alias="ENDGAME")]
     EndGame,
+    #[serde(alias="hUDFadeIn", alias="HUDFADEIN")]
     HUDFadeIn,
+    #[serde(alias="cinematicSkip", alias="CINEMATICSKIP")]
     CinematicSkip,
+    #[serde(alias="scriptLayerController", alias="SCRIPTLAYERCONTROLLER")]
     ScriptLayerController,
+    #[serde(alias="rainSimulator", alias="RAINSIMULATOR")]
     RainSimulator,
+    #[serde(alias="areaDamage", alias="AREADAMAGE")]
     AreaDamage,
+    #[serde(alias="objectFollowObject", alias="OBJECTFOLLOWOBJECT")]
     ObjectFollowObject,
+    #[serde(alias="hintSystem", alias="HINTSYSTEM")]
     HintSystem,
+    #[serde(alias="dropBomb", alias="DROPBOMB")]
     DropBomb,
+    #[serde(alias="scaleActor", alias="SCALEACTOR")]
     ScaleActor,
+    #[serde(alias="missileStation", alias="MISSILESTATION")]
     MissileStation,
+    #[serde(alias="billboard", alias="BILLBOARD")]
     Billboard,
+    #[serde(alias="playerInAreaRelay", alias="PLAYERINAREARELAY")]
     PlayerInAreaRelay,
+    #[serde(alias="hUDTarget", alias="HUDTARGET")]
     HUDTarget,
+    #[serde(alias="fogFader", alias="FOGFADER")]
     FogFader,
+    #[serde(alias="enterLogbook", alias="ENTERLOGBOOK")]
     EnterLogbook,
+    #[serde(alias="powerBombStation", alias="POWERBOMBSTATION")]
     PowerBombStation,
+    #[serde(alias="ending", alias="ENDING")]
     Ending,
+    #[serde(alias="fusionRelay", alias="FUSIONRELAY")]
     FusionRelay,
-    WeaponSwitch
+    #[serde(alias="weaponSwitch", alias="WEAPONSWITCH")]
+    WeaponSwitch,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -807,8 +857,11 @@ pub struct HallOfTheEldersBombSlotCoversConfig {
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub enum BombSlotCover {
+    #[serde(alias="wave", alias="WAVE")]
     Wave,
+    #[serde(alias="ice", alias="ICE")]
     Ice,
+    #[serde(alias="plasma", alias="PLASMA")]
     Plasma,
 }
 
