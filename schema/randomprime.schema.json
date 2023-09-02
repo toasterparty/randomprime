@@ -1075,212 +1075,6 @@
             "required": [],
             "additionalProperties": false
         },
-        "levelData": {
-            "type": "object",
-            "properties": {
-                "Frigate Orpheon": {
-                    "type": "object",
-                    "properties": {
-                        "transports": {
-                            "type": "object",
-                            "propertyNames": {
-                                "$ref": "#/$defs/frigateTransports"
-                            },
-                            "additionalProperties": {
-                                "$ref": "#/$defs/transportDestinations"
-                            },
-                            "default": {}
-                        },
-                        "rooms": {
-                            "type": "object",
-                            "propertyNames": {
-                                "$ref": "#/$defs/frigateRooms"
-                            },
-                            "additionalProperties": {
-                                "$ref": "#/$defs/room"
-                            }
-                        }
-                    },
-                    "required": []
-                },
-                "Tallon Overworld": {
-                    "type": "object",
-                    "properties": {
-                        "transports": {
-                            "type": "object",
-                            "propertyNames": {
-                                "$ref": "#/$defs/tallonTransports"
-                            },
-                            "additionalProperties": {
-                                "$ref": "#/$defs/transportDestinations"
-                            },
-                            "default": {}
-                        },
-                        "rooms": {
-                            "type": "object",
-                            "propertyNames": {
-                                "$ref": "#/$defs/tallonRooms"
-                            },
-                            "additionalProperties": {
-                                "$ref": "#/$defs/room"
-                            }
-                        }
-                    },
-                    "required": []
-                },
-                "Chozo Ruins": {
-                    "type": "object",
-                    "properties": {
-                        "transports": {
-                            "type": "object",
-                            "propertyNames": {
-                                "$ref": "#/$defs/chozoTransports"
-                            },
-                            "additionalProperties": {
-                                "$ref": "#/$defs/transportDestinations"
-                            },
-                            "default": {}
-                        },
-                        "rooms": {
-                            "type": "object",
-                            "propertyNames": {
-                                "$ref": "#/$defs/chozoRooms"
-                            },
-                            "additionalProperties": {
-                                "$ref": "#/$defs/room"
-                            }
-                        }
-                    },
-                    "required": []
-                },
-                "Magmoor Caverns": {
-                    "type": "object",
-                    "properties": {
-                        "transports": {
-                            "type": "object",
-                            "propertyNames": {
-                                "$ref": "#/$defs/magmoorTransports"
-                            },
-                            "additionalProperties": {
-                                "$ref": "#/$defs/transportDestinations"
-                            },
-                            "default": {}
-                        },
-                        "rooms": {
-                            "type": "object",
-                            "propertyNames": {
-                                "$ref": "#/$defs/magmoorRooms"
-                            },
-                            "additionalProperties": {
-                                "$ref": "#/$defs/room"
-                            }
-                        }
-                    },
-                    "required": []
-                },
-                "Phendrana Drifts": {
-                    "type": "object",
-                    "properties": {
-                        "transports": {
-                            "type": "object",
-                            "propertyNames": {
-                                "$ref": "#/$defs/phendranaTransports"
-                            },
-                            "additionalProperties": {
-                                "$ref": "#/$defs/transportDestinations"
-                            },
-                            "default": {}
-                        },
-                        "rooms": {
-                            "type": "object",
-                            "propertyNames": {
-                                "$ref": "#/$defs/phendranaRooms"
-                            },
-                            "additionalProperties": {
-                                "$ref": "#/$defs/room"
-                            }
-                        }
-                    },
-                    "required": []
-                },
-                "Phazon Mines": {
-                    "type": "object",
-                    "properties": {
-                        "transports": {
-                            "type": "object",
-                            "propertyNames": {
-                                "$ref": "#/$defs/minesTransports"
-                            },
-                            "additionalProperties": {
-                                "$ref": "#/$defs/transportDestinations"
-                            },
-                            "default": {}
-                        },
-                        "rooms": {
-                            "type": "object",
-                            "propertyNames": {
-                                "$ref": "#/$defs/minesRooms"
-                            },
-                            "additionalProperties": {
-                                "$ref": "#/$defs/room"
-                            }
-                        }
-                    },
-                    "required": []
-                },
-                "Impact Crater": {
-                    "type": "object",
-                    "properties": {
-                        "transports": {
-                            "type": "object",
-                            "propertyNames": {
-                                "anyOf": [
-                                    {
-                                        "$ref": "#/$defs/craterTransports"
-                                    },
-                                    {
-                                        "$ref": "#/$defs/specialTransports"
-                                    }
-                                ]
-                            },
-                            "additionalProperties": {
-                                "$ref": "#/$defs/transportDestinations"
-                            },
-                            "default": {}
-                        },
-                        "rooms": {
-                            "type": "object",
-                            "propertyNames": {
-                                "$ref": "#/$defs/craterRooms"
-                            },
-                            "additionalProperties": {
-                                "$ref": "#/$defs/room"
-                            }
-                        }
-                    },
-                    "required": []
-                },
-                "End Cinema": {
-                    "type": "object",
-                    "properties": {
-                        "transports": {
-                            "type": "object",
-                            "default": {},
-                            "additionalProperties": false
-                        },
-                        "rooms": {
-                            "type": "object",
-                            "properties": {
-                                "End Cinema": {
-                                    "$ref": "#/$defs/room"
-                                }
-                            },
-                            "default": {}
-                        }
-                    }
-                }
-            }
-        },
         "tweaks": {
             "description": "Change the value of various CTWK values found in `Tweaks.Pak`. Many of these values are either relative or multiplicative to the default values.",
             "type": "object",
@@ -1525,6 +1319,1047 @@
             },
             "required": [],
             "additionalProperties": false
+        },
+        "levelData": {
+            "type": "object",
+            "properties": {
+                "Frigate Orpheon": {
+                    "type": "object",
+                    "properties": {
+                        "transports": {
+                            "type": "object",
+                            "properties": {
+                                "Frigate Escape Cutscene": {
+                                    "$ref": "#/$defs/transportDestinations"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "rooms": {
+                            "type": "object",
+                            "properties": {
+                                "Exterior Docking Hangar": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Air Lock": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Deck Alpha Access Hall": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Deck Alpha Mech Shaft": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Emergency Evacuation Area": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Connection Elevator to Deck Alpha": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Deck Alpha Umbilical Hall": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Biotech Research Area 2": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Map Facility": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Main Ventilation Shaft Section F": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Connection Elevator to Deck Beta": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Main Ventilation Shaft Section E": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Deck Beta Conduit Hall": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Main Ventilation Shaft Section D": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Biotech Research Area 1": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Main Ventilation Shaft Section C": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Deck Beta Security Hall": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Connection Elevator to Deck Beta (2)": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Subventilation Shaft Section A": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Main Ventilation Shaft Section B": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Biohazard Containment": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Deck Gamma Monitor Hall": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Subventilation Shaft Section B": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Main Ventilation Shaft Section A": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Deck Beta Transit Hall": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Reactor Core": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Cargo Freight Lift to Deck Gamma": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Reactor Core Entrance": {
+                                    "$ref": "#/$defs/room"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "Tallon Overworld": {
+                    "type": "object",
+                    "properties": {
+                        "transports": {
+                            "type": "object",
+                            "properties": {
+                                "Tallon Overworld North (Tallon Canyon)": {
+                                    "$ref": "#/$defs/transportDestinations"
+                                },
+                                "Tallon Overworld West (Root Cave)": {
+                                    "$ref": "#/$defs/transportDestinations"
+                                },
+                                "Tallon Overworld East (Frigate Crash Site)": {
+                                    "$ref": "#/$defs/transportDestinations"
+                                },
+                                "Tallon Overworld South (Great Tree Hall, Upper)": {
+                                    "$ref": "#/$defs/transportDestinations"
+                                },
+                                "Tallon Overworld South (Great Tree Hall, Lower)": {
+                                    "$ref": "#/$defs/transportDestinations"
+                                },
+                                "Tallon Overworld Central (Artifact Temple)": {
+                                    "$ref": "#/$defs/transportDestinations"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "rooms": {
+                            "type": "object",
+                            "properties": {
+                                "Landing Site": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Gully": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Canyon Cavern": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Temple Hall": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Alcove": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Waterfall Cavern": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Tallon Canyon": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Temple Security Station": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Frigate Crash Site": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport Tunnel A": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Root Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Temple Lobby": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Frigate Access Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Overgrown Cavern": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport to Chozo Ruins West": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Root Cave": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Artifact Temple": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Main Ventilation Shaft Section C": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport Tunnel C": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport Tunnel B": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Arbor Chamber": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Main Ventilation Shaft Section B": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport to Chozo Ruins East": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport to Magmoor Caverns East": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Main Ventilation Shaft Section A": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Reactor Core": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Reactor Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Cargo Freight Lift to Deck Gamma": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Savestation": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Deck Beta Transit Hall": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Biohazard Containment": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Deck Beta Security Hall": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Biotech Research Area 1": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Deck Beta Conduit Hall": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Connection Elevator to Deck Beta": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Hydro Access Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Great Tree Hall": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Great Tree Chamber": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport Tunnel D": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Life Grove Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport Tunnel E": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport to Chozo Ruins South": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Life Grove": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport to Phazon Mines East": {
+                                    "$ref": "#/$defs/room"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "Chozo Ruins": {
+                    "type": "object",
+                    "properties": {
+                        "transports": {
+                            "type": "object",
+                            "properties": {
+                                "Chozo Ruins West (Main Plaza)": {
+                                    "$ref": "#/$defs/transportDestinations"
+                                },
+                                "Chozo Ruins North (Sun Tower)": {
+                                    "$ref": "#/$defs/transportDestinations"
+                                },
+                                "Chozo Ruins East (Reflecting Pool, Save Station)": {
+                                    "$ref": "#/$defs/transportDestinations"
+                                },
+                                "Chozo Ruins South (Reflecting Pool, Far End)": {
+                                    "$ref": "#/$defs/transportDestinations"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "rooms": {
+                            "type": "object",
+                            "properties": {
+                                "Transport to Tallon Overworld North": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Ruins Entrance": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Main Plaza": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Ruined Fountain Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Ruined Shrine Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Nursery Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Plaza Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Piston Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Ruined Fountain": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Ruined Shrine": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Eyon Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Vault": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Training Chamber": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Arboretum Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Meditation Fountain": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Tower of Light Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Ruined Nursery": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Vault Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Training Chamber Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Arboretum": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Magma Pool": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Tower of Light": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Save Station 1": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "North Atrium": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport to Magmoor Caverns North": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Sunchamber Lobby": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Gathering Hall Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Tower Chamber": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Ruined Gallery": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Sun Tower": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport Access North": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Sunchamber Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Gathering Hall": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Totem Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Map Station": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Sun Tower Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Hive Totem": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Sunchamber": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Watery Hall Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Save Station 2": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "East Atrium": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Watery Hall": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Energy Core Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Dynamo Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Energy Core": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Dynamo": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Burn Dome Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "West Furnace Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Burn Dome": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Furnace": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "East Furnace Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Crossway Access West": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Hall of the Elders": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Crossway": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Reflecting Pool Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Elder Hall Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Crossway Access South": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Elder Chamber": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Reflecting Pool": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Save Station 3": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport Access South": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Antechamber": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport to Tallon Overworld East": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport to Tallon Overworld South": {
+                                    "$ref": "#/$defs/room"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "Magmoor Caverns": {
+                    "type": "object",
+                    "properties": {
+                        "transports": {
+                            "type": "object",
+                            "properties": {
+                                "Magmoor Caverns North (Lava Lake)": {
+                                    "$ref": "#/$defs/transportDestinations"
+                                },
+                                "Magmoor Caverns West (Monitor Station)": {
+                                    "$ref": "#/$defs/transportDestinations"
+                                },
+                                "Magmoor Caverns East (Twin Fires)": {
+                                    "$ref": "#/$defs/transportDestinations"
+                                },
+                                "Magmoor Caverns South (Magmoor Workstation, Save Station)": {
+                                    "$ref": "#/$defs/transportDestinations"
+                                },
+                                "Magmoor Caverns South (Magmoor Workstation, Debris)": {
+                                    "$ref": "#/$defs/transportDestinations"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "rooms": {
+                            "type": "object",
+                            "properties": {
+                                "Transport to Chozo Ruins North": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Burning Trail": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Lake Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Save Station Magmoor A": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Lava Lake": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Pit Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Triclops Pit": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Monitor Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Storage Cavern": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Monitor Station": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport Tunnel A": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Warrior Shrine": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Shore Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport to Phendrana Drifts North": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Fiery Shores": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport Tunnel B": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport to Tallon Overworld West": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Twin Fires Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Twin Fires": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "North Core Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Geothermal Core": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Plasma Processing": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "South Core Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Magmoor Workstation": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Workstation Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport Tunnel C": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport to Phazon Mines West": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport to Phendrana Drifts South": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Save Station Magmoor B": {
+                                    "$ref": "#/$defs/room"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "Phendrana Drifts": {
+                    "type": "object",
+                    "properties": {
+                        "transports": {
+                            "type": "object",
+                            "properties": {
+                                "Phendrana Drifts North (Phendrana Shorelines)": {
+                                    "$ref": "#/$defs/transportDestinations"
+                                },
+                                "Phendrana Drifts South (Quarantine Cave)": {
+                                    "$ref": "#/$defs/transportDestinations"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "rooms": {
+                            "type": "object",
+                            "properties": {
+                                "Transport to Magmoor Caverns West": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Shoreline Entrance": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Phendrana Shorelines": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Temple Entryway": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Save Station B": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Ruins Entryway": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Plaza Walkway": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Ice Ruins Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Chozo Ice Temple": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Ice Ruins West": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Ice Ruins East": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Chapel Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Courtyard Entryway": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Canyon Entryway": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Chapel of the Elders": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Ruined Courtyard": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Phendrana Canyon": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Save Station A": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Specimen Storage": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Quarantine Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Research Entrance": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "North Quarantine Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Map Station": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Hydra Lab Entryway": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Quarantine Cave": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Research Lab Hydra": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "South Quarantine Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Quarantine Monitor": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Observatory Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport to Magmoor Caverns South": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Observatory": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "West Tower Entrance": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Save Station D": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Frozen Pike": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "West Tower": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Pike Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Frost Cave Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Hunter Cave Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Control Tower": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Research Core": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Frost Cave": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Hunter Cave": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "East Tower": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Research Core Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Save Station C": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Upper Edge Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Lower Edge Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Chamber Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Lake Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Aether Lab Entryway": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Research Lab Aether": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Phendrana's Edge": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Gravity Chamber": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Storage Cave": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Security Cave": {
+                                    "$ref": "#/$defs/room"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "Phazon Mines": {
+                    "type": "object",
+                    "properties": {
+                        "transports": {
+                            "type": "object",
+                            "properties": {
+                                "Phazon Mines East (Main Quarry)": {
+                                    "$ref": "#/$defs/minesTransports"
+                                },
+                                "Phazon Mines West (Phazon Processing Center)": {
+                                    "$ref": "#/$defs/minesTransports"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "rooms": {
+                            "type": "object",
+                            "properties": {
+                                "Transport to Tallon Overworld South": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Quarry Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Main Quarry": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Waste Disposal": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Save Station Mines A": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Security Access A": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Ore Processing": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Mine Security Station": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Research Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Storage Depot B": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Elevator Access A": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Security Access B": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Storage Depot A": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Elite Research": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Elevator A": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Elite Control Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Elite Control": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Maintenance Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Ventilation Shaft": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Phazon Processing Center": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Omega Research": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Processing Center Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Map Station Mines": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Dynamo Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Transport to Magmoor Caverns South": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Elite Quarters": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Central Dynamo": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Elite Quarters Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Quarantine Access A": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Save Station Mines B": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Metroid Quarantine B": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Metroid Quarantine A": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Quarantine Access B": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Save Station Mines C": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Elevator Access B": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Fungal Hall B": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Elevator B": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Missile Station Mines": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Phazon Mining Tunnel": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Fungal Hall Access": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Fungal Hall A": {
+                                    "$ref": "#/$defs/room"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "required": []
+                },
+                "Impact Crater": {
+                    "type": "object",
+                    "properties": {
+                        "transports": {
+                            "type": "object",
+                            "properties": {
+                                "Crater Entry Point (Impact Crater)": {
+                                    "$ref": "#/$defs/transportDestinations"
+                                },
+                                "Essence Dead Cutscene": {
+                                    "$ref": "#/$defs/transportDestinations"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "rooms": {
+                            "type": "object",
+                            "properties": {
+                                "Crater Entry Point": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Crater Tunnel A": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Phazon Core": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Crater Missile Station": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Crater Tunnel B": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Phazon Infusion Chamber": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Subchamber One": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Subchamber Two": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Subchamber Three": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Subchamber Four": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Subchamber Five": {
+                                    "$ref": "#/$defs/room"
+                                },
+                                "Metroid Prime Lair": {
+                                    "$ref": "#/$defs/room"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "End Cinema": {
+                    "type": "object",
+                    "properties": {
+                        "transports": {
+                            "type": "object",
+                            "additionalProperties": false
+                        },
+                        "rooms": {
+                            "type": "object",
+                            "properties": {
+                                "End Cinema": {
+                                    "$ref": "#/$defs/room"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            }
         }
     },
     "required": [],
@@ -1779,10 +2614,8 @@
                                 "additionalProperties": false
                             }
                         },
-                        "default": {},
                         "additionalProperties": false
-                    },
-                    "default": {}
+                    }
                 },
                 "pickups": {
                     "description": "Modify or add pickups in this room. If the length of this array is greater than the number of pickups found in the room normally, additional pickups will be added to the room. Note that additional pickups require a `position`.",
@@ -1947,8 +2780,7 @@
                             "type": "Nothing"
                         },
                         "additionalProperties": false
-                    },
-                    "default": []
+                    }
                 },
                 "superheated": {
                     "description": "If true, makes the room superheated while the player does not have Varia",
@@ -2951,7 +3783,6 @@
                     }
                 }
             },
-            "default": {},
             "additionalProperties": false
         },
         "allRooms": {
@@ -3241,12 +4072,6 @@
                 "End Cinema:End Cinema"
             ]
         },
-        "frigateTransports": {
-            "type": "string",
-            "enum": [
-                "Frigate Escape Cutscene"
-            ]
-        },
         "tallonTransports": {
             "type": "string",
             "enum": [
@@ -3297,20 +4122,11 @@
                 "Crater Entry Point (Impact Crater)"
             ]
         },
-        "specialTransports": {
-            "type": "string",
-            "enum": [
-                "Essence Dead Cutscene"
-            ]
-        },
         "transportDestinations": {
             "type": "string",
             "anyOf": [
                 {
                     "$ref": "#/$defs/specialDestinations"
-                },
-                {
-                    "$ref": "#/$defs/frigateTransports"
                 },
                 {
                     "$ref": "#/$defs/tallonTransports"
@@ -3331,27 +4147,6 @@
                     "$ref": "#/$defs/craterTransports"
                 },
                 {
-                    "$ref": "#/$defs/frigateRooms"
-                },
-                {
-                    "$ref": "#/$defs/tallonRooms"
-                },
-                {
-                    "$ref": "#/$defs/chozoRooms"
-                },
-                {
-                    "$ref": "#/$defs/magmoorRooms"
-                },
-                {
-                    "$ref": "#/$defs/phendranaRooms"
-                },
-                {
-                    "$ref": "#/$defs/minesRooms"
-                },
-                {
-                    "$ref": "#/$defs/craterRooms"
-                },
-                {
                     "$ref": "#/$defs/allRooms"
                 }
             ]
@@ -3360,318 +4155,7 @@
             "type": "string",
             "enum": [
                 "Exterior Docking Hangar (Frigate Orpheon)",
-                "Credits",
-                "End Cinema:End Cinema"
-            ]
-        },
-        "frigateRooms": {
-            "type": "string",
-            "enum": [
-                "Exterior Docking Hangar",
-                "Air Lock",
-                "Deck Alpha Access Hall",
-                "Deck Alpha Mech Shaft",
-                "Emergency Evacuation Area",
-                "Connection Elevator to Deck Alpha",
-                "Deck Alpha Umbilical Hall",
-                "Biotech Research Area 2",
-                "Map Facility",
-                "Main Ventilation Shaft Section F",
-                "Connection Elevator to Deck Beta",
-                "Main Ventilation Shaft Section E",
-                "Deck Beta Conduit Hall",
-                "Main Ventilation Shaft Section D",
-                "Biotech Research Area 1",
-                "Main Ventilation Shaft Section C",
-                "Deck Beta Security Hall",
-                "Connection Elevator to Deck Beta (2)",
-                "Subventilation Shaft Section A",
-                "Main Ventilation Shaft Section B",
-                "Biohazard Containment",
-                "Deck Gamma Monitor Hall",
-                "Subventilation Shaft Section B",
-                "Main Ventilation Shaft Section A",
-                "Deck Beta Transit Hall",
-                "Reactor Core",
-                "Cargo Freight Lift to Deck Gamma",
-                "Reactor Core Entrance"
-            ]
-        },
-        "tallonRooms": {
-            "type": "string",
-            "enum": [
-                "Landing Site",
-                "Gully",
-                "Canyon Cavern",
-                "Temple Hall",
-                "Alcove",
-                "Waterfall Cavern",
-                "Tallon Canyon",
-                "Temple Security Station",
-                "Frigate Crash Site",
-                "Transport Tunnel A",
-                "Root Tunnel",
-                "Temple Lobby",
-                "Frigate Access Tunnel",
-                "Overgrown Cavern",
-                "Transport to Chozo Ruins West",
-                "Root Cave",
-                "Artifact Temple",
-                "Main Ventilation Shaft Section C",
-                "Transport Tunnel C",
-                "Transport Tunnel B",
-                "Arbor Chamber",
-                "Main Ventilation Shaft Section B",
-                "Transport to Chozo Ruins East",
-                "Transport to Magmoor Caverns East",
-                "Main Ventilation Shaft Section A",
-                "Reactor Core",
-                "Reactor Access",
-                "Cargo Freight Lift to Deck Gamma",
-                "Savestation",
-                "Deck Beta Transit Hall",
-                "Biohazard Containment",
-                "Deck Beta Security Hall",
-                "Biotech Research Area 1",
-                "Deck Beta Conduit Hall",
-                "Connection Elevator to Deck Beta",
-                "Hydro Access Tunnel",
-                "Great Tree Hall",
-                "Great Tree Chamber",
-                "Transport Tunnel D",
-                "Life Grove Tunnel",
-                "Transport Tunnel E",
-                "Transport to Chozo Ruins South",
-                "Life Grove",
-                "Transport to Phazon Mines East"
-            ]
-        },
-        "chozoRooms": {
-            "type": "string",
-            "enum": [
-                "Transport to Tallon Overworld North",
-                "Ruins Entrance",
-                "Main Plaza",
-                "Ruined Fountain Access",
-                "Ruined Shrine Access",
-                "Nursery Access",
-                "Plaza Access",
-                "Piston Tunnel",
-                "Ruined Fountain",
-                "Ruined Shrine",
-                "Eyon Tunnel",
-                "Vault",
-                "Training Chamber",
-                "Arboretum Access",
-                "Meditation Fountain",
-                "Tower of Light Access",
-                "Ruined Nursery",
-                "Vault Access",
-                "Training Chamber Access",
-                "Arboretum",
-                "Magma Pool",
-                "Tower of Light",
-                "Save Station 1",
-                "North Atrium",
-                "Transport to Magmoor Caverns North",
-                "Sunchamber Lobby",
-                "Gathering Hall Access",
-                "Tower Chamber",
-                "Ruined Gallery",
-                "Sun Tower",
-                "Transport Access North",
-                "Sunchamber Access",
-                "Gathering Hall",
-                "Totem Access",
-                "Map Station",
-                "Sun Tower Access",
-                "Hive Totem",
-                "Sunchamber",
-                "Watery Hall Access",
-                "Save Station 2",
-                "East Atrium",
-                "Watery Hall",
-                "Energy Core Access",
-                "Dynamo Access",
-                "Energy Core",
-                "Dynamo",
-                "Burn Dome Access",
-                "West Furnace Access",
-                "Burn Dome",
-                "Furnace",
-                "East Furnace Access",
-                "Crossway Access West",
-                "Hall of the Elders",
-                "Crossway",
-                "Reflecting Pool Access",
-                "Elder Hall Access",
-                "Crossway Access South",
-                "Elder Chamber",
-                "Reflecting Pool",
-                "Save Station 3",
-                "Transport Access South",
-                "Antechamber",
-                "Transport to Tallon Overworld East",
-                "Transport to Tallon Overworld South"
-            ]
-        },
-        "magmoorRooms": {
-            "type": "string",
-            "enum": [
-                "Transport to Chozo Ruins North",
-                "Burning Trail",
-                "Lake Tunnel",
-                "Save Station Magmoor A",
-                "Lava Lake",
-                "Pit Tunnel",
-                "Triclops Pit",
-                "Monitor Tunnel",
-                "Storage Cavern",
-                "Monitor Station",
-                "Transport Tunnel A",
-                "Warrior Shrine",
-                "Shore Tunnel",
-                "Transport to Phendrana Drifts North",
-                "Fiery Shores",
-                "Transport Tunnel B",
-                "Transport to Tallon Overworld West",
-                "Twin Fires Tunnel",
-                "Twin Fires",
-                "North Core Tunnel",
-                "Geothermal Core",
-                "Plasma Processing",
-                "South Core Tunnel",
-                "Magmoor Workstation",
-                "Workstation Tunnel",
-                "Transport Tunnel C",
-                "Transport to Phazon Mines West",
-                "Transport to Phendrana Drifts South",
-                "Save Station Magmoor B"
-            ]
-        },
-        "phendranaRooms": {
-            "type": "string",
-            "enum": [
-                "Transport to Magmoor Caverns West",
-                "Shoreline Entrance",
-                "Phendrana Shorelines",
-                "Temple Entryway",
-                "Save Station B",
-                "Ruins Entryway",
-                "Plaza Walkway",
-                "Ice Ruins Access",
-                "Chozo Ice Temple",
-                "Ice Ruins West",
-                "Ice Ruins East",
-                "Chapel Tunnel",
-                "Courtyard Entryway",
-                "Canyon Entryway",
-                "Chapel of the Elders",
-                "Ruined Courtyard",
-                "Phendrana Canyon",
-                "Save Station A",
-                "Specimen Storage",
-                "Quarantine Access",
-                "Research Entrance",
-                "North Quarantine Tunnel",
-                "Map Station",
-                "Hydra Lab Entryway",
-                "Quarantine Cave",
-                "Research Lab Hydra",
-                "South Quarantine Tunnel",
-                "Quarantine Monitor",
-                "Observatory Access",
-                "Transport to Magmoor Caverns South",
-                "Observatory",
-                "Transport Access",
-                "West Tower Entrance",
-                "Save Station D",
-                "Frozen Pike",
-                "West Tower",
-                "Pike Access",
-                "Frost Cave Access",
-                "Hunter Cave Access",
-                "Control Tower",
-                "Research Core",
-                "Frost Cave",
-                "Hunter Cave",
-                "East Tower",
-                "Research Core Access",
-                "Save Station C",
-                "Upper Edge Tunnel",
-                "Lower Edge Tunnel",
-                "Chamber Access",
-                "Lake Tunnel",
-                "Aether Lab Entryway",
-                "Research Lab Aether",
-                "Phendrana's Edge",
-                "Gravity Chamber",
-                "Storage Cave",
-                "Security Cave"
-            ]
-        },
-        "minesRooms": {
-            "type": "string",
-            "enum": [
-                "Transport to Tallon Overworld South",
-                "Quarry Access",
-                "Main Quarry",
-                "Waste Disposal",
-                "Save Station Mines A",
-                "Security Access A",
-                "Ore Processing",
-                "Mine Security Station",
-                "Research Access",
-                "Storage Depot B",
-                "Elevator Access A",
-                "Security Access B",
-                "Storage Depot A",
-                "Elite Research",
-                "Elevator A",
-                "Elite Control Access",
-                "Elite Control",
-                "Maintenance Tunnel",
-                "Ventilation Shaft",
-                "Phazon Processing Center",
-                "Omega Research",
-                "Transport Access",
-                "Processing Center Access",
-                "Map Station Mines",
-                "Dynamo Access",
-                "Transport to Magmoor Caverns South",
-                "Elite Quarters",
-                "Central Dynamo",
-                "Elite Quarters Access",
-                "Quarantine Access A",
-                "Save Station Mines B",
-                "Metroid Quarantine B",
-                "Metroid Quarantine A",
-                "Quarantine Access B",
-                "Save Station Mines C",
-                "Elevator Access B",
-                "Fungal Hall B",
-                "Elevator B",
-                "Missile Station Mines",
-                "Phazon Mining Tunnel",
-                "Fungal Hall Access",
-                "Fungal Hall A"
-            ]
-        },
-        "craterRooms": {
-            "type": "string",
-            "enum": [
-                "Crater Entry Point",
-                "Crater Tunnel A",
-                "Phazon Core",
-                "Crater Missile Station",
-                "Crater Tunnel B",
-                "Phazon Infusion Chamber",
-                "Subchamber One",
-                "Subchamber Two",
-                "Subchamber Three",
-                "Subchamber Four",
-                "Subchamber Five",
-                "Metroid Prime Lair"
+                "Credits"
             ]
         },
         "vector3": {
