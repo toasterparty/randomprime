@@ -12,4 +12,4 @@ mkdir -p ./schema/build
 generate-schema-doc --config-file ./schema/config.json ./schema/randomprime.schema.json ./schema/build/index.html
 
 cp ./schema/_config.yml ./schema/build
-cp ./schema/randomprime.schema.json ./schema/build
+python -c "import json, sys; json.dump(json.load(open('./schema/randomprime.schema.json')), open('./schema/build/randomprime.schema.json', 'w'), separators=(',', ':'))"
