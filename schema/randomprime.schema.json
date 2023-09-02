@@ -3305,9 +3305,10 @@
                 "cutsceneSkipFns": {
                     "type": "array",
                     "items": {
-                        "type": "object"
-                    },
-                    "deprecated": true
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 4294967295
+                    }
                 },
                 "timers": {
                     "description": "Add timers to this room.",
