@@ -1,4 +1,5 @@
 {
+    "$schema": "https://toasterparty.github.io/randomprime/randomprime.schema.json",
     "levelData": {
         "Frigate Orpheon": {
             "transports": {},
@@ -1376,7 +1377,7 @@
                                 155.578003,
                                 51.860001
                             ],
-                            "damageType": "missile",
+                            "damageType": "Missile",
                             "damageAmount": 30.0,
                             "flags": 2
                         }
@@ -1412,7 +1413,7 @@
                                 155.578003,
                                 51.860001
                             ],
-                            "damageType": "missile",
+                            "damageType": "Missile",
                             "damageAmount": 30.0,
                             "flags": 2
                         }
@@ -1448,7 +1449,7 @@
                                 51.949005,
                                 49.259003
                             ],
-                            "damageType": "missile",
+                            "damageType": "Missile",
                             "damageAmount": 30.0,
                             "flags": 2
                         }
