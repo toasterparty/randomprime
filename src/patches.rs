@@ -16207,7 +16207,23 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                     ),
                                 );
                             }
+                        }
 
+                        let do_cutscene_skip_patches = {
+                            if room.cutscene_skip_fns.is_some() {
+                                true
+                            } else if room.special_functions.is_some() {
+                                room.special_functions
+                                    .as_ref()
+                                    .unwrap()
+                                    .iter()
+                                    .any(|config| config.type_ == SpecialFunctionType::CinematicSkip)
+                            } else {
+                                false
+                            }
+                        };
+
+                        if do_cutscene_skip_patches {
                             /* Some rooms need to be update to play nicely with skippable cutscenes */
                             match room_info.room_id.to_u32() {
                                 0xC9D52BBC => { // energy core

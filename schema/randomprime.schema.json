@@ -3308,7 +3308,8 @@
                         "type": "integer",
                         "minimum": 0,
                         "maximum": 4294967295
-                    }
+                    },
+                    "deprecated": true
                 },
                 "timers": {
                     "description": "Add timers to this room.",
