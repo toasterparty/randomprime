@@ -2286,7 +2286,7 @@
                         "transports": {
                             "type": "object",
                             "properties": {
-                                "Crater Entry Point (Impact Crater)": {
+                                "Crater Entry Point": {
                                     "$ref": "#/$defs/transportDestinations"
                                 },
                                 "Essence Dead Cutscene": {
@@ -4120,7 +4120,7 @@
         "craterTransports": {
             "type": "string",
             "enum": [
-                "Crater Entry Point (Impact Crater)"
+                "Crater Entry Point"
             ]
         },
         "transportDestinations": {

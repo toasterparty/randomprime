@@ -9598,6 +9598,8 @@ fn patch_save_station_for_warp_to_start<'r>(
     warp_to_start_delay_s: f32,
 ) -> Result<(), String>
 {
+    let mrea_id = area.mlvl_area.mrea.to_u32().clone();
+
     let mut warp_to_start_delay_s = warp_to_start_delay_s;
     if warp_to_start_delay_s < 3.0 {
         warp_to_start_delay_s = 3.0
@@ -9719,27 +9721,35 @@ fn patch_save_station_for_warp_to_start<'r>(
     for obj in layer.objects.iter_mut() {
         if let Some(sp_function) = obj.property_data.as_special_function_mut() {
             if sp_function.type_ == 7 { // Is Save Station function
-                obj.connections
-                   .as_mut_vec()
-                   .push(structs::Connection {
-                        target_object_id: timer_id,
-                        state: structs::ConnectionState::RETREAT,
-                        message: structs::ConnectionMsg::RESET_AND_START,
-                    });
-                obj.connections
-                    .as_mut_vec()
-                    .push(structs::Connection {
-                         target_object_id: hudmemo_id,
-                         state: structs::ConnectionState::RETREAT,
-                         message: structs::ConnectionMsg::SET_TO_ZERO,
-                     });
-                obj.connections
-                    .as_mut_vec()
-                    .push(structs::Connection {
-                        target_object_id: player_hint_id,
-                        state: structs::ConnectionState::RETREAT,
-                        message: structs::ConnectionMsg::INCREMENT,
-                    });
+                obj.connections.as_mut_vec().extend_from_slice(
+                    &vec![
+                        structs::Connection {
+                            target_object_id: player_hint_id,
+                            state: structs::ConnectionState::RETREAT,
+                            message: structs::ConnectionMsg::INCREMENT,
+                        },
+                        structs::Connection {
+                            target_object_id: timer_id,
+                            state: structs::ConnectionState::RETREAT,
+                            message: structs::ConnectionMsg::RESET_AND_START,
+                        },
+                        structs::Connection {
+                            target_object_id: hudmemo_id,
+                            state: structs::ConnectionState::RETREAT,
+                            message: structs::ConnectionMsg::SET_TO_ZERO,
+                        },
+                    ]
+                );
+
+                if mrea_id == 0x93668996 { // crater entry point
+                    obj.connections.as_mut_vec().push(
+                        structs::Connection {
+                            target_object_id: 0x00000093, // memory relay that controls where the player spawns in from
+                            state: structs::ConnectionState::RETREAT,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                        },
+                    );
+                }
             }
         }
     }
