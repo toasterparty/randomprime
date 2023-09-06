@@ -3056,12 +3056,12 @@
                             },
                             "active1": {
                                 "description": "Set to false to disable the actor by default.",
-                                "type": "bool",
+                                "type": "boolean",
                                 "default": true
                             },
                             "active2": {
                                 "description": "Set to false to disable the lock-on target by default.",
-                                "type": "bool",
+                                "type": "boolean",
                                 "default": true
                             }
                         },

@@ -627,7 +627,7 @@ pub fn custom_assets<'r>(
         vec![
             "Toaster's Champions: Awp82, DiggleWrath, Yeti2000, freak532486, AlphaRage, Csabi,\0".to_string(),
             "\0".to_string(),
-            "BajaBlood, hammergoboom, Firemetroid, Lokir, MeriKatt, Cosmonawt, Haldadrin, RXM, Schwartz, Samuel\0".to_string(),
+            "BajaBlood, hammergoboom, Firemetroid, Lokir, MeriKatt, Cosmonawt, Haldadrin, RXM, Schwartz, Samuel, Miguel\0".to_string(),
         ],
         1,
         0,
@@ -640,7 +640,7 @@ pub fn custom_assets<'r>(
         vec![
             "Chozo script translated.\0".to_string(),
             "Racing\0".to_string(),
-            "As we have done for millennia, we Chozo work constantly on our speed. Our fastest are our sentinels; They are, and have always been, repositories for our most precious secrets and strongest powers.\n\n2023 - Cosmo\n2022 (CGC) - Cosmo + Cestrion\n2021 - Dinopony\n2020 - Interslice\n2019 - TheWeakestLink64\0".to_string(),
+            "As we have done for millennia, we Chozo work constantly on our speed. Our fastest are our sentinels; They are, and have always been, repositories for our most precious secrets and strongest powers.\n\n2023 - Cosmonawt\n2022 (CGC) - Cosmo + Cestrion\n2021 - Dinopony\n2020 - Interslice\n2019 - TheWeakestLink64\0".to_string(),
         ],
         1,
         0,
