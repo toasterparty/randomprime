@@ -1282,6 +1282,44 @@
         "Magmoor Caverns": {
             "transports": {},
             "rooms": {
+                "Fiery Shores": {
+                    // Remove DebrisExtended to save memory
+                    "deleteIds": [
+                        917866,
+                        917867,
+                        917871,
+                        917876,
+                        917877,
+                        917878,
+                        917879,
+                        917880,
+                        917881,
+                        917883,
+                        917884,
+                        917870,
+                        917869,
+                        917868,
+                        917872,
+                        917873,
+                        917613,
+                        917614,
+                        917615,
+                        917618,
+                        917619,
+                        917620,
+                        917621,
+                        918141,
+                        918146,
+                        918149,
+                        918148,
+                        918147,
+                        918145,
+                        918144,
+                        918143,
+                        917617,
+                        917616
+                    ]
+                },
                 "Lava Lake": {
                     "addConnections": [
                         {
@@ -1304,19 +1342,81 @@
                         }
                     ]
                 },
+                "Monitor Station": {
+                    // Remove debris extended to save memory
+                    "deleteIds": [
+                        590198,
+                        590199,
+                        590203,
+                        590208,
+                        590209,
+                        590210,
+                        590211,
+                        590212,
+                        590213,
+                        590214,
+                        590215,
+                        590216,
+                        590202,
+                        590201,
+                        590200,
+                        590204,
+                        590205,
+                        589937,
+                        589938,
+                        589939,
+                        589987,
+                        589988,
+                        589989,
+                        589997,
+                        589998,
+                        589999,
+                        590004,
+                        590005,
+                        590006,
+                        590139,
+                        590475,
+                        590476,
+                        590477,
+                        590478,
+                        590494,
+                        590495,
+                        590496,
+                        590497,
+                        590513,
+                        590514,
+                        590515,
+                        590516,
+                        590532,
+                        590533,
+                        590534,
+                        590535,
+                        590144,
+                        590147,
+                        590146,
+                        590145,
+                        590143,
+                        590142,
+                        590141
+                    ]
+                },
                 "Warrior Shrine": {
                     "deleteIds": [
                         // Old Load Trigger
-                        720934
+                        720934,
+                        // Remove Debris Extended to Save Memory
+                        720937,
+                        720938,
+                        720939,
+                        720940,
+                        720941,
+                        720942,
+                        720943,
+                        720944,
+                        720945
                     ],
                     "addConnections": [
-                        // New load trigger that only detects Morphed player (To prevent room reload)
-                        {
-                            "senderId": 720909, // [Trigger] Morph Only Load Trigger
-                            "targetId": 720897, // [Dock] Dock To 09_over_monitortower
-                            "state": "ENTERED",
-                            "message": "SET_TO_ZERO"
-                        },
+                        // New load trigger that doesn't unload Monitor Station
                         {
                             "senderId": 720909, // [Trigger] Morph Only Load Trigger
                             "targetId": 720898, // [Dock] Dock To 12_over_fieryshores
@@ -1338,7 +1438,7 @@
                                 30.0,
                                 12.945999
                             ],
-                            "flags": 4096
+                            "flags": 1
                         }
                     ]
                 }

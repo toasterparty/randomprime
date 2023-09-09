@@ -18,7 +18,21 @@
                 },
                 "Biotech Research Area 2": {
                     "deleteIds": [
-                        459103
+                        559103
+                    ],
+                    "removeConnections": [
+                        {
+                            "senderId": 458908, // [Relay] Relay-start of cinema
+                            "targetId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 458954, // [Relay] Relay-end of cinema
+                            "targetId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "state": "ZERO",
+                            "message": "DECREMENT"
+                        }
                     ]
                 }
             }
