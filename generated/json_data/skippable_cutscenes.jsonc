@@ -724,19 +724,19 @@
                         },
                         {
                             "senderId": 458908, // [Relay] Relay-start of cinema
-                            "targetId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "targetId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "state": "ZERO",
                             "message": "INCREMENT"
                         },
                         {
                             "senderId": 458908, // [Relay] Relay-start of cinema
-                            "targetId": 459102, // [SpawnPoint] Spawn point
+                            "targetId": 458906, // [CameraFilterKeyframe] cinema bars
                             "state": "ZERO",
                             "message": "INCREMENT"
                         },
                         {
                             "senderId": 458954, // [Relay] Relay-end of cinema
-                            "targetId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "targetId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "state": "ZERO",
                             "message": "DECREMENT"
                         },
@@ -747,331 +747,331 @@
                             "message": "DECREMENT"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 458954, // [Relay] Relay-end of cinema
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 458905, // [PlayerActor] PlayerActor-Intro_Meet_Ridley_Cinematic_Samus
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 458955, // [PlayerActor] PlayerActor-meetRidley_lookaround
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 458956, // [PlayerActor] PlayerActor-Intro_meetRidley_pointgun_Samus
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 458964, // [PlayerActor] PlayerActor-intro_meetRidley_angry_samus
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 458966, // [PlayerActor] PlayerActor-meetRdley_point gun power
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 458967, // [PlayerActor] PlayerActor-meeting_ridley_point gun loop
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 458983, // [Effect] Effect_Explosion1
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 458984, // [Effect] Effect_Explosion3
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 458996, // [Effect] Effect_Explosion2
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 458997, // [Effect] Effect_Explosion4
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459001, // [Effect] Effect_SmokeDebris
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459004, // [Timer] Timer_Explosion4
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459005, // [Timer] Timer_Explosion2
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459006, // [Timer] Timer_Explosion3
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459008, // [Timer] Timer_Explosion1Shaker
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459012, // [Effect] Effect_Sparks_
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459013, // [Timer] Timer_Sparks
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459014, // [Effect] Effect_Pipe1
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459015, // [Effect] Effect_Pipe2
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459016, // [Effect] Effect_Pipe3
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459017, // [Timer] Timer_Pipe2
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459018, // [Timer] Timer_Pipe3
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459019, // [Timer] Timer_Pipe1
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459020, // [Effect] Effect_Pipe4
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459021, // [Effect] Effect_Pipe5
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459022, // [Effect] Effect_Pipe6
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459023, // [Effect] Effect_LightningIn
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459024, // [Effect] Effect_Lightning
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459025, // [Timer] Timer_SmokeDebris
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459026, // [Effect] Effect_Splashes1
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459027, // [Effect] Effect_Splashes1b
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459028, // [Effect] Effect_RandomSplashes
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459029, // [Effect] Effect_FireBall1
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459030, // [Effect] Effect_FireBall6
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459031, // [Effect] Effect_FireBall2
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459032, // [Effect] Effect_FireBall4
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459033, // [Effect] Effect_FireBall3
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459034, // [Effect] Effect_FireBall5
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459035, // [Effect] Effect_FireBall8
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459036, // [Effect] Effect_FireBall7
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459037, // [Timer] Timer_FireBall1
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459038, // [Timer] Timer_FireBall2
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459039, // [Timer] Timer_FireBall3
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459040, // [Timer] Timer_FireBall4
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459041, // [Timer] Timer_FireBall5
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459042, // [Timer] Timer_FireBall6
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459043, // [Timer] Timer_FireBall7
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459044, // [Timer] Timer_FireBall8
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459045, // [Timer] Timer_EndFireballs
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459046, // [Timer] Timer_StopSplashes
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459090, // [Timer] Timer_turnOffSplashes
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459096, // [Effect] Effect_firstDebris
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 459097, // [Timer] Timer_firstDebris
                             "state": "ZERO",
                             "message": "STOP"
                         },
                         {
-                            "senderId": 459103, // [SpecialFunction] SpecialFunction CinematicSkip
+                            "senderId": 559103, // [SpecialFunction] SpecialFunction CinematicSkip
                             "targetId": 458904, // [Actor] Actor-intro_level_cine_part02_ridley
                             "state": "ZERO",
                             "message": "DEACTIVATE"
@@ -1093,7 +1093,7 @@
                     ],
                     "specialFunctions": [
                         {
-                            "id": 459103, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "id": 559103, // [SpecialFunction] SpecialFunction Cinematic Skip
                             "type": "CinematicSkip"
                         }
                     ]
@@ -5857,6 +5857,51 @@
                         2436942 // [Trigger] Reset Faint Time Trigger
                     ],
                     "addConnections": [
+                        // Unload Rooms
+                        {
+                            "senderId": 2437129, // [SpecialFunction] SpecialFunction PlayerInAreaRelay
+                            "targetId": 2424833, // [Dock] Dock - To 0W Connect
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 2437129, // [SpecialFunction] SpecialFunction PlayerInAreaRelay
+                            "targetId": 2424834, // [Dock] Dock - To 0L Connect
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 2435087, // [Relay] Relay Enable Lock (To Trigger_Unlock&Key With Increment)
+                            "targetId": 2425063, // [Trigger] Trigger - To 0W Connect
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 2435087, // [Relay] Relay Enable Lock (To Trigger_Unlock&Key With Increment)
+                            "targetId": 2425064, // [Trigger] Trigger - To 0L Connect
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 5424935, // [Timer] Unload Rooms Immediately
+                            "targetId": 2435087, // [Relay] Relay Enable Lock (To Trigger_Unlock&Key With Increment)
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        // Enable Room Loading Post Fight
+                        {
+                            "senderId": 2435088, // [Relay] Relay Disable Lock (To Trigger_Unlock&Key With Decrement)
+                            "targetId": 2425064, // [Trigger] Trigger - To 0L Connect
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 2435088, // [Relay] Relay Disable Lock (To Trigger_Unlock&Key With Decrement)
+                            "targetId": 2425063, // [Trigger] Trigger - To 0W Connect
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        // Initial Slot Reveal Cutscene Elements
                         {
                             "senderId": 2425042, // [Counter] Counter
                             "targetId": 2424841, // [Relay] Start Slot Reveal Cinematic
@@ -7640,6 +7685,11 @@
                         {
                             "id": 1424937, // [Timer] Deactivate Flaahgra Switch
                             "time": 0.1
+                        },
+                        {
+                            "id": 5424935, // [Timer] Unload Rooms Immediately
+                            "time": 0.001,
+                            "startImmediately": true
                         }
                     ]
                 },
@@ -17818,12 +17868,6 @@
                             "targetId": 1048591, // [Relay] Relay-start of cinema
                             "state": "ENTERED",
                             "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 1050622, // [Trigger] Trigger_Start Breakout
-                            "targetId": 1051160, // [StreamedAudio] StreamedAudio Pirate Yoin SW
-                            "state": "ENTERED",
-                            "message": "STOP"
                         },
                         {
                             "senderId": 1048591, // [Relay] Relay-start of cinema
