@@ -2137,10 +2137,10 @@
                             "type": "object",
                             "properties": {
                                 "Phazon Mines East (Main Quarry)": {
-                                    "$ref": "#/$defs/minesTransports"
+                                    "$ref": "#/$defs/transportDestinations"
                                 },
                                 "Phazon Mines West (Phazon Processing Center)": {
-                                    "$ref": "#/$defs/minesTransports"
+                                    "$ref": "#/$defs/transportDestinations"
                                 }
                             },
                             "additionalProperties": false
