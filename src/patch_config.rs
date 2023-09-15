@@ -206,7 +206,7 @@ pub struct PlatformConfig
 }
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Copy, Clone)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(deny_unknown_fields)]
 pub enum GenericTexture
 {
     #[serde(alias="grass", alias="GRASS")]
@@ -545,7 +545,7 @@ pub struct HudmemoConfig
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(deny_unknown_fields)]
 pub enum EnviornmentalEffect {
     None,
     Snow,
@@ -855,7 +855,7 @@ pub struct HallOfTheEldersBombSlotCoversConfig {
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(deny_unknown_fields)]
 pub enum BombSlotCover {
     #[serde(alias="wave", alias="WAVE")]
     Wave,
@@ -866,7 +866,7 @@ pub enum BombSlotCover {
 }
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Copy, Clone)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(deny_unknown_fields)]
 pub enum PhazonDamageModifier
 {
     Default,
