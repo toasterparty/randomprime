@@ -1298,6 +1298,9 @@ impl PatchConfig
             .arg(Arg::with_name("quickplay")
                 .long("quickplay")
                 .hidden(true))
+            .arg(Arg::with_name("skip_splash_screens")
+                .long("skip_splash_screens")
+                .hidden(true))
             .arg(Arg::with_name("quickpatch")
                 .long("quickpatch")
                 .hidden(true))
@@ -1339,6 +1342,7 @@ impl PatchConfig
             "qol general" => patch_config.preferences.qol_general,
             "automatic crash screen" => patch_config.preferences.automatic_crash_screen,
             "quickplay" => patch_config.preferences.quickplay,
+            "skip_splash_screens" => patch_config.preferences.skip_splash_screens,
             "quickpatch" => patch_config.preferences.quickpatch,
             "quiet" => patch_config.preferences.quiet,
             "nonvaria heat damage" => patch_config.game_config.nonvaria_heat_damage,
