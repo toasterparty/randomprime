@@ -1449,7 +1449,7 @@
                                 "Tallon Overworld South (Great Tree Hall, Lower)": {
                                     "$ref": "#/$defs/transportDestinations"
                                 },
-                                "Tallon Overworld Central (Artifact Temple)": {
+                                "Artifact Temple": {
                                     "$ref": "#/$defs/transportDestinations"
                                 }
                             },
@@ -4082,7 +4082,7 @@
                 "Tallon Overworld East (Frigate Crash Site)",
                 "Tallon Overworld South (Great Tree Hall, Upper)",
                 "Tallon Overworld South (Great Tree Hall, Lower)",
-                "Tallon Overworld Central (Artifact Temple)"
+                "Artifact Temple"
             ]
         },
         "chozoTransports": {
