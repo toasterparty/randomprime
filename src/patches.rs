@@ -104,6 +104,64 @@ use std::{
     time::Instant,
 };
 
+macro_rules! add_edit_obj_helper {
+    ($area:expr, $config:expr, $object_type:ident, $new_property_data:ident, $update_property_data:ident) => {
+        let area = $area;
+        let config = $config;
+        let mrea_id = area.mlvl_area.mrea.to_u32().clone();
+
+        if let Some(id) = config.id {
+            let scly = area.mrea().scly_section_mut();
+            let layers = &mut scly.layers.as_mut_vec(); 
+    
+            // try to find existing object   
+            let obj = {
+                let mut obj = None;
+                for layer in layers.iter_mut() {
+                    obj = layer.objects
+                        .as_mut_vec()
+                        .iter_mut()
+                        .find(|obj| obj.instance_id & 0x00FFFFFF == id & 0x00FFFFFF);
+    
+                    if obj.is_some() {
+                        break;
+                    }
+                }
+    
+                obj
+            };
+    
+            if let Some(obj) = obj {
+                // edit existing object
+                if obj.property_data.object_type() != structs::$object_type::OBJECT_TYPE {
+                    panic!("Failed to edit existing object 0x{:X} in room 0x{:X}: Unexpected object type 0x{:X} (expected 0x{:X})", id, mrea_id, obj.property_data.object_type(), structs::$object_type::OBJECT_TYPE);
+                }
+
+                $update_property_data!(config, obj);
+    
+                return Ok(());
+            }
+        }
+    
+        // add new object
+        let id = config.id.unwrap_or(area.new_object_id_from_layer_id(0));
+        let scly = area.mrea().scly_section_mut();
+        let layers = &mut scly.layers.as_mut_vec();
+        let objects = layers[0].objects.as_mut_vec();
+        let property_data = $new_property_data!(config);
+
+        objects.push(
+            structs::SclyObject {
+                instance_id: id,
+                property_data: property_data.into(),
+                connections: vec![].into(),
+            }
+        );
+
+        return Ok(());
+    };
+}
+
 #[derive(Clone, Debug)]
 struct ModifiableDoorLocation {
     pub door_location: Option<ScriptObjectLocation>,
@@ -5867,50 +5925,48 @@ fn patch_add_actor_rotate_fn<'r>(
     Ok(())
 }
 
+macro_rules! streamed_audio_new {
+    ($config:expr) => {
+        structs::StreamedAudio {
+            name: b"mystreamedaudio\0".as_cstr(),
+            active: $config.active.unwrap_or(true) as u8,
+            audio_file_name: string_to_cstr($config.audio_file_name),
+            no_stop_on_deactivate: $config.no_stop_on_deactivate.unwrap_or(true) as u8,
+            fade_in_time: $config.fade_in_time.unwrap_or(0.1),
+            fade_out_time: $config.fade_out_time.unwrap_or(1.5),
+            volume: $config.volume.unwrap_or(100),
+            oneshot: $config.oneshot.unwrap_or(0),
+            is_music: $config.is_music as u8,
+        }
+    };
+}
+
+macro_rules! streamed_audio_update {
+    ($config:expr, $obj:expr) => {
+        let config = $config;
+        let obj = $obj;
+
+        let property_data = obj.property_data.as_streamed_audio_mut().unwrap();
+
+        property_data.audio_file_name = string_to_cstr(config.audio_file_name);
+        property_data.is_music = config.is_music as u8;
+
+        if let Some(active                ) = config.active                { property_data.active                = active                as u8 }
+        if let Some(no_stop_on_deactivate ) = config.no_stop_on_deactivate { property_data.no_stop_on_deactivate = no_stop_on_deactivate as u8 }
+        if let Some(fade_in_time          ) = config.fade_in_time          { property_data.fade_in_time          = fade_in_time                }
+        if let Some(fade_out_time         ) = config.fade_out_time         { property_data.fade_out_time         = fade_out_time               }
+        if let Some(volume                ) = config.volume                { property_data.volume                = volume                      }
+        if let Some(oneshot               ) = config.oneshot               { property_data.oneshot               = oneshot                     }
+    };
+}
+
 fn patch_add_streamed_audio<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
     config: StreamedAudioConfig,
-)
-    -> Result<(), String>
+) -> Result<(), String>
 {
-    let instance_id = {
-        if config.id.is_some() {
-            let id = config.id.unwrap();
-            if id_in_use(area, id) {
-                panic!("id 0x{:X} already in use", id);
-            }
-
-            id
-        } else {
-            area.new_object_id_from_layer_id(0)
-        }
-    };
-
-    let scly = area.mrea().scly_section_mut();
-    let layer = &mut scly.layers.as_mut_vec()[0];
-
-    let audio_file_name = string_to_cstr(config.audio_file_name);
-
-    layer.objects.as_mut_vec().push(
-        structs::SclyObject {
-            instance_id,
-            property_data: structs::StreamedAudio {
-                name: b"mystreamedaudio\0".as_cstr(),
-                active: config.active.unwrap_or(true) as u8,
-                audio_file_name: audio_file_name,
-                no_stop_on_deactivate: config.active.unwrap_or(true) as u8,
-                fade_in_time: config.fade_in_time.unwrap_or(0.1),
-                fade_out_time: config.fade_out_time.unwrap_or(1.5),
-                volume: config.volume.unwrap_or(100),
-                oneshot: config.oneshot.unwrap_or(0),
-                is_music: config.is_music as u8,
-            }.into(),
-            connections: vec![].into(),
-        }
-    );
-
-    Ok(())
+    add_edit_obj_helper!(area, config, StreamedAudio, streamed_audio_new, streamed_audio_update);
 }
 
 fn patch_add_platform<'r>(
