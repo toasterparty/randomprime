@@ -1055,15 +1055,23 @@
                             "type": "number",
                             "exclusiveMinimum": 0.0
                         },
-                        "Ridley": {
+                        "ridley": {
                             "type": "number",
                             "exclusiveMinimum": 0.0
                         },
-                        "Exo": {
+                        "exo": {
                             "type": "number",
                             "exclusiveMinimum": 0.0
                         },
-                        "Essence": {
+                        "essence": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "platedBeetle": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "cloakedDrone": {
                             "type": "number",
                             "exclusiveMinimum": 0.0
                         }
