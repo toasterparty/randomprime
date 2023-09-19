@@ -461,7 +461,6 @@
                     "description": "The amount of energy provided by an Energy Tank.",
                     "type": "integer",
                     "minimum": 0,
-                    "maximum": 100,
                     "default": 100
                 },
                 "itemMaxCapacity": {
