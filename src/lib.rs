@@ -16,6 +16,7 @@ use std::{
     ffi::CString,
 };
 
+pub mod add_modify_obj_patches;
 pub mod c_interface;
 pub mod custom_assets;
 pub mod extern_assets;
