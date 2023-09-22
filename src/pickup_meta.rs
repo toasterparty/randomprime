@@ -11,7 +11,6 @@ use crate::custom_assets::custom_asset_ids;
  * Pickup kind as defined by the game engine
  */
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum PickupType
 {
     PowerBeam = 0,
