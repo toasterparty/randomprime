@@ -5,7 +5,6 @@ use std::{
 
 use crate::{
     patches::{
-        id_in_use,
         string_to_cstr,
         WaterType,
     },
@@ -39,12 +38,12 @@ use reader_writer::{
 use structs::{res_id, ResId, SclyPropertyData};
 
 macro_rules! add_edit_obj_helper {
-    ($area:expr, $config:expr, $object_type:ident, $new_property_data:ident, $update_property_data:ident) => {
+    ($area:expr, $id:expr, $object_type:ident, $new_property_data:ident, $update_property_data:ident) => {
         let area = $area;
-        let config = $config;
+        let id = $id;
         let mrea_id = area.mlvl_area.mrea.to_u32().clone();
 
-        if let Some(id) = config.id {
+        if let Some(id) = id {
             let scly = area.mrea().scly_section_mut();
             let layers = &mut scly.layers.as_mut_vec(); 
     
@@ -71,23 +70,26 @@ macro_rules! add_edit_obj_helper {
                     panic!("Failed to edit existing object 0x{:X} in room 0x{:X}: Unexpected object type 0x{:X} (expected 0x{:X})", id, mrea_id, obj.property_data.object_type(), structs::$object_type::OBJECT_TYPE);
                 }
 
-                $update_property_data!(config, obj);
+                $update_property_data!(obj);
     
                 return Ok(());
             }
         }
     
         // add new object
-        let id = config.id.unwrap_or(area.new_object_id_from_layer_id(0));
+        let id = id.unwrap_or(area.new_object_id_from_layer_id(0));
         let scly = area.mrea().scly_section_mut();
         let layers = &mut scly.layers.as_mut_vec();
         let objects = layers[0].objects.as_mut_vec();
-        let property_data = $new_property_data!(config);
+        let property_data = $new_property_data!();
+        let property_data: structs::SclyProperty = property_data.into();
+
+        assert!(property_data.object_type() == structs::$object_type::OBJECT_TYPE);
 
         objects.push(
             structs::SclyObject {
                 instance_id: id,
-                property_data: property_data.into(),
+                property_data,
                 connections: vec![].into(),
             }
         );
@@ -102,25 +104,24 @@ pub fn patch_add_streamed_audio<'r>(
     config: StreamedAudioConfig,
 ) -> Result<(), String>
 {
-    macro_rules! streamed_audio_new {
-        ($config:expr) => {
+    macro_rules! new {
+        () => {
             structs::StreamedAudio {
                 name: b"mystreamedaudio\0".as_cstr(),
-                active: $config.active.unwrap_or(true) as u8,
-                audio_file_name: string_to_cstr($config.audio_file_name),
-                no_stop_on_deactivate: $config.no_stop_on_deactivate.unwrap_or(true) as u8,
-                fade_in_time: $config.fade_in_time.unwrap_or(0.1),
-                fade_out_time: $config.fade_out_time.unwrap_or(1.5),
-                volume: $config.volume.unwrap_or(100),
-                oneshot: $config.oneshot.unwrap_or(0),
-                is_music: $config.is_music as u8,
+                active: config.active.unwrap_or(true) as u8,
+                audio_file_name: string_to_cstr(config.audio_file_name),
+                no_stop_on_deactivate: config.no_stop_on_deactivate.unwrap_or(true) as u8,
+                fade_in_time: config.fade_in_time.unwrap_or(0.1),
+                fade_out_time: config.fade_out_time.unwrap_or(1.5),
+                volume: config.volume.unwrap_or(100),
+                oneshot: config.oneshot.unwrap_or(0),
+                is_music: config.is_music as u8,
             }
         };
     }
     
-    macro_rules! streamed_audio_update {
-        ($config:expr, $obj:expr) => {
-            let config = $config;
+    macro_rules! update {
+        ($obj:expr) => {
             let obj = $obj;
     
             let property_data = obj.property_data.as_streamed_audio_mut().unwrap();
@@ -137,252 +138,291 @@ pub fn patch_add_streamed_audio<'r>(
         };
     }
 
-    add_edit_obj_helper!(area, config, StreamedAudio, streamed_audio_new, streamed_audio_update);
+    add_edit_obj_helper!(area, config.id, StreamedAudio, new, update);
 }
 
 pub fn patch_add_liquid<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
-    water_config: &WaterConfig,
+    config: &WaterConfig,
     resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
 )
 -> Result<(), String>
 {
-    let water_type = WaterType::from_str(water_config.liquid_type.as_str());
+    let water_type = WaterType::from_str(config.liquid_type.as_str());
 
-    // add dependencies to area //
-    let deps = water_type.dependencies();
-    let deps_iter = deps.iter()
-        .map(|&(file_id, fourcc)| structs::Dependency {
-                asset_id: file_id,
-                asset_type: fourcc,
-        });
-
-    area.add_dependencies(resources, 0, deps_iter);
+    /* add dependencies to area */
+    {
+        let deps = water_type.dependencies();
+        let deps_iter = deps.iter()
+            .map(|&(file_id, fourcc)| structs::Dependency {
+                    asset_id: file_id,
+                    asset_type: fourcc,
+            });
+    
+        area.add_dependencies(resources, 0, deps_iter);
+    }
 
     let mut water_obj = water_type.to_obj();
-    let water = water_obj.property_data.as_water_mut().unwrap();
-    water.position[0] = water_config.position[0];
-    water.position[1] = water_config.position[1];
-    water.position[2] = water_config.position[2];
-    water.scale[0]    = water_config.scale[0];
-    water.scale[1]    = water_config.scale[1];
-    water.scale[2]    = water_config.scale[2];
+    {        
+        let water = water_obj.property_data.as_water_mut().unwrap();
+        water.position[0] = config.position[0];
+        water.position[1] = config.position[1];
+        water.position[2] = config.position[2];
+        water.scale[0]    = config.scale[0];
+        water.scale[1]    = config.scale[1];
+        water.scale[2]    = config.scale[2];
+    }
+    macro_rules! new {
+        () => {
+            water_obj.property_data
+        };
+    }
 
-    // add water to area //
-    let scly = area.mrea().scly_section_mut();
-    let layer = &mut scly.layers.as_mut_vec()[0];
-    layer.objects.as_mut_vec().push(water_obj);
+    macro_rules! update {
+        ($obj:expr) => {
+            let obj = $obj;
+            obj.property_data = water_obj.property_data.clone();
+        };
+    }
 
-    Ok(())
+    add_edit_obj_helper!(area, None, Water, new, update);
 }
 
 pub fn patch_add_actor_key_frame<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
-    actor_key_frame_config: ActorKeyFrameConfig,
+    config: ActorKeyFrameConfig,
 )
     -> Result<(), String>
 {
-    if id_in_use(area, actor_key_frame_config.id) {
-        panic!("id 0x{:X} already in use", actor_key_frame_config.id);
+    macro_rules! new {
+        () => {
+            structs::ActorKeyFrame {
+                name: b"my keyframe\0".as_cstr(),
+                active: config.active.unwrap_or(true) as u8,
+                animation_id: config.animation_id,
+                looping: config.looping as u8,
+                lifetime: config.lifetime,
+                fade_out: config.fade_out,
+                total_playback: config.total_playback,
+            }
+        };
     }
 
-    let scly = area.mrea().scly_section_mut();
-    let layer = &mut scly.layers.as_mut_vec()[0];
-    layer.objects.as_mut_vec().push(
-        structs::SclyObject {
-            instance_id: actor_key_frame_config.id,
-            property_data: structs::ActorKeyFrame {
-                name: b"my keyframe\0".as_cstr(),
-                active: actor_key_frame_config.active.unwrap_or(true) as u8,
-                animation_id: actor_key_frame_config.animation_id,
-                looping: actor_key_frame_config.looping as u8,
-                lifetime: actor_key_frame_config.lifetime,
-                fade_out: actor_key_frame_config.fade_out,
-                total_playback: actor_key_frame_config.total_playback,
-            }.into(),
-            connections: vec![].into(),
-        },
-    );
+    macro_rules! update {
+        ($obj:expr) => {
+            let obj = $obj;
+    
+            let property_data = obj.property_data.as_actor_key_frame_mut().unwrap();
 
-    Ok(())
+            if let Some(active) = config.active { property_data.active = active as u8 }
+
+            property_data.animation_id = config.animation_id;
+            property_data.looping = config.looping as u8;
+            property_data.lifetime = config.lifetime;
+            property_data.fade_out = config.fade_out;
+            property_data.total_playback = config.total_playback;
+        };
+    }
+
+    add_edit_obj_helper!(area, Some(config.id), ActorKeyFrame, new, update);
 }
 
 pub fn patch_add_timer<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
-    timer_config: TimerConfig,
+    config: TimerConfig,
 )
     -> Result<(), String>
 {
-    if id_in_use(area, timer_config.id) {
-        panic!("id 0x{:X} already in use", timer_config.id);
+    macro_rules! new {
+        () => {
+            structs::Timer {
+                name: b"my timer\0".as_cstr(),
+                start_time: config.time,
+                max_random_add: config.max_random_add.unwrap_or(0.0),
+                looping: config.looping.unwrap_or(false) as u8,
+                start_immediately: config.start_immediately.unwrap_or(false) as u8,
+                active: config.active.unwrap_or(true) as u8,
+            }
+        };
     }
 
-    let scly = area.mrea().scly_section_mut();
-    let layer = &mut scly.layers.as_mut_vec()[0];
-    layer.objects.as_mut_vec().push(
-        structs::SclyObject {
-            instance_id: timer_config.id,
-            property_data: structs::Timer {
-                name: b"my timer\0".as_cstr(),
-                start_time: timer_config.time,
-                max_random_add: timer_config.max_random_add.unwrap_or(0.0),
-                looping: timer_config.looping.unwrap_or(false) as u8,
-                start_immediately: timer_config.start_immediately.unwrap_or(false) as u8,
-                active: timer_config.active.unwrap_or(true) as u8,
-            }.into(),
-            connections: vec![].into(),
-        },
-    );
+    macro_rules! update {
+        ($obj:expr) => {
+            let obj = $obj;
+    
+            let property_data = obj.property_data.as_timer_mut().unwrap();
 
-    Ok(())
+            property_data.start_time = config.time;
+
+            if let Some(active           ) = config.active            { property_data.active            = active            as u8 }
+            if let Some(max_random_add   ) = config.max_random_add    { property_data.max_random_add    = max_random_add          }
+            if let Some(looping          ) = config.looping           { property_data.looping           = looping           as u8 }
+            if let Some(start_immediately) = config.start_immediately { property_data.start_immediately = start_immediately as u8 }
+        };
+    }
+
+    add_edit_obj_helper!(area, Some(config.id), Timer, new, update);
 }
 
 pub fn patch_add_relay<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
-    relay_config: RelayConfig,
+    config: RelayConfig,
 )
     -> Result<(), String>
 {
-    if id_in_use(area, relay_config.id) {
-        panic!("id 0x{:X} already in use", relay_config.id);
+    macro_rules! new {
+        () => {
+            structs::Relay {
+                name: b"my relay\0".as_cstr(),
+                active: config.active.unwrap_or(true) as u8,
+            }
+        };
     }
 
-    let scly = area.mrea().scly_section_mut();
-    let layer = &mut scly.layers.as_mut_vec()[0];
-    layer.objects.as_mut_vec().push(
-        structs::SclyObject {
-            instance_id: relay_config.id,
-            property_data: structs::Relay {
-                    name: b"my relay\0".as_cstr(),
-                    active: relay_config.active.unwrap_or(true) as u8,
-                }.into(),
-            connections: vec![].into(),
-        },
-    );
+    macro_rules! update {
+        ($obj:expr) => {
+            let obj = $obj;
+    
+            let property_data = obj.property_data.as_relay_mut().unwrap();
+            if let Some(active) = config.active { property_data.active = active as u8 }
+        };
+    }
 
-    Ok(())
+    add_edit_obj_helper!(area, Some(config.id), Relay, new, update);
 }
 
 pub fn patch_add_spawn_point<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
-    spawn_point_config: SpawnPointConfig,
+    config: SpawnPointConfig,
 )
     -> Result<(), String>
 {
-    if id_in_use(area, spawn_point_config.id) {
-        panic!("id 0x{:X} already in use", spawn_point_config.id);
-    }
-
-    let rotation = spawn_point_config.rotation
-        .as_ref()
-        .unwrap_or(&[0.0, 0.0, 0.0]);
-    let rotation = *rotation;
-
-    let scly = area.mrea().scly_section_mut();
-    let layer = &mut scly.layers.as_mut_vec()[0];
-    let mut spawn_point = structs::SclyObject {
-            instance_id: spawn_point_config.id,
-            property_data: structs::SpawnPoint {
-                    name: b"my spawnpoint\0".as_cstr(),
-                    position: spawn_point_config.position.into(),
-                    rotation: rotation.into(),
-                    power: 0,
-                    ice: 0,
-                    wave: 0,
-                    plasma: 0,
-                    missiles: 0,
-                    scan_visor: 0,
-                    bombs: 0,
-                    power_bombs: 0,
-                    flamethrower: 0,
-                    thermal_visor: 0,
-                    charge: 0,
-                    super_missile: 0,
-                    grapple: 0,
-                    xray: 0,
-                    ice_spreader: 0,
-                    space_jump: 0,
-                    morph_ball: 0,
-                    combat_visor: 0,
-                    boost_ball: 0,
-                    spider_ball: 0,
-                    power_suit: 0,
-                    gravity_suit: 0,
-                    varia_suit: 0,
-                    phazon_suit: 0,
-                    energy_tanks: 0,
-                    unknown0: 0,
-                    health_refill: 0,
-                    unknown1: 0,
-                    wavebuster: 0,
-                    default_spawn: spawn_point_config.default_spawn.unwrap_or(false) as u8,
-                    active: spawn_point_config.active.unwrap_or(true) as u8,
-                    morphed: spawn_point_config.morphed.unwrap_or(false) as u8,
-                }.into(),
-            connections: vec![].into(),
+    let spawn_point = {
+        let mut spawn_point = structs::SpawnPoint {
+            name: b"my spawnpoint\0".as_cstr(),
+            position: config.position.into(),
+            rotation: config.rotation.unwrap_or([0.0, 0.0, 0.0]).into(),
+            power: 0,
+            ice: 0,
+            wave: 0,
+            plasma: 0,
+            missiles: 0,
+            scan_visor: 0,
+            bombs: 0,
+            power_bombs: 0,
+            flamethrower: 0,
+            thermal_visor: 0,
+            charge: 0,
+            super_missile: 0,
+            grapple: 0,
+            xray: 0,
+            ice_spreader: 0,
+            space_jump: 0,
+            morph_ball: 0,
+            combat_visor: 0,
+            boost_ball: 0,
+            spider_ball: 0,
+            power_suit: 0,
+            gravity_suit: 0,
+            varia_suit: 0,
+            phazon_suit: 0,
+            energy_tanks: 0,
+            unknown0: 0,
+            health_refill: 0,
+            unknown1: 0,
+            wavebuster: 0,
+            default_spawn: config.default_spawn.unwrap_or(false) as u8,
+            active: config.active.unwrap_or(true) as u8,
+            morphed: config.morphed.unwrap_or(false) as u8,
         };
 
-    if spawn_point_config.items.is_some() {
-        let items = spawn_point_config.items.unwrap();
-        items.update_spawn_point(spawn_point.property_data.as_spawn_point_mut().unwrap());
+        if let Some(items) = config.items.as_ref() {
+            items.update_spawn_point(&mut spawn_point);
+        }
+
+        spawn_point
+    };
+
+    macro_rules! new {
+        () => {
+            spawn_point.clone()
+        };
     }
 
-    layer.objects.as_mut_vec().push(spawn_point);
+    macro_rules! update {
+        ($obj:expr) => {
+            let obj = $obj;
+    
+            let property_data = obj.property_data.as_spawn_point_mut().unwrap();
 
-    Ok(())
+            property_data.position = config.position.into();
+
+            if let Some(items) = config.items.as_ref() {
+                items.update_spawn_point(property_data);
+            }
+
+            if let Some(active       ) = config.active        { property_data.active        = active        as u8     }
+            if let Some(default_spawn) = config.default_spawn { property_data.default_spawn = default_spawn as u8     }
+            if let Some(morphed      ) = config.morphed       { property_data.morphed       = morphed       as u8     }
+            if let Some(rotation     ) = config.rotation      { property_data.rotation      = rotation     .   into() }
+        };
+    }
+
+    add_edit_obj_helper!(area, Some(config.id), SpawnPoint, new, update);
 }
 
 pub fn patch_add_trigger<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
-    trigger_config: TriggerConfig,
+    config: TriggerConfig,
 )
     -> Result<(), String>
 {
-    let instance_id = {
-        if trigger_config.id.is_some() {
-            let id = trigger_config.id.unwrap();
-            if id_in_use(area, id) {
-                panic!("id 0x{:X} already in use", id);
-            }
-
-            id
-        } else {
-            area.new_object_id_from_layer_id(0)
-        }
-    };
-
-    let scly = area.mrea().scly_section_mut();
-    let layer = &mut scly.layers.as_mut_vec()[0];
-    layer.objects.as_mut_vec().push(
-        structs::SclyObject {
-            instance_id,
-            property_data: structs::Trigger {
-                name: b"Start Sequence Trigger\0".as_cstr(),
-                position: trigger_config.position.into(),
-                scale: trigger_config.scale.into(),
+    macro_rules! new {
+        () => {
+            structs::Trigger {
+                name: b"my trigger\0".as_cstr(),
+                position: config.position.into(),
+                scale: config.scale.into(),
                 damage_info: structs::scly_structs::DamageInfo {
-                    weapon_type: trigger_config.damage_type.unwrap_or(DamageType::Power) as u32,
-                    damage: trigger_config.damage_amount.unwrap_or(0.0),
+                    weapon_type: config.damage_type.unwrap_or(DamageType::Power) as u32,
+                    damage: config.damage_amount.unwrap_or(0.0),
                     radius: 0.0,
                     knockback_power: 0.0
                 },
-                force: trigger_config.force.unwrap_or([0.0, 0.0, 0.0]).into(),
-                flags: trigger_config.flags.unwrap_or(1),
-                active: trigger_config.active.unwrap_or(true) as u8,
-                deactivate_on_enter: trigger_config.deactivate_on_enter.unwrap_or(false) as u8,
-                deactivate_on_exit: trigger_config.deactivate_on_exit.unwrap_or(false) as u8,
-            }.into(),
-            connections: vec![].into(),
-        }
-    );
+                force: config.force.unwrap_or([0.0, 0.0, 0.0]).into(),
+                flags: config.flags.unwrap_or(1),
+                active: config.active.unwrap_or(true) as u8,
+                deactivate_on_enter: config.deactivate_on_enter.unwrap_or(false) as u8,
+                deactivate_on_exit: config.deactivate_on_exit.unwrap_or(false) as u8,
+            }
+        };
+    }
 
-    Ok(())
+    macro_rules! update {
+        ($obj:expr) => {
+            let obj = $obj;
+    
+            let property_data = obj.property_data.as_trigger_mut().unwrap();
+
+            property_data.position = config.position.into();
+            property_data.scale = config.scale.into();
+
+            if let Some(active             ) = config.active              { property_data.active                          = active              as u8  }
+            if let Some(damage_type        ) = config.damage_type         { property_data.damage_info        .weapon_type = damage_type         as u32 }
+            if let Some(damage_amount      ) = config.damage_amount       { property_data.damage_info        .damage      = damage_amount              }
+            if let Some(force              ) = config.force               { property_data.force                           = force              .into() }
+            if let Some(deactivate_on_enter) = config.deactivate_on_enter { property_data.deactivate_on_enter             = deactivate_on_enter as u8  }
+            if let Some(deactivate_on_exit ) = config.deactivate_on_exit  { property_data.deactivate_on_exit              = deactivate_on_exit  as u8  }
+        };
+    }
+
+    add_edit_obj_helper!(area, config.id, Trigger, new, update);
 }
 
 pub fn patch_add_special_fn<'r>(
@@ -392,29 +432,13 @@ pub fn patch_add_special_fn<'r>(
 )
     -> Result<(), String>
 {
-    let instance_id = {
-        if config.id.is_some() {
-            let id = config.id.unwrap();
-            if id_in_use(area, id) {
-                panic!("id 0x{:X} already in use", id);
-            }
+    let default = "".to_string();
+    let unknown0 = config.unknown1.as_ref().unwrap_or(&default);
+    let unknown0 = string_to_cstr(unknown0.clone());
 
-            id
-        } else {
-            area.new_object_id_from_layer_id(0)
-        }
-    };
-
-    let unknown0 = config.unknown1.unwrap_or("".to_string());
-    let unknown0 = string_to_cstr(unknown0);
-
-    let scly = area.mrea().scly_section_mut();
-    let layer = &mut scly.layers.as_mut_vec()[0];
-
-    layer.objects.as_mut_vec().push(
-        structs::SclyObject {
-            instance_id,
-            property_data: structs::SpecialFunction {
+    macro_rules! new {
+        () => {
+            structs::SpecialFunction {
                 name: b"myspecialfun\0".as_cstr(),
                 position: config.position.unwrap_or_default().into(),
                 rotation: config.rotation.unwrap_or_default().into(),
@@ -431,12 +455,35 @@ pub fn patch_add_special_fn<'r>(
                 unknown6: config.spinner1.unwrap_or(0xFFFFFFFF),
                 unknown7: config.spinner2.unwrap_or(0xFFFFFFFF),
                 unknown8: config.spinner3.unwrap_or(0xFFFFFFFF),
-            }.into(),
-            connections: vec![].into(),
-        }
-    );
+            }
+        };
+    }
 
-    Ok(())
+    macro_rules! update {
+        ($obj:expr) => {
+            let obj = $obj;
+
+            let property_data = obj.property_data.as_special_function_mut().unwrap();
+
+            property_data.type_ = config.type_ as u32;
+            
+            if let Some(position             ) = config.position                       { property_data.position              = position             .into() }
+            if let Some(rotation             ) = config.rotation                       { property_data.rotation              = rotation             .into() }
+            if let Some(_                    ) = config.unknown1             .as_ref() { property_data.unknown0              = unknown0                     }
+            if let Some(unknown2             ) = config.unknown2                       { property_data.unknown1              = unknown2                     }
+            if let Some(unknown3             ) = config.unknown3                       { property_data.unknown2              = unknown3                     }
+            if let Some(layer_change_room_id ) = config.layer_change_room_id           { property_data.layer_change_room_id  = layer_change_room_id         }
+            if let Some(layer_change_layer_id) = config.layer_change_layer_id          { property_data.layer_change_layer_id = layer_change_layer_id        }
+            if let Some(item_id              ) = config.item_id                        { property_data.item_id               = item_id               as u32 }
+            if let Some(active               ) = config.active                         { property_data.unknown4              = active                as u8  }
+            if let Some(unknown6             ) = config.unknown6                       { property_data.unknown5              = unknown6                     }
+            if let Some(spinner1             ) = config.spinner1                       { property_data.unknown6              = spinner1                     }
+            if let Some(spinner2             ) = config.spinner2                       { property_data.unknown7              = spinner2                     }
+            if let Some(spinner3             ) = config.spinner3                       { property_data.unknown8              = spinner3                     }
+        };
+    }
+
+    add_edit_obj_helper!(area, config.id, SpecialFunction, new, update);
 }
 
 pub fn patch_add_actor_rotate_fn<'r>(
@@ -446,38 +493,34 @@ pub fn patch_add_actor_rotate_fn<'r>(
 )
     -> Result<(), String>
 {
-    let instance_id = {
-        if config.id.is_some() {
-            let id = config.id.unwrap();
-            if id_in_use(area, id) {
-                panic!("id 0x{:X} already in use", id);
-            }
-
-            id
-        } else {
-            area.new_object_id_from_layer_id(0)
-        }
-    };
-
-    let scly = area.mrea().scly_section_mut();
-    let layer = &mut scly.layers.as_mut_vec()[0];
-
-    layer.objects.as_mut_vec().push(
-        structs::SclyObject {
-            instance_id,
-            property_data: structs::ActorRotate {
+    macro_rules! new {
+        () => {
+            structs::ActorRotate {
                 name: b"my actor rotate\0".as_cstr(),
                 rotation: config.rotation.into(),
                 time_scale: config.time_scale,
                 update_actors: config.update_actors as u8,
                 update_on_creation: config.update_on_creation as u8,
                 update_active: config.update_active as u8,
-            }.into(),
-            connections: vec![].into(),
-        }
-    );
+            }
+        };
+    }
 
-    Ok(())
+    macro_rules! update {
+        ($obj:expr) => {
+            let obj = $obj;
+
+            let property_data = obj.property_data.as_actor_rotate_mut().unwrap();
+
+            property_data.rotation           = config.rotation          .into();
+            property_data.time_scale         = config.time_scale               ;
+            property_data.update_actors      = config.update_actors      as u8 ;
+            property_data.update_on_creation = config.update_on_creation as u8 ;
+            property_data.update_active      = config.update_active      as u8 ;
+        };
+    }
+
+    add_edit_obj_helper!(area, config.id, ActorRotate, new, update);
 }
 
 pub fn patch_add_platform<'r>(
@@ -736,7 +779,6 @@ pub fn add_block<'r>(
         },
     );
 }
-
 
 pub fn patch_lock_on_point<'r>(
     _ps: &mut PatcherState,
@@ -1044,7 +1086,6 @@ pub fn patch_lock_on_point<'r>(
 
     Ok(())
 }
-
 
 pub fn patch_add_camera_hint<'r>(
     _ps: &mut PatcherState,
