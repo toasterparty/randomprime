@@ -23,6 +23,9 @@ use crate::{
         SpecialFunctionConfig,
         ActorRotateConfig,
         StreamedAudioConfig,
+        PlatformConfig,
+        PlatformType,
+        BlockConfig,
     },
     pickup_meta::PickupType,
     door_meta::DoorType,
@@ -186,7 +189,7 @@ pub fn patch_add_liquid<'r>(
         };
     }
 
-    add_edit_obj_helper!(area, None, Water, new, update);
+    add_edit_obj_helper!(area, config.id, Water, new, update);
 }
 
 pub fn patch_add_actor_key_frame<'r>(
@@ -527,38 +530,52 @@ pub fn patch_add_platform<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
-    position: [f32;3],
-    rotation: [f32;3],
-    alt_platform: bool,
+    config: PlatformConfig,
 ) -> Result<(), String>
 {
+    let platform_type = {
+        match config.platform_type {
+            Some(platform_type) => platform_type,
+            None => {
+                if config.alt_platform.unwrap_or(false) {
+                    PlatformType::Snow
+                } else {
+                    PlatformType::Metal
+                }
+            }
+        }
+    };
+
     let (deps, cmdl, dcln) = {
-        if alt_platform {
-            (
-                vec![
-                    (0xDCDFD386, b"CMDL"),
-                    (0x6D412D11, b"DCLN"),
-                    (0xEED972E7, b"TXTR"),
-                    (0xF1478D6A, b"TXTR"),
-                    (0xF89D34EF, b"TXTR"),
-                ],
-                ResId::<res_id::CMDL>::new(0xDCDFD386),
-                ResId::<res_id::DCLN>::new(0x6D412D11),
-            )
-        } else {
-            (
-                vec![
-                    (0x48DF38A3, b"CMDL"),
-                    (0xB2D50628, b"DCLN"),
-                    (0x19C17D5C, b"TXTR"),
-                    (0x0259F5F6, b"TXTR"),
-                    (0x71190250, b"TXTR"),
-                    (0xD0BA0FA8, b"TXTR"),
-                    (0xF1478D6A, b"TXTR"),
-                ],
-                ResId::<res_id::CMDL>::new(0x48DF38A3),
-                ResId::<res_id::DCLN>::new(0xB2D50628),
-            )
+        match platform_type {
+            PlatformType::Snow => {
+                (
+                    vec![
+                        (0xDCDFD386, b"CMDL"),
+                        (0x6D412D11, b"DCLN"),
+                        (0xEED972E7, b"TXTR"),
+                        (0xF1478D6A, b"TXTR"),
+                        (0xF89D34EF, b"TXTR"),
+                    ],
+                    ResId::<res_id::CMDL>::new(0xDCDFD386),
+                    ResId::<res_id::DCLN>::new(0x6D412D11),
+                )
+            },
+            PlatformType::Metal => {
+                (
+                    vec![
+                        (0x48DF38A3, b"CMDL"),
+                        (0xB2D50628, b"DCLN"),
+                        (0x19C17D5C, b"TXTR"),
+                        (0x0259F5F6, b"TXTR"),
+                        (0x71190250, b"TXTR"),
+                        (0xD0BA0FA8, b"TXTR"),
+                        (0xF1478D6A, b"TXTR"),
+                    ],
+                    ResId::<res_id::CMDL>::new(0x48DF38A3),
+                    ResId::<res_id::DCLN>::new(0xB2D50628),
+                )
+            }
         }
     };
 
@@ -570,17 +587,13 @@ pub fn patch_add_platform<'r>(
     );
     area.add_dependencies(game_resources,0,deps_iter);
 
-    let platform_id = area.new_object_id_from_layer_name("Default");
-
-    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
-    layers[0].objects.as_mut_vec().push(
-        structs::SclyObject {
-            instance_id: platform_id,
-            property_data: structs::Platform {
+    macro_rules! new {
+        () => {
+            structs::Platform {
                 name: b"myplatform\0".as_cstr(),
 
-                position: position.into(),
-                rotation: rotation.into(),
+                position: config.position.into(),
+                rotation: config.rotation.unwrap_or([0.0, 0.0, 0.0]).into(),
                 scale: [1.0, 1.0, 1.0].into(),
                 extent: [0.0, 0.0, 0.0].into(),
                 scan_offset: [0.0, 0.0, 0.0].into(),
@@ -647,24 +660,41 @@ pub fn patch_add_platform<'r>(
                 unknown5: 0,
                 unknown6: 200,
                 unknown7: 20,
-            }.into(),
-            connections: vec![].into(),
-        }
-    );
+            }
+        };
+    }
 
-    Ok(())
+    macro_rules! update {
+        ($obj:expr) => {
+            let obj = $obj;
+
+            let property_data = obj.property_data.as_platform_mut().unwrap();
+
+            if config.platform_type.is_some() {
+                property_data.cmdl = cmdl;
+                property_data.dcln = dcln;
+            }
+
+            property_data.position = config.position.into();
+
+            if let Some(rotation) = config.rotation {
+                property_data.rotation = rotation.into();
+            }
+        };
+    }
+
+    add_edit_obj_helper!(area, config.id, Platform, new, update);
 }
 
 pub fn patch_add_block<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
-    position: [f32;3],
-    scale: [f32;3],
-    texture: GenericTexture,
-    // rotation: [f32;3],
+    config: BlockConfig,
 ) -> Result<(), String>
 {
+    let texture = config.texture.unwrap_or(GenericTexture::Grass);
+
     let deps = vec![
         (texture.cmdl().to_u32(), b"CMDL"),
         (texture.txtr().to_u32(), b"TXTR"),
@@ -679,8 +709,9 @@ pub fn patch_add_block<'r>(
 
     add_block(
         area,
-        position,
-        scale,
+        config.id,
+        config.position,
+        config.scale.unwrap_or([1.0, 1.0, 1.0]),
         texture,
         1,
     );
@@ -690,13 +721,17 @@ pub fn patch_add_block<'r>(
 
 pub fn add_block<'r>(
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    id: Option<u32>,
     position: [f32;3],
     scale: [f32;3],
     texture: GenericTexture,
     is_tangible: u8,
 )
 {
-    let actor_id = area.new_object_id_from_layer_name("Default");
+    let actor_id = match id {
+        Some(id) => id,
+        None => area.new_object_id_from_layer_id(0),
+    };
 
     let scly = area.mrea().scly_section_mut();
     let objects = &mut scly.layers.as_mut_vec()[0].objects.as_mut_vec();

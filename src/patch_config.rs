@@ -188,18 +188,30 @@ pub struct DefaultGameOptions
 pub struct WaterConfig
 {
     #[serde(alias = "type")]
+    pub id: Option<u32>,
     pub liquid_type: String,
     pub position: [f32;3],
     pub scale: [f32;3],
+}
+
+#[derive(PartialEq, Debug, Serialize, Deserialize, Copy, Clone)]
+#[serde(deny_unknown_fields)]
+pub enum PlatformType
+{
+    Metal,
+    Snow,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PlatformConfig
 {
+    pub id: Option<u32>,
     pub position: [f32;3],
     pub rotation: Option<[f32;3]>,
-    pub alt_platform: Option<bool>,
+    pub alt_platform: Option<bool>, // deprecated
+    #[serde(alias = "type")]
+    pub platform_type: Option<PlatformType>,
     pub xray_only: Option<bool>,
     pub thermal_only: Option<bool>,
     // pub scale: [f32;3],
@@ -270,10 +282,10 @@ impl GenericTexture
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct BlockConfig
 {
+    pub id: Option<u32>,
     pub position: [f32;3],
     pub scale: Option<[f32;3]>,
     pub texture: Option<GenericTexture>,
-    // pub rotation: [f32;3],
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

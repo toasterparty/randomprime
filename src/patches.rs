@@ -35,6 +35,8 @@ use crate::patch_config::{
     ConnectionConfig,
     DoorOpenMode,
     SpecialFunctionType,
+    PlatformConfig,
+    PlatformType,
 };
 
 use std::{fs::{self, File}, io::Read, path::Path};
@@ -5673,6 +5675,7 @@ fn patch_visible_aether_boundaries<'r>(
     ] {
         add_block(
             area,
+            None,
             position,
             scale,
             AETHER_BOUNDARY_TEXTURE,
@@ -14816,9 +14819,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         ps,
                                         area,
                                         game_resources,
-                                        platform.position,
-                                        platform.rotation.unwrap_or([0.0, 0.0, 0.0]),
-                                        platform.alt_platform.unwrap_or(false),
+                                        platform.clone(),
                                     ),
                                 );
                             }
@@ -15125,9 +15126,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         ps,
                                         area,
                                         game_resources,
-                                        block.position,
-                                        block.scale.unwrap_or([1.0, 1.0, 1.0]),
-                                        block.texture.unwrap_or(GenericTexture::Grass),
+                                        block.clone(),
                                     ),
                                 );
                             }
@@ -16156,9 +16155,15 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                     ps,
                     res,
                     game_resources,
-                    [43.0, -194.0, -44.0],
-                    [0.0, 0.0, 0.0],
-                    false,
+                    PlatformConfig {
+                        platform_type: Some(PlatformType::Metal),
+                        position: [43.0, -194.0, -44.0],
+                        id: None,
+                        alt_platform: None,
+                        rotation: None,
+                        xray_only: None,
+                        thermal_only: None,
+                    },
                 ),
             );
             patcher.add_scly_patch(
@@ -16167,9 +16172,15 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                     ps,
                     res,
                     game_resources,
-                    [39.0, -186.0, -41.0],
-                    [0.0, 0.0, 0.0],
-                    false,
+                    PlatformConfig {
+                        platform_type: Some(PlatformType::Metal),
+                        position: [39.0, -186.0, -41.0],
+                        id: None,
+                        alt_platform: None,
+                        rotation: None,
+                        xray_only: None,
+                        thermal_only: None,
+                    },
                 ),
             );
             patcher.add_scly_patch(
@@ -16178,9 +16189,15 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                     ps,
                     res,
                     game_resources,
-                    [36.0, -181.0, -39.0],
-                    [0.0, 0.0, 0.0],
-                    false,
+                    PlatformConfig {
+                        platform_type: Some(PlatformType::Metal),
+                        position: [36.0, -181.0, -39.0],
+                        id: None,
+                        alt_platform: None,
+                        rotation: None,
+                        xray_only: None,
+                        thermal_only: None,
+                    },
                 ),
             );
             patcher.add_scly_patch(
@@ -16189,9 +16206,15 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                     ps,
                     res,
                     game_resources,
-                    [36.0, -192.0, -39.0],
-                    [0.0, 0.0, 0.0],
-                    false,
+                    PlatformConfig {
+                        platform_type: Some(PlatformType::Metal),
+                        position: [36.0, -192.0, -39.0],
+                        id: None,
+                        alt_platform: None,
+                        rotation: None,
+                        xray_only: None,
+                        thermal_only: None,
+                    },
                 ),
             );
         }

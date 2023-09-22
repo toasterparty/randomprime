@@ -2816,6 +2816,9 @@
                     "items": {
                         "type": "object",
                         "properties": {
+                            "id": {
+                                "$ref": "#/$defs/addModifyObj"
+                            },
                             "type": {
                                 "description": "Define what kind of liquid. Note that Phazon water is unused in the base game and acts similarly to Phazon pools.",
                                 "type": "string",
@@ -2939,6 +2942,9 @@
                     "items": {
                         "type": "object",
                         "properties": {
+                            "id": {
+                                "$ref": "#/$defs/addModifyObj"
+                            },
                             "position": {
                                 "description": "The position of the platform.",
                                 "$ref": "#/$defs/vector3"
@@ -3006,6 +3012,12 @@
                     "items": {
                         "type": "object",
                         "properties": {
+                            "id": {
+                                "description": "The instance ID to use for this block. Cannot be already in use by any other object in this room.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 16777215
+                            },
                             "position": {
                                 "description": "Position of the block",
                                 "$ref": "#/$defs/vector3"
