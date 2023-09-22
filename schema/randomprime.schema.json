@@ -2958,10 +2958,20 @@
                                     0.0
                                 ]
                             },
+                            "type": {
+                                "description": "Pick what type of platform.",
+                                "type": "string",
+                                "enum": [
+                                    "Metal",
+                                    "Snow"
+                                ],
+                                "default": "Metal"
+                            },
                             "altPlatform": {
-                                "description": "`false` - The platform is made out of metal.\n`true` - The platform is made out of snow with rounded edges.",
+                                "description": "Deprecated, use `type` instead.",
                                 "type": "boolean",
-                                "default": false
+                                "default": false,
+                                "deprecated": true
                             }
                         },
                         "required": [
