@@ -862,7 +862,7 @@
                     ],
                     "triggers": [
                         {
-                            "id": 2048598,
+                            "id": 2048598, // [Trigger] Trigger - Play Teleporter Sounds
                             "active": false,
                             "position": [
                                 -329.966675,
@@ -877,7 +877,7 @@
                             "deactivateOnEnter": true
                         },
                         {
-                            "id": 1048599,
+                            "id": 1048599, // [Trigger] Trigger - Stop Teleporter Sounds
                             "active": false,
                             "position": [
                                 -341.279938,
@@ -1180,6 +1180,74 @@
                         // Remove White Flashes from Explosions
                         2031962,
                         2031961
+                    ],
+                    "triggers": [
+                        {
+                            "id": 2031951, // [Trigger] New Save Station Load Trigger
+                            "active": true,
+                            "position": [
+                                -73.027214,
+                                -101.445007,
+                                -151.436066
+                            ],
+                            "scale": [
+                                40.0,
+                                80.0,
+                                10.0
+                            ]
+                        },
+                        {
+                            "id": 2032463, // [Trigger] New Elite Quarters Access Load Trigger
+                            "active": true,
+                            "position": [
+                                -78.581497,
+                                -94.687851,
+                                -138.01181
+                            ],
+                            "scale": [
+                                40.0,
+                                90.0,
+                                10.0
+                            ]
+                        }
+                    ],
+                    "addConnections": [
+                        {
+                            "senderId": 2031951, // [Trigger] New Save Station Load Trigger
+                            "targetId": 2032446, // [Dock] Dock to 00_mines_savestation_d
+                            "state": "ENTERED",
+                            "message": "SET_TO_MAX"
+                        },
+                        {
+                            "senderId": 2031951, // [Trigger] New Save Station Load Trigger
+                            "targetId": 2031618, // [Dock] Dock to 00o_mines_connect
+                            "state": "ENTERED",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 2031951, // [Trigger] New Save Station Load Trigger
+                            "targetId": 2031617, // [Dock] Dock to 00n_mines_connect
+                            "state": "ENTERED",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 2032463, // [Trigger] New Elite Quarters Access Load Trigger
+                            "targetId": 2032446, // [Dock] Dock to 00_mines_savestation_d
+                            "state": "ENTERED",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 2032463, // [Trigger] New Elite Quarters Access Load Trigger
+                            "targetId": 2031618, // [Dock] Dock to 00o_mines_connect
+                            "state": "ENTERED",
+                            "message": "SET_TO_MAX"
+                        },
+                        {
+                            "senderId": 2032463, // [Trigger] New Elite Quarters Access Load Trigger
+                            "targetId": 2031617, // [Dock] Dock to 00n_mines_connect
+                            "state": "ENTERED",
+                            "message": "SET_TO_ZERO"
+                        }
                     ]
                 },
                 "Omega Research": {
@@ -1214,33 +1282,28 @@
                     ]
                 },
                 "Ventilation Shaft": {
-                    // Delete Old Load Triggers
-                    "deleteIds": [
-                        1179905,
-                        1179906
-                    ],
                     // Better Load Trigger Positions
                     "addConnections": [
                         {
-                            "senderId": 2179660, // [Trigger] Load Elite Control
+                            "senderId": 1179905, // [Trigger] Load Elite Control
                             "targetId": 1179650, // [Dock] Dock - 05_mines_forcefields
                             "state": "ENTERED",
                             "message": "SET_TO_MAX"
                         },
                         {
-                            "senderId": 2179660, // [Trigger] Load Elite Control
+                            "senderId": 1179905, // [Trigger] Load Elite Control
                             "targetId": 1179649, // [Dock] Dock - 06_mines_elitebustout
                             "state": "ENTERED",
                             "message": "SET_TO_ZERO"
                         },
                         {
-                            "senderId": 2179661, // [Trigger] Load Omega Research
+                            "senderId": 1179906, // [Trigger] Load Omega Research
                             "targetId": 1179649, // [Dock] Dock - 06_mines_elitebustout
                             "state": "ENTERED",
                             "message": "SET_TO_MAX"
                         },
                         {
-                            "senderId": 2179661, // [Trigger] Load Omega Research
+                            "senderId": 1179906, // [Trigger] Load Omega Research
                             "targetId": 1179650, // [Dock] Dock - 05_mines_forcefields
                             "state": "ENTERED",
                             "message": "SET_TO_ZERO"
@@ -1248,7 +1311,7 @@
                     ],
                     "triggers": [
                         {
-                            "id": 2179660, // [Trigger] Load Elite Control
+                            "id": 1179905, // [Trigger] Load Elite Control
                             "active": true,
                             "position": [
                                 25.16172,
@@ -1262,7 +1325,7 @@
                             ]
                         },
                         {
-                            "id": 2179661, // [Trigger] Load Omega Research
+                            "id": 1179906, // [Trigger] Load Omega Research
                             "active": true,
                             "position": [
                                 42.751381,
@@ -1402,8 +1465,6 @@
                 },
                 "Warrior Shrine": {
                     "deleteIds": [
-                        // Old Load Trigger
-                        720934,
                         // Remove Debris Extended to Save Memory
                         720937,
                         720938,
@@ -1418,7 +1479,7 @@
                     "addConnections": [
                         // New load trigger that doesn't unload Monitor Station
                         {
-                            "senderId": 720909, // [Trigger] Morph Only Load Trigger
+                            "senderId": 720934, // [Trigger] New Firey Shores Load Trigger
                             "targetId": 720898, // [Dock] Dock To 12_over_fieryshores
                             "state": "ENTERED",
                             "message": "SET_TO_MAX"
@@ -1426,7 +1487,7 @@
                     ],
                     "triggers": [
                         {
-                            "id": 720909, // [Trigger] Morph Only Load Trigger
+                            "id": 720934, // [Trigger] New Firey Shores Load Trigger
                             "active": true,
                             "position": [
                                 309.779419,
