@@ -2636,6 +2636,12 @@
                     "items": {
                         "type": "object",
                         "properties": {
+                            "id": {
+                                "description": "The instance ID to use for this pickup. Only used if this is an \"additional\" pickup.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 16777215
+                            },
                             "type": {
                                 "description": "Defines what is acquired when the pickup is obtained.",
                                 "type": "string",

@@ -105,6 +105,7 @@ pub struct GameBanner
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PickupConfig
 {
+    pub id: Option<u32>,
     #[serde(alias  = "type")]
     pub pickup_type: String,
     pub curr_increase: Option<i32>,

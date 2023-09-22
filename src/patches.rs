@@ -2302,7 +2302,11 @@ fn patch_add_item<'r>(
     // set the scan file id //
     pickup.actor_params.scan_params.scan = scan_id;
 
-    let pickup_obj_id = area.new_object_id_from_layer_id(new_layer_idx as usize);
+    let pickup_obj_id = match pickup_config.id {
+        Some(id) => id,
+        None => area.new_object_id_from_layer_id(new_layer_idx as usize),
+    };
+
     let mut pickup_obj = structs::SclyObject {
         instance_id: pickup_obj_id,
         connections: vec![].into(),
@@ -14329,6 +14333,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                     level.rooms.get_mut(key).unwrap().pickups = Some(
                         vec![
                             PickupConfig {
+                                id: None,
                                 pickup_type: items.choose(&mut rng).unwrap().name().to_string(),
                                 curr_increase: None,
                                 max_increase: None,
@@ -15229,6 +15234,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 let pickup = {
                     if idx >= pickups_config_len {
                         PickupConfig {
+                            id: None,
                             pickup_type: "Nothing".to_string(),
                             curr_increase: Some(0),
                             max_increase: Some(0),
