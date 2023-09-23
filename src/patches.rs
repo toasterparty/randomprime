@@ -5545,10 +5545,14 @@ fn patch_edit_fog<'r>(
     fog: FogConfig,
 ) -> Result<(), String>
 {
+    let id = area.new_object_id_from_layer_id(0);
+
     let mut range_delta = [0.0, 0.0];
     if fog.range_delta.is_some() {
         range_delta = [fog.range_delta.as_ref().unwrap()[0], fog.range_delta.as_ref().unwrap()[1]];
     }
+
+    let mut found = false;
 
     let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
     for obj in layers[0].objects.as_mut_vec() {
@@ -5572,7 +5576,30 @@ fn patch_edit_fog<'r>(
         distance_fog.range_delta = range_delta.into();
         distance_fog.explicit = fog.explicit.unwrap_or(true) as u8;
         distance_fog.active = 1;
+
+        found = true;
     }
+
+    if found {
+        return Ok(());
+    }
+
+    layers[0].objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: id,
+            property_data: structs::DistanceFog {
+                name: b"my fog\0".as_cstr(),
+                mode: fog.mode.unwrap_or(1),
+                color: fog.color.unwrap_or([0.8, 0.8, 0.9, 0.0]).into(),
+                range: fog.range.unwrap_or([30.0, 40.0]).into(),
+                color_delta: fog.color_delta.unwrap_or(0.0),
+                range_delta: range_delta.into(),
+                explicit: fog.explicit.unwrap_or(true) as u8,
+                active: 1,
+            }.into(),
+            connections: vec![].into(),
+        }
+    );
 
     Ok(())
 }
