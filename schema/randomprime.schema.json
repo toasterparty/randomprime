@@ -3311,6 +3311,17 @@
                         "maximum": 4294967295
                     }
                 },
+                "layers": {
+                    "description": "Modify the starting state of any layer for this room",
+                    "type": "object",
+                    "patternProperties": {
+                        "^(?:[0-9]|[1-5][0-9]|6[0-3])$": {
+                            "description": "Whether or not this layer starts enabled",
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false
+                },
                 "audioOverride": {
                     "description": "Replace audio file(s) specified by existing StreamedAudio objects in this room. Use `streamedAudios` instead.",
                     "patternProperties": {

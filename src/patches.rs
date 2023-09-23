@@ -7252,6 +7252,32 @@ fn patch_remove_ids<'r>
     Ok(())
 }
 
+fn patch_set_layers<'r>
+(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    layers: HashMap<u32, bool>,
+)
+-> Result<(), String>
+{
+    let mrea_id = area.mlvl_area.mrea.to_u32().clone();
+    let layer_count = area.layer_flags.layer_count;
+
+    for (layer_id, enabled) in layers.iter() {
+        let layer_id = layer_id.clone();
+        if layer_id >= layer_count {
+            panic!("Unexpected layer #{} in room 0x{:X}", layer_id, mrea_id);
+        }
+
+        match enabled {
+            true  => { area.layer_flags.flags |=   1 << layer_id;  }
+            false => { area.layer_flags.flags &= !(1 << layer_id); }
+        }
+    }
+
+    Ok(())
+}
+
 fn patch_add_connection<'r>(
     layers: &mut Vec<SclyLayer>,
     connection: &ConnectionConfig,
@@ -14318,8 +14344,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             repositions: None,
                             audio_override: None,
                             delete_ids: None,
-                            disabled_layers: None,
-                            enabled_layers: None,
+                            layers: None,
                             fog: None,
                             triggers: None,
                             hudmemos: None,
@@ -16679,6 +16704,19 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         patcher.add_scly_patch(
             *room,
             move |ps, area| patch_remove_ids(ps, area, delete_ids.clone())
+        );
+    }
+
+    // update layers
+    for (room, room_config) in other_patches.iter() {
+        if room_config.layers.is_none() {
+            continue;
+        }
+
+        let layers = room_config.layers.as_ref().unwrap();
+        patcher.add_scly_patch(
+            *room,
+            move |ps, area| patch_set_layers(ps, area, layers.clone())
         );
     }
 
