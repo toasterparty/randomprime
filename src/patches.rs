@@ -483,6 +483,7 @@ fn patch_map_door_icon(
     res: &mut structs::Resource,
     door: ModifiableDoorLocation,
     map_object_type: u32,
+    mrea_id: u32,
 ) -> Result<(), String>
 {
     if door.door_location.is_none() {
@@ -492,9 +493,11 @@ fn patch_map_door_icon(
 
     let mapa = res.kind.as_mapa_mut().unwrap();
 
+    let door_id = door.door_location.as_ref().unwrap().instance_id;
+
     let door_icon = mapa.objects.iter_mut()
-        .find(|obj| obj.editor_id == door.door_location.as_ref().unwrap().instance_id)
-        .unwrap();
+        .find(|obj| obj.editor_id == door_id)
+        .expect(format!("Failed to find door 0x{:X} in room 0x{:X}", door_id, mrea_id).as_str());
     door_icon.type_ = map_object_type;
 
     Ok(())
@@ -711,6 +714,19 @@ fn patch_door<'r>(
 
     let scly = area.mrea().scly_section_mut();
     let layers = &mut scly.layers.as_mut_vec();
+
+    if let Some(door_location) = door_loc.door_location {
+        let obj = layers[door_location.layer as usize]
+            .objects
+            .as_mut_vec()
+            .iter_mut()
+            .find(|obj| obj.instance_id == door_location.instance_id)
+            .expect(format!("Failed to find door in room 0x{:X}", mrea_id).as_str());
+
+        if obj.property_data.as_door_mut().unwrap().is_morphball_door != 0 || obj.instance_id == 0x002C0186 { // energy core morph ball door isn't marked as such
+            panic!("Modifying shield and/or blast shield of mophball door in room 0x{:X} not allowed", mrea_id);
+        }
+    }
 
     // Add blast shield
     let position: GenericArray<f32, U3>;
@@ -15558,7 +15574,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
 
                         patcher.add_resource_patch(
                             (&[pak_name.as_bytes()], room_info.mapa_id.to_u32(), b"MAPA".into()),
-                            move |res| patch_map_door_icon(res, door_location.clone(), map_object_type)
+                            move |res| patch_map_door_icon(res, door_location.clone(), map_object_type, room_info.room_id.to_u32())
                         );
                     }
 
