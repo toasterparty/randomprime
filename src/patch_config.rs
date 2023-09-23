@@ -755,6 +755,7 @@ pub struct RoomConfig
     pub repositions: Option<Vec<RepositionConfig>>,
     pub hudmemos: Option<Vec<HudmemoConfig>>,
     pub layers: Option<HashMap<u32, bool>>,
+    pub layer_objs: Option<HashMap<u32, u32>>,
     pub delete_ids: Option<Vec<u32>>,
     pub audio_override: Option<HashMap<String, String>>, // key=instance_id, value=/audio/min_phazonL.dsp|/audio/min_phazonR.dsp
     pub add_connections: Option<Vec<ConnectionConfig>>,

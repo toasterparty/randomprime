@@ -7278,6 +7278,93 @@ fn patch_set_layers<'r>
     Ok(())
 }
 
+fn patch_move_objects<'r>
+(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    layer_objs: HashMap<u32, u32>,
+)
+-> Result<(), String>
+{
+    let mrea_id = area.mlvl_area.mrea.to_u32().clone();
+
+    // Add layers
+    for (_, layer_id) in layer_objs.iter() {
+        let layer_id = layer_id.clone();
+        if layer_id >= 63 {
+            panic!("Layer #{} above maximum (63) in room 0x{:X}", layer_id, mrea_id);
+        }
+
+        while area.layer_flags.layer_count <= layer_id {
+            let mrea_id = area.mlvl_area.mrea.to_u32().clone();
+            area.add_layer(b"New Layer\0".as_cstr());
+            if area.layer_flags.layer_count >= 64 {
+                panic!("Ran out of layers in room 0x{:X}", mrea_id);
+            }
+        }
+    }
+
+    let scly = area.mrea().scly_section_mut();
+
+    // Move objects
+    for (obj_id, layer_id) in layer_objs.iter() {
+        let obj_id = obj_id & 0x00FFFFFF;
+        let layer_id = layer_id.clone() as usize;
+
+        // find existing object
+        let old_layer_id = {
+            let mut info = None;
+
+            let layer_count = scly.layers.as_mut_vec().len();
+            for _layer_id in 0..layer_count {
+                let layer = scly.layers
+                    .iter()
+                    .nth(_layer_id)
+                    .unwrap();
+
+                let obj = layer.objects
+                    .iter()
+                    .find(|obj| obj.instance_id & 0x00FFFFFF == obj_id);
+
+                if let Some(obj) = obj {
+                    info = Some((_layer_id as u32, obj.instance_id));
+                    break;
+                }
+            }
+
+            let (old_layer_id, _) = info.expect(format!("Cannot find object 0x{:X} in room 0x{:X}", obj_id, mrea_id).as_str());
+
+            old_layer_id
+        };
+
+        // clone existing object
+        let obj = scly.layers
+            .as_mut_vec()[old_layer_id as usize]
+            .objects
+            .as_mut_vec()
+            .iter_mut()
+            .find(|obj| obj.instance_id & 0x00FFFFFF == obj_id)
+            .unwrap()
+            .clone();
+
+        // remove original
+        scly.layers
+            .as_mut_vec()[old_layer_id as usize]
+            .objects
+            .as_mut_vec()
+            .retain(|obj| obj.instance_id & 0x00FFFFFF != obj_id);
+
+        // re-add to target layer
+        scly.layers
+            .as_mut_vec()[layer_id as usize]
+            .objects
+            .as_mut_vec()
+            .push(obj);
+    }
+
+    Ok(())
+}
+
 fn patch_add_connection<'r>(
     layers: &mut Vec<SclyLayer>,
     connection: &ConnectionConfig,
@@ -14363,6 +14450,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             special_functions: None,
                             actor_rotates: None,
                             streamed_audios: None,
+                            layer_objs: None,
                         }
                     );
                 }
@@ -16669,55 +16757,41 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         );
     }
 
-    // add arbitrary connections
     for (room, room_config) in other_patches {
-        if room_config.add_connections.is_none() {
-            continue;
+        if let Some(connections) = room_config.add_connections.as_ref() {
+            patcher.add_scly_patch(
+                *room,
+                move |ps, area| patch_add_connections(ps, area, connections)
+            );
         }
 
-        let connections = room_config.add_connections.as_ref().unwrap();
-        patcher.add_scly_patch(
-            *room,
-            move |ps, area| patch_add_connections(ps, area, connections)
-        );
-    }
-
-    for (room, room_config) in other_patches {
-        if room_config.remove_connections.is_none() {
-            continue;
+        if let Some(connections) = room_config.remove_connections.as_ref() {
+            patcher.add_scly_patch(
+                *room,
+                move |ps, area| patch_remove_connections(ps, area, connections)
+            );
         }
 
-        let connections = room_config.remove_connections.as_ref().unwrap();
-        patcher.add_scly_patch(
-            *room,
-            move |ps, area| patch_remove_connections(ps, area, connections)
-        );
-    }
-
-    // remove arbitrary objects
-    for (room, room_config) in other_patches.iter() {
-        if room_config.delete_ids.is_none() {
-            continue;
+        if let Some(layers) = room_config.layers.as_ref() {
+            patcher.add_scly_patch(
+                *room,
+                move |ps, area| patch_set_layers(ps, area, layers.clone())
+            );
         }
 
-        let delete_ids = room_config.delete_ids.as_ref().unwrap().to_vec();
-        patcher.add_scly_patch(
-            *room,
-            move |ps, area| patch_remove_ids(ps, area, delete_ids.clone())
-        );
-    }
-
-    // update layers
-    for (room, room_config) in other_patches.iter() {
-        if room_config.layers.is_none() {
-            continue;
+        if let Some(layer_objs) = room_config.layer_objs.as_ref() {
+            patcher.add_scly_patch(
+                *room,
+                move |ps, area| patch_move_objects(ps, area, layer_objs.clone())
+            );
         }
 
-        let layers = room_config.layers.as_ref().unwrap();
-        patcher.add_scly_patch(
-            *room,
-            move |ps, area| patch_set_layers(ps, area, layers.clone())
-        );
+        if let Some(ids) = room_config.delete_ids.as_ref() {
+            patcher.add_scly_patch(
+                *room,
+                move |ps, area| patch_remove_ids(ps, area, ids.clone())
+            );
+        }
     }
 
     if config.disable_item_loss && !skip_frigate {

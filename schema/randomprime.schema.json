@@ -3322,6 +3322,19 @@
                     },
                     "additionalProperties": false
                 },
+                "layerObjs": {
+                    "description": "Move objects in this room to a different layer by instance ID. If the specified layer does not exist, it will be created.",
+                    "type": "object",
+                    "patternProperties": {
+                        "^[0-9]+$": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 4294967295
+
+                        }
+                    },
+                    "additionalProperties": false
+                },
                 "audioOverride": {
                     "description": "Replace audio file(s) specified by existing StreamedAudio objects in this room. Use `streamedAudios` instead.",
                     "patternProperties": {
