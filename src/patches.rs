@@ -9259,6 +9259,7 @@ fn patch_dol<'r>(
     escape_sequence_counts_up: bool,
     enable_ice_traps: bool,
     uuid: Option<[u8;16]>,
+    shoot_in_grapple: bool,
 ) -> Result<(), String>
 {
     if version == Version::NtscUTrilogy || version == Version::NtscJTrilogy || version == Version::PalTrilogy {
@@ -9501,12 +9502,6 @@ fn patch_dol<'r>(
             //         nop;
             //     });
             //     dol_patcher.ppcasm_patch(&default_visor_patch)?;
-
-            //     // Don't holster weapon when grappling
-            //     let default_visor_patch = ppcasm!(symbol_addr!("UpdateGrappleState__7CPlayerFRC11CFinalInputR13CStateManager", version) + (0x8017a998 - 0x8017A668), {
-            //             nop;
-            //     });
-            //     dol_patcher.ppcasm_patch(&default_visor_patch)?;
             // }
 
             // spawn with weapon holstered instead of drawn
@@ -9606,6 +9601,14 @@ fn patch_dol<'r>(
                 nop;
         });
         dol_patcher.ppcasm_patch(&splash_scren_patch)?;
+    }
+
+    // Don't holster weapon when grappling
+    if shoot_in_grapple {
+        let patch = ppcasm!(symbol_addr!("UpdateGrappleState__7CPlayerFRC11CFinalInputR13CStateManager", version) + (0x8017a998 - 0x8017A668), {
+            nop;
+        });
+        dol_patcher.ppcasm_patch(&patch)?;
     }
 
     /*
@@ -15896,6 +15899,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 config.escape_sequence_counts_up,
                 config.enable_ice_traps,
                 config.uuid,
+                config.shoot_in_grapple,
             )
         );
 
@@ -15924,6 +15928,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 config.escape_sequence_counts_up,
                 config.enable_ice_traps,
                 config.uuid,
+                config.shoot_in_grapple,
             )
         );
     }

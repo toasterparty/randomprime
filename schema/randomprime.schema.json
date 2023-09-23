@@ -432,6 +432,11 @@
                         "Wave"
                     ]
                 },
+                "shootInGrapple": {
+                    "description": "If true, lets the player use their arm cannon while swinging with Grapple Beam. Note that there is a minor visual bug when beam combos are used.",
+                    "type": "boolean",
+                    "default": false
+                },
                 "escapeSequenceCountsUp": {
                     "description": "Modifies escape sequence timers such as the one in Frigate Orpheon to count up instead of down.",
                     "type": "boolean",

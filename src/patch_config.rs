@@ -1048,6 +1048,7 @@ pub struct PatchConfig
     pub artifact_temple_layer_overrides: Option<HashMap<String,bool>>,
     pub no_doors: bool,
     pub boss_sizes: HashMap<String,f32>,
+    pub shoot_in_grapple: bool,
     pub ctwk_config: CtwkConfig,
 }
 
@@ -1143,6 +1144,7 @@ struct GameConfig
     required_artifact_count: Option<u32>,
     no_doors: Option<bool>, // Remove every door from the game
     boss_sizes: Option<HashMap<String,f32>>,
+    shoot_in_grapple: Option<bool>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
@@ -1894,6 +1896,7 @@ impl PatchConfigPrivate
             artifact_temple_layer_overrides: self.game_config.artifact_temple_layer_overrides.clone(),
             no_doors: self.game_config.no_doors.unwrap_or(false),
             boss_sizes: self.game_config.boss_sizes.clone().unwrap_or(HashMap::new()),
+            shoot_in_grapple: self.game_config.shoot_in_grapple.unwrap_or(false),
             map_default_state,
 
             starting_items,
