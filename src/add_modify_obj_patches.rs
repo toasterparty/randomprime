@@ -41,49 +41,111 @@ use reader_writer::{
 use structs::{res_id, ResId, SclyPropertyData};
 
 macro_rules! add_edit_obj_helper {
-    ($area:expr, $id:expr, $object_type:ident, $new_property_data:ident, $update_property_data:ident) => {
+    ($area:expr, $id:expr, $requested_layer_id:expr, $object_type:ident, $new_property_data:ident, $update_property_data:ident) => {
         let area = $area;
         let id = $id;
+        let requested_layer_id = $requested_layer_id;
         let mrea_id = area.mlvl_area.mrea.to_u32().clone();
+
+        // add more layers as needed
+        if let Some(requested_layer_id) = requested_layer_id {
+            while area.layer_flags.layer_count <= requested_layer_id {
+                area.add_layer(b"New Layer\0".as_cstr());
+                if area.layer_flags.layer_count >= 64 {
+                    panic!("Ran out of layers in room 0x{:X}", mrea_id);
+                }
+            }
+        }
 
         if let Some(id) = id {
             let scly = area.mrea().scly_section_mut();
-            let layers = &mut scly.layers.as_mut_vec(); 
-    
-            // try to find existing object   
-            let obj = {
-                let mut obj = None;
-                for layer in layers.iter_mut() {
-                    obj = layer.objects
-                        .as_mut_vec()
-                        .iter_mut()
+
+            // try to find existing object
+            let info = {
+                let mut info = None;
+
+                let layer_count = scly.layers.as_mut_vec().len();
+                for _layer_id in 0..layer_count {
+                    let layer = scly.layers
+                        .iter()
+                        .nth(_layer_id)
+                        .unwrap();
+
+                    let obj = layer.objects
+                        .iter()
                         .find(|obj| obj.instance_id & 0x00FFFFFF == id & 0x00FFFFFF);
-    
-                    if obj.is_some() {
+
+                    if let Some(obj) = obj {
+                        if obj.property_data.object_type() != structs::$object_type::OBJECT_TYPE {
+                            panic!("Failed to edit existing object 0x{:X} in room 0x{:X}: Unexpected object type 0x{:X} (expected 0x{:X})", id, mrea_id, obj.property_data.object_type(), structs::$object_type::OBJECT_TYPE);
+                        }
+
+                        info = Some((_layer_id as u32, obj.instance_id));
                         break;
                     }
                 }
-    
-                obj
+
+                info
             };
-    
-            if let Some(obj) = obj {
-                // edit existing object
-                if obj.property_data.object_type() != structs::$object_type::OBJECT_TYPE {
-                    panic!("Failed to edit existing object 0x{:X} in room 0x{:X}: Unexpected object type 0x{:X} (expected 0x{:X})", id, mrea_id, obj.property_data.object_type(), structs::$object_type::OBJECT_TYPE);
+
+            if let Some(info) = info {
+                let (layer_id, _) = info;
+
+                // move and update
+                if requested_layer_id.is_some() && requested_layer_id.unwrap() != layer_id {
+                    let requested_layer_id = requested_layer_id.unwrap();
+
+                    // clone existing object
+                    let mut obj = scly.layers
+                        .as_mut_vec()[layer_id as usize]
+                        .objects
+                        .as_mut_vec()
+                        .iter_mut()
+                        .find(|obj| obj.instance_id & 0x00FFFFFF == id & 0x00FFFFFF)
+                        .unwrap()
+                        .clone();
+
+                    // modify it
+                    $update_property_data!(obj);
+                    
+                    // remove original
+                    scly.layers
+                        .as_mut_vec()[layer_id as usize]
+                        .objects
+                        .as_mut_vec()
+                        .retain(|obj| obj.instance_id & 0x00FFFFFF != id & 0x00FFFFFF);
+
+                    // re-add to target layer
+                    scly.layers
+                        .as_mut_vec()[requested_layer_id as usize]
+                        .objects
+                        .as_mut_vec()
+                        .push(obj);
+
+                    return Ok(());
                 }
 
+                // get mutable reference to existing object
+                let obj = scly.layers
+                    .as_mut_vec()[layer_id as usize]
+                    .objects
+                    .as_mut_vec()
+                    .iter_mut()
+                    .find(|obj| obj.instance_id & 0x00FFFFFF == id & 0x00FFFFFF)
+                    .unwrap();
+
+                // update it
                 $update_property_data!(obj);
-    
+
                 return Ok(());
             }
         }
-    
+
         // add new object
         let id = id.unwrap_or(area.new_object_id_from_layer_id(0));
         let scly = area.mrea().scly_section_mut();
         let layers = &mut scly.layers.as_mut_vec();
-        let objects = layers[0].objects.as_mut_vec();
+        let objects = layers[requested_layer_id.unwrap_or(0) as usize].objects.as_mut_vec();
         let property_data = $new_property_data!();
         let property_data: structs::SclyProperty = property_data.into();
 
@@ -125,9 +187,7 @@ pub fn patch_add_streamed_audio<'r>(
     
     macro_rules! update {
         ($obj:expr) => {
-            let obj = $obj;
-    
-            let property_data = obj.property_data.as_streamed_audio_mut().unwrap();
+            let property_data = $obj.property_data.as_streamed_audio_mut().unwrap();
     
             property_data.audio_file_name = string_to_cstr(config.audio_file_name);
             property_data.is_music = config.is_music as u8;
@@ -141,7 +201,7 @@ pub fn patch_add_streamed_audio<'r>(
         };
     }
 
-    add_edit_obj_helper!(area, config.id, StreamedAudio, new, update);
+    add_edit_obj_helper!(area, config.id, config.layer, StreamedAudio, new, update);
 }
 
 pub fn patch_add_liquid<'r>(
@@ -184,12 +244,11 @@ pub fn patch_add_liquid<'r>(
 
     macro_rules! update {
         ($obj:expr) => {
-            let obj = $obj;
-            obj.property_data = water_obj.property_data.clone();
+            $obj.property_data = water_obj.property_data.clone();
         };
     }
 
-    add_edit_obj_helper!(area, config.id, Water, new, update);
+    add_edit_obj_helper!(area, config.id, config.layer, Water, new, update);
 }
 
 pub fn patch_add_actor_key_frame<'r>(
@@ -215,9 +274,7 @@ pub fn patch_add_actor_key_frame<'r>(
 
     macro_rules! update {
         ($obj:expr) => {
-            let obj = $obj;
-    
-            let property_data = obj.property_data.as_actor_key_frame_mut().unwrap();
+            let property_data = $obj.property_data.as_actor_key_frame_mut().unwrap();
 
             if let Some(active) = config.active { property_data.active = active as u8 }
 
@@ -229,7 +286,7 @@ pub fn patch_add_actor_key_frame<'r>(
         };
     }
 
-    add_edit_obj_helper!(area, Some(config.id), ActorKeyFrame, new, update);
+    add_edit_obj_helper!(area, Some(config.id), config.layer, ActorKeyFrame, new, update);
 }
 
 pub fn patch_add_timer<'r>(
@@ -254,9 +311,7 @@ pub fn patch_add_timer<'r>(
 
     macro_rules! update {
         ($obj:expr) => {
-            let obj = $obj;
-    
-            let property_data = obj.property_data.as_timer_mut().unwrap();
+            let property_data = $obj.property_data.as_timer_mut().unwrap();
 
             property_data.start_time = config.time;
 
@@ -267,7 +322,7 @@ pub fn patch_add_timer<'r>(
         };
     }
 
-    add_edit_obj_helper!(area, Some(config.id), Timer, new, update);
+    add_edit_obj_helper!(area, Some(config.id), config.layer, Timer, new, update);
 }
 
 pub fn patch_add_relay<'r>(
@@ -288,14 +343,12 @@ pub fn patch_add_relay<'r>(
 
     macro_rules! update {
         ($obj:expr) => {
-            let obj = $obj;
-    
-            let property_data = obj.property_data.as_relay_mut().unwrap();
+            let property_data = $obj.property_data.as_relay_mut().unwrap();
             if let Some(active) = config.active { property_data.active = active as u8 }
         };
     }
 
-    add_edit_obj_helper!(area, Some(config.id), Relay, new, update);
+    add_edit_obj_helper!(area, Some(config.id), config.layer, Relay, new, update);
 }
 
 pub fn patch_add_spawn_point<'r>(
@@ -359,9 +412,7 @@ pub fn patch_add_spawn_point<'r>(
 
     macro_rules! update {
         ($obj:expr) => {
-            let obj = $obj;
-    
-            let property_data = obj.property_data.as_spawn_point_mut().unwrap();
+            let property_data = $obj.property_data.as_spawn_point_mut().unwrap();
 
             property_data.position = config.position.into();
 
@@ -376,7 +427,7 @@ pub fn patch_add_spawn_point<'r>(
         };
     }
 
-    add_edit_obj_helper!(area, Some(config.id), SpawnPoint, new, update);
+    add_edit_obj_helper!(area, Some(config.id), config.layer, SpawnPoint, new, update);
 }
 
 pub fn patch_add_trigger<'r>(
@@ -409,9 +460,7 @@ pub fn patch_add_trigger<'r>(
 
     macro_rules! update {
         ($obj:expr) => {
-            let obj = $obj;
-    
-            let property_data = obj.property_data.as_trigger_mut().unwrap();
+            let property_data = $obj.property_data.as_trigger_mut().unwrap();
 
             property_data.position = config.position.into();
             property_data.scale = config.scale.into();
@@ -425,7 +474,7 @@ pub fn patch_add_trigger<'r>(
         };
     }
 
-    add_edit_obj_helper!(area, config.id, Trigger, new, update);
+    add_edit_obj_helper!(area, config.id, config.layer, Trigger, new, update);
 }
 
 pub fn patch_add_special_fn<'r>(
@@ -464,9 +513,7 @@ pub fn patch_add_special_fn<'r>(
 
     macro_rules! update {
         ($obj:expr) => {
-            let obj = $obj;
-
-            let property_data = obj.property_data.as_special_function_mut().unwrap();
+            let property_data = $obj.property_data.as_special_function_mut().unwrap();
 
             property_data.type_ = config.type_ as u32;
             
@@ -486,7 +533,7 @@ pub fn patch_add_special_fn<'r>(
         };
     }
 
-    add_edit_obj_helper!(area, config.id, SpecialFunction, new, update);
+    add_edit_obj_helper!(area, config.id, config.layer, SpecialFunction, new, update);
 }
 
 pub fn patch_add_actor_rotate_fn<'r>(
@@ -511,9 +558,7 @@ pub fn patch_add_actor_rotate_fn<'r>(
 
     macro_rules! update {
         ($obj:expr) => {
-            let obj = $obj;
-
-            let property_data = obj.property_data.as_actor_rotate_mut().unwrap();
+            let property_data = $obj.property_data.as_actor_rotate_mut().unwrap();
 
             property_data.rotation           = config.rotation          .into();
             property_data.time_scale         = config.time_scale               ;
@@ -523,7 +568,7 @@ pub fn patch_add_actor_rotate_fn<'r>(
         };
     }
 
-    add_edit_obj_helper!(area, config.id, ActorRotate, new, update);
+    add_edit_obj_helper!(area, config.id, config.layer, ActorRotate, new, update);
 }
 
 pub fn patch_add_platform<'r>(
@@ -666,9 +711,7 @@ pub fn patch_add_platform<'r>(
 
     macro_rules! update {
         ($obj:expr) => {
-            let obj = $obj;
-
-            let property_data = obj.property_data.as_platform_mut().unwrap();
+            let property_data = $obj.property_data.as_platform_mut().unwrap();
 
             if config.platform_type.is_some() {
                 property_data.cmdl = cmdl;
@@ -683,7 +726,7 @@ pub fn patch_add_platform<'r>(
         };
     }
 
-    add_edit_obj_helper!(area, config.id, Platform, new, update);
+    add_edit_obj_helper!(area, config.id, config.layer, Platform, new, update);
 }
 
 pub fn patch_add_block<'r>(
@@ -714,6 +757,7 @@ pub fn patch_add_block<'r>(
         config.scale.unwrap_or([1.0, 1.0, 1.0]),
         texture,
         1,
+        config.layer,
     );
 
     Ok(())
@@ -726,15 +770,26 @@ pub fn add_block<'r>(
     scale: [f32;3],
     texture: GenericTexture,
     is_tangible: u8,
+    layer: Option<u32>,
 )
 {
+    let layer_id = layer.unwrap_or(0);
+
     let actor_id = match id {
         Some(id) => id,
-        None => area.new_object_id_from_layer_id(0),
+        None => area.new_object_id_from_layer_id(layer_id as usize),
     };
 
+    while area.layer_flags.layer_count <= layer_id {
+        let mrea_id = area.mlvl_area.mrea.to_u32().clone();
+        area.add_layer(b"New Layer\0".as_cstr());
+        if area.layer_flags.layer_count >= 64 {
+            panic!("Ran out of layers in room 0x{:X}", mrea_id);
+        }
+    }
+
     let scly = area.mrea().scly_section_mut();
-    let objects = &mut scly.layers.as_mut_vec()[0].objects.as_mut_vec();
+    let objects = &mut scly.layers.as_mut_vec()[layer_id as usize].objects.as_mut_vec();
 
     objects.push(
         structs::SclyObject {

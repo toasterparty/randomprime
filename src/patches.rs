@@ -5700,6 +5700,7 @@ fn patch_visible_aether_boundaries<'r>(
             scale,
             AETHER_BOUNDARY_TEXTURE,
             0,
+            None,
         );
     }
 
@@ -16185,6 +16186,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                         rotation: None,
                         xray_only: None,
                         thermal_only: None,
+                        layer: None,
                     },
                 ),
             );
@@ -16202,6 +16204,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                         rotation: None,
                         xray_only: None,
                         thermal_only: None,
+                        layer: None,
                     },
                 ),
             );
@@ -16219,6 +16222,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                         rotation: None,
                         xray_only: None,
                         thermal_only: None,
+                        layer: None,
                     },
                 ),
             );
@@ -16236,6 +16240,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                         rotation: None,
                         xray_only: None,
                         thermal_only: None,
+                        layer: None,
                     },
                 ),
             );

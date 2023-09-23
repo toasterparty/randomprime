@@ -2372,11 +2372,17 @@
     "required": [],
     "additionalProperties": false,
     "$defs": {
-        "addModifyObj": {
+        "addModifyId": {
             "description": "The instance ID to use for this object. If the provided ID matches an existing object, the existing object will be modified. Otherwise, a new object will be added.",
             "type": "integer",
             "minimum": 0,
             "maximum": 16777215
+        },
+        "addModifyLayer": {
+            "description": "The layer # to use for this object. Defaults to 0 unless ID matches an existing object in which case the layer is unchanged.",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 63
         },
         "inventory": {
             "type": "object",
@@ -2823,7 +2829,10 @@
                         "type": "object",
                         "properties": {
                             "id": {
-                                "$ref": "#/$defs/addModifyObj"
+                                "$ref": "#/$defs/addModifyId"
+                            },
+                            "layer": {
+                                "$ref": "#/$defs/addModifyLayer"
                             },
                             "type": {
                                 "description": "Define what kind of liquid. Note that Phazon water is unused in the base game and acts similarly to Phazon pools.",
@@ -2949,7 +2958,10 @@
                         "type": "object",
                         "properties": {
                             "id": {
-                                "$ref": "#/$defs/addModifyObj"
+                                "$ref": "#/$defs/addModifyId"
+                            },
+                            "layer": {
+                                "$ref": "#/$defs/addModifyLayer"
                             },
                             "position": {
                                 "description": "The position of the platform.",
@@ -3033,6 +3045,9 @@
                                 "type": "integer",
                                 "minimum": 0,
                                 "maximum": 16777215
+                            },
+                            "layer": {
+                                "$ref": "#/$defs/addModifyLayer"
                             },
                             "position": {
                                 "description": "Position of the block",
@@ -3328,7 +3343,10 @@
                         "type": "object",
                         "properties": {
                             "id": {
-                                "$ref": "#/$defs/addModifyObj"
+                                "$ref": "#/$defs/addModifyId"
+                            },
+                            "layer": {
+                                "$ref": "#/$defs/addModifyLayer"
                             },
                             "active": {
                                 "description": "Default active state of the relay.",
@@ -3358,7 +3376,10 @@
                         "type": "object",
                         "properties": {
                             "id": {
-                                "$ref": "#/$defs/addModifyObj"
+                                "$ref": "#/$defs/addModifyId"
+                            },
+                            "layer": {
+                                "$ref": "#/$defs/addModifyLayer"
                             },
                             "active": {
                                 "description": "Default active state of the timer.",
@@ -3400,7 +3421,10 @@
                         "type": "object",
                         "properties": {
                             "id": {
-                                "$ref": "#/$defs/addModifyObj"
+                                "$ref": "#/$defs/addModifyId"
+                            },
+                            "layer": {
+                                "$ref": "#/$defs/addModifyLayer"
                             },
                             "active": {
                                 "type": "boolean",
@@ -3442,7 +3466,10 @@
                         "type": "object",
                         "properties": {
                             "id": {
-                                "$ref": "#/$defs/addModifyObj"
+                                "$ref": "#/$defs/addModifyId"
+                            },
+                            "layer": {
+                                "$ref": "#/$defs/addModifyLayer"
                             },
                             "active": {
                                 "description": "Default active state of the spawn point.",
@@ -3491,7 +3518,10 @@
                         "type": "object",
                         "properties": {
                             "id": {
-                                "$ref": "#/$defs/addModifyObj"
+                                "$ref": "#/$defs/addModifyId"
+                            },
+                            "layer": {
+                                "$ref": "#/$defs/addModifyLayer"
                             },
                             "active": {
                                 "description": "Default activate state of the trigger",
@@ -3557,7 +3587,10 @@
                         "type": "object",
                         "properties": {
                             "id": {
-                                "$ref": "#/$defs/addModifyObj"
+                                "$ref": "#/$defs/addModifyId"
+                            },
+                            "layer": {
+                                "$ref": "#/$defs/addModifyLayer"
                             },
                             "position": {
                                 "$ref": "#/$defs/vector3",
@@ -3728,7 +3761,10 @@
                         "type": "object",
                         "properties": {
                             "id": {
-                                "$ref": "#/$defs/addModifyObj"
+                                "$ref": "#/$defs/addModifyId"
+                            },
+                            "layer": {
+                                "$ref": "#/$defs/addModifyLayer"
                             },
                             "active": {
                                 "type": "boolean",
@@ -3779,7 +3815,10 @@
                         "type": "object",
                         "properties": {
                             "id": {
-                                "$ref": "#/$defs/addModifyObj"
+                                "$ref": "#/$defs/addModifyId"
+                            },
+                            "layer": {
+                                "$ref": "#/$defs/addModifyLayer"
                             },
                             "rotation": {
                                 "$ref": "#/$defs/vector3"

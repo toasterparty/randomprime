@@ -188,8 +188,9 @@ pub struct DefaultGameOptions
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct WaterConfig
 {
-    #[serde(alias = "type")]
     pub id: Option<u32>,
+    pub layer: Option<u32>,
+    #[serde(alias = "type")]
     pub liquid_type: String,
     pub position: [f32;3],
     pub scale: [f32;3],
@@ -208,6 +209,7 @@ pub enum PlatformType
 pub struct PlatformConfig
 {
     pub id: Option<u32>,
+    pub layer: Option<u32>,
     pub position: [f32;3],
     pub rotation: Option<[f32;3]>,
     pub alt_platform: Option<bool>, // deprecated
@@ -284,6 +286,7 @@ impl GenericTexture
 pub struct BlockConfig
 {
     pub id: Option<u32>,
+    pub layer: Option<u32>,
     pub position: [f32;3],
     pub scale: Option<[f32;3]>,
     pub texture: Option<GenericTexture>,
@@ -374,6 +377,7 @@ pub enum DamageType {
 pub struct TriggerConfig
 {
     pub id: Option<u32>,
+    pub layer: Option<u32>,
     pub active: Option<bool>,
     pub position: [f32;3],
     pub scale: [f32;3],
@@ -460,6 +464,7 @@ pub enum SpecialFunctionType {
 pub struct SpecialFunctionConfig
 {
     pub id: Option<u32>,
+    pub layer: Option<u32>,
 
     pub position: Option<[f32; 3]>,
     pub rotation: Option<[f32; 3]>,
@@ -491,6 +496,7 @@ pub struct SpecialFunctionConfig
 pub struct ActorRotateConfig
 {
     pub id: Option<u32>,
+    pub layer: Option<u32>,
     pub rotation: [f32; 3],
     pub time_scale: f32,
     pub update_actors: bool,
@@ -503,6 +509,7 @@ pub struct ActorRotateConfig
 pub struct StreamedAudioConfig
 {
     pub id: Option<u32>,
+    pub layer: Option<u32>,
     pub active: Option<bool>,
     pub audio_file_name: String,
     pub no_stop_on_deactivate: Option<bool>,
@@ -674,6 +681,7 @@ pub struct ConnectionConfig
 pub struct RelayConfig
 {
     pub id: u32,
+    pub layer: Option<u32>,
     pub active: Option<bool>,
 }
 
@@ -682,6 +690,7 @@ pub struct RelayConfig
 pub struct TimerConfig
 {
     pub id: u32,
+    pub layer: Option<u32>,
     pub active: Option<bool>,
     pub time: f32,
     pub max_random_add: Option<f32>,
@@ -694,6 +703,7 @@ pub struct TimerConfig
 pub struct ActorKeyFrameConfig
 {
     pub id: u32,
+    pub layer: Option<u32>,
     pub active: Option<bool>,
     pub animation_id: u32,
     pub looping: bool,
@@ -707,6 +717,7 @@ pub struct ActorKeyFrameConfig
 pub struct SpawnPointConfig
 {
     pub id: u32,
+    pub layer: Option<u32>,
     pub active: Option<bool>,
     pub position: [f32;3],
     pub rotation: Option<[f32;3]>,
