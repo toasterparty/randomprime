@@ -4989,9 +4989,9 @@ fn patch_post_pq_frigate(
 ) -> Result<(), String>
 {
     let room_id = area.mlvl_area.mrea.to_u32();
-    let mut trigger_id = 0;
-    if room_id == 0x3ea190ee {
-        trigger_id = area.new_object_id_from_layer_name("Default");
+    let mut instance_id = 0;
+    if room_id == 0x3ea190ee || room_id == 0x85578E54 {
+        instance_id = area.new_object_id_from_layer_name("Default");
     }
     let layer_count = area.layer_flags.layer_count as usize;
     let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
@@ -5080,7 +5080,7 @@ fn patch_post_pq_frigate(
     if room_id == 0x3ea190ee {
         layers[0].objects.as_mut_vec().push(
             structs::SclyObject {
-                instance_id: trigger_id,
+                instance_id,
                 property_data: structs::Trigger {
                     name: b"Trigger\0".as_cstr(),
                     position: [184.816299, -263.740845, -86.882622].into(),
@@ -5119,6 +5119,32 @@ fn patch_post_pq_frigate(
                         target_object_id: 0x001B0041,
                     }
                 ].into()
+            }
+        );
+    } else if room_id == 0x85578E54 { // biotech research area 1
+        layers[1].objects.as_mut_vec().push(
+            structs::SclyObject {
+                instance_id,
+                connections: vec![
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: 0x000E0107, // door shield actor
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: 0x000E0105, // damageable trigger
+                    },
+                ].into(),
+                property_data: structs::Timer {
+                    name: b"disable door timer\0".as_cstr(),
+                    start_time: 0.02,
+                    max_random_add: 0.0,
+                    looping: 0,
+                    start_immediately: 1,
+                    active: 1,
+                }.into(),
             }
         );
     }
