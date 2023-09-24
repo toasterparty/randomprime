@@ -37,6 +37,8 @@ use crate::patch_config::{
     SpecialFunctionType,
     PlatformConfig,
     PlatformType,
+    ConnectionState,
+    ConnectionMsg,
 };
 
 use std::{fs::{self, File}, io::Read, path::Path};
@@ -11325,6 +11327,110 @@ fn patch_subchamber_five_essence_permadeath<'r>(
     Ok(())
 }
 
+fn patch_pq_permadeath<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+)
+-> Result<(), String>
+{
+    let mrea_id = area.mlvl_area.mrea.to_u32().clone();
+    
+    let special_fn_id = area.new_object_id_from_layer_id(0);
+    let timer1_id = area.new_object_id_from_layer_id(0);
+    let timer2_id = area.new_object_id_from_layer_id(0);
+
+    area.add_layer(b"Custom Shield Layer\0".as_cstr());
+    let pq_layer = area.layer_flags.layer_count as usize - 1;
+
+    let scly = area.mrea().scly_section_mut();
+    let layers = &mut scly.layers.as_mut_vec();
+
+    // move objects to new layer //
+    for obj_id in vec![0x00190110, 0x00190053] {
+        let obj = layers[0].objects.as_mut_vec()
+            .iter_mut()
+            .find(|obj| (obj.instance_id & 0x00FFFFFF) == obj_id);
+
+        if obj.is_none() {
+            continue;
+        }
+
+        let obj = obj.unwrap().clone();
+        layers[pq_layer].objects.as_mut_vec().push(obj.clone());
+        layers[0].objects.as_mut_vec().retain(|obj| obj.instance_id & 0x00FFFFFF != obj_id);
+    }
+
+    // disable layer on PQ dead //
+    layers[0].objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: special_fn_id,
+            property_data: structs::SpecialFunction::layer_change_fn(
+                b"SpecialFunction - Bosses Stay Dead\0".as_cstr(),
+                0xB22C4E90,
+                pq_layer as u32,
+            ).into(),
+            connections: vec![].into(),
+        }
+    );
+
+    let connection = ConnectionConfig {
+        sender_id: 0x00190004, // parasite queen
+        state: ConnectionState::DEAD,
+        target_id: special_fn_id,
+        message: ConnectionMsg::DECREMENT,
+    };
+    patch_add_connection(layers, &connection, mrea_id);
+
+    // Activate effects on 2nd pass
+    let effect_conns = layers[0].objects
+        .as_mut_vec()
+        .iter_mut()
+        .find(|obj| obj.instance_id == 0x00190041)
+        .expect("Failed to find effects timer in frigate reactor core")
+        .connections
+        .as_mut_vec()
+        .clone();
+
+    layers[0].objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: timer1_id,
+            property_data: structs::Timer {
+                name: b"my t\0".as_cstr(),
+                start_time: 0.1,
+                max_random_add: 0.0,
+                looping: 0,
+                start_immediately: 1,
+                active: 1,
+            }.into(),
+            connections: effect_conns.into(),
+        }
+    );
+
+    // but not on 1st pass
+    layers[pq_layer].objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: timer2_id,
+            property_data: structs::Timer {
+                name: b"my t\0".as_cstr(),
+                start_time: 0.02,
+                max_random_add: 0.0,
+                looping: 0,
+                start_immediately: 1,
+                active: 1,
+            }.into(),
+            connections: vec![
+                structs::Connection {
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    state: structs::ConnectionState::ZERO,
+                    target_object_id: timer1_id,
+                },
+            ].into(),
+        }
+    );
+
+    Ok(())
+}
+
 fn patch_final_boss_permadeath<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -16554,6 +16660,12 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
 
     if config.qol_game_breaking {
         patch_qol_game_breaking(&mut patcher, config.version, config.force_vanilla_layout, player_size < 0.9);
+
+        patcher.add_scly_patch(
+            resource_info!("07_intro_reactor.MREA").into(),
+            move |ps, area| patch_pq_permadeath(ps, area)
+        );
+
         if boss_permadeath {
             patcher.add_scly_patch(
                 resource_info!("03a_crater.MREA").into(),
