@@ -9604,8 +9604,15 @@ fn patch_dol<'r>(
     }
 
     // Don't holster weapon when grappling
+    // (0x8017a998 - 0x8017A668)
+    // byte pattern : 40820178 7f83e378 7fc4f378 4b
     if shoot_in_grapple {
-        let patch = ppcasm!(symbol_addr!("UpdateGrappleState__7CPlayerFRC11CFinalInputR13CStateManager", version) + (0x8017a998 - 0x8017A668), {
+        let shoot_in_grapple_offset = if [Version::NtscJ, Version::Pal].contains(&version) {
+            0x324
+        } else {
+            0x330
+        };
+        let patch = ppcasm!(symbol_addr!("UpdateGrappleState__7CPlayerFRC11CFinalInputR13CStateManager", version) + shoot_in_grapple_offset, {
             nop;
         });
         dol_patcher.ppcasm_patch(&patch)?;
