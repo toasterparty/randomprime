@@ -14374,16 +14374,24 @@ fn export_logbook(gc_disc: &mut structs::GcDisc, config: &PatchConfig)
     -> Result<(), String>
 {
     let filenames = [
+        "AudioGrp.pak",
         "Metroid1.pak",
-        "Metroid2.pak",
         "Metroid3.pak",
-        "Metroid4.pak",
-        "metroid5.pak",
         "Metroid6.pak",
+        "Metroid8.pak",
+        "MiscData.pak",
+        "SamGunFx.pak",
+        "metroid5.pak",
+        "GGuiSys.pak",
+        "Metroid2.pak",
+        "Metroid4.pak",
         "Metroid7.pak",
+        "MidiData.pak",
+        "NoARAM.pak",
+        "SamusGun.pak",
     ];
 
-    let mut strgs = Vec::<Vec<String>>::new();
+    let mut strgs = HashMap::<u32, Vec<String>>::new();
 
     for f in &filenames {
         let file_entry = gc_disc.find_file(f).unwrap();
@@ -16900,15 +16908,33 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     }
 
     // Edit Strings
+    let paks = [
+        "AudioGrp.pak",
+        "Metroid1.pak",
+        "Metroid3.pak",
+        "Metroid6.pak",
+        "Metroid8.pak",
+        "MiscData.pak",
+        "SamGunFx.pak",
+        "metroid5.pak",
+        "GGuiSys.pak",
+        "Metroid2.pak",
+        "Metroid4.pak",
+        "Metroid7.pak",
+        "MidiData.pak",
+        "NoARAM.pak",
+        "SamusGun.pak",
+    ];
+
     for (strg, replacement_strings) in strgs {
         let id = match strg.parse::<u32>() {
             Ok(n) => n,
             Err(_e) => panic!("{} is not a valid STRG identifier", strg),
         };
 
-        for (pak_name, _) in pickup_meta::ROOM_INFO.iter() {
+        for pak in paks.iter() {
             patcher.add_resource_patch(
-                (&[pak_name.as_bytes()], id, FourCC::from_bytes(b"STRG")),
+                (&[pak.as_bytes()], id, FourCC::from_bytes(b"STRG")),
                 move |res| patch_arbitrary_strg(res, replacement_strings.clone())
             );
         }
