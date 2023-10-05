@@ -10719,6 +10719,47 @@ fn patch_dol<'r>(
         }
     }
 
+    // restore chest vulnerability to missile and charged shot, also wavebuster cheese works too
+    if [Version::Pal, Version::NtscJ].contains(&version) {
+        let cridley_acceptscriptmsg_addr = symbol_addr!("AcceptScriptMsg__7CRidleyF20EScriptObjectMessage9TUniqueIdR13CStateManager", version);
+        let remove_check_1_patch = ppcasm!(cridley_acceptscriptmsg_addr + 0x830, {
+            nop;
+        });
+
+        dol_patcher.ppcasm_patch(&remove_check_1_patch)?;
+
+        let remove_check_2_patch = ppcasm!(cridley_acceptscriptmsg_addr + 0x840, {
+            nop;
+        });
+
+        dol_patcher.ppcasm_patch(&remove_check_2_patch)?;
+
+        let restore_original_check_patch = ppcasm!(cridley_acceptscriptmsg_addr + 0x884, {
+            beq {cridley_acceptscriptmsg_addr + 0x88C};
+            b {new_text_section_end + 0x18};
+            b {new_text_section_end};
+            nop;
+            nop;
+        });
+
+        dol_patcher.ppcasm_patch(&restore_original_check_patch)?;
+
+        let restore_original_check_code_cave_patch = ppcasm!(new_text_section_end, {
+            lbz r0, 0x0140(r3);
+            rlwinm. r0, r0, 26, 31, 31;
+            bne {new_text_section_end + 0x18};
+            lwz r0, 0x13c(r3);
+            cmpwi r0, 6;
+            bne {new_text_section_end + 0x20};
+            fmr f0, f14;
+            stfs f0, 0xad0(r30);
+            b {cridley_acceptscriptmsg_addr + 0x898};
+        });
+
+        new_text_section_end = new_text_section_end + restore_original_check_code_cave_patch.encoded_bytes().len() as u32;
+        new_text_section.extend(restore_original_check_code_cave_patch.encoded_bytes());
+    }
+
     let bytes_needed = ((new_text_section.len() + 31) & !31) - new_text_section.len();
     new_text_section.extend([0; 32][..bytes_needed].iter().copied());
     dol_patcher.add_text_segment(new_text_section_start, Cow::Owned(new_text_section))?;
