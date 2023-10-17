@@ -14391,7 +14391,7 @@ fn export_logbook(gc_disc: &mut structs::GcDisc, config: &PatchConfig)
         "SamusGun.pak",
     ];
 
-    let mut strgs = HashMap::<u32, Vec<String>>::new();
+    let mut strgs = Vec::<Vec<String>>::new();
 
     for f in &filenames {
         let file_entry = gc_disc.find_file(f).unwrap();
