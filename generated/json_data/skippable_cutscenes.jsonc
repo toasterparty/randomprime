@@ -5372,7 +5372,7 @@
                         },
                         {
                             "senderId": 589831, // [SpecialFunction] SpecialFunction Cinematic Skip
-                            "targetId": 689894, // [LockOnPoint] Cutscene Skip Combat Dash Lock
+                            "targetId": 1000000001, // [LockOnPoint] Cutscene Skip Combat Dash Lock
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
@@ -5384,7 +5384,7 @@
                         },
                         {
                             "senderId": 689930, // [Timer] Disable CS Skip LockOnPoint
-                            "targetId": 689894, // [LockOnPoint] Cutscene Skip Combat Dash Lock
+                            "targetId": 1000000001, // [LockOnPoint] Cutscene Skip Combat Dash Lock
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
@@ -5664,17 +5664,17 @@
                             "id": 789829, // [Timer] Re-Enable Black Bars
                             "time": 1.0
                         }
-                    ], 
+                    ],
                     "lockOnPoints": [
                         {
-                            "id1": 689893,
-                            "active1": true,
+                            "id1": 1000000000,
+                            "active1": false,
                             "position": [
                                 -66.307533,
                                 -4.487834,
                                 0.578049
                             ],
-                            "id2": 689894,
+                            "id2": 1000000001,
                             "active2": false
                         }
                     ],
