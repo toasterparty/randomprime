@@ -2715,14 +2715,14 @@
                             "maxIncrease": {
                                 "description": "The amount which the player's inventory capacity for this item increases when the pickup is obtained. Defaults to `1`, except for `Missile`, which defaults to `5`.",
                                 "type": "integer",
-                                "minimum": 0,
-                                "maximum": 4294967295
+                                "minimum": -2147483648,
+                                "maximum": 2147483647
                             },
                             "currIncrease": {
                                 "description": "The amount of missiles/energy that this pickup refills. Defaults to `maxIncrease`.",
                                 "type": "integer",
-                                "minimum": 0,
-                                "maximum": 4294967295
+                                "minimum": -2147483648,
+                                "maximum": 2147483647
                             },
                             "respawn": {
                                 "description": "If true, this pickup will respawn every time the room is reloaded.",
