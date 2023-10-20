@@ -286,6 +286,7 @@ impl GenericTexture
 pub struct BlockConfig
 {
     pub id: Option<u32>,
+    pub active: Option<bool>,
     pub layer: Option<u32>,
     pub position: [f32;3],
     pub scale: Option<[f32;3]>,

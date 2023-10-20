@@ -5756,6 +5756,7 @@ fn patch_visible_aether_boundaries<'r>(
             AETHER_BOUNDARY_TEXTURE,
             0,
             None,
+            true,
         );
     }
 

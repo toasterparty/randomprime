@@ -3051,6 +3051,11 @@
                                 "minimum": 0,
                                 "maximum": 16777215
                             },
+                            "active": {
+                                "description": "Default active state of the block.",
+                                "type": "boolean",
+                                "default": true
+                            },
                             "layer": {
                                 "$ref": "#/$defs/addModifyLayer"
                             },

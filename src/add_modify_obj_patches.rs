@@ -758,6 +758,7 @@ pub fn patch_add_block<'r>(
         texture,
         1,
         config.layer,
+        config.active.unwrap_or(true),
     );
 
     Ok(())
@@ -771,6 +772,7 @@ pub fn add_block<'r>(
     texture: GenericTexture,
     is_tangible: u8,
     layer: Option<u32>,
+    active: bool,
 )
 {
     let layer_id = layer.unwrap_or(0);
@@ -857,7 +859,7 @@ pub fn add_block<'r>(
                 snow: 1,
                 solid: is_tangible,
                 camera_passthrough: 0,
-                active: 1,
+                active: active as u8,
                 unknown8: 0,
                 unknown9: 1.0,
                 unknown10: 1,
