@@ -12125,8 +12125,31 @@ fn patch_add_dock_teleport<'r>(
             if obj.property_data.is_dock() {
                 let dock = obj.property_data.as_dock_mut().unwrap();
 
-                // Remove all auto-loads in this room
-                dock.load_connected = 0;
+                // Remove all auto-loads in this room except for elevator rooms
+                if !vec![
+                    0x3E6B2BB7,
+                    0x8316EDF5,
+                    0xA5FA69A1,
+                    0x236E1B0F,
+                    0xC00E3781,
+                    0xDD0B0739,
+                    0x11A02448,
+                    0x2398E906,
+                    0x8A31665E,
+                    0x15D6FF8B,
+                    0x0CA514F0,
+                    0x7D106670,
+                    0x430E999C,
+                    0xE2C2CF38,
+                    0x3BEAADC9,
+                    0xDCA9A28B,
+                    0x4C3D244C,
+                    0xEF2F1440,
+                    0xC1AC9233,
+                    0x93668996,
+                ].contains(&mrea_id) {
+                    dock.load_connected = 0;
+                }
 
                 // Find the specified dock
                 if dock.dock_index == destination_dock_num {
@@ -12514,9 +12537,30 @@ fn patch_modify_dock<'r>(
             continue;
         }
 
-        // remove all auto-loads in this room
-        let dock = obj.property_data.as_dock_mut().unwrap();
-        if dock.load_connected != 0 {
+        // Remove all auto-loads in this room except for elevator rooms
+        if !vec![
+            0x3E6B2BB7,
+            0x8316EDF5,
+            0xA5FA69A1,
+            0x236E1B0F,
+            0xC00E3781,
+            0xDD0B0739,
+            0x11A02448,
+            0x2398E906,
+            0x8A31665E,
+            0x15D6FF8B,
+            0x0CA514F0,
+            0x7D106670,
+            0x430E999C,
+            0xE2C2CF38,
+            0x3BEAADC9,
+            0xDCA9A28B,
+            0x4C3D244C,
+            0xEF2F1440,
+            0xC1AC9233,
+            0x93668996,
+        ].contains(&mrea_id) {
+            let dock = obj.property_data.as_dock_mut().unwrap();
             dock.load_connected = 0;
         }
     }
