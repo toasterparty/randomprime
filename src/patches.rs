@@ -930,7 +930,9 @@ fn patch_door<'r>(
             break;
         }
 
-        assert!(door_open_trigger_id != 0);
+        if door_open_trigger_id == 0 {
+            panic!("Couldn't find Door #{}'s (0x{:X}) open trigger in room 0x{:X}", door_loc.dock_number, door_loc.door_location.unwrap().instance_id, mrea_id);
+        }
 
         let is_unpowered = vec![
                 0x001E000B, // Biohazard Containment
@@ -11453,12 +11455,12 @@ fn patch_final_boss_permadeath<'r>(
         );
         area.add_dependencies(game_resources, 0, deps_iter);
         area.add_dependencies(
-            &game_resources, 0,
+            game_resources, 0,
             iter::once(custom_asset_ids::WARPING_TO_OTHER_STRG.into())
         );
     }
 
-    let layer_count = area.mrea().scly_section_mut().layers.len();
+    let layer_count = area.mrea().scly_section().layers.len();
     let disable_bosses_layer_num;
 
     if mrea_id == 0x749DF46 { // subchamber two already has a layer #1 that we can use
@@ -11774,7 +11776,12 @@ fn patch_final_boss_permadeath<'r>(
                     obj.property_data.object_type() == 0x84
                 )
                 && !vec![
-                        0x00050014, 0x0005000E,
+                        0x00050014,
+
+                        // infusion chamber door
+                        0x00050013,
+                        0x00050014,
+                        0x0005000E,
                     ].contains(&obj.instance_id)
                 {
                     objs_to_remove.push(obj.instance_id.clone());
@@ -15058,6 +15065,69 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         );
     }
 
+    let boss_permadeath = {
+        let mut boss_permadeath = false;
+        if level_data.contains_key(World::ImpactCrater.to_json_key())
+        {
+            let transports = &level_data.get(World::ImpactCrater.to_json_key()).unwrap().transports;
+            if transports.contains_key("Essence Dead Cutscene")
+            {
+                let destination = &transports.get("Essence Dead Cutscene").unwrap();
+                if destination.trim().to_lowercase() != "credits"
+                {
+                    boss_permadeath = true;
+                }
+            }
+        }
+
+        boss_permadeath
+    };
+
+    if config.qol_game_breaking {
+        patcher.add_scly_patch(
+            resource_info!("07_intro_reactor.MREA").into(),
+            move |ps, area| patch_pq_permadeath(ps, area)
+        );
+
+        if boss_permadeath {
+            patcher.add_scly_patch(
+                resource_info!("03a_crater.MREA").into(),
+                move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
+            );
+            patcher.add_scly_patch(
+                resource_info!("03b_crater.MREA").into(),
+                move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
+            );
+            patcher.add_scly_patch(
+                resource_info!("03c_crater.MREA").into(),
+                move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
+            );
+            patcher.add_scly_patch(
+                resource_info!("03d_crater.MREA").into(),
+                move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
+            );
+            patcher.add_scly_patch(
+                resource_info!("03e_crater.MREA").into(),
+                move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
+            );
+            patcher.add_scly_patch(
+                resource_info!("03e_f_crater.MREA").into(), // subchamber five
+                move |ps, area| patch_subchamber_five_essence_permadeath(ps, area)
+            );
+            patcher.add_scly_patch(
+                resource_info!("03f_crater.MREA").into(), // lair
+                move |ps, area| patch_add_dock_teleport(ps, area,
+                    [42.955109, -287.172638, -278.084354], // source position
+                    [75.0, 75.0, 50.0], // source scale
+                    0, // destination dock #
+                    Some([41.5365,-287.8581,-284.6025]),
+                    None,
+                    None,
+                )
+            );
+        }
+    }
+
     // Patch pickups
     let mut seed: u64 = 1;
     for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {
@@ -16697,67 +16767,13 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         );
     }
 
-    let mut boss_permadeath = false;
-    if level_data.contains_key(World::ImpactCrater.to_json_key())
-    {
-        let transports = &level_data.get(World::ImpactCrater.to_json_key()).unwrap().transports;
-        if transports.contains_key("Essence Dead Cutscene")
-        {
-            let destination = &transports.get("Essence Dead Cutscene").unwrap();
-            if destination.trim().to_lowercase() != "credits"
-            {
-                boss_permadeath = true;
-            }
-        }
-    }
-
     if config.qol_game_breaking {
         patch_qol_game_breaking(&mut patcher, config.version, config.force_vanilla_layout, player_size < 0.9);
 
-        patcher.add_scly_patch(
-            resource_info!("07_intro_reactor.MREA").into(),
-            move |ps, area| patch_pq_permadeath(ps, area)
-        );
-
         if boss_permadeath {
             patcher.add_scly_patch(
-                resource_info!("03a_crater.MREA").into(),
-                move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
-            );
-            patcher.add_scly_patch(
-                resource_info!("03b_crater.MREA").into(),
-                move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
-            );
-            patcher.add_scly_patch(
-                resource_info!("03c_crater.MREA").into(),
-                move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
-            );
-            patcher.add_scly_patch(
-                resource_info!("03d_crater.MREA").into(),
-                move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
-            );
-            patcher.add_scly_patch(
-                resource_info!("03e_crater.MREA").into(),
-                move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
-            );
-            patcher.add_scly_patch(
                 resource_info!("03f_crater.MREA").into(), // lair
                 move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
-            );
-            patcher.add_scly_patch(
-                resource_info!("03e_f_crater.MREA").into(), // subchamber five
-                move |ps, area| patch_subchamber_five_essence_permadeath(ps, area)
-            );
-            patcher.add_scly_patch(
-                resource_info!("03f_crater.MREA").into(), // lair
-                move |ps, area| patch_add_dock_teleport(ps, area,
-                    [42.955109, -287.172638, -278.084354], // source position
-                    [75.0, 75.0, 50.0], // source scale
-                    0, // destination dock #
-                    Some([41.5365,-287.8581,-284.6025]),
-                    None,
-                    None,
-                )
             );
         }
     }
