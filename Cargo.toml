@@ -25,6 +25,8 @@ winapi = "0.3"
 auto_struct_macros = { path = "auto_struct_macros" }
 dol_linker = { path = "dol_linker" }
 dol_symbol_table = { path = "generated/dol_symbol_table" }
+json_data = { path = "generated/json_data" }
+json_strip = { path = "generated/json_strip" }
 libsquish_wrapper = { path = "libsquish_wrapper" }
 nod_wrapper = { path = "nod_wrapper" }
 ppcasm = { path = "ppcasm" }
@@ -46,6 +48,8 @@ members = [
             "generated/resource_info_table/resource_info_table_macro",
         "generated/dol_symbol_table",
             "generated/dol_symbol_table/dol_symbol_table_macro",
+        "generated/json_data",
+        "generated/json_strip",
     "libsquish_wrapper",
     "nod_wrapper",
     "ppcasm",

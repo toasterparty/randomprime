@@ -2,10 +2,7 @@ use auto_struct_macros::auto_struct;
 use reader_writer::CStr;
 use reader_writer::typenum::*;
 use reader_writer::generic_array::GenericArray;
-use crate::res_id:: *;
-use crate::scly_props::structs::*;
 use crate::SclyPropertyData;
-use crate::scly_props::structs::*;
 use crate::impl_rotation;
 
 #[auto_struct(Readable, Writable)]

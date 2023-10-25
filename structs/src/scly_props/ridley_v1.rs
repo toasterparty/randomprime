@@ -5,6 +5,8 @@ use reader_writer::typenum::*;
 use reader_writer::generic_array::GenericArray;
 use crate::SclyPropertyData;
 use crate::scly_structs::*;
+use crate::res_id:: *;
+use crate::scly_props::structs::{ActorParameters, DamageInfo, PatternedInfo, RidleyStruct1, RidleyStruct2};
 
 #[auto_struct(Readable, Writable)]
 #[derive(Debug, Clone)]
@@ -18,49 +20,43 @@ pub struct RidleyV1<'r>
     pub position: GenericArray<f32, U3>,
     pub rotation: GenericArray<f32, U3>,
     pub scale: GenericArray<f32, U3>,
+
     pub patterned_info: PatternedInfo,
     pub actor_params: ActorParameters,
-    pub dont_care1: GenericArray<u32, U18>,
+
+    pub models: GenericArray<ResId<CMDL>, U12>,
+    pub particle: ResId<PART>,
+
+    pub unknown0: f32,
+    pub unknown1: f32,
+    pub unknown2: f32,
+    pub unknown3: f32,
+
+    pub wpsc0: u32, // missing ResId<WPSC>
     pub damage_info1: DamageInfo,
     pub ridley_struct1_1: RidleyStruct1,
-    pub dont_care2: GenericArray<u32, U2>,
+    pub sound0: u32,
+    pub wpsc1: u32, // missing ResId<WPSC>
     pub damage_info2: DamageInfo,
     pub ridley_struct2_1: RidleyStruct2,
-    pub dont_care3: u32,
+    pub wpsc2: u32, // missing ResId<WPSC>
     pub damage_info3: DamageInfo,
     pub ridley_struct2_2: RidleyStruct2,
-    pub dont_care4: u32,
+    pub sound1: u32, // missing ResId<WPSC>
     pub damage_info4: DamageInfo,
     pub ridley_struct2_3: RidleyStruct2,
-    pub dont_care5: f32,
-    pub dont_care6: f32,
+    pub unknown4: f32,
+    pub unknown5: f32,
     pub damage_info5: DamageInfo,
-    pub dont_care7: f32,
+    pub unknown6: f32,
     pub damage_info6: DamageInfo,
-    pub dont_care8: f32,
+    pub unknown7: f32,
     pub damage_info7: DamageInfo,
-    pub dont_care9: f32,
-    pub dont_care10: f32,
-    pub dont_care11: f32,
-    pub dont_care12: f32,
+    pub unknown8: f32,
+    pub elsc: u32,
+    pub unknown9: f32,
+    pub sound2: u32,
     pub damage_info8: DamageInfo,
-}
-
-#[auto_struct(Readable, Writable, FixedSize)]
-#[derive(Debug, Clone)]
-pub struct RidleyStruct1
-{
-    pub dont_care: GenericArray<u32, U15>,
-    pub color1: GenericArray<f32, U4>,
-    pub color2: GenericArray<f32, U4>,
-}
-
-#[auto_struct(Readable, Writable, FixedSize)]
-#[derive(Debug, Clone)]
-pub struct RidleyStruct2
-{
-    pub dont_care: GenericArray<u32, U8>,
-    pub unknown: u8,
 }
 
 use crate::{impl_position, impl_rotation, impl_scale, impl_patterned_info};

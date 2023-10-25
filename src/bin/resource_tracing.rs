@@ -3,7 +3,7 @@
 
 pub use randomprime::*;
 use randomprime::custom_assets::custom_asset_ids;
-use randomprime::pickup_meta::{PickupType, PickupModel, ScriptObjectLocation};
+use randomprime::pickup_meta::{PickupType, PickupModel, ScriptObjectLocation, pickup_model_for_pickup};
 
 use reader_writer::{FourCC, Reader, Readable, Writable};
 use structs::{Ancs, Cmdl, Evnt, Pickup, res_id, ResId, Resource, Scan};
@@ -237,53 +237,6 @@ impl ResourceKey
         }
     }
 }
-
-fn pickup_model_for_pickup(pickup: &structs::Pickup) -> Option<PickupModel>
-{
-    match pickup.kind {
-        4 if pickup.max_increase > 0 => Some(PickupModel::Missile),
-        4 if pickup.max_increase == 0 => Some(PickupModel::MissileRefill),
-        24 if pickup.max_increase > 0 => Some(PickupModel::EnergyTank),
-        9 => Some(PickupModel::Visor),
-        13 => Some(PickupModel::Visor),
-        22 => Some(PickupModel::VariaSuit),
-        21 => Some(PickupModel::GravitySuit),
-        // XXX There's two PhazonSuit objects floating around, we want the one with a model
-        23 if pickup.cmdl != 0xFFFFFFFF => Some(PickupModel::PhazonSuit),
-        16 => Some(PickupModel::MorphBall),
-        18 => Some(PickupModel::BoostBall),
-        19 => Some(PickupModel::SpiderBall),
-        6 => Some(PickupModel::MorphBallBomb),
-        7 if pickup.max_increase == 1 => Some(PickupModel::PowerBombExpansion),
-        7 if pickup.max_increase == 4 => Some(PickupModel::PowerBomb),
-        7 if pickup.max_increase == 0 => Some(PickupModel::PowerBombRefill),
-        10 => Some(PickupModel::ChargeBeam),
-        15 => Some(PickupModel::SpaceJumpBoots),
-        12 => Some(PickupModel::GrappleBeam),
-        11 => Some(PickupModel::SuperMissile),
-        28 => Some(PickupModel::Wavebuster),
-        14 => Some(PickupModel::IceSpreader),
-        8 => Some(PickupModel::Flamethrower),
-        2 => Some(PickupModel::WaveBeam),
-        1 => Some(PickupModel::IceBeam),
-        3 => Some(PickupModel::PlasmaBeam),
-        33 => Some(PickupModel::ArtifactOfLifegiver),
-        32 => Some(PickupModel::ArtifactOfWild),
-        38 => Some(PickupModel::ArtifactOfWorld),
-        37 => Some(PickupModel::ArtifactOfSun),
-        31 => Some(PickupModel::ArtifactOfElder),
-        39 => Some(PickupModel::ArtifactOfSpirit),
-        29 => Some(PickupModel::ArtifactOfTruth),
-        35 => Some(PickupModel::ArtifactOfChozo),
-        34 => Some(PickupModel::ArtifactOfWarrior),
-        40 => Some(PickupModel::ArtifactOfNewborn),
-        36 => Some(PickupModel::ArtifactOfNature),
-        30 => Some(PickupModel::ArtifactOfStrength),
-        26 if pickup.curr_increase == 20 => Some(PickupModel::HealthRefill),
-        _ => None,
-    }
-}
-
 
 static CUT_SCENE_PICKUPS: &'static [(u32, u32)] = &[
     (0x3C785450, 589860), // Morph Ball
@@ -779,6 +732,41 @@ fn create_nothing(pickup_table: &mut HashMap<PickupModel, PickupData>)
     }).is_none());
 }
 
+fn create_gamecube(pickup_table: &mut HashMap<PickupModel, PickupData>)
+{
+    let mut bytes = Vec::new();
+    {
+        let mut pickup: structs::Pickup = Reader::new(&pickup_table[&PickupModel::PhazonSuit].bytes)
+                                        .read::<Pickup>(()).clone();
+        pickup.name = Cow::Borrowed(CStr::from_bytes_with_nul(b"Gamecube\0").unwrap());
+        pickup.kind = PickupType::Missile.kind();
+        pickup.max_increase = 0;
+        pickup.curr_increase = 0;
+        pickup.cmdl = custom_asset_ids::RANDOVANIA_GAMECUBE_CMDL;
+        pickup.ancs.file_id = custom_asset_ids::RANDOVANIA_GAMECUBE_ANCS;
+        pickup.part = ResId::<res_id::PART>::invalid();
+        pickup.write_to(&mut bytes).unwrap();
+    }
+
+    let mut deps: HashSet<_> = pickup_table[&PickupModel::PhazonSuit].deps.iter()
+        .filter(|i| ![b"SCAN".into(), b"STRG".into(),
+                      b"CMDL".into()].contains(&i.fourcc))
+        .cloned()
+        .collect();
+    deps.extend(&[
+        ResourceKey::from(custom_asset_ids::RANDOVANIA_GAMECUBE_CMDL),
+        ResourceKey::from(custom_asset_ids::RANDOVANIA_GAMECUBE_ANCS),
+        ResourceKey::from(custom_asset_ids::RANDOVANIA_GAMECUBE0_TXTR),
+        ResourceKey::from(custom_asset_ids::RANDOVANIA_GAMECUBE1_TXTR),
+        ResourceKey::from(ResId::<res_id::TXTR>::new(0x6E3D2E18)),
+    ]);
+    assert!(pickup_table.insert(PickupModel::RandovaniaGamecube, PickupData {
+        bytes: bytes,
+        deps: deps,
+        attainment_audio_file_name: b"/audio/itm_x_short_02.dsp\0".to_vec(),
+    }).is_none());
+}
+
 fn create_shiny_missile(pickup_table: &mut HashMap<PickupModel, PickupData>)
 {
     let mut shiny_missile_bytes = Vec::new();
@@ -877,6 +865,40 @@ fn create_xray_visor(pickup_table: &mut HashMap<PickupModel, PickupData>)
     }).is_none());
 }
 
+fn create_flamethrower(pickup_table: &mut HashMap<PickupModel, PickupData>)
+{
+    let mut bytes = Vec::new();
+    {
+        let mut pickup = Reader::new(&pickup_table[&PickupModel::Flamethrower].bytes)
+            .read::<Pickup>(()).clone();
+        pickup.name = Cow::Borrowed(CStr::from_bytes_with_nul(b"Flamethrower\0").unwrap());
+        pickup.cmdl = custom_asset_ids::FLAMETHROWER_PICKUP_CMDL;
+        pickup.ancs.file_id = custom_asset_ids::FLAMETHROWER_PICKUP_ANCS;
+        pickup.write_to(&mut bytes).unwrap();
+    }
+
+    let mut deps: HashSet<_> = pickup_table[&PickupModel::Flamethrower].deps.iter()
+        .filter(|i| ![b"SCAN".into(), b"STRG".into(), b"CMDL".into(),
+                      b"ANCS".into(), b"TXTR".into()].contains(&i.fourcc))
+        .cloned()
+        .collect();
+
+    deps.extend(&[
+        ResourceKey::from(custom_asset_ids::FLAMETHROWER_PICKUP_CMDL),
+        ResourceKey::from(custom_asset_ids::FLAMETHROWER_PICKUP_ANCS),
+        ResourceKey::from(custom_asset_ids::FLAMETHROWER_PICKUP_TXTR1),
+        ResourceKey::from(custom_asset_ids::FLAMETHROWER_PICKUP_TXTR2),
+        ResourceKey::from(custom_asset_ids::FLAMETHROWER_PICKUP_TXTR3),
+        ResourceKey::from(ResId::<res_id::TXTR>::new(0xB59EB7E6)),
+    ]);
+
+    assert!(pickup_table.insert(PickupModel::FlamethrowerNew, PickupData {
+        bytes,
+        deps,
+        attainment_audio_file_name: b"/audio/jin_itemattain.dsp\0".to_vec(),
+    }).is_none());
+}
+
 fn create_combat_visor(pickup_table: &mut HashMap<PickupModel, PickupData>)
 {
     let mut bytes = Vec::new();
@@ -923,6 +945,7 @@ fn main()
         "metroid5.pak",
         "Metroid6.pak",
         "Metroid7.pak",
+        "Metroid8.pak",
     ];
 
     let mut pickup_table = HashMap::new();
@@ -993,9 +1016,16 @@ fn main()
             let room_id = ResId::<res_id::MREA>::new(res.file_id);
 
             // println!("\n\n");
+            // let mut hudmemos = HashSet::new();
             // let mut layer_changers: Vec<(u32,u32,u32)> = Vec::new();
             // let mut enable_disable: Vec<(u32,bool)> = Vec::new();
             for (layer_num, scly_layer) in scly.layers.iter().enumerate() {
+                // for obj in scly_layer.objects.iter() {
+                //     if obj.property_data.is_hud_memo() {
+                //         let memo = obj.property_data.as_hud_memo().unwrap();
+                //         hudmemos.insert(memo.strg);
+                //     }
+                // }
                 // for obj in scly_layer.objects.iter() {
                 //     if obj.property_data.is_pickup() {
                 //         let pickup = obj.property_data.as_pickup().unwrap();
@@ -1208,12 +1238,19 @@ fn main()
 
             {
                 let strg_id = mrea_name_strg_map[&ResId::<res_id::MREA>::new(res.file_id)];
-                let strg: structs::Strg = res_db.map[&ResourceKey::from(strg_id)]
-                    .data.data.clone().read(());
-                let name = strg
-                    .string_tables.iter().next().unwrap()
-                    .strings.iter().next().unwrap()
-                    .into_owned().into_string();
+
+                let name = match f {
+                    &"Metroid8.pak" => "End Cinema\0".to_string(),
+                    _ => {
+                        let strg: structs::Strg = res_db.map[&ResourceKey::from(strg_id)]
+                            .data.data.clone().read(());
+                        let name = strg
+                            .string_tables.iter().next().unwrap()
+                            .strings.iter().next().unwrap()
+                            .into_owned().into_string();
+                        name
+                    },
+                };
 
                 if vec![
                     0x2398E906, // artifact temple
@@ -1249,6 +1286,47 @@ fn main()
                 //     consolidated_door_locations.push(existing_location);
                 // }
 
+                // let mut hudmemos2 = Vec::new();
+                // for strg_id in hudmemos {
+                //     if strg_id.to_u32() == 0xFFFFFFFF || strg_id.to_u32() == 0 || strg_id.to_u32() == 0x6B01D75C {
+                //         continue;
+                //     }
+
+                //     let key = ResourceKey::from(strg_id);
+                //     if !res_db.map.contains_key(&key) {
+                //         hudmemos2.push(format!("0x{:X} not found", strg_id.to_u32()));
+                //         continue;
+                //     }
+
+                //     let strg: structs::Strg = res_db.map[&key]
+                //         .data.data.clone().read(());
+
+                //     let text = strg
+                //         .string_tables.iter().next().unwrap()
+                //         .strings.iter().next().unwrap()
+                //         .into_owned().into_string();
+                    
+                //     if text.contains("acquired!") {
+                //         continue;;
+                //     }
+
+                //     if text.contains("Energy fully replenished") {
+                //         continue;
+                //     }
+
+                //     hudmemos2.push(text);
+                // }
+
+                // if !hudmemos2.is_empty() {
+                //     println!("=== {} ===", name.replace("\0", ""));
+                //     for text in hudmemos2 {
+                //         let text = text.replace("&just=center;", "");
+                //         let text = text.replace("\0", "");
+                //         println!("{}", text);
+                //     }
+                //     println!("\n\n\n");
+                // }
+
                 pak_locations.push(RoomInfo {
                     room_id,
                     name,
@@ -1277,17 +1355,20 @@ fn main()
     assert!(cmdl_aabbs.insert(custom_asset_ids::XRAY_CMDL, visor_aabb).is_none());
     assert!(cmdl_aabbs.insert(custom_asset_ids::COMBAT_CMDL, visor_aabb).is_none());
 
+    create_gamecube(&mut pickup_table);
     create_nothing(&mut pickup_table);
     create_shiny_missile(&mut pickup_table);
     create_thermal_visor(&mut pickup_table);
     create_xray_visor(&mut pickup_table);
     create_combat_visor(&mut pickup_table);
+    create_flamethrower(&mut pickup_table);
+    // create_power_beam(&mut pickup_table);
 
     println!("// This file is generated by bin/resource_tracing.rs");
     println!("");
     println!("");
 
-    println!("pub const ROOM_INFO: &[(&str, &[RoomInfo]); 7] = &[");
+    println!("pub const ROOM_INFO: &[(&str, &[RoomInfo]); 8] = &[");
     for (fname, locations) in filenames.iter().zip(locations.into_iter()) {
         // println!("    // {}", fname);
         println!("    ({:?}, &[", fname);
@@ -1358,6 +1439,19 @@ fn main()
     println!("];");
 
     let mut cmdl_aabbs: Vec<_> = cmdl_aabbs.iter().collect();
+    
+    let ice_trab_cmdl = ResId::<res_id::CMDL>::new(0xA3108E43);
+    let ice_trap_aabb =
+        [
+            f32::from_bits(0xBF09348B),
+            f32::from_bits(0xBFB99CD0),
+            f32::from_bits(0xBEAA8B6E),
+            f32::from_bits(0x3F08ADAC),
+            f32::from_bits(0x3EDC6CFC),
+            f32::from_bits(0x3F003E64),
+        ];
+
+    cmdl_aabbs.push((&ice_trab_cmdl, &ice_trap_aabb));
     cmdl_aabbs.sort_by_key(|&(k, _)| k);
     println!("const PICKUP_CMDL_AABBS: [(u32, [u32; 6]); {}] = [", cmdl_aabbs.len());
     for (cmdl_id, aabb) in cmdl_aabbs {
@@ -1374,11 +1468,15 @@ fn main()
     println!("    {{");
     println!("        match self {{");
     for pt in PickupType::iter() {
+        if pt == PickupType::IceTrap {
+            continue;
+        }
+
         let pm = PickupModel::from_type(pt);
         let filename = stdstr::from_utf8(&pickup_table[&pm].attainment_audio_file_name).unwrap();
         println!("            PickupType::{:?} => {:?},", pt, filename);
     }
-    println!("            PickupType::FloatyJump => \"/audio/itm_x_short_02.dsp\\0\", // This is a hard-coded hack, there isn't an FJ item in-game");
+    println!("            PickupType::IceTrap => \"/audio/evt_x_event_00.dsp\\0\", // being a bit trolly here");
     println!("        }}");
     println!("    }}");
 
@@ -1390,6 +1488,33 @@ fn main()
     println!("    {{");
     println!("        match self {{");
     for pm in PickupModel::iter() {
+        if pm == PickupModel::IceTrap {
+
+            let string = 
+            "PickupModel::IceTrap => {
+                const DATA: &[(u32, FourCC)] = &[
+                    (0x1544D478, FourCC::from_bytes(b\"TXTR\")),
+                    (0x394D3877, FourCC::from_bytes(b\"ANIM\")),
+                    (0x454FB170, FourCC::from_bytes(b\"TXTR\")),
+                    (0x4B26EFDA, FourCC::from_bytes(b\"EVNT\")),
+                    (0xAF9DEFBE, FourCC::from_bytes(b\"CINF\")),
+                    (0x5E027EA1, FourCC::from_bytes(b\"TXTR\")),
+                    (0xA0DA476B, FourCC::from_bytes(b\"PART\")),
+                    (0x29782CA6, FourCC::from_bytes(b\"TXTR\")),
+                    (0x0DEB9456, FourCC::from_bytes(b\"PART\")),
+                    (0xA4B75FDE, FourCC::from_bytes(b\"TXTR\")),
+                    (0x0F7E19D9, FourCC::from_bytes(b\"TXTR\")),
+                    (0x09E3FB4C, FourCC::from_bytes(b\"TXTR\")),
+                    (0xA3108E43, FourCC::from_bytes(b\"CMDL\")),
+                    (0xFEBBC197, FourCC::from_bytes(b\"CSKR\")),
+                ];
+                DATA
+            },";
+
+            println!("{}", string);
+            continue;
+        }
+
         let mut deps: Vec<_> = pickup_table[&pm].deps.iter().collect();
         deps.sort();
         println!("            PickupModel::{:?} => {{", pm);
@@ -1413,6 +1538,46 @@ fn main()
     println!("    {{");
     println!("        match self {{");
     for pm in PickupModel::iter() {
+        if pm == PickupModel::IceTrap {
+            let string = 
+"           PickupModel::IceTrap => &[
+                0x00, 0x00, 0x00, 0x12, 0x49, 0x63, 0x65, 0x20,
+                0x54, 0x72, 0x61, 0x70, 0x00, 0xC3, 0x18, 0x19,
+                0x25, 0x41, 0xCB, 0xC3, 0x2E, 0xC3, 0x0C, 0xB0, 
+                0x2F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x3F, 0xA0, 0x00,
+                0x00, 0x3F, 0xA0, 0x00, 0x00, 0x3F, 0xA0, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x42, 0xC8, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0xA3, 0x10, 0x8E, 0x43, 0xDE, 0xAF, 0x00,
+                0x72, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x0E, 0x00, 0x00, 0x00,
+                0x0E, 0x01, 0x3F, 0x80, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x3F, 0x80, 0x00, 0x00, 0x41, 0xA0,
+                0x00, 0x00, 0x3F, 0x80, 0x00, 0x00, 0x3F, 0x80,
+                0x00, 0x00, 0x3F, 0x80, 0x00, 0x00, 0x3F, 0x80,
+                0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00,
+                0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x04, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+                0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x3F, 0x80, 0x00,
+                0x00, 0x3F, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x01,
+                0x00, 0x00, 0x3F, 0x80, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF,
+            ]";
+
+            println!("{}", string);
+            continue;
+        }
+
         println!("            PickupModel::{:?} => &[", pm);
         let pickup_bytes = &pickup_table[&pm].bytes;
         for y in 0..((pickup_bytes.len() + BYTES_PER_LINE - 1) / BYTES_PER_LINE) {

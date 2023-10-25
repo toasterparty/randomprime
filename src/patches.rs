@@ -11,7 +11,10 @@ use rand::{
     Rng,
 };
 
+use structs::SclyPropertyData;
+
 use crate::patch_config::{
+    Version,
     RunMode,
     ArtifactHintBehavior,
     Visor,
@@ -24,26 +27,33 @@ use crate::patch_config::{
     CtwkConfig,
     CutsceneMode,
     DoorConfig,
-    WaterConfig,
     HallOfTheEldersBombSlotCoversConfig,
     BombSlotCover,
     GenericTexture,
     FogConfig,
     PhazonDamageModifier,
+    ConnectionConfig,
+    DoorOpenMode,
+    SpecialFunctionType,
+    PlatformConfig,
+    PlatformType,
+    ConnectionState,
+    ConnectionMsg,
 };
 
-use std::{fs::{self, File}, io::{Read}, path::Path};
+use std::{fs::{self, File}, io::Read, path::Path};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use crate::{
-    custom_assets::{custom_asset_ids, collect_game_resources, PickupHashKey},
+    add_modify_obj_patches::*,
+    custom_assets::{custom_asset_ids, PickupHashKey, collect_game_resources, custom_asset_filename},
     dol_patcher::DolPatcher,
     ciso_writer::CisoWriter,
-    elevators::{Elevator, SpawnRoom, SpawnRoomData, World, is_elevator},
+    elevators::{Elevator, SpawnRoom, SpawnRoomData, World, is_elevator, is_teleporter},
     gcz_writer::GczWriter,
     mlvl_wrapper,
-    pickup_meta::{self, PickupType, PickupModel, DoorLocation, ObjectsToRemove, ScriptObjectLocation },
+    pickup_meta::{self, PickupType, PickupModel, DoorLocation, ObjectsToRemove, ScriptObjectLocation, pickup_model_for_pickup, pickup_type_for_pickup},
     door_meta::{DoorType, BlastShieldType},
     patcher::{PatcherState, PrimePatcher},
     starting_items::StartingItems,
@@ -72,17 +82,16 @@ use reader_writer::{
     CStrConversionExtension,
     FourCC,
     Reader,
-    // Readable,
     Writable,
+    CStr,
 };
-use structs::{MapState, res_id, ResId, scly_structs::TypeVulnerability};
+use structs::{MapState, res_id, ResId, scly_structs::DamageInfo, scly_structs::TypeVulnerability, SclyLayer};
 
 use std::{
     borrow::Cow,
     collections::HashMap,
     convert::TryInto,
     ffi::CString,
-    fmt,
     io::Write,
     iter,
     mem,
@@ -476,6 +485,7 @@ fn patch_map_door_icon(
     res: &mut structs::Resource,
     door: ModifiableDoorLocation,
     map_object_type: u32,
+    mrea_id: u32,
 ) -> Result<(), String>
 {
     if door.door_location.is_none() {
@@ -485,9 +495,11 @@ fn patch_map_door_icon(
 
     let mapa = res.kind.as_mapa_mut().unwrap();
 
+    let door_id = door.door_location.as_ref().unwrap().instance_id;
+
     let door_icon = mapa.objects.iter_mut()
-        .find(|obj| obj.editor_id == door.door_location.as_ref().unwrap().instance_id)
-        .unwrap();
+        .find(|obj| obj.editor_id == door_id)
+        .expect(format!("Failed to find door 0x{:X} in room 0x{:X}", door_id, mrea_id).as_str());
     door_icon.type_ = map_object_type;
 
     Ok(())
@@ -522,28 +534,44 @@ fn patch_remove_blast_shield<'r>(
     }
 
     for obj in layer.objects.as_mut_vec() {
-        if !obj.property_data.is_actor() {
-            continue;
+        if obj.property_data.is_actor() {
+            let actor = obj.property_data.as_actor_mut().unwrap();
+
+            if  f32::abs(actor.position[0] - dock_position[0]) > 5.0 ||
+                f32::abs(actor.position[1] - dock_position[1]) > 5.0 ||
+                f32::abs(actor.position[2] - dock_position[2]) > 5.0
+            {
+                continue;
+            }
+    
+            if actor.cmdl.to_u32() == BlastShieldType::Missile.cmdl().to_u32() {
+                actor.active = 0;
+                actor.position[2] -= 100.0;
+            }
+        } else if obj.property_data.is_point_of_interest() {
+            let poi = obj.property_data.as_point_of_interest_mut().unwrap();
+            if  f32::abs(poi.position[0] - dock_position[0]) > 5.0 ||
+                f32::abs(poi.position[1] - dock_position[1]) > 5.0 ||
+                f32::abs(poi.position[2] - dock_position[2]) > 5.0
+            {
+                continue;
+            }
+
+            if poi.scan_param.scan.to_u32() == 0x05F56F9D { // There is a Blast Shield on the door blocking acces
+                poi.active = 0;
+                poi.position[2] -= 100.0;
+            }
         }
-
-        let actor = obj.property_data.as_actor_mut().unwrap();
-
-        if  f32::abs(actor.position[0] - dock_position[0]) > 5.0 ||
-            f32::abs(actor.position[1] - dock_position[1]) > 5.0 ||
-            f32::abs(actor.position[2] - dock_position[2]) > 5.0
-        {
-            continue;
-        }
-
-        if actor.cmdl.to_u32() != BlastShieldType::Missile.cmdl().to_u32() {
-            continue;
-        }
-
-        actor.active = 0;
-        actor.position[2] -= 100.0;
     }
 
     Ok(())
+}
+
+fn this_near_that(this: [f32;3], that: [f32;3]) -> bool
+{
+    f32::abs(this[0] - that[0]) < 3.0 &&
+    f32::abs(this[1] - that[1]) < 3.0 &&
+    f32::abs(this[2] - that[2]) < 3.0
 }
 
 fn patch_door<'r>(
@@ -553,7 +581,10 @@ fn patch_door<'r>(
     door_type: Option<DoorType>,
     blast_shield_type: Option<BlastShieldType>,
     door_resources:&HashMap<(u32, FourCC), structs::Resource<'r>>,
+    door_open_mode: DoorOpenMode,
 ) -> Result<(), String> {
+    const DO_GIBBS: bool = false;
+
     let mrea_id = area.mlvl_area.mrea.to_u32();
     let area_internal_id = area.mlvl_area.internal_id;
 
@@ -566,8 +597,43 @@ fn patch_door<'r>(
 
     if blast_shield_type.is_some() {
         // Add dependencies
-        deps.extend_from_slice(&blast_shield_type.as_ref().unwrap().dependencies());
+        deps.extend_from_slice(&blast_shield_type.as_ref().unwrap().dependencies(DO_GIBBS));
     }
+
+    let blast_shield_can_change_door = door_type.is_some() && blast_shield_type.is_some();
+    let door_type_after_open = match door_open_mode {
+        DoorOpenMode::Original => {
+            None
+        },
+        DoorOpenMode::PrimaryBlastShield => {
+            let door_type = door_type.as_ref().expect("When PrimaryBlastShield is used, you must specify the door type");
+            let door_type_after_open = door_type.to_primary_color();
+            if blast_shield_can_change_door 
+                // TODO: optimize
+                // && door_type != &door_type_after_open
+            {
+                Some(door_type_after_open)
+            } else {
+                None
+            }
+        },
+        DoorOpenMode::BlueBlastShield => {
+            // let door_type = door_type.as_ref().unwrap();
+            if blast_shield_can_change_door
+                // TODO: optimize
+                // && door_type != &DoorType::Blue
+            {
+                Some(DoorType::Blue)
+            } else {
+                None
+            }
+        },
+    };
+
+    if door_type_after_open.is_some() {
+        deps.extend_from_slice(&door_type_after_open.as_ref().unwrap().dependencies());
+    }
+
     let deps_iter = deps.iter()
         .map(|&(file_id, fourcc)| structs::Dependency {
                 asset_id: file_id,
@@ -602,35 +668,70 @@ fn patch_door<'r>(
         (_damageable_trigger_id, _shield_actor_id)
     };
 
-    // Add blast shield
     let mut special_function_id = 0;
     let mut blast_shield_instance_id = 0;
     let mut sound_id = 0;
     let mut streamed_audio_id = 0;
     let mut timer_id = 0;
+    let mut timer2_id = 0;
     let mut effect_id = 0;
+    let mut shaker_id = 0;
     let mut relay_id = 0;
     let mut dt_id = 0;
+    let mut door_shield_id = 0;
+    let mut door_force_id = 0;
+    let mut poi_id = 0;
+    let mut update_door_timer_id = 0;
+    let mut activate_old_door_id = 0;
+    let mut activate_new_door_id = 0;
+    let mut auto_open_relay_id = 0;
 
     let mut blast_shield_layer_idx: usize = 0;
     if blast_shield_type.is_some() {
-        special_function_id = area.new_object_id_from_layer_name("Default");
-        blast_shield_instance_id = area.new_object_id_from_layer_name("Default");
-        sound_id = area.new_object_id_from_layer_name("Default");
-        streamed_audio_id = area.new_object_id_from_layer_name("Default");
-        timer_id = area.new_object_id_from_layer_name("Default");
-        effect_id = area.new_object_id_from_layer_name("Default");
-        relay_id = area.new_object_id_from_layer_name("Default");
-        dt_id = area.new_object_id_from_layer_name("Default");
+        special_function_id = area.new_object_id_from_layer_id(0);
+        sound_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        streamed_audio_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        shaker_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        blast_shield_instance_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        timer_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        timer2_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        effect_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        relay_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        auto_open_relay_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        dt_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
+        poi_id = area.new_object_id_from_layer_id(blast_shield_layer_idx);
 
         /* Add a new layer to this room to put all the blast shield objects onto */
         area.add_layer(b"Custom Shield Layer\0".as_cstr());
         blast_shield_layer_idx = area.layer_flags.layer_count as usize - 1;
     }
 
+    if door_type_after_open.is_some() {
+        door_shield_id = area.new_object_id_from_layer_id(0);
+        door_force_id = area.new_object_id_from_layer_id(0);
+        update_door_timer_id = area.new_object_id_from_layer_id(0);
+        activate_old_door_id = area.new_object_id_from_layer_id(0);
+        activate_new_door_id = area.new_object_id_from_layer_id(0);
+    }
+
     let scly = area.mrea().scly_section_mut();
     let layers = &mut scly.layers.as_mut_vec();
 
+    if let Some(door_location) = door_loc.door_location {
+        let obj = layers[door_location.layer as usize]
+            .objects
+            .as_mut_vec()
+            .iter_mut()
+            .find(|obj| obj.instance_id == door_location.instance_id)
+            .expect(format!("Failed to find door in room 0x{:X}", mrea_id).as_str());
+
+        if obj.property_data.as_door_mut().unwrap().is_morphball_door != 0 || obj.instance_id == 0x002C0186 { // energy core morph ball door isn't marked as such
+            panic!("Modifying shield and/or blast shield of mophball door in room 0x{:X} not allowed", mrea_id);
+        }
+    }
+
+    // Add blast shield
+    let position: GenericArray<f32, U3>;
     if blast_shield_type.is_some() {
         /* Special Function to disable the blast shield */
         layers[0].objects.as_mut_vec().push(
@@ -656,11 +757,13 @@ fn patch_door<'r>(
         let blast_shield_type = blast_shield_type.as_ref().unwrap();
 
         // Calculate placement //
-        let position: GenericArray<f32, U3>;
         let rotation: GenericArray<f32, U3>;
-        let hitbox: GenericArray<f32, U3>;
+        let hitbox: GenericArray<f32, U3>; // this is actually scan offset
         let scale: GenericArray<f32, U3>;
-        let scan_offset: GenericArray<f32, U3>;
+        let scan_offset: GenericArray<f32, U3>; // this is actually hitbox
+
+        scan_offset = [0.0, 0.0, 0.0].into();
+        hitbox = [0.0, 0.0, 0.0].into();
 
         let door_rotation = door_loc.door_rotation.unwrap();
         let mut is_ceiling = false;
@@ -671,54 +774,50 @@ fn patch_door<'r>(
                 panic!("Vertical door in room {:X} didn't get position data dumped", mrea_id);
             }
 
-            scale = [1.6, 1.6, 1.6].into();
-            hitbox = [5.0, 5.0, 0.8].into();
-
-            if door_rotation[0] > -90.0 && door_rotation[0] < 90.0 {
-                // Ceiling door
-                is_ceiling = true;
-                position    = [door_shield.position[0] + 2.0, door_shield.position[1], door_shield.position[2] + 0.2].into();
-                rotation    = [0.0, -90.0, 0.0].into();
-                scan_offset = [-2.2, 0.0, -0.9].into();
-            } else if door_rotation[0] < -90.0 && door_rotation[0] > -270.0 {
+            if mrea_id == 0xFB54A0CB { // hall of the elders
+                scale = [1.6, 1.6, 1.6].into();
+    
                 // Floor door
                 is_floor = true;
-                position    = [door_shield.position[0] - 2.0, door_shield.position[1], door_shield.position[2] - 0.2].into();
+                position    = [door_shield.position[0] - 2.0, door_shield.position[1], door_shield.position[2] - 0.3].into();
                 rotation    = [0.0, 90.0, 0.0].into();
-                scan_offset = [2.2, 0.0, 0.9].into();
             } else {
-                panic!("Unhandled door rotation on vertical door {:?} in room 0x{:X}", door_rotation, mrea_id);
+                scale = [1.6, 1.6, 1.6].into();
+    
+                if door_rotation[0] > -90.0 && door_rotation[0] < 90.0 {
+                    // Ceiling door
+                    is_ceiling = true;
+                    position    = [door_shield.position[0] + 2.0, door_shield.position[1], door_shield.position[2] + 0.2].into();
+                    rotation    = [0.0, -90.0, 0.0].into();
+                } else if door_rotation[0] < -90.0 && door_rotation[0] > -270.0 {
+                    // Floor door
+                    is_floor = true;
+                    position    = [door_shield.position[0] - 2.0, door_shield.position[1], door_shield.position[2] - 0.2].into();
+                    rotation    = [0.0, 90.0, 0.0].into();
+                } else {
+                    panic!("Unhandled door rotation on vertical door {:?} in room 0x{:X}", door_rotation, mrea_id);
+                }
             }
         } else {
             let scale_scale = 1.0;
             scale = [1.0*scale_scale, 1.5*scale_scale, 1.5*scale_scale].into();
             rotation = door_rotation.into();
 
-            let door_offset: f32 = 0.1;
+            let door_offset: f32 = -0.05;
             let door_offset_z: f32 = 1.8017;
-
-            let scan_offset_width: f32 = 0.0;
-            let scan_offset_depth: f32 = 1.0;
-            let scan_offset_z: f32 = 2.2;
-
-            hitbox = [0.0, 0.0, 0.0].into();
 
             if door_rotation[2] >= 45.0 && door_rotation[2] < 135.0 {
                 // Leads North
                 position = [door_shield.position[0], door_shield.position[1] - door_offset, door_shield.position[2] - door_offset_z].into();
-                scan_offset = [scan_offset_width, -scan_offset_depth, scan_offset_z].into();
             } else if (door_rotation[2] >= 135.0 && door_rotation[2] < 225.0) || (door_rotation[2] < -135.0 && door_rotation[2] > -225.0) {
                 // Leads East
                 position = [door_shield.position[0] + door_offset, door_shield.position[1], door_shield.position[2] - door_offset_z].into();
-                scan_offset = [scan_offset_depth, scan_offset_width, scan_offset_z].into();
             } else if door_rotation[2] >= -135.0 && door_rotation[2] < -45.0 {
                 // Leads South
                 position = [door_shield.position[0], door_shield.position[1] + door_offset, door_shield.position[2] - door_offset_z].into();
-                scan_offset = [scan_offset_width, scan_offset_depth, scan_offset_z].into();
             } else if door_rotation[2] >= -45.0 && door_rotation[2] < 45.0 {
                 // Leads West
                 position = [door_shield.position[0] - door_offset, door_shield.position[1], door_shield.position[2] - door_offset_z].into();
-                scan_offset = [-scan_offset_depth, scan_offset_width, scan_offset_z].into();
             } else {
                 panic!("Unhandled door rotation on horizontal door {:?} in room 0x{:X}", door_rotation, mrea_id);
             }
@@ -773,7 +872,7 @@ fn patch_door<'r>(
                             light_layer_id: 0,
                         },
                         scan_params: structs::scly_structs::ScannableParameters {
-                            scan: blast_shield_type.scan(),
+                            scan: ResId::invalid(),
                         },
                         xray_cmdl: ResId::invalid(),
                         xray_cskr: ResId::invalid(),
@@ -784,7 +883,7 @@ fn patch_door<'r>(
                         unknown2: 1.0,
                         visor_params: structs::scly_structs::VisorParameters {
                             unknown0: 0,
-                            target_passthrough: 0,
+                            target_passthrough: 1,
                             visor_mask: 15, // Visor Flags : Combat|Scan|Thermal|XRay
                         },
                         enable_thermal_heat: 0,
@@ -794,7 +893,7 @@ fn patch_door<'r>(
                     },
                     looping: 1,
                     snow: 1, // immovable
-                    solid: 1,
+                    solid: 0,
                     camera_passthrough: 0,
                     active: 1,
                     unknown8: 0,
@@ -831,7 +930,16 @@ fn patch_door<'r>(
             break;
         }
 
-        assert!(door_open_trigger_id != 0);
+        if door_open_trigger_id == 0 {
+            panic!("Couldn't find Door #{}'s (0x{:X}) open trigger in room 0x{:X}", door_loc.dock_number, door_loc.door_location.unwrap().instance_id, mrea_id);
+        }
+
+        let is_unpowered = vec![
+                0x001E000B, // Biohazard Containment
+                0x0020000D, // Biotech Research Area 1
+                0x000F01D1, // Ruined Courtyard
+                0x001B0088, // Cargo Frieght Lift to Deck Gamma
+            ].contains(&door_open_trigger_id);
 
         /* Create Relay for causing destruction of blast shield */
         let mut relay = structs::SclyObject {
@@ -847,12 +955,7 @@ fn patch_door<'r>(
                     message: structs::ConnectionMsg::DECREMENT,
                     target_object_id: special_function_id,
                 },
-                structs::Connection { // Make gibbs
-                    state: structs::ConnectionState::ZERO,
-                    message: structs::ConnectionMsg::ACTIVATE,
-                    target_object_id: effect_id,
-                },
-                structs::Connection { // Play explosion sound effect TODO: I don't think this is working
+                structs::Connection { // Play explosion sound effect
                     state: structs::ConnectionState::ZERO,
                     message: structs::ConnectionMsg::PLAY,
                     target_object_id: sound_id,
@@ -867,6 +970,16 @@ fn patch_door<'r>(
                     message: structs::ConnectionMsg::DEACTIVATE,
                     target_object_id: dt_id,
                 },
+                structs::Connection { // Shake camera
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::ACTION,
+                    target_object_id: shaker_id,
+                },
+                structs::Connection { // remove POI
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: poi_id,
+                },
             ].into(),
             property_data: structs::Relay {
                 name: b"myrelay\0".as_cstr(),
@@ -874,10 +987,20 @@ fn patch_door<'r>(
             }.into(),
         };
 
-        /* Create damageable trigger, in case the shot hits the sliver of the door between normal collision and the blast shield hitbox */
+        if DO_GIBBS {
+            relay.connections.as_mut_vec().push(
+                structs::Connection { // Make gibbs
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::ACTIVATE,
+                    target_object_id: effect_id,
+                }
+            );
+        }
+
+        /* Create damageable trigger to actually handle vulnerability, because actor collision extent/offset/rotation is very unreliable */
         let (dt_pos, dt_scale) = {
             let dt_offset_z = 1.9;
-            let dt_offset = 1.0;
+            let dt_offset = 1.25;
 
             if is_ceiling {
                 (
@@ -918,6 +1041,24 @@ fn patch_door<'r>(
             }
         };
 
+        let lock_on = match blast_shield_type {
+            BlastShieldType::Missile      => true,
+            BlastShieldType::PowerBomb    => false,
+            BlastShieldType::Super        => true,
+            BlastShieldType::Wavebuster   => true,
+            BlastShieldType::Icespreader  => true,
+            BlastShieldType::Flamethrower => true,
+            BlastShieldType::Charge       => true,
+            BlastShieldType::Grapple      => false,
+            BlastShieldType::Bomb         => false,
+            BlastShieldType::Phazon       => true,
+            BlastShieldType::Thermal      => true,
+            BlastShieldType::XRay         => true,
+            BlastShieldType::Scan         => false,
+            BlastShieldType::None         => false,
+            BlastShieldType::Unchanged    => false,
+        };
+
         let dt =
             structs::SclyObject {
                 instance_id: dt_id,
@@ -941,7 +1082,7 @@ fn patch_door<'r>(
                     pattern_txtr0: ResId::invalid(),
                     pattern_txtr1: ResId::invalid(),
                     color_txtr: ResId::invalid(),
-                    lock_on: 1,
+                    lock_on: lock_on as u8,
                     active: 1,
                     visor_params: structs::scly_structs::VisorParameters {
                         unknown0: 0,
@@ -951,35 +1092,71 @@ fn patch_door<'r>(
                 }.into(),
             };
 
+        let poi =  structs::SclyObject {
+                instance_id: poi_id,
+                connections: vec![].into(),
+                property_data: structs::SclyProperty::PointOfInterest(
+                    structs::PointOfInterest {
+                        name: b"mypoi\0".as_cstr(),
+                        position: [dt_pos[0], dt_pos[1], dt_pos[2] + 0.5].into(),
+                        rotation: [0.0, 0.0, 0.0].into(),
+                        active: 0,
+                        scan_param: structs::scly_structs::ScannableParameters {
+                            scan: blast_shield_type.scan(),
+                        },
+                        point_size: 0.0,
+                    }.into()
+                ),
+            };
+
+        let mut relay_connections_to_add = Vec::new();
+
+        relay_connections_to_add.push(
+            structs::Connection { // Load next room
+                state: structs::ConnectionState::ZERO,
+                message: structs::ConnectionMsg::SET_TO_ZERO,
+                target_object_id: door_loc.door_location.unwrap().instance_id,
+            }
+        );
+        relay_connections_to_add.push(
+            structs::Connection { // Activate door open trigger
+                state: structs::ConnectionState::ZERO,
+                message: structs::ConnectionMsg::ACTIVATE,
+                target_object_id: door_open_trigger_id,
+            }
+        );
+        for loc in door_loc.door_shield_locations.iter() {
+            relay_connections_to_add.push(
+                structs::Connection { // Deactivate shield
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: loc.instance_id,
+                }
+            );
+        }
+
         /* Relay should also open the door, but only if this isn't an unpowered door */
-        if !vec![
-            (0xAC2C58FE, 1), // Biohazard Containment
-            (0x5F2EB7B6, 1), // Biotech Research Area 1
-            (0x1921876D, 3), // Ruined Courtyard
-        ].contains(&(mrea_id, door_loc.dock_number)) {
+        if is_unpowered {
+            layers[blast_shield_layer_idx].objects.as_mut_vec().push(
+                structs::SclyObject {
+                    instance_id: auto_open_relay_id,
+                    connections: relay_connections_to_add.into(),
+                    property_data: structs::Relay {
+                        name: b"auto-open-door\0".as_cstr(),
+                        active: 0,
+                    }.into(),
+                }
+            );
+
             relay.connections.as_mut_vec().push(
-                structs::Connection { // Load next room
+                structs::Connection {
                     state: structs::ConnectionState::ZERO,
                     message: structs::ConnectionMsg::SET_TO_ZERO,
-                    target_object_id: door_loc.door_location.unwrap().instance_id,
+                    target_object_id: auto_open_relay_id,
                 }
             );
-            relay.connections.as_mut_vec().push(
-                structs::Connection { // Activate door open trigger
-                    state: structs::ConnectionState::ZERO,
-                    message: structs::ConnectionMsg::ACTIVATE,
-                    target_object_id: door_open_trigger_id,
-                }
-            );
-            for loc in door_loc.door_shield_locations.iter() {
-                relay.connections.as_mut_vec().push(
-                    structs::Connection { // Deactivate shield
-                        state: structs::ConnectionState::ZERO,
-                        message: structs::ConnectionMsg::DEACTIVATE,
-                        target_object_id: loc.instance_id,
-                    }
-                );
-            }
+        } else {
+            relay.connections.as_mut_vec().extend_from_slice(&relay_connections_to_add);
         }
 
         let mut _break = false;
@@ -1021,6 +1198,24 @@ fn patch_door<'r>(
                                 },
                             );
 
+                            // Remove the scan point when the door is opened from the other side
+                            obj.connections.as_mut_vec().push(
+                                structs::Connection {
+                                    state: structs::ConnectionState::MAX_REACHED,
+                                    message: structs::ConnectionMsg::DEACTIVATE,
+                                    target_object_id: poi_id,
+                                },
+                            );
+
+                            // Stop the 1-frame timer from undoing our change if this is the first frame of the room load
+                            obj.connections.as_mut_vec().push(
+                                structs::Connection {
+                                    state: structs::ConnectionState::MAX_REACHED,
+                                    message: structs::ConnectionMsg::DEACTIVATE,
+                                    target_object_id: timer_id,
+                                },
+                            );
+
                             _break = true;
                             break;
                         }
@@ -1032,14 +1227,49 @@ fn patch_door<'r>(
         let mut timer = structs::SclyObject {
             instance_id: timer_id,
             property_data: structs::Timer {
-                name: b"disable-dt\0".as_cstr(),
-                start_time: 1.0,
+                name: b"disable-blast-shield\0".as_cstr(),
+                start_time: 0.2,
                 max_random_add: 0.0,
-                reset_to_zero: 0,
+                looping: 0,
                 start_immediately: 1,
                 active: 1,
             }.into(),
             connections: vec![].into(),
+        };
+
+        /* Door Damageable Trigger Deactivate Timer */
+        let timer2 = {
+            if is_unpowered {
+                None
+            }
+            else {
+                let mut timer2 =  structs::SclyObject {
+                    instance_id: timer2_id,
+                    connections: vec![].into(),
+                        property_data: structs::Timer {
+                        name: b"disable-door-dt\0".as_cstr(),
+                        start_time: 0.5,
+                        max_random_add: 0.0,
+                        looping: 0,
+                        start_immediately: 1,
+                        active: 1,
+                    }.into(),
+                };
+        
+                // Doors can't be shot open with splash damage until the blast shield is gone
+                for door_force in door_loc.door_force_locations.iter()
+                {
+                    timer2.connections.as_mut_vec().push(
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: door_force.instance_id,
+                        }
+                    );
+                }
+
+                Some(timer2)        
+            }
         };
 
         if damageable_trigger_id != 0 {
@@ -1062,57 +1292,146 @@ fn patch_door<'r>(
             );
         }
 
+        if poi_id != 0 {
+            timer.connections.as_mut_vec().push(
+                structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::ACTIVATE,
+                    target_object_id: poi_id,
+                }
+            );
+        }
+
         // Create Gibbs and activate on DEAD //
-        let effect = structs::SclyObject {
-            instance_id: effect_id,
-            connections: vec![].into(),
-            property_data: structs::scly_props::Effect {
-                name: b"gibbs effect\0".as_cstr(),
-
-                position,
-                rotation,
-                scale,
-
-                part: ResId::<res_id::PART>::new(0xCDCBDF04),
-                elsc: ResId::invalid(),
-                hot_in_thermal: 0,
-                no_timer_unless_area_occluded: 0,
-                rebuild_systems_on_active: 1,
-                active: 0,
-                use_rate_inverse_cam_dist: 0,
-                rate_inverse_cam_dist: 5.0,
-                rate_inverse_cam_dist_rate: 0.5,
-                duration: 0.2,
-                dureation_reset_while_visible: 0.1,
-                use_rate_cam_dist_range: 0,
-                rate_cam_dist_range_min: 20.0,
-                rate_cam_dist_range_max: 30.0,
-                rate_cam_dist_range_far_rate: 0.0,
-                combat_visor_visible: 1,
-                thermal_visor_visible:1 ,
-                xray_visor_visible: 1,
-                die_when_systems_done: 0,
-                light_params: structs::scly_structs::LightParameters {
-                    unknown0: 1,
-                    unknown1: 1.0,
-                    shadow_tessellation: 0,
-                    unknown2: 1.0,
-                    unknown3: 20.0,
-                    color: [1.0, 1.0, 1.0, 1.0].into(), // RGBA
-                    unknown4: 0,
-                    world_lighting: 1,
-                    light_recalculation: 1,
-                    unknown5: [0.0, 0.0, 0.0].into(),
-                    unknown6: 4,
-                    unknown7: 4,
-                    unknown8: 0,
-                    light_layer_id: 0,
-                },
-            }.into()
+        let effect: Option<structs::SclyObject<'_>> = match DO_GIBBS {
+            true => {
+                Some(structs::SclyObject {
+                    instance_id: effect_id,
+                    connections: vec![].into(),
+                    property_data: structs::scly_props::Effect {
+                        name: b"gibbs effect\0".as_cstr(),
+        
+                        position,
+                        rotation,
+                        scale,
+        
+                        part: ResId::<res_id::PART>::new(0xCDCBDF04),
+                        elsc: ResId::invalid(),
+                        hot_in_thermal: 0,
+                        no_timer_unless_area_occluded: 0,
+                        rebuild_systems_on_active: 1,
+                        active: 0,
+                        use_rate_inverse_cam_dist: 0,
+                        rate_inverse_cam_dist: 5.0,
+                        rate_inverse_cam_dist_rate: 0.5,
+                        duration: 0.2,
+                        dureation_reset_while_visible: 0.1,
+                        use_rate_cam_dist_range: 0,
+                        rate_cam_dist_range_min: 20.0,
+                        rate_cam_dist_range_max: 30.0,
+                        rate_cam_dist_range_far_rate: 0.0,
+                        combat_visor_visible: 1,
+                        thermal_visor_visible:1 ,
+                        xray_visor_visible: 1,
+                        die_when_systems_done: 0,
+                        light_params: structs::scly_structs::LightParameters {
+                            unknown0: 1,
+                            unknown1: 1.0,
+                            shadow_tessellation: 0,
+                            unknown2: 1.0,
+                            unknown3: 20.0,
+                            color: [1.0, 1.0, 1.0, 1.0].into(), // RGBA
+                            unknown4: 0,
+                            world_lighting: 1,
+                            light_recalculation: 1,
+                            unknown5: [0.0, 0.0, 0.0].into(),
+                            unknown6: 4,
+                            unknown7: 4,
+                            unknown8: 0,
+                            light_layer_id: 0,
+                        },
+                    }.into()
+                })
+            },
+            false => None,
         };
 
         // Create camera shake and activate on DEAD //
-        // TODO: It's possible, I'm just lazy
+        let shaker = structs::SclyObject {
+            instance_id: shaker_id,
+                property_data: structs::NewCameraShaker {
+                    name: b"myshaker\0".as_cstr(),
+                    position: position.into(),
+                    active: 1,
+                    unknown1: 1,
+                    unknown2: 0,
+                    duration: 0.5,
+                    sfx_dist: 10.0,
+                    shakers: [
+                        structs::NewCameraShakerComponent {
+                            unknown1: 1,
+                            unknown2: 1,
+                            am: structs::NewCameraShakePoint {
+                                unknown1: 1,
+                                unknown2: 0,
+                                attack_time: 0.1,
+                                sustain_time: 0.0,
+                                duration: 0.4,
+                                magnitude: 0.2,
+                            }.into(),
+                            fm: structs::NewCameraShakePoint {
+                                unknown1: 1,
+                                unknown2: 0,
+                                attack_time: 0.1,
+                                sustain_time: 0.0,
+                                duration: 0.2,
+                                magnitude: 2.0,
+                            }.into(),
+                        },
+                        structs::NewCameraShakerComponent {
+                            unknown1: 1,
+                            unknown2: 0,
+                            am: structs::NewCameraShakePoint {
+                                unknown1: 1,
+                                unknown2: 1,
+                                attack_time: 0.0,
+                                sustain_time: 0.0,
+                                duration: 0.0,
+                                magnitude: 0.0,
+                            }.into(),
+                            fm: structs::NewCameraShakePoint {
+                                unknown1: 1,
+                                unknown2: 1,
+                                attack_time: 0.0,
+                                sustain_time: 0.0,
+                                duration: 0.0,
+                                magnitude: 0.0,
+                            }.into(),
+                        },
+                        structs::NewCameraShakerComponent {
+                            unknown1: 1,
+                            unknown2: 1,
+                            am: structs::NewCameraShakePoint {
+                                unknown1: 1,
+                                unknown2: 0,
+                                attack_time: 0.2,
+                                sustain_time: 0.0,
+                                duration: 0.3,
+                                magnitude: 0.2,
+                            }.into(),
+                            fm: structs::NewCameraShakePoint {
+                                unknown1: 1,
+                                unknown2: 0,
+                                attack_time: 0.0,
+                                sustain_time: 0.0,
+                                duration: 0.3,
+                                magnitude: 2.0,
+                            }.into(),
+                        },
+                    ].into(),
+                }.into(),
+                connections: vec![].into(),
+        };
 
         // Create explosion sfx //
         let sound = structs::SclyObject {
@@ -1170,11 +1489,20 @@ fn patch_door<'r>(
         // add new script objects to layer //
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(streamed_audio);
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(sound);
+        layers[blast_shield_layer_idx].objects.as_mut_vec().push(shaker);
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(blast_shield);
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(timer);
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(dt);
-        layers[blast_shield_layer_idx].objects.as_mut_vec().push(effect);
+        layers[blast_shield_layer_idx].objects.as_mut_vec().push(poi);
+        if effect.is_some() {
+            layers[blast_shield_layer_idx].objects.as_mut_vec().push(effect.unwrap());
+        }
+        if timer2.is_some() {
+            layers[blast_shield_layer_idx].objects.as_mut_vec().push(timer2.unwrap());
+        }
         layers[blast_shield_layer_idx].objects.as_mut_vec().push(relay);
+    } else {
+        position = [0.0, 0.0, 0.0].into();
     }
 
     // Patch door vulnerability
@@ -1185,7 +1513,9 @@ fn patch_door<'r>(
                 .find(|obj| obj.instance_id == door_force_location.instance_id)
                 .and_then(|obj| obj.property_data.as_damageable_trigger_mut())
                 .unwrap();
-            door_force.color_txtr = _door_type.forcefield_txtr();
+            door_force.pattern_txtr0 = _door_type.pattern0_txtr();
+            door_force.pattern_txtr1 = _door_type.pattern1_txtr();
+            door_force.color_txtr = _door_type.color_txtr();
             door_force.damage_vulnerability = _door_type.vulnerability();
         }
 
@@ -1198,7 +1528,7 @@ fn patch_door<'r>(
         }
 
         // Add scan point
-        if _door_type.scan() != ResId::invalid() {
+        if _door_type.scan() != ResId::invalid() && blast_shield_type.is_none() {
             let _door_location = door_loc.door_location.unwrap();
             let door = layers[_door_location.layer as usize].objects.iter_mut()
                     .find(|obj| obj.instance_id == _door_location.instance_id)
@@ -1225,6 +1555,518 @@ fn patch_door<'r>(
             }
     
             door.actor_params.scan_params.scan = _door_type.scan();
+        }
+    }
+
+    if door_type_after_open.is_some() {
+        let door_type_after_open = door_type_after_open.unwrap();
+
+        /* Cleanup the door a bit */
+        for layer in layers.iter_mut() {
+            layer.objects
+                .as_mut_vec()
+                .retain(
+                    |obj|
+                    {
+                        match obj.property_data.object_type() {
+                            structs::Actor::OBJECT_TYPE => {
+                                let id = obj.instance_id;
+                                let obj = obj.property_data.as_actor().unwrap();
+                                let cmdl = obj.cmdl.to_u32();
+
+                                obj.active != 0 || // remove inactive
+                                !this_near_that(obj.position.into(), position.into()) || // ...and within 3 units
+                                vec![0x001B0089].contains(&id) || // ... and exclude cargo freight lift door
+                                !DoorType::is_door(&cmdl) // ... and exclude non-doors
+                            },
+                            structs::DamageableTrigger::OBJECT_TYPE => {
+                                let id = obj.instance_id;
+                                let obj = obj.property_data.as_damageable_trigger().unwrap();
+
+                                obj.active != 0 || // remove inactive
+                                !this_near_that(obj.position.into(), position.into()) || // ...and withing 3 units
+                                vec![0x001B0087].contains(&id) // ... and exclude cargo freight lift door
+                            },
+                            structs::Relay::OBJECT_TYPE => {
+                                let obj = obj.property_data.as_relay().unwrap();
+                                !obj.name.to_str().ok().unwrap().to_string().to_lowercase().contains("relay swap door")
+                            },
+                            _ => true,
+                        }
+                    }
+                );
+        }
+
+        /* Find existing door shield id */
+        let mut existing_door_shield_id = 0;
+        for door_shield_location in door_loc.door_shield_locations.iter() {
+            let result = layers[door_shield_location.layer as usize].objects.iter()
+                .find(|obj| obj.instance_id == door_shield_location.instance_id);
+            if result.is_some() {
+                existing_door_shield_id = door_shield_location.instance_id;
+            }
+        }
+
+        /* Find existing door force id */
+        let mut existing_door_force_id = 0;
+        for door_force_location in door_loc.door_force_locations.iter() {
+            let result = layers[door_force_location.layer as usize].objects.iter()
+                .find(|obj| obj.instance_id == door_force_location.instance_id);
+
+            if result.is_some() {
+                existing_door_force_id = door_force_location.instance_id;
+            }
+        }
+
+        /* Blast Shield instant start timer */
+        {
+            let timer = layers[blast_shield_layer_idx].objects.iter_mut()
+                .find(|obj| obj.instance_id == timer_id)
+                .unwrap();
+
+            // when the blast shield is active, instantly activate the fancy shield/dt
+            // and instantly deactivate the blue "replacement" shield
+            timer.connections.as_mut_vec().extend_from_slice(
+                &[
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_force_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_shield_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: existing_door_force_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: existing_door_shield_id,
+                    },
+                ]
+            );
+        }
+
+        /* Damageable Trigger */
+        for door_force_location in door_loc.door_force_locations.iter() {
+            let door_force = layers[door_force_location.layer as usize].objects.iter_mut()
+                .find(|obj| obj.instance_id == door_force_location.instance_id);
+
+            if door_force.is_none() {
+                continue;
+            }
+            let door_force = door_force.unwrap();
+
+            // Don't re-activate the fancy shield once it's been deactivated
+            door_force.connections.as_mut_vec().retain(|conn|
+                !(conn.target_object_id == existing_door_shield_id && conn.message == structs::ConnectionMsg::ACTIVATE)
+            );
+
+            // start disabled by default (auto-enabled by blast shield layer)
+            let door_force = door_force.property_data.as_damageable_trigger_mut().unwrap();
+            door_force.active = 0;
+
+            break;
+        }
+
+        /* Shield Actor */
+        for door_shield_location in door_loc.door_shield_locations.iter() {
+            let door_shield = layers[door_shield_location.layer as usize].objects.iter_mut()
+                .find(|obj| obj.instance_id == door_shield_location.instance_id);
+
+            if door_shield.is_none() {
+                continue;
+            }
+            let door_shield = door_shield.unwrap();
+
+            // start disabled by default (auto-enabled by blast shield layer)
+            let door_shield = door_shield.property_data.as_actor_mut().unwrap();
+            door_shield.active = 0;
+
+            break;
+        }
+
+        /* Unlock Relay */
+        for obj in layers[0].objects.iter_mut() {
+            if !obj.property_data.is_relay() {
+                continue;
+            }
+
+            let found = obj.connections.as_mut_vec().iter_mut().any(|conn|
+                conn.target_object_id == existing_door_shield_id && conn.message == structs::ConnectionMsg::ACTIVATE
+            );
+
+            if !found {
+                continue;
+            }
+
+            // Don't re-activate the fancy shield/trigger once it's been deactivated
+            obj.connections.as_mut_vec().retain(|conn|
+                !(conn.target_object_id == existing_door_shield_id || conn.target_object_id == existing_door_force_id)
+            );
+
+            // add scripting for an additional shield and damageable trigger
+            obj.connections.as_mut_vec().extend_from_slice(
+                &[
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: door_force_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: door_shield_id,
+                    },
+                ]
+            );
+
+            break;
+        }
+
+        /* Door */
+        {
+            let loc = door_loc.door_location.unwrap();
+            let door = layers[loc.layer as usize].objects.iter_mut()
+                .find(|obj| obj.instance_id == loc.instance_id)
+                .unwrap();
+
+            // add scripting for an additional shield and damageable trigger
+            door.connections.as_mut_vec().extend_from_slice(
+                &[
+                    structs::Connection {
+                        state: structs::ConnectionState::OPEN,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_force_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::OPEN,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_shield_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::MAX_REACHED,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_force_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::MAX_REACHED,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_shield_id,
+                    },
+                ]
+            );
+        }
+
+        /* Create new door shield from existing */
+        {
+            let door_shield = {
+                let mut door_shield = None;
+                for door_shield_location in door_loc.door_shield_locations.iter() {
+                    door_shield = layers[door_shield_location.layer as usize].objects.iter_mut()
+                        .find(|obj| obj.instance_id == door_shield_location.instance_id);
+                    if door_shield.is_some() {
+                        break;
+                    }
+                }
+                door_shield.expect(format!("Could not find suitable door shield actor in room 0x{:X}", mrea_id).as_str())
+            };
+
+            let mut new_door_shield = door_shield.clone();
+            let new_door_shield_data = new_door_shield.property_data.as_actor_mut().unwrap();
+            new_door_shield.instance_id = door_shield_id;
+            new_door_shield_data.cmdl = door_type_after_open.shield_cmdl();
+            new_door_shield_data.active = 1;
+            layers[0].objects.as_mut_vec().push(new_door_shield);
+        }
+
+        if vec![
+            (0x37B3AFE6, 1), // cargo freight lift
+            (0xAC2C58FE, 1), // biohazard containment
+            (0x5F2EB7B6, 1), // biotech research area 1
+            (0x1921876D, 3), // ruined courtyard
+            (0xA49B2544, 1), // research core
+        ].contains(&(mrea_id, door_loc.dock_number)) {
+            /* Add two relays which can activated/deactivated to control which shield appears */
+            layers[0].objects.as_mut_vec().push(
+                structs::SclyObject {
+                    instance_id: activate_new_door_id,
+                    connections: vec![
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::ACTIVATE,
+                            target_object_id: door_force_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::ACTIVATE,
+                            target_object_id: door_shield_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: existing_door_force_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: existing_door_shield_id,
+                        },
+                    ].into(),
+                    property_data: structs::Relay {
+                        name: b"activate new door\0".as_cstr(),
+                        active: 1,
+                    }.into(),
+                }
+            );
+
+            layers[0].objects.as_mut_vec().push(
+                    structs::SclyObject {
+                        instance_id: update_door_timer_id,
+                        property_data: structs::Timer {
+                            name: b"update_door_timer\0".as_cstr(),
+                            start_time: 0.5,
+                            max_random_add: 0.0,
+                            looping: 0,
+                            start_immediately: 0,
+                            active: 1,
+                        }.into(),
+                        connections: vec![
+                            structs::Connection {
+                                state: structs::ConnectionState::ZERO,
+                                message: structs::ConnectionMsg::SET_TO_ZERO,
+                                target_object_id: activate_old_door_id,
+                            },
+                            structs::Connection {
+                                state: structs::ConnectionState::ZERO,
+                                message: structs::ConnectionMsg::SET_TO_ZERO,
+                                target_object_id: activate_new_door_id,
+                            },
+                            structs::Connection {
+                                state: structs::ConnectionState::ZERO,
+                                message: structs::ConnectionMsg::ACTIVATE,
+                                target_object_id: auto_open_relay_id,
+                            },
+                        ].into(),
+                    }
+                );
+
+            layers[0].objects.as_mut_vec().push(
+                structs::SclyObject {
+                    instance_id: activate_old_door_id,
+                    connections: vec![
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: door_force_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: door_shield_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::ACTIVATE,
+                            target_object_id: existing_door_force_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::ACTIVATE,
+                            target_object_id: existing_door_shield_id,
+                        },
+                    ].into(),
+                    property_data: structs::Relay {
+                        name: b"activate old door\0".as_cstr(),
+                        active: 0,
+                    }.into(),
+                }
+            );
+
+            /* Change blast shield auto-start timer behavior */
+            let obj = layers[blast_shield_layer_idx].objects.iter_mut()
+                .find(|obj| obj.instance_id == timer_id)
+                .unwrap();
+
+            obj.connections
+                .as_mut_vec()
+                .retain(|conn|
+                    !vec![
+                        existing_door_shield_id,
+                        existing_door_force_id,
+                        door_shield_id,
+                        door_force_id,
+                    ].contains(&conn.target_object_id)
+                );
+
+            obj.connections.as_mut_vec().extend_from_slice(
+                &vec![
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: activate_old_door_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: activate_new_door_id,
+                    },
+                ]
+            );
+
+            /* Change blast shield destruction relay to change what happens when conduits are activated */
+            let obj = layers[blast_shield_layer_idx].objects.iter_mut()
+                .find(|obj| obj.instance_id == relay_id)
+                .unwrap();
+            
+            obj.connections.as_mut_vec().extend_from_slice(
+                &vec![
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: activate_old_door_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: activate_new_door_id,
+                    },
+                ]
+            );
+
+            let (activate_door_id, deactivate_door_id) =  match mrea_id {
+                0x37B3AFE6 => (Some(0x001B008D), None), // cargo freight lift
+                0xAC2C58FE => (Some(0x001E01DA), Some(0x001E01D8)), // biohazard containment
+                0x5F2EB7B6 => (Some(0x00200027), Some(0x00200025)), // biotech research area 1
+                0x1921876D => (Some(0x000F01D5), Some(0x000F01D6)), // ruined courtyard
+                0xA49B2544 => (Some(0x0028043D), Some(0x0028043C)), // research core
+                _  => (None, None),
+            };
+
+            /* new shield needs to be deactivated when conduits aren't active */
+            if let Some(deactivate_door_id) = deactivate_door_id {
+                let obj = layers[0].objects
+                    .iter_mut()
+                    .find(|obj| obj.instance_id == deactivate_door_id)
+                    .expect(format!("Could not find Deactivate Door relay in room 0x{:X}", mrea_id).as_str());
+
+                obj.connections.as_mut_vec().extend_from_slice(
+                    &vec![
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: door_shield_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: door_force_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::ZERO,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: auto_open_relay_id,
+                        },
+                    ]
+                );
+            }
+
+            /* either shield needs to be activated when conduits are activated, not just the old one */
+            if let Some(activate_door_id) = activate_door_id {
+                let obj = layers[0].objects
+                    .iter_mut()
+                    .find(|obj| obj.instance_id == activate_door_id)
+                    .expect(format!("Could not find Activate Door relay in room 0x{:X}", mrea_id).as_str());
+
+                    obj.connections.as_mut_vec().retain(|conn|
+                        !vec![
+                            existing_door_shield_id,
+                            existing_door_force_id,
+                            door_shield_id,
+                            door_force_id,
+                        ].contains(&conn.target_object_id)
+                    );
+
+                obj.connections.as_mut_vec().push(
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::RESET_AND_START,
+                        target_object_id: update_door_timer_id,
+                    }
+                );
+
+                if mrea_id == 0xA49B2544 { // research core
+                    let obj = layers[0].objects
+                        .iter_mut()
+                        .find(|obj| obj.instance_id == 0x0028043F)
+                        .expect("Could not find conduit damageable trigger in research core");
+
+                    obj.connections.as_mut_vec().push(
+                        structs::Connection {
+                            state: structs::ConnectionState::DEAD,
+                            message: structs::ConnectionMsg::RESET_AND_START,
+                            target_object_id: update_door_timer_id,
+                        }
+                    );
+                }
+            }
+        } // end unpowered door special case(s)
+
+        /* Create new damageable trigger from existing */
+        {
+            let door_force = {
+                let mut door_force = None;
+                for door_force_location in door_loc.door_force_locations.iter() {
+                    let obj = layers[door_force_location.layer as usize].objects.iter()
+                        .find(|obj| obj.instance_id == door_force_location.instance_id);
+        
+                    if obj.is_none() {
+                        continue;
+                    }
+
+                    door_force = obj;
+                    break;
+                }
+                door_force.expect(format!("Could not find suitable door damageable trigger in room 0x{:X}", mrea_id).as_str())
+            };
+
+            let mut new_door_force = structs::SclyObject {
+                    instance_id: damageable_trigger_id,
+                    property_data: door_force.property_data.clone(),
+                    connections: door_force.connections.clone()
+                };
+            let new_door_force_data = new_door_force.property_data.as_damageable_trigger_mut().unwrap();
+            new_door_force.instance_id = door_force_id;
+            new_door_force.connections.as_mut_vec().retain(|conn|
+                !(conn.target_object_id == existing_door_shield_id)
+            );
+            new_door_force.connections.as_mut_vec().extend_from_slice(
+                &[
+                    structs::Connection {
+                        state: structs::ConnectionState::DEAD,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: door_shield_id,
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::MAX_REACHED,
+                        message: structs::ConnectionMsg::ACTIVATE,
+                        target_object_id: door_shield_id,
+                    },
+                ]
+            );
+
+            new_door_force_data.pattern_txtr0 = door_type_after_open.pattern0_txtr();
+            new_door_force_data.pattern_txtr1 = door_type_after_open.pattern1_txtr();
+            new_door_force_data.color_txtr = door_type_after_open.color_txtr();
+
+            new_door_force_data.damage_vulnerability = door_type_after_open.vulnerability();
+            new_door_force_data.active = 1;
+            layers[0].objects.as_mut_vec().push(new_door_force);
         }
     }
 
@@ -1439,6 +2281,15 @@ fn patch_add_item<'r>(
         scan_offset[2] += 1.2;
     }
 
+    let mut scale = pickup_model_data.scale.clone();
+    if let Some(scale_modifier) = pickup_config.scale {
+        scale = [
+            scale[0]*scale_modifier[0],
+            scale[1]*scale_modifier[1],
+            scale[2]*scale_modifier[2],
+        ].into();
+    };
+
     let mut pickup = structs::Pickup {
         // Location Pickup Data
         // "How is this pickup integrated into the room?"
@@ -1461,7 +2312,7 @@ fn patch_add_item<'r>(
 
         // Model Pickup Data
         // "What does this pickup look like?"
-        scale: pickup_model_data.scale.clone(),
+        scale,
         cmdl: pickup_model_data.cmdl.clone(),
         ancs: pickup_model_data.ancs.clone(),
         part: pickup_model_data.part.clone(),
@@ -1471,7 +2322,11 @@ fn patch_add_item<'r>(
     // set the scan file id //
     pickup.actor_params.scan_params.scan = scan_id;
 
-    let pickup_obj_id = area.new_object_id_from_layer_id(new_layer_idx as usize);
+    let pickup_obj_id = match pickup_config.id {
+        Some(id) => id,
+        None => area.new_object_id_from_layer_id(new_layer_idx as usize),
+    };
+
     let mut pickup_obj = structs::SclyObject {
         instance_id: pickup_obj_id,
         connections: vec![].into(),
@@ -1636,7 +2491,7 @@ fn patch_add_item<'r>(
     //         name: b"set-scan\0".as_cstr(),
     //         start_time: 0.5,
     //         max_random_add: 0.0,
-    //         reset_to_zero: 0,
+    //         looping: 0,
     //         start_immediately: 0,
     //         active: 1,
     //     }.into(),
@@ -1855,7 +2710,7 @@ fn add_world_teleporter<'r>(
 
                 start_time: 1.0,
                 max_random_add: 0.0,
-                reset_to_zero: 0,
+                looping: 0,
                 start_immediately: 0,
                 active: 1,
             }.into(),
@@ -2119,7 +2974,7 @@ impl WaterType
         deps
     }
 
-    fn to_obj<'r>(&self)
+    pub fn to_obj<'r>(&self)
     -> structs::SclyObject<'r>
     {
         match self {
@@ -2144,13 +2999,13 @@ impl WaterType
                         refl_map_txtr: 4294967295,
                         txtr6: 1899158552,
                         unknown5: [3.0, 3.0, -4.0].into(),
-                        unkown6:  8.0,
-                        unkown7: 15.0,
-                        unkown8: 15.0,
+                        unknown6:  8.0,
+                        unknown7: 15.0,
+                        unknown8: 15.0,
                         active: 1,
                         fluid_type: 0,
-                        unkown11: 0,
-                        unkown12: 0.7,
+                        unknown11: 0,
+                        unknown12: 0.7,
                         fluid_uv_motion:
                             structs::FluidUVMotion
                             {
@@ -2250,13 +3105,13 @@ impl WaterType
                 refl_map_txtr: 4294967295,
                 txtr6: 1899158552,
                 unknown5: [3.0, 3.0, -4.0].into(),
-                unkown6: 48.0,
-                unkown7: 5.0,
-                unkown8: 5.0,
+                unknown6: 48.0,
+                unknown7: 5.0,
+                unknown8: 5.0,
                 active: 1,
                 fluid_type: 1,
-                unkown11: 0,
-                unkown12: 0.8,
+                unknown11: 0,
+                unknown12: 0.8,
                 fluid_uv_motion:
                 structs::FluidUVMotion { fluid_layer_motion1: structs::FluidLayerMotion { fluid_uv_motion: 0,
                 unknown1: 20.0,
@@ -2355,13 +3210,13 @@ impl WaterType
                 unknown5: [3.0,
                 3.0,
                 -4.0].into(),
-                unkown6: 70.0,
-                unkown7: 15.0,
-                unkown8: 15.0,
+                unknown6: 70.0,
+                unknown7: 15.0,
+                unknown8: 15.0,
                 active: 1,
                 fluid_type: 2,
-                unkown11: 0,
-                unkown12: 0.65,
+                unknown11: 0,
+                unknown12: 0.65,
                 fluid_uv_motion: structs::FluidUVMotion { fluid_layer_motion1: structs::FluidLayerMotion { fluid_uv_motion: 0,
                 unknown1: 30.0,
                 unknown2:  0.0,
@@ -2466,43 +3321,6 @@ fn patch_submerge_room<'r>(
         bounding_box_extent[2]*2.0,
     ].into();
     water.position = room_origin.into();
-
-    // add water to area //
-    let scly = area.mrea().scly_section_mut();
-    let layer = &mut scly.layers.as_mut_vec()[0];
-    layer.objects.as_mut_vec().push(water_obj);
-
-    Ok(())
-}
-
-fn patch_add_liquid<'r>(
-    _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
-    water_config: &WaterConfig,
-    resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
-)
--> Result<(), String>
-{
-    let water_type = WaterType::from_str(water_config.liquid_type.as_str());
-
-    // add dependencies to area //
-    let deps = water_type.dependencies();
-    let deps_iter = deps.iter()
-        .map(|&(file_id, fourcc)| structs::Dependency {
-                asset_id: file_id,
-                asset_type: fourcc,
-        });
-
-    area.add_dependencies(resources, 0, deps_iter);
-
-    let mut water_obj = water_type.to_obj();
-    let water = water_obj.property_data.as_water_mut().unwrap();
-    water.position[0] = water_config.position[0];
-    water.position[1] = water_config.position[1];
-    water.position[2] = water_config.position[2];
-    water.scale[0]    = water_config.scale[0];
-    water.scale[1]    = water_config.scale[1];
-    water.scale[2]    = water_config.scale[2];
 
     // add water to area //
     let scly = area.mrea().scly_section_mut();
@@ -2885,11 +3703,34 @@ fn modify_pickups_in_mrea<'r>(
     seed: u64,
     _no_starting_visor: bool,
     version: Version,
+    force_vanilla_layout: bool,
 )
 -> Result<(), String>
 {
     let mrea_id = area.mlvl_area.mrea.to_u32();
-    let _mrea_index = area.mrea_index;
+
+    let mut pickup_config = pickup_config.clone();
+
+    if force_vanilla_layout
+    {
+        let scly = area.mrea().scly_section();
+        let layers = &scly.layers;
+
+        let layer = layers.iter().nth(pickup_location.location.layer as usize).unwrap();
+
+        let pickup = layer.objects.iter()
+            .find(|obj| obj.instance_id == pickup_location.location.instance_id)
+            .unwrap();
+        
+        let pickup = pickup.property_data.as_pickup().unwrap();
+
+        let pickup_model = pickup_model_for_pickup(&pickup).expect(format!("could not derrive pickup model in room 0x{:X}", mrea_id).as_str());
+        let pickup_type = pickup_type_for_pickup(&pickup).expect(format!("could not derrive pickup type in room 0x{:X}", mrea_id).as_str());
+
+        pickup_config.model = Some(pickup_model.name().to_string());
+        pickup_config.pickup_type = pickup_type.name().to_string();
+    }
+
     let area_internal_id = area.mlvl_area.internal_id;
     let mut rng = StdRng::seed_from_u64(seed);
 
@@ -2957,7 +3798,7 @@ fn modify_pickups_in_mrea<'r>(
             let model_name = pickup_config.model.as_ref().unwrap();
             let pmt = PickupModel::from_str(&model_name);
             if pmt.is_none() && !extern_model.is_some() {
-                panic!("Unkown Model Type {}", model_name);
+                panic!("Unknown Model Type {}", model_name);
             }
 
             pmt // Some - Native Prime Model
@@ -3195,7 +4036,7 @@ fn modify_pickups_in_mrea<'r>(
     //         name: b"set-scan\0".as_cstr(),
     //         start_time: 0.5,
     //         max_random_add: 0.0,
-    //         reset_to_zero: 0,
+    //         looping: 0,
     //         start_immediately: 0,
     //         active: 1,
     //     }.into(),
@@ -3269,7 +4110,7 @@ fn modify_pickups_in_mrea<'r>(
                     name: b"auto-spawn pickup\0".as_cstr(),
                     start_time: 0.001,
                     max_random_add: 0.0,
-                    reset_to_zero: 0,
+                    looping: 0,
                     start_immediately: 1,
                     active: 1,
                 }.into(),
@@ -3291,7 +4132,7 @@ fn modify_pickups_in_mrea<'r>(
                     name: b"auto-despawn trigger\0".as_cstr(),
                     start_time: 0.001,
                     max_random_add: 0.0,
-                    reset_to_zero: 0,
+                    looping: 0,
                     start_immediately: 1,
                     active: 1,
                 }.into(),
@@ -3477,13 +4318,18 @@ fn modify_pickups_in_mrea<'r>(
         }
 
         let pickup_obj = layers[pickup_location.location.layer as usize].objects.iter_mut()
-        .find(|obj| obj.instance_id == pickup_location.location.instance_id)
-        .unwrap();
+            .find(|obj| obj.instance_id == pickup_location.location.instance_id)
+            .unwrap();
 
-        (position, scan_id_out) = update_pickup(pickup_obj, pickup_type, pickup_model_data, pickup_config, scan_id, position_override);
+        if !force_vanilla_layout {
+            (position, scan_id_out) = update_pickup(pickup_obj, pickup_type, pickup_model_data, &pickup_config, scan_id, position_override);
 
-        if additional_connections.len() > 0 {
-            pickup_obj.connections.as_mut_vec().extend_from_slice(&additional_connections);
+            if additional_connections.len() > 0 {
+                pickup_obj.connections.as_mut_vec().extend_from_slice(&additional_connections);
+            }
+        } else {
+            position = [0.0, 0.0, 0.0];
+            scan_id_out = ResId::invalid();
         }
     }
 
@@ -3570,6 +4416,7 @@ fn modify_pickups_in_mrea<'r>(
     // The items in Watery Hall (Charge beam), Research Core (Thermal Visor), and Artifact Temple
     // (Artifact of Truth) should ys have modal hudmenus because a cutscene plays immediately
     // after each item is acquired, and the nonmodal hudmenu wouldn't properly appear.
+
     update_hudmemo(hudmemo, hudmemo_strg, skip_hudmemos, hudmemo_delay);
 
     let location = pickup_location.attainment_audio;
@@ -3615,7 +4462,7 @@ fn place_floaty_contraption<'r>(
 
                 start_time: 1.0/60.0,
                 max_random_add: 0.0,
-                reset_to_zero: 0,
+                looping: 0,
                 start_immediately: 0,
                 active: 1,
             }.into(),
@@ -3647,7 +4494,7 @@ fn place_floaty_contraption<'r>(
 
                 start_time: 1.0/60.0,
                 max_random_add: 0.0,
-                reset_to_zero: 0,
+                looping: 0,
                 start_immediately: 0,
                 active: 1,
             }.into(),
@@ -3771,6 +4618,15 @@ fn update_pickup(
         scan_offset[2] += 1.2;
     }
 
+    let mut scale = pickup_model_data.scale.clone();
+    if let Some(scale_modifier) = pickup_config.scale {
+        scale = [
+            scale[0]*scale_modifier[0],
+            scale[1]*scale_modifier[1],
+            scale[2]*scale_modifier[2],
+        ].into();
+    };
+
     *pickup = structs::Pickup {
         // Location Pickup Data
         // "How is this pickup integrated into the room?"
@@ -3793,7 +4649,7 @@ fn update_pickup(
 
         // Model Pickup Data
         // "What does this pickup look like?"
-        scale: pickup_model_data.scale,
+        scale,
         cmdl: pickup_model_data.cmdl.clone(),
         ancs: pickup_model_data.ancs.clone(),
         part: pickup_model_data.part.clone(),
@@ -3815,6 +4671,7 @@ fn update_hudmemo(
 {
     let hudmemo = hudmemo.property_data.as_hud_memo_mut().unwrap();
     hudmemo.strg = hudmemo_strg;
+
     if hudmemo_delay != 0.0 {
         hudmemo.first_message_timer = hudmemo_delay;
     }
@@ -4032,7 +4889,7 @@ fn make_elevators_patch<'a>(
 
                                 start_time: 0.001,
                                 max_random_add: 0f32,
-                                reset_to_zero: 0,
+                                looping: 0,
                                 start_immediately: 1,
                                 active: 1,
                             }.into(),
@@ -4136,9 +4993,9 @@ fn patch_post_pq_frigate(
 ) -> Result<(), String>
 {
     let room_id = area.mlvl_area.mrea.to_u32();
-    let mut trigger_id = 0;
-    if room_id == 0x3ea190ee {
-        trigger_id = area.new_object_id_from_layer_name("Default");
+    let mut instance_id = 0;
+    if room_id == 0x3ea190ee || room_id == 0x85578E54 {
+        instance_id = area.new_object_id_from_layer_name("Default");
     }
     let layer_count = area.layer_flags.layer_count as usize;
     let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
@@ -4227,7 +5084,7 @@ fn patch_post_pq_frigate(
     if room_id == 0x3ea190ee {
         layers[0].objects.as_mut_vec().push(
             structs::SclyObject {
-                instance_id: trigger_id,
+                instance_id,
                 property_data: structs::Trigger {
                     name: b"Trigger\0".as_cstr(),
                     position: [184.816299, -263.740845, -86.882622].into(),
@@ -4268,135 +5125,306 @@ fn patch_post_pq_frigate(
                 ].into()
             }
         );
+    } else if room_id == 0x85578E54 { // biotech research area 1
+        layers[1].objects.as_mut_vec().push(
+            structs::SclyObject {
+                instance_id,
+                connections: vec![
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: 0x000E0107, // door shield actor
+                    },
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::DEACTIVATE,
+                        target_object_id: 0x000E0105, // damageable trigger
+                    },
+                ].into(),
+                property_data: structs::Timer {
+                    name: b"disable door timer\0".as_cstr(),
+                    start_time: 0.02,
+                    max_random_add: 0.0,
+                    looping: 0,
+                    start_immediately: 1,
+                    active: 1,
+                }.into(),
+            }
+        );
     }
 
     Ok(())
 }
 
-fn patch_add_platform<'r>(
+fn patch_edit_water<'r>(
     _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
-    game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
-    position: [f32;3],
-    rotation: [f32;3],
-    alt_platform: bool,
-) -> Result<(), String>
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
+    morph_in_time: f32,
+    alpha_out_time: f32,
+)
+    -> Result<(), String>
 {
-    let (deps, cmdl, dcln) = {
-        if alt_platform {
-            (
-                vec![
-                    (0xDCDFD386, b"CMDL"),
-                    (0x6D412D11, b"DCLN"),
-                    (0xEED972E7, b"TXTR"),
-                    (0xF1478D6A, b"TXTR"),
-                    (0xF89D34EF, b"TXTR"),
-                ],
-                ResId::<res_id::CMDL>::new(0xDCDFD386),
-                ResId::<res_id::DCLN>::new(0x6D412D11),
-            )
-        } else {
-            (
-                vec![
-                    (0x48DF38A3, b"CMDL"),
-                    (0xB2D50628, b"DCLN"),
-                    (0x19C17D5C, b"TXTR"),
-                    (0x0259F5F6, b"TXTR"),
-                    (0x71190250, b"TXTR"),
-                    (0xD0BA0FA8, b"TXTR"),
-                    (0xF1478D6A, b"TXTR"),
-                ],
-                ResId::<res_id::CMDL>::new(0x48DF38A3),
-                ResId::<res_id::DCLN>::new(0xB2D50628),
-            )
-        }
-    };
-
-    let deps_iter = deps.iter()
-        .map(|&(file_id, fourcc)| structs::Dependency {
-            asset_id: file_id,
-            asset_type: FourCC::from_bytes(fourcc),
-        }
-    );
-    area.add_dependencies(game_resources,0,deps_iter);
-
-    let platform_id = area.new_object_id_from_layer_name("Default");
-
     let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
-    layers[0].objects.as_mut_vec().push(
+    for layer in layers.iter_mut()
+    {
+        let obj = layer.objects
+            .iter_mut()
+            .find(|obj| obj.instance_id&0x00FFFFFF == id&0x00FFFFFF);
+
+        if obj.is_none()
+        {
+            continue;
+        }
+
+        let water = obj.unwrap().property_data.as_water_mut().unwrap();
+        water.unknown7 = morph_in_time;
+        water.unknown53 = alpha_out_time;
+    }
+
+    Ok(())
+}
+
+fn patch_edit_camera_keyframe<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
+)
+    -> Result<(), String>
+{
+    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
+    for layer in layers.iter_mut()
+    {
+        let obj = layer.objects
+            .iter_mut()
+            .find(|obj| obj.instance_id&0x00FFFFFF == id&0x00FFFFFF);
+
+        if obj.is_none()
+        {
+            continue;
+        }
+
+        let camera_keyframe = obj.unwrap().property_data.as_camera_filter_keyframe_mut().unwrap();
+        camera_keyframe.filter_type = 1;
+        camera_keyframe.filter_shape = 4;
+        camera_keyframe.unknown4 = 2;
+        camera_keyframe.color = [0.0, 0.0, 0.0, 1.0].into();
+    }
+
+    Ok(())
+}
+
+fn patch_sunchamber_cutscene_hack<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+)
+    -> Result<(), String>
+{
+    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
+    let mut layer_num = -1;
+
+    for layer in layers {
+        layer_num += 1;
+
+        /* Extend existing connections to other flaahgras */
+
+        for obj in layer.objects.as_mut_vec() {
+            let mut flaahgra_connections = vec![];
+            for conn in obj.connections.as_mut_vec() {
+
+                if conn.message == structs::ConnectionMsg::ACTIVATE {
+                    continue;
+                }
+
+                if conn.target_object_id&0x00FFFFFF == 0x0025001E {
+                    flaahgra_connections.push(conn.clone());
+                }
+            }
+
+            for conn in flaahgra_connections {
+                for id in vec![0x00500000, 0x00500001, 0x00500002] {
+                    let mut new_conn = conn.clone();
+                    new_conn.target_object_id = id;
+                    obj.connections.as_mut_vec().push(new_conn);
+                }
+            }
+        }
+
+        /* Add other flaahgras */
+
+        if layer_num != 1 {
+            continue;
+        }
+
+        let flaahgra_index = layer.objects.as_mut_vec()
+            .iter()
+            .position(|obj| obj.instance_id&0x00FFFFFF == 0x0025001E)
+            .expect("Couldn't find flaahgra");
+
+        let flaahgra_copy = layer.objects.as_mut_vec()[flaahgra_index].clone();
+
+        let ids = vec![
+            (0x00500000, 0x00600000, 0x00700000),
+            (0x00500001, 0x00600001, 0x00700001),
+            (0x00500002, 0x00600002, 0x00700002)
+        ];
+
+        for (flaahgra_id, drops_sf_id, sound_sf_id) in ids {
+            /* Copy Flaahgra */
+            let mut new_flaahgra: structs::SclyObject = flaahgra_copy.clone();
+            new_flaahgra.instance_id = flaahgra_id;
+
+            /* Add object follow SF for drops */
+            layer.objects.as_mut_vec().push(
+                structs::SclyObject {
+                    instance_id: drops_sf_id,
+                    property_data: structs::SpecialFunction {
+                        name: b"mysf\0".as_cstr(),
+                        position: [271.656, 54.095, 62.225].into(),
+                        rotation: [0.0, 0.0, 180.0].into(),
+                        type_: SpecialFunctionType::ObjectFollowLocator as u32,
+                        unknown0: b"Head_1\0".as_cstr(),
+                        unknown1: 0.0,
+                        unknown2: 0.0,
+                        unknown3: 0.0,
+                        layer_change_room_id: 0xFFFFFFFF,
+                        layer_change_layer_id: 0xFFFFFFFF,
+                        item_id: 0,
+                        unknown4: 0, // active
+                        unknown5: 0.0,
+                        unknown6: 0xFFFFFFFF,
+                        unknown7: 0xFFFFFFFF,
+                        unknown8: 0xFFFFFFFF,
+                    }.into(),
+                    connections: vec![
+                        structs::Connection {
+                            state: structs::ConnectionState::PLAY,
+                            message: structs::ConnectionMsg::ACTIVATE,
+                            target_object_id: flaahgra_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::PLAY,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: 0x00252ACC, // waypoint
+                        },
+                    ].into(),
+                },
+            );
+
+            /* Add object follow SF for sound */
+            layer.objects.as_mut_vec().push(
+                structs::SclyObject {
+                    instance_id: sound_sf_id,
+                    property_data: structs::SpecialFunction {
+                        name: b"mysf\0".as_cstr(),
+                        position: [270.656, 54.095, 62.225].into(),
+                        rotation: [0.0, 0.0, 180.0].into(),
+                        type_: SpecialFunctionType::ObjectFollowLocator as u32,
+                        unknown0: b"Head_1\0".as_cstr(),
+                        unknown1: 0.0,
+                        unknown2: 0.0,
+                        unknown3: 0.0,
+                        layer_change_room_id: 0xFFFFFFFF,
+                        layer_change_layer_id: 0xFFFFFFFF,
+                        item_id: 0,
+                        unknown4: 0, // active
+                        unknown5: 0.0,
+                        unknown6: 0xFFFFFFFF,
+                        unknown7: 0xFFFFFFFF,
+                        unknown8: 0xFFFFFFFF,
+                    }.into(),
+                    connections: vec![
+                        structs::Connection {
+                            state: structs::ConnectionState::PLAY,
+                            message: structs::ConnectionMsg::ACTIVATE,
+                            target_object_id: flaahgra_id,
+                        },
+                        structs::Connection {
+                            state: structs::ConnectionState::PLAY,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                            target_object_id: 0x00252FD3, // sound
+                        },
+                    ].into(),
+                },
+            );
+
+            /* Add connections to new flaahgra to enable the new object follow locators */
+            new_flaahgra.connections.as_mut_vec().extend_from_slice(&vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ACTIVE,
+                    message: structs::ConnectionMsg::ACTIVATE,
+                    target_object_id: drops_sf_id,
+                },
+                structs::Connection {
+                    state: structs::ConnectionState::ACTIVE,
+                    message: structs::ConnectionMsg::ACTIVATE,
+                    target_object_id: sound_sf_id,
+                },
+            ]);
+
+            /* Add new flaahgra to layer 1 */
+            layer.objects.as_mut_vec().push(new_flaahgra);
+        }
+    }
+
+    Ok(())
+}
+
+fn patch_move_camera<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
+    position: [f32; 3],
+)
+    -> Result<(), String>
+{
+    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
+    for layer in layers.iter_mut()
+    {
+        let obj = layer.objects
+            .iter_mut()
+            .find(|obj| obj.instance_id&0x00FFFFFF == id&0x00FFFFFF);
+
+        if obj.is_none()
+        {
+            continue;
+        }
+
+        let camera = obj.unwrap().property_data.as_camera_mut().unwrap();
+        camera.position = position.into();
+        break;
+    }
+
+    Ok(())
+}
+
+fn patch_add_camera<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
+    position: [f32; 3],
+    rotation: Option<[f32; 3]>,
+    shot_duration: f32,
+    unknowns: [u8; 7],
+    unknown: bool,
+)
+    -> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer: &mut SclyLayer<'_> = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().push(
         structs::SclyObject {
-            instance_id: platform_id,
-            property_data: structs::Platform {
-                name: b"myplatform\0".as_cstr(),
-
+            instance_id: id,
+            property_data: structs::Camera {
+                name: b"my camera\0".as_cstr(),
                 position: position.into(),
-                rotation: rotation.into(),
-                scale: [1.0, 1.0, 1.0].into(),
-                extent: [0.0, 0.0, 0.0].into(),
-                scan_offset: [0.0, 0.0, 0.0].into(),
-
-                cmdl: cmdl,
-                ancs: structs::scly_structs::AncsProp {
-                    file_id: ResId::invalid(),
-                    node_index: 0,
-                    default_animation: 0xFFFFFFFF,
-                },
-                actor_params: structs::scly_structs::ActorParameters {
-                    light_params: structs::scly_structs::LightParameters {
-                        unknown0: 1,
-                        unknown1: 1.0,
-                        shadow_tessellation: 0,
-                        unknown2: 1.0,
-                        unknown3: 20.0,
-                        color: [1.0, 1.0, 1.0, 1.0].into(),
-                        unknown4: 1,
-                        world_lighting: 1,
-                        light_recalculation: 1,
-                        unknown5: [0.0, 0.0, 0.0].into(),
-                        unknown6: 4,
-                        unknown7: 4,
-                        unknown8: 0,
-                        light_layer_id: 0
-                    },
-                    scan_params: structs::scly_structs::ScannableParameters {
-                        scan: ResId::invalid(), // None
-                    },
-                    xray_cmdl: ResId::invalid(), // None
-                    xray_cskr: ResId::invalid(), // None
-                    thermal_cmdl: ResId::invalid(), // None
-                    thermal_cskr: ResId::invalid(), // None
-
-                    unknown0: 1,
-                    unknown1: 1.0,
-                    unknown2: 1.0,
-
-                    visor_params: structs::scly_structs::VisorParameters {
-                        unknown0: 0,
-                        target_passthrough: 0,
-                        visor_mask: 15 // Combat|Scan|Thermal|XRay
-                    },
-                    enable_thermal_heat: 1,
-                    unknown3: 0,
-                    unknown4: 0,
-                    unknown5: 1.0
-                },
-
-                unknown1: 5.0,
-                active: 1,
-
-                dcln: dcln,
-
-                health_info: structs::scly_structs::HealthInfo {
-                    health: 1.0,
-                    knockback_resistance: 1.0,
-                },
-                damage_vulnerability: DoorType::Disabled.vulnerability(),
-
-                detect_collision: 1,
-                unknown4: 1.0,
-                unknown5: 0,
-                unknown6: 200,
-                unknown7: 20,
+                rotation: rotation.unwrap_or([0.0, 0.0, 0.0]).into(),
+                active: 0,
+                shot_duration,
+                unknowns: unknowns.into(),
+                unknown1: 120.0,
+                unknown2: 1,
+                unknown3: unknown as u8,
             }.into(),
             connections: vec![].into(),
         }
@@ -4405,96 +5433,140 @@ fn patch_add_platform<'r>(
     Ok(())
 }
 
-fn add_block<'r>(
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
-    position: [f32;3],
-    scale: [f32;3],
-    texture: GenericTexture,
-    is_tangible: u8,
+fn patch_add_boss_health_bar<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
 )
+    -> Result<(), String>
 {
-    let actor_id = area.new_object_id_from_layer_name("Default");
-
     let scly = area.mrea().scly_section_mut();
-    let objects = &mut scly.layers.as_mut_vec()[0].objects.as_mut_vec();
-
-    objects.push(
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().push(
         structs::SclyObject {
-            instance_id: actor_id,
-            property_data: structs::Actor {
-                name: b"myactor\0".as_cstr(),
-                position: position.into(),
+            instance_id: id,
+            property_data: structs::SpecialFunction {
+                name: b"boss energy bar\0".as_cstr(),
+                position: [0.0, 0.0, 0.0].into(),
                 rotation: [0.0, 0.0, 0.0].into(),
-                scale: scale.into(),
-                hitbox: [0.0, 0.0, 0.0].into(),
-                scan_offset: [0.0, 0.0, 0.0].into(),
-                unknown1: 1.0,
-                unknown2: 0.0,
-                health_info: structs::scly_structs::HealthInfo {
-                    health: 5.0,
-                    knockback_resistance: 1.0
-                },
-                damage_vulnerability: DoorType::Disabled.vulnerability(),
-                cmdl: texture.cmdl(),
-                ancs: structs::scly_structs::AncsProp {
-                    file_id: ResId::invalid(), // None
-                    node_index: 0,
-                    default_animation: 0xFFFFFFFF, // -1
-                },
-                actor_params: structs::scly_structs::ActorParameters {
-                    light_params: structs::scly_structs::LightParameters {
-                        unknown0: 1,
-                        unknown1: 1.0,
-                        shadow_tessellation: 0,
-                        unknown2: 1.0,
-                        unknown3: 20.0,
-                        color: [1.0, 1.0, 1.0, 1.0].into(),
-                        unknown4: 1,
-                        world_lighting: 1,
-                        light_recalculation: 1,
-                        unknown5: [0.0, 0.0, 0.0].into(),
-                        unknown6: 4,
-                        unknown7: 4,
-                        unknown8: 0,
-                        light_layer_id: 0
-                    },
-                    scan_params: structs::scly_structs::ScannableParameters {
-                        scan: ResId::invalid(), // None
-                    },
-                    xray_cmdl: ResId::invalid(), // None
-                    xray_cskr: ResId::invalid(), // None
-                    thermal_cmdl: ResId::invalid(), // None
-                    thermal_cskr: ResId::invalid(), // None
-
-                    unknown0: 1,
-                    unknown1: 1.0,
-                    unknown2: 1.0,
-
-                    visor_params: structs::scly_structs::VisorParameters {
-                        unknown0: 0,
-                        target_passthrough: 0,
-                        visor_mask: 15 // Combat|Scan|Thermal|XRay
-                    },
-                    enable_thermal_heat: 1,
-                    unknown3: 0,
-                    unknown4: 0,
-                    unknown5: 1.0
-                },
-                looping: 1,
-                snow: 1,
-                solid: is_tangible,
-                camera_passthrough: 0,
-                active: 1,
-                unknown8: 0,
-                unknown9: 1.0,
-                unknown10: 1,
-                unknown11: 0,
-                unknown12: 0,
-                unknown13: 0
+                type_: 12, // boss energy bar
+                unknown0: b"\0".as_cstr(),
+                unknown1: 0.0,
+                unknown2: 1.0,
+                unknown3: 0.0,
+                layer_change_room_id: 0xFFFFFFFF,
+                layer_change_layer_id: 0xFFFFFFFF,
+                item_id: 0,
+                unknown4: 1, // active
+                unknown5: 0.0,
+                unknown6: 0xFFFFFFFF,
+                unknown7: 0xFFFFFFFF,
+                unknown8: 0xFFFFFFFF,
             }.into(),
-            connections: vec![].into()
+            connections: vec![].into(),
         },
     );
+
+    Ok(())
+}
+
+pub fn id_in_use(
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
+) -> bool
+{
+    let scly = area.mrea().scly_section();
+    for layer in scly.layers.iter() {
+        if layer.objects.iter().any(|obj| obj.instance_id&0x00FFFFFF == id&0x00FFFFFF)
+        {
+            return true;
+        }
+    }
+
+    false
+}
+
+fn patch_add_camera_filter_key_frame<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
+)
+    -> Result<(), String>
+{
+    if id_in_use(area, id) {
+        panic!("id 0x{:X} already in use", id);
+    }
+
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: id,
+            property_data: structs::CameraFilterKeyframe {
+                name: b"my ckeyframe\0".as_cstr(),
+                active: 1,
+                filter_type: 1,
+                filter_shape: 0,
+                unknown4: 2,
+                unknown5: 0,
+                color: [0.0, 0.0, 0.0, 1.0].into(),
+                fade_in_time: 0.0,
+                fade_out_time: 0.5,
+                overlay_txtr: 0xFFFFFFFF,
+            }.into(),
+            connections: vec![].into(),
+        },
+    );
+
+    Ok(())
+}
+
+fn patch_add_cutscene_skip_fn<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32,
+)
+    -> Result<(), String>
+{
+    if id_in_use(area, id) {
+        panic!("id 0x{:X} already in use", id);
+    }
+
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: id,
+            property_data: structs::SpecialFunction {
+                name: b"my cutscene skip\0".as_cstr(),
+                position: [0.0, 0.0, 0.0].into(),
+                rotation: [0.0, 0.0, 0.0].into(),
+                type_: 15, // cinematic skip
+                unknown0: b"\0".as_cstr(),
+                unknown1: 0.0,
+                unknown2: 0.0,
+                unknown3: 0.0,
+                layer_change_room_id: 0,
+                layer_change_layer_id: 0,
+                item_id: 0,
+                unknown4: 1, // active
+                unknown5: 0.0,
+                unknown6: 0xFFFFFFFF,
+                unknown7: 0xFFFFFFFF,
+                unknown8: 0xFFFFFFFF,
+            }.into(),
+            connections: vec![].into(),
+        },
+    );
+
+    Ok(())
+}
+
+pub fn string_to_cstr<'r>(string: String) -> CStr<'r>
+{
+    let x = CString::new(string).expect("CString conversion failed");
+    let x = Cow::Owned(x);
+    x
 }
 
 fn patch_edit_fog<'r>(
@@ -4503,10 +5575,14 @@ fn patch_edit_fog<'r>(
     fog: FogConfig,
 ) -> Result<(), String>
 {
+    let id = area.new_object_id_from_layer_id(0);
+
     let mut range_delta = [0.0, 0.0];
     if fog.range_delta.is_some() {
         range_delta = [fog.range_delta.as_ref().unwrap()[0], fog.range_delta.as_ref().unwrap()[1]];
     }
+
+    let mut found = false;
 
     let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
     for obj in layers[0].objects.as_mut_vec() {
@@ -4520,46 +5596,39 @@ fn patch_edit_fog<'r>(
         }
         let distance_fog = distance_fog.unwrap();
 
-        distance_fog.mode = fog.mode;
-        distance_fog.color = [fog.color[0], fog.color[1], fog.color[2], fog.color[3]].into();
-        distance_fog.range = [fog.range[0], fog.range[1]].into();
+        distance_fog.mode = fog.mode.unwrap_or(1);
+
+        let color = fog.color.unwrap_or([0.8, 0.8, 0.9, 0.0]);
+        distance_fog.color = color.into();
+        let range = fog.range.unwrap_or([30.0, 40.0]);
+        distance_fog.range = range.into();
         distance_fog.color_delta = fog.color_delta.unwrap_or(0.0);
         distance_fog.range_delta = range_delta.into();
-        distance_fog.explicit = fog.explicit as u8;
+        distance_fog.explicit = fog.explicit.unwrap_or(true) as u8;
         distance_fog.active = 1;
+
+        found = true;
     }
 
-    Ok(())
-}
+    if found {
+        return Ok(());
+    }
 
-fn patch_add_block<'r>(
-    _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
-    game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
-    position: [f32;3],
-    scale: [f32;3],
-    texture: GenericTexture,
-    // rotation: [f32;3],
-) -> Result<(), String>
-{
-    let deps = vec![
-        (texture.cmdl().to_u32(), b"CMDL"),
-        (texture.txtr().to_u32(), b"TXTR"),
-    ];
-    let deps_iter = deps.iter()
-        .map(|&(file_id, fourcc)| structs::Dependency {
-            asset_id: file_id,
-            asset_type: FourCC::from_bytes(fourcc),
+    layers[0].objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: id,
+            property_data: structs::DistanceFog {
+                name: b"my fog\0".as_cstr(),
+                mode: fog.mode.unwrap_or(1),
+                color: fog.color.unwrap_or([0.8, 0.8, 0.9, 0.0]).into(),
+                range: fog.range.unwrap_or([30.0, 40.0]).into(),
+                color_delta: fog.color_delta.unwrap_or(0.0),
+                range_delta: range_delta.into(),
+                explicit: fog.explicit.unwrap_or(true) as u8,
+                active: 1,
+            }.into(),
+            connections: vec![].into(),
         }
-    );
-    area.add_dependencies(game_resources, 0, deps_iter);
-
-    add_block(
-        area,
-        position,
-        scale,
-        texture,
-        1,
     );
 
     Ok(())
@@ -4683,448 +5752,13 @@ fn patch_visible_aether_boundaries<'r>(
     ] {
         add_block(
             area,
+            None,
             position,
             scale,
             AETHER_BOUNDARY_TEXTURE,
             0,
-        );
-    }
-
-    Ok(())
-}
-
-fn patch_add_escape_sequence<'r>(
-    _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
-    // mut time_s: f32,
-    start_trigger_pos: [f32;3],
-    start_trigger_scale: [f32;3],
-    stop_trigger_pos: [f32;3],
-    stop_trigger_scale: [f32;3],
-) -> Result<(), String>
-{
-    let start_special_function_id = area.new_object_id_from_layer_name("Default");
-    let stop_special_function_id = area.new_object_id_from_layer_name("Default");
-    let start_sequence_trigger_id = area.new_object_id_from_layer_name("Default");
-    let stop_sequence_trigger_id = area.new_object_id_from_layer_name("Default");
-
-    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
-    let objects = layers[0].objects.as_mut_vec();
-
-    objects.push(
-        structs::SclyObject {
-            instance_id: start_special_function_id,
-            connections: vec![].into(),
-            property_data: structs::SclyProperty::SpecialFunction(
-                Box::new(structs::SpecialFunction {
-                    name: b"start escape sequence\0".as_cstr(),
-                    position: [0.0, 0.0, 0.0].into(),
-                    rotation: [0.0, 0.0, 0.0].into(),
-                    type_: 11, // escape sequence
-                    unknown0: b"\0".as_cstr(),
-                    unknown1: 1.0/60.0,
-                    unknown2: 0.0,
-                    unknown3: 0.0,
-                    layer_change_room_id: 0,
-                    layer_change_layer_id: 0,
-                    item_id: 0,
-                    unknown4: 1, // active
-                    unknown5: 0.0,
-                    unknown6: 0xFFFFFFFF,
-                    unknown7: 0xFFFFFFFF,
-                    unknown8: 0xFFFFFFFF,
-                })
-            ),
-        }
-    );
-
-    objects.push(
-        structs::SclyObject {
-            instance_id: start_sequence_trigger_id,
-            property_data: structs::Trigger {
-                name: b"Start Sequence Trigger\0".as_cstr(),
-                position: start_trigger_pos.into(),
-                scale: start_trigger_scale.into(),
-                damage_info: structs::scly_structs::DamageInfo {
-                    weapon_type: 0,
-                    damage: 0.0,
-                    radius: 0.0,
-                    knockback_power: 0.0
-                },
-                force: [0.0, 0.0, 0.0].into(),
-                flags: 1,
-                active: 1,
-                deactivate_on_enter: 0,
-                deactivate_on_exit: 0
-            }.into(),
-            connections: vec![
-                structs::Connection {
-                    state: structs::ConnectionState::EXITED,
-                    message: structs::ConnectionMsg::ACTION,
-                    target_object_id: start_special_function_id,
-                },
-            ].into(),
-        }
-    );
-
-    objects.push(
-        structs::SclyObject {
-            instance_id: stop_special_function_id,
-            connections: vec![].into(),
-            property_data: structs::SclyProperty::SpecialFunction(
-                Box::new(structs::SpecialFunction {
-                    name: b"stop escape sequence\0".as_cstr(),
-                    position: [0.0, 0.0, 0.0].into(),
-                    rotation: [0.0, 0.0, 0.0].into(),
-                    type_: 11, // escape sequence
-                    unknown0: b"\0".as_cstr(),
-                    unknown1: 0.0, // Set the timer to 0.0, so it stops counting
-                    unknown2: 0.0,
-                    unknown3: 0.0,
-                    layer_change_room_id: 0,
-                    layer_change_layer_id: 0,
-                    item_id: 0,
-                    unknown4: 1, // active
-                    unknown5: 0.0,
-                    unknown6: 0xFFFFFFFF,
-                    unknown7: 0xFFFFFFFF,
-                    unknown8: 0xFFFFFFFF,
-                })
-            ),
-        }
-    );
-
-    objects.push(
-        structs::SclyObject {
-            instance_id: stop_sequence_trigger_id,
-            property_data: structs::Trigger {
-                name: b"stop Sequence Trigger\0".as_cstr(),
-                position: stop_trigger_pos.into(),
-                scale: stop_trigger_scale.into(),
-                damage_info: structs::scly_structs::DamageInfo {
-                    weapon_type: 0,
-                    damage: 0.0,
-                    radius: 0.0,
-                    knockback_power: 0.0
-                },
-                force: [0.0, 0.0, 0.0].into(),
-                flags: 1,
-                active: 1,
-                deactivate_on_enter: 0,
-                deactivate_on_exit: 0
-            }.into(),
-            connections: vec![
-                structs::Connection {
-                    state: structs::ConnectionState::ENTERED,
-                    message: structs::ConnectionMsg::ACTION,
-                    target_object_id: stop_special_function_id,
-                },
-            ].into(),
-        }
-    );
-
-    Ok(())
-}
-
-fn patch_lock_on_point<'r>(
-    _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
-    game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
-    position: [f32;3],
-    is_grapple: bool,
-    no_lock: bool,
-) -> Result<(), String>
-{
-    let deps = vec![
-        (0xBFE4DAA0, b"CMDL"),
-        (0x57C7107D, b"TXTR"),
-        (0xE580D665, b"TXTR"),
-    ];
-    let deps_iter = deps.iter()
-        .map(|&(file_id, fourcc)| structs::Dependency {
-            asset_id: file_id,
-            asset_type: FourCC::from_bytes(fourcc),
-        }
-    );
-    area.add_dependencies(game_resources, 0, deps_iter);
-
-    if is_grapple {
-        let deps = vec![
-            (0x3abe45a6, b"SCAN"),
-            (0x191a6881, b"STRG"),
-            (0x748c37a5, b"SCAN"),
-            (0x50ac3b9a, b"STRG"),
-            (0xA482DBD1, b"TXTR"),
-            (0xC9A36445, b"TXTR"),
-            (0x2702E5E0, b"TXTR"),
-            (0x34E79314, b"TXTR"),
-            (0x46434ED3, b"TXTR"),
-            (0x4F944876, b"TXTR"),
-        ];
-        let deps_iter = deps.iter()
-            .map(|&(file_id, fourcc)| structs::Dependency {
-                asset_id: file_id,
-                asset_type: FourCC::from_bytes(fourcc),
-            }
-        );
-        area.add_dependencies(game_resources, 0, deps_iter);
-    }
-
-    let actor_id = area.new_object_id_from_layer_name("Default");
-    let mut grapple_point_id = 0;
-    let mut special_function_id = 0;
-    let mut timer_id = 0;
-    let mut poi_pre_id = 0;
-    let mut poi_post_id = 0;
-    let mut damageable_trigger_id = 0;
-    let mut add_scan_point = false;
-
-    if is_grapple {
-        grapple_point_id = area.new_object_id_from_layer_name("Default");
-        add_scan_point = true; // We don't actually need the scan points, just their assets. Could save on objects by making this false via config
-        if add_scan_point {
-            special_function_id = area.new_object_id_from_layer_name("Default");
-            timer_id = area.new_object_id_from_layer_name("Default");
-            poi_pre_id = area.new_object_id_from_layer_name("Default");
-            poi_post_id = area.new_object_id_from_layer_name("Default");
-        }
-    } else if !no_lock {
-        damageable_trigger_id = area.new_object_id_from_layer_name("Default");
-    }
-
-    let layers = area.mrea().scly_section_mut().layers.as_mut_vec();
-    layers[0].objects.as_mut_vec().push(
-        structs::SclyObject {
-            instance_id: actor_id,
-            property_data: structs::Actor {
-                name: b"myactor\0".as_cstr(),
-                position: position.into(),
-                rotation: [0.0, 0.0, 0.0].into(),
-                scale: [8.0, 8.0, 8.0].into(),
-                hitbox: [0.0, 0.0, 0.0].into(),
-                scan_offset: [0.0, 0.0, 0.0].into(),
-                unknown1: 1.0,
-                unknown2: 0.0,
-                health_info: structs::scly_structs::HealthInfo {
-                    health: 5.0,
-                    knockback_resistance: 1.0
-                },
-                damage_vulnerability: DoorType::Disabled.vulnerability(),
-                cmdl: ResId::<res_id::CMDL>::new(0xBFE4DAA0),
-                ancs: structs::scly_structs::AncsProp {
-                    file_id: ResId::invalid(),
-                    node_index: 0,
-                    default_animation: 0xFFFFFFFF,
-                },
-                actor_params: structs::scly_structs::ActorParameters {
-                    light_params: structs::scly_structs::LightParameters {
-                        unknown0: 1,
-                        unknown1: 1.0,
-                        shadow_tessellation: 0,
-                        unknown2: 1.0,
-                        unknown3: 20.0,
-                        color: [1.0, 1.0, 1.0, 1.0].into(),
-                        unknown4: 1,
-                        world_lighting: 1,
-                        light_recalculation: 1,
-                        unknown5: [0.0, 0.0, 0.0].into(),
-                        unknown6: 4,
-                        unknown7: 4,
-                        unknown8: 0,
-                        light_layer_id: 0
-                    },
-                    scan_params: structs::scly_structs::ScannableParameters {
-                        scan: ResId::invalid(), // None
-                    },
-                    xray_cmdl: ResId::invalid(), // None
-                    xray_cskr: ResId::invalid(), // None
-                    thermal_cmdl: ResId::invalid(), // None
-                    thermal_cskr: ResId::invalid(), // None
-
-                    unknown0: 1,
-                    unknown1: 1.0,
-                    unknown2: 1.0,
-
-                    visor_params: structs::scly_structs::VisorParameters {
-                        unknown0: 0,
-                        target_passthrough: 1,
-                        visor_mask: 15 // Combat|Scan|Thermal|XRay
-                    },
-                    enable_thermal_heat: 1,
-                    unknown3: 0,
-                    unknown4: 0,
-                    unknown5: 1.0
-                },
-                looping: 1,
-                snow: 1,
-                solid: 0,
-                camera_passthrough: 1,
-                active: 1,
-                unknown8: 0,
-                unknown9: 1.0,
-                unknown10: 1,
-                unknown11: 0,
-                unknown12: 0,
-                unknown13: 0
-            }.into(),
-            connections: vec![].into()
-        },
-    );
-
-    if is_grapple {
-        layers[0].objects.as_mut_vec().push(
-            structs::SclyObject {
-                instance_id: grapple_point_id,
-                property_data: structs::GrapplePoint {
-                    name: b"my grapple point\0".as_cstr(),
-                    position: [position[0], position[1], position[2] - 0.5].into(),
-                    rotation: [0.0, -0.0, 0.0].into(),
-                    active: 1,
-                    grapple_params: structs::GrappleParams {
-                        unknown1: 10.0,
-                        unknown2: 10.0,
-                        unknown3: 1.0,
-                        unknown4: 1.0,
-                        unknown5: 1.0,
-                        unknown6: 1.0,
-                        unknown7: 1.0,
-                        unknown8: 45.0,
-                        unknown9: 90.0,
-                        unknown10: 0.0,
-                        unknown11: 0.0,
-
-                        disable_turning: 0,
-                    },
-                }.into(),
-                connections: vec![].into(),
-            },
-        );
-
-        if add_scan_point {
-            layers[0].objects.as_mut_vec().push(
-                structs::SclyObject {
-                    instance_id: special_function_id,
-                    connections: vec![
-                        structs::Connection {
-                            state: structs::ConnectionState::ZERO,
-                            message: structs::ConnectionMsg::DEACTIVATE,
-                            target_object_id: poi_pre_id,
-                        },
-                        structs::Connection {
-                            state: structs::ConnectionState::ZERO,
-                            message: structs::ConnectionMsg::ACTIVATE,
-                            target_object_id: poi_post_id,
-                        },
-                    ].into(),
-                    property_data: structs::SclyProperty::SpecialFunction(
-                        Box::new(structs::SpecialFunction {
-                            name: b"myspecialfun\0".as_cstr(),
-                            position: position.into(),
-                            rotation: [0.0, 0.0, 0.0].into(),
-                            type_: 5, // inventory activator
-                            unknown0: b"\0".as_cstr(),
-                            unknown1: 0.0,
-                            unknown2: 0.0,
-                            unknown3: 0.0,
-                            layer_change_room_id: 0xFFFFFFFF,
-                            layer_change_layer_id: 0xFFFFFFFF,
-                            item_id: 12, // grapple beam
-                            unknown4: 1, // active
-                            unknown5: 0.0,
-                            unknown6: 0xFFFFFFFF,
-                            unknown7: 0xFFFFFFFF,
-                            unknown8: 0xFFFFFFFF,
-                        })
-                    ),
-                }
-            );
-
-            layers[0].objects.as_mut_vec().push(
-                structs::SclyObject {
-                    instance_id: timer_id,
-                    connections: vec![
-                        structs::Connection {
-                            state: structs::ConnectionState::ZERO,
-                            message: structs::ConnectionMsg::ACTION,
-                            target_object_id: special_function_id,
-                        },
-                    ].into(),
-                    property_data: structs::Timer {
-                        name: b"grapple timer\0".as_cstr(),
-                        start_time: 0.02,
-                        max_random_add: 0.0,
-                        reset_to_zero: 0,
-                        start_immediately: 1,
-                        active: 1,
-                    }.into(),
-                }
-            );
-
-            layers[0].objects.as_mut_vec().push(
-                structs::SclyObject {
-                    instance_id: poi_pre_id,
-                    connections: vec![].into(),
-                    property_data: structs::SclyProperty::PointOfInterest(
-                        Box::new(structs::PointOfInterest {
-                            name: b"mypoi\0".as_cstr(),
-                            position: [position[0], position[1], position[2] - 0.5].into(),
-                            rotation: [0.0, 0.0, 0.0].into(),
-                            active: 1,
-                            scan_param: structs::scly_structs::ScannableParameters {
-                                scan: resource_info!("Grapple Point pre.SCAN").try_into().unwrap(),
-                            },
-                            point_size: 0.0,
-                        })
-                    ),
-                }
-            );
-
-            layers[0].objects.as_mut_vec().push(
-                structs::SclyObject {
-                    instance_id: poi_post_id,
-                    connections: vec![].into(),
-                    property_data: structs::SclyProperty::PointOfInterest(
-                        Box::new(structs::PointOfInterest {
-                            name: b"mypoi\0".as_cstr(),
-                            position: [position[0], position[1], position[2] - 0.5].into(),
-                            rotation: [0.0, 0.0, 0.0].into(),
-                            active: 0,
-                            scan_param: structs::scly_structs::ScannableParameters {
-                                scan: resource_info!("Grapple Point.SCAN").try_into().unwrap(),
-                            },
-                            point_size: 0.0,
-                        })
-                    ),
-                }
-            );
-        }
-    } else if !no_lock {
-        layers[0].objects.as_mut_vec().push(
-            structs::SclyObject {
-                instance_id: damageable_trigger_id,
-                property_data: structs::DamageableTrigger {
-                    name: b"my dtrigger\0".as_cstr(),
-                    position: position.into(),
-                    scale: [0.001, 0.001, 0.001].into(),
-                    health_info: structs::scly_structs::HealthInfo {
-                        health: 9999999999.0,
-                        knockback_resistance: 1.0
-                    },
-                    damage_vulnerability: DoorType::Blue.vulnerability(),
-                    unknown0: 0,
-                    pattern_txtr0: ResId::invalid(),
-                    pattern_txtr1: ResId::invalid(),
-                    color_txtr: ResId::invalid(),
-                    lock_on: 1,
-                    active: 1,
-                    visor_params: structs::scly_structs::VisorParameters {
-                        unknown0: 0,
-                        target_passthrough: 0,
-                        visor_mask: 15 // Combat|Scan|Thermal|XRay
-                    }
-                }.into(),
-                connections: vec![].into(),
-            },
+            None,
+            true,
         );
     }
 
@@ -5226,15 +5860,32 @@ fn patch_disable_item_loss(
     area: &mut mlvl_wrapper::MlvlArea,
 ) -> Result<(), String>
 {
-    let layer = area.mrea().scly_section_mut().layers.iter_mut().next().unwrap();
-    let camera = layer.objects.iter_mut()
-        .find(|obj| obj.instance_id&0x00FFFFFF == 0x00050115)
-        .unwrap();
-    for conn in camera.connections.as_mut_vec().iter_mut() {
-        if conn.message == structs::ConnectionMsg::RESET {
-            conn.message = structs::ConnectionMsg::SET_TO_ZERO;
+    let scly = area.mrea().scly_section_mut();
+    let layers = &mut scly.layers.as_mut_vec();
+
+    let mut spawn_points: Vec<u32> = Vec::new();
+    for layer in layers.iter_mut() {
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+            if obj.property_data.is_spawn_point() {
+                spawn_points.push(obj.instance_id);
+            }
         }
     }
+
+    for layer in layers.iter_mut() {
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+            for conn in obj.connections.as_mut_vec() {
+                if !spawn_points.contains(&conn.target_object_id) {
+                    continue;
+                }
+
+                if conn.message == structs::ConnectionMsg::RESET {
+                    conn.message = structs::ConnectionMsg::SET_TO_ZERO;
+                }
+            }
+        }
+    }
+
     Ok(())
 }
 
@@ -5243,33 +5894,121 @@ fn patch_landing_site_cutscene_triggers(
     area: &mut mlvl_wrapper::MlvlArea,
 ) -> Result<(), String>
 {
-    // make memory relays active by default
-    area.set_memory_relay_active(0x00000143, 1);
+    let timer_id = area.new_object_id_from_layer_id(0);
+    let timer_id2 = area.new_object_id_from_layer_id(0);
 
     let layer = area.mrea().scly_section_mut().layers.iter_mut().next().unwrap();
+    let objects = layer.objects.as_mut_vec();
 
-    // remove the intro cutscene trigger
-    layer.objects.as_mut_vec().retain(|obj|
-        obj.instance_id & 0x0000FFFF != 0xdd
+    // Trigger Start Overworld Cinematic
+    objects.iter_mut()
+         .find(|obj| obj.instance_id & 0x00FFFFFF == 0xDD)
+         .and_then(|obj| obj.property_data.as_trigger_mut())
+         .unwrap()
+         .active = 0;
+
+    // Relay Player Model Loaded
+    objects.iter_mut()
+        .find(|obj| obj.instance_id & 0x00FFFFFF == 0x1F4)
+        .and_then(|obj| obj.property_data.as_relay_mut())
+        .unwrap()
+        .active = 1;
+
+    // PlayerActor-B_rready_samus
+    objects.iter_mut()
+        .find(|obj| obj.instance_id & 0x00FFFFFF == 0x1CE)
+        .unwrap()
+        .connections
+        .as_mut_vec()
+        .clear();
+
+    // Trigger -- Back from Load
+    let obj = objects.iter_mut()
+        .find(|obj| obj.instance_id & 0x00FFFFFF == 0x1F2)
+        .unwrap();
+    obj.property_data.as_trigger_mut().unwrap().active = 1;
+    obj.connections.as_mut_vec().retain(|conn| conn.target_object_id != 0x1F4); // Relay Player Model Loaded
+    obj.connections.as_mut_vec().push(
+        structs::Connection {
+            state: structs::ConnectionState::ENTERED,
+            message: structs::ConnectionMsg::RESET_AND_START,
+            target_object_id: timer_id,
+        }
+    );
+    obj.connections.as_mut_vec().push(
+        structs::Connection {
+            state: structs::ConnectionState::ENTERED,
+            message: structs::ConnectionMsg::ACTIVATE,
+            target_object_id: 0x1CE, // PlayerActor-B_rready_samus
+        }
     );
 
-    // activate the ship
-    layer.objects.iter_mut()
-         .find(|obj| obj.instance_id & 0x0000FFFF == 0x141)
-         .and_then(|obj| obj.property_data.as_platform_mut())
+    objects.push(
+        structs::SclyObject {
+            instance_id: timer_id,
+            property_data: structs::Timer {
+                name: b"my_timer\0".as_cstr(),
+                start_time: 0.6,
+                max_random_add: 0.0,
+                looping: 0,
+                start_immediately: 0,
+                active: 1
+            }.into(),
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::SET_TO_ZERO,
+                    target_object_id: 0x1F4, // Relay Player Model Loaded
+                },
+            ].into(),
+        },
+    );
+
+    objects.push(
+        structs::SclyObject {
+            instance_id: timer_id2,
+            property_data: structs::Timer {
+                name: b"my_timer\0".as_cstr(),
+                start_time: 0.02,
+                max_random_add: 0.0,
+                looping: 0,
+                start_immediately: 1,
+                active: 1
+            }.into(),
+            connections: vec![
+                structs::Connection {
+                    state: structs::ConnectionState::ZERO,
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    target_object_id: 0x1F2, // Trigger -- Back from Load
+                },
+            ].into(),
+        },
+    );
+
+    // Actor Save Station Beam
+    objects.iter_mut()
+         .find(|obj| obj.instance_id & 0x00FFFFFF == 0x1CF)
+         .and_then(|obj| obj.property_data.as_actor_mut())
          .unwrap()
          .active = 1;
 
-    // activate ship effects
-    layer.objects.iter_mut()
-         .find(|obj| obj.instance_id & 0x0000FFFF == 0x1e4)
+    // Effect_BaseLights
+    objects.iter_mut()
+         .find(|obj| obj.instance_id & 0x00FFFFFF == 0x1E4)
          .and_then(|obj| obj.property_data.as_effect_mut())
          .unwrap()
          .active = 1;
 
-    // activate ship save station
-    layer.objects.iter_mut()
-         .find(|obj| obj.instance_id & 0x0000FFFF == 0x1cf)
+    // Platform Samus Ship
+    objects.iter_mut()
+         .find(|obj: &&mut structs::SclyObject<'_>| obj.instance_id & 0x00FFFFFF == 0x141)
+         .and_then(|obj| obj.property_data.as_platform_mut())
+         .unwrap()
+         .active = 1;
+
+    // Actor Save Station Beam
+    objects.iter_mut()
+         .find(|obj| obj.instance_id & 0x00FFFFFF == 0x1CF)
          .and_then(|obj| obj.property_data.as_actor_mut())
          .unwrap()
          .active = 1;
@@ -5575,6 +6314,124 @@ fn patch_artifact_hint_availability(
                 .retain(|obj| !HINT_RELAY_OBJS.contains(&obj.instance_id));
         },
     }
+    Ok(())
+}
+
+fn patch_artifact_temple_activate_portal_conditions(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea
+) -> Result<(), String>
+{
+    // constant on every version
+    let area_idx = 16;
+
+    // layer IDs obtained from names so there's no conflict with indexes being
+    // different in some versions
+    let totem_layer_idx = area.get_layer_id_from_name("Totem");
+    let cinematics_layer_idx = area.get_layer_id_from_name("Cinematics");
+    let ridley_layer_idx = area.get_layer_id_from_name("Monoliths and Ridley");
+    let totem_parts_idx = &[
+        (totem_layer_idx << 26) | (area_idx << 16) | 0x1c5,
+        (totem_layer_idx << 26) | (area_idx << 16) | 0x1c7,
+        (totem_layer_idx << 26) | (area_idx << 16) | 0x1c8
+    ];
+
+    let scly = area.mrea().scly_section_mut();
+    let layers = scly.layers.as_mut_vec();
+
+    // Start instantly the effect of the teleporter after checking the artifact
+    // count (if we have the required artifacts)
+    layers[totem_layer_idx].objects.iter_mut()
+        .find(|obj| obj.instance_id & 0xffff == 0x39a)
+        .and_then(|obj| obj.property_data.as_timer_mut())
+        .unwrap()
+        .start_time = 0.1;
+
+    // Do not start activate totem + ridley fight
+    let obj = layers[totem_layer_idx].objects.iter_mut()
+        .find(|obj| obj.instance_id & 0xffff == 0x4da)
+        .unwrap();
+
+    let connections = obj.connections.as_mut_vec();
+    connections.retain(|conn| conn.target_object_id & 0xffff != 0x1ca);
+    connections.push(structs::Connection {
+        state: structs::ConnectionState::ZERO,
+        message: structs::ConnectionMsg::SET_TO_ZERO,
+        target_object_id: ((cinematics_layer_idx << 26) | (area_idx << 16) | 0x213) as u32,
+    });
+
+    // Set to post Ridley
+    let obj2 = layers[cinematics_layer_idx].objects.iter_mut()
+        .find(|obj| obj.instance_id & 0xffff == 0x213)
+        .unwrap();
+
+    let connections2 = obj2.connections.as_mut_vec();
+    connections2.retain(|conn| conn.target_object_id & 0xffff != 0x2db);
+    connections2.extend_from_slice(&[
+        structs::Connection {
+            state: structs::ConnectionState::ZERO,
+            message: structs::ConnectionMsg::ACTIVATE,
+            target_object_id: ((area_idx << 16) | 0x2d2) as u32,
+        },
+        structs::Connection {
+            state: structs::ConnectionState::ZERO,
+            message: structs::ConnectionMsg::SET_TO_ZERO,
+            target_object_id: ((cinematics_layer_idx << 26) | (area_idx << 16) | 0x541) as u32,
+        },
+        structs::Connection {
+            state: structs::ConnectionState::ZERO,
+            message: structs::ConnectionMsg::DECREMENT,
+            target_object_id: ((ridley_layer_idx << 26) | (area_idx << 16) | 0x482) as u32,
+        },
+        structs::Connection {
+            state: structs::ConnectionState::ZERO,
+            message: structs::ConnectionMsg::DECREMENT,
+            target_object_id: ((ridley_layer_idx << 26) | (area_idx << 16) | 0x581) as u32,
+        },
+        structs::Connection {
+            state: structs::ConnectionState::ZERO,
+            message: structs::ConnectionMsg::DECREMENT,
+            target_object_id: ((ridley_layer_idx << 26) | (area_idx << 16) | 0x309) as u32,
+        },
+        structs::Connection {
+            state: structs::ConnectionState::ZERO,
+            message: structs::ConnectionMsg::RESET_AND_START,
+            target_object_id: ((totem_layer_idx << 26) | (area_idx << 16) | 0x39a) as u32,
+        }
+    ]);
+
+    // disable totem
+    for totem_part_idx in totem_parts_idx {
+        connections2.push(structs::Connection {
+            state: structs::ConnectionState::ZERO,
+            message: structs::ConnectionMsg::DEACTIVATE,
+            target_object_id: *totem_part_idx as u32
+        });
+    }
+
+    for i in 0..12 {
+        connections2.extend_from_slice(&[
+            // deactivate artifact stone used for hinting artifact
+            structs::Connection {
+                state: structs::ConnectionState::ZERO,
+                message: structs::ConnectionMsg::DEACTIVATE,
+                target_object_id: ((ridley_layer_idx << 26) | (area_idx << 16) | (0x0E + i * 0x13)) as u32,
+            },
+            // deactivate hologram
+            structs::Connection {
+                state: structs::ConnectionState::ZERO,
+                message: structs::ConnectionMsg::DEACTIVATE,
+                target_object_id: ((ridley_layer_idx << 26) | (area_idx << 16) | (0x170 + i)) as u32
+            },
+            // deactivate blue lines
+            structs::Connection {
+                state: structs::ConnectionState::ZERO,
+                message: structs::ConnectionMsg::DEACTIVATE,
+                target_object_id: ((ridley_layer_idx << 26) | (area_idx << 16) | (0x1c + i * 0x13)) as u32
+            }
+        ]);
+    }
+
     Ok(())
 }
 
@@ -6212,7 +7069,7 @@ fn make_main_plaza_locked_door_two_ways(_ps: &mut PatcherState, area: &mut mlvl_
                 name: b"Timer_DoorClose\0".as_cstr(),
                 start_time: 0.25,
                 max_random_add: 0.0,
-                reset_to_zero: 1,
+                looping: 1,
                 start_immediately: 0,
                 active: 1
             }.into(),
@@ -6450,6 +7307,211 @@ fn patch_remove_ids<'r>
     for layer in layers.iter_mut() {
         layer.objects.as_mut_vec().retain(|obj| !remove_ids.contains(&(obj.instance_id&0x00FFFFFF)));
     }
+    Ok(())
+}
+
+fn patch_set_layers<'r>
+(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    layers: HashMap<u32, bool>,
+)
+-> Result<(), String>
+{
+    let mrea_id = area.mlvl_area.mrea.to_u32().clone();
+    let layer_count = area.layer_flags.layer_count;
+
+    for (layer_id, enabled) in layers.iter() {
+        let layer_id = layer_id.clone();
+        if layer_id >= layer_count {
+            panic!("Unexpected layer #{} in room 0x{:X}", layer_id, mrea_id);
+        }
+
+        match enabled {
+            true  => { area.layer_flags.flags |=   1 << layer_id;  }
+            false => { area.layer_flags.flags &= !(1 << layer_id); }
+        }
+    }
+
+    Ok(())
+}
+
+fn patch_move_objects<'r>
+(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    layer_objs: HashMap<u32, u32>,
+)
+-> Result<(), String>
+{
+    let mrea_id = area.mlvl_area.mrea.to_u32().clone();
+
+    // Add layers
+    for (_, layer_id) in layer_objs.iter() {
+        let layer_id = layer_id.clone();
+        if layer_id >= 63 {
+            panic!("Layer #{} above maximum (63) in room 0x{:X}", layer_id, mrea_id);
+        }
+
+        while area.layer_flags.layer_count <= layer_id {
+            let mrea_id = area.mlvl_area.mrea.to_u32().clone();
+            area.add_layer(b"New Layer\0".as_cstr());
+            if area.layer_flags.layer_count >= 64 {
+                panic!("Ran out of layers in room 0x{:X}", mrea_id);
+            }
+        }
+    }
+
+    let scly = area.mrea().scly_section_mut();
+
+    // Move objects
+    for (obj_id, layer_id) in layer_objs.iter() {
+        let obj_id = obj_id & 0x00FFFFFF;
+        let layer_id = layer_id.clone() as usize;
+
+        // find existing object
+        let old_layer_id = {
+            let mut info = None;
+
+            let layer_count = scly.layers.as_mut_vec().len();
+            for _layer_id in 0..layer_count {
+                let layer = scly.layers
+                    .iter()
+                    .nth(_layer_id)
+                    .unwrap();
+
+                let obj = layer.objects
+                    .iter()
+                    .find(|obj| obj.instance_id & 0x00FFFFFF == obj_id);
+
+                if let Some(obj) = obj {
+                    info = Some((_layer_id as u32, obj.instance_id));
+                    break;
+                }
+            }
+
+            let (old_layer_id, _) = info.expect(format!("Cannot find object 0x{:X} in room 0x{:X}", obj_id, mrea_id).as_str());
+
+            old_layer_id
+        };
+
+        // clone existing object
+        let obj = scly.layers
+            .as_mut_vec()[old_layer_id as usize]
+            .objects
+            .as_mut_vec()
+            .iter_mut()
+            .find(|obj| obj.instance_id & 0x00FFFFFF == obj_id)
+            .unwrap()
+            .clone();
+
+        // remove original
+        scly.layers
+            .as_mut_vec()[old_layer_id as usize]
+            .objects
+            .as_mut_vec()
+            .retain(|obj| obj.instance_id & 0x00FFFFFF != obj_id);
+
+        // re-add to target layer
+        scly.layers
+            .as_mut_vec()[layer_id as usize]
+            .objects
+            .as_mut_vec()
+            .push(obj);
+    }
+
+    Ok(())
+}
+
+fn patch_add_connection<'r>(
+    layers: &mut Vec<SclyLayer>,
+    connection: &ConnectionConfig,
+    mrea_id: u32,
+)
+{
+    for layer in layers.iter_mut() {
+        let sender = layer.objects
+            .as_mut_vec()
+            .iter_mut()
+            .find(|obj| obj.instance_id&0x00FFFFFF == connection.sender_id&0x00FFFFFF);
+
+        if sender.is_some() {
+            let sender = sender.unwrap();
+            sender.connections.as_mut_vec().push(
+                structs::Connection {
+                    state: structs::ConnectionState(connection.state as u32),
+                    message: structs::ConnectionMsg(connection.message as u32),
+                    target_object_id: connection.target_id,
+                },
+            );
+            return;
+        }
+    }
+
+    panic!("Could not find object 0x{:X} when adding a script connection in room 0x{:X}", connection.sender_id, mrea_id);
+}
+
+fn patch_add_connections<'r>
+(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    connections: &Vec<ConnectionConfig>,
+)
+-> Result<(), String>
+{
+    let mrea_id = area.mlvl_area.mrea.to_u32().clone();
+    let scly = area.mrea().scly_section_mut();
+    let layers = scly.layers.as_mut_vec();
+
+    for connection in connections {
+        patch_add_connection(layers, connection, mrea_id);
+    }
+
+    Ok(())
+}
+
+fn patch_remove_connection<'r>(
+    layers: &mut Vec<SclyLayer>,
+    connection: &ConnectionConfig,
+)
+{
+    for layer in layers.iter_mut() {
+        let sender = layer.objects
+            .as_mut_vec()
+            .iter_mut()
+            .find(|obj| obj.instance_id&0x00FFFFFF == connection.sender_id);
+
+        if sender.is_none() {
+            continue;
+        }
+
+        let sender = sender.unwrap();
+        sender.connections.as_mut_vec().retain(|c|
+            c.target_object_id&0x00FFFFFF != connection.target_id ||
+            c.state != structs::ConnectionState(connection.state as u32) ||
+            c.message != structs::ConnectionMsg(connection.message as u32)
+        );
+        return;
+    }
+
+    panic!("Could not find object 0x{:X} when adding a script connection", connection.sender_id);
+}
+
+fn patch_remove_connections<'r>
+(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    connections: &Vec<ConnectionConfig>,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layers = scly.layers.as_mut_vec();
+
+    for connection in connections {
+        patch_remove_connection(layers, connection);
+    }
+
     Ok(())
 }
 
@@ -6965,7 +8027,7 @@ fn patch_debug_trigger_2(
                 name: b"\0".as_cstr(),
                 start_time: 0.1,
                 max_random_add: 0.0,
-                reset_to_zero: 0,
+                looping: 0,
                 start_immediately: 0,
                 active: 1,
             }.into(),
@@ -6981,6 +8043,61 @@ fn patch_debug_trigger_2(
                     target_object_id: 0x001B03FA,
                 }
             ].into(),
+        }
+    );
+
+    Ok(())
+}
+
+fn patch_add_pb_refill(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    id: u32, // on zero, refill PBs
+)
+    -> Result<(), String>
+{
+    let mrea_id = area.mlvl_area.mrea.to_u32().clone();
+    let special_function_id = area.new_object_id_from_layer_id(0);
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    let obj = layer.objects.as_mut_vec().iter_mut()
+        .find(|obj| obj.instance_id & 0x00FFFFFF == id & 0x00FFFFFF);
+    
+    if obj.is_none()
+    {
+        panic!("0x{:X} isn't a valid instance id in room 0x{:X}", id, mrea_id)
+    }
+
+    let obj = obj.unwrap();
+    obj.connections.as_mut_vec().push(structs::Connection {
+            state: structs::ConnectionState::ZERO,
+            message: structs::ConnectionMsg::ACTION,
+            target_object_id: special_function_id,
+        }
+    );
+
+    layer.objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: special_function_id,
+            property_data: structs::SpecialFunction {
+                name: b"myspecialfun\0".as_cstr(),
+                position: [0., 0., 0.].into(),
+                rotation: [0., 0., 0.].into(),
+                type_: 29, // power bomb station
+                unknown0: b"\0".as_cstr(),
+                unknown1: 0.0,
+                unknown2: 0.0,
+                unknown3: 0.0,
+                layer_change_room_id: 0xFFFFFFFF,
+                layer_change_layer_id: 0xFFFFFFFF,
+                item_id: 0,
+                unknown4: 1, // active
+                unknown5: 0.0,
+                unknown6: 0xFFFFFFFF,
+                unknown7: 0xFFFFFFFF,
+                unknown8: 0xFFFFFFFF,
+            }.into(),
+            connections: vec![].into(),
         }
     );
 
@@ -7077,7 +8194,7 @@ fn patch_remove_cutscenes(
                 name: b"activate-prime\0".as_cstr(),
                 start_time: 1.0,
                 max_random_add: 0.0,
-                reset_to_zero: 0,
+                looping: 0,
                 start_immediately: 0,
                 active: 1,
             }.into(),
@@ -7183,7 +8300,7 @@ fn patch_remove_cutscenes(
                         name: b"cutscene-replacement\0".as_cstr(),
                         start_time: shot_duration,
                         max_random_add: 0.0,
-                        reset_to_zero: 0,
+                        looping: 0,
                         start_immediately: 0,
                         active: 1,
                     }.into(),
@@ -7583,6 +8700,8 @@ fn patch_save_station_for_warp_to_start<'r>(
     warp_to_start_delay_s: f32,
 ) -> Result<(), String>
 {
+    let mrea_id = area.mlvl_area.mrea.to_u32().clone();
+
     let mut warp_to_start_delay_s = warp_to_start_delay_s;
     if warp_to_start_delay_s < 3.0 {
         warp_to_start_delay_s = 3.0
@@ -7632,7 +8751,7 @@ fn patch_save_station_for_warp_to_start<'r>(
 
                 start_time: warp_to_start_delay_s,
                 max_random_add: 0.0,
-                reset_to_zero: 0,
+                looping: 0,
                 start_immediately: 0,
                 active: 1,
             }.into(),
@@ -7704,27 +8823,35 @@ fn patch_save_station_for_warp_to_start<'r>(
     for obj in layer.objects.iter_mut() {
         if let Some(sp_function) = obj.property_data.as_special_function_mut() {
             if sp_function.type_ == 7 { // Is Save Station function
-                obj.connections
-                   .as_mut_vec()
-                   .push(structs::Connection {
-                        target_object_id: timer_id,
-                        state: structs::ConnectionState::RETREAT,
-                        message: structs::ConnectionMsg::RESET_AND_START,
-                    });
-                obj.connections
-                    .as_mut_vec()
-                    .push(structs::Connection {
-                         target_object_id: hudmemo_id,
-                         state: structs::ConnectionState::RETREAT,
-                         message: structs::ConnectionMsg::SET_TO_ZERO,
-                     });
-                obj.connections
-                    .as_mut_vec()
-                    .push(structs::Connection {
-                        target_object_id: player_hint_id,
-                        state: structs::ConnectionState::RETREAT,
-                        message: structs::ConnectionMsg::INCREMENT,
-                    });
+                obj.connections.as_mut_vec().extend_from_slice(
+                    &vec![
+                        structs::Connection {
+                            target_object_id: player_hint_id,
+                            state: structs::ConnectionState::RETREAT,
+                            message: structs::ConnectionMsg::INCREMENT,
+                        },
+                        structs::Connection {
+                            target_object_id: timer_id,
+                            state: structs::ConnectionState::RETREAT,
+                            message: structs::ConnectionMsg::RESET_AND_START,
+                        },
+                        structs::Connection {
+                            target_object_id: hudmemo_id,
+                            state: structs::ConnectionState::RETREAT,
+                            message: structs::ConnectionMsg::SET_TO_ZERO,
+                        },
+                    ]
+                );
+
+                if mrea_id == 0x93668996 { // crater entry point
+                    obj.connections.as_mut_vec().push(
+                        structs::Connection {
+                            target_object_id: 0x00000093, // memory relay that controls where the player spawns in from
+                            state: structs::ConnectionState::RETREAT,
+                            message: structs::ConnectionMsg::DEACTIVATE,
+                        },
+                    );
+                }
             }
         }
     }
@@ -8034,6 +9161,7 @@ fn patch_starting_pickups<'r>(
     starting_items: &StartingItems,
     show_starting_memo: bool,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+    skip_id: u32,
 ) -> Result<(), String>
 {
     let area_internal_id = area.mlvl_area.internal_id;
@@ -8055,6 +9183,10 @@ fn patch_starting_pickups<'r>(
 
     for layer in scly.layers.iter_mut() {
         for obj in layer.objects.iter_mut() {
+            if obj.instance_id == skip_id {
+                continue;
+            }
+
             if let Some(spawn_point) = obj.property_data.as_spawn_point_mut() {
                 starting_items.update_spawn_point(spawn_point);
             }
@@ -8072,7 +9204,7 @@ fn patch_starting_pickups<'r>(
 
                         start_time: 0.025,
                         max_random_add: 0f32,
-                        reset_to_zero: 0,
+                        looping: 0,
                         start_immediately: 1,
                         active: 1,
                     }.into(),
@@ -8157,6 +9289,8 @@ fn patch_dol<'r>(
     skip_splash_screens: bool,
     escape_sequence_counts_up: bool,
     enable_ice_traps: bool,
+    uuid: Option<[u8;16]>,
+    shoot_in_grapple: bool,
 ) -> Result<(), String>
 {
     if version == Version::NtscUTrilogy || version == Version::NtscJTrilogy || version == Version::PalTrilogy {
@@ -8194,6 +9328,29 @@ fn patch_dol<'r>(
     };
 
     let mut dol_patcher = DolPatcher::new(reader);
+
+    if uuid.is_some()
+    {
+        let uuid = uuid.unwrap();
+
+        // e.g. "!#$MetroidBuildInfo!#$ Build v1.088 10/29/2002 2:21:25"
+        let build_info_address: u32 = match version {
+            Version::NtscU0_00    => 0x803cc588,
+            Version::NtscU0_01    => 0x803cc768,
+            Version::NtscU0_02    => 0x803cd648,
+            Version::NtscK        => 0x803cc688,
+            Version::NtscJ        => 0x803b86cc,
+            Version::Pal          => 0x803b6924,
+            _ => panic!("This version of the game does not support etching a UUID into the dol"),
+        };
+
+        // Leave the start alone for easier pattern matching
+        let build_info_address = build_info_address + "!#$Met".len() as u32;
+
+        // Replace characters with raw bytes
+        dol_patcher.patch(build_info_address, uuid.to_vec().clone().into())?;
+    }
+
     if version == Version::Pal || version == Version::NtscJ {
         dol_patcher
             .patch(symbol_addr!("aMetroidprime", version), b"randomprime\0"[..].into())?;
@@ -8376,12 +9533,6 @@ fn patch_dol<'r>(
             //         nop;
             //     });
             //     dol_patcher.ppcasm_patch(&default_visor_patch)?;
-
-            //     // Don't holster weapon when grappling
-            //     let default_visor_patch = ppcasm!(symbol_addr!("UpdateGrappleState__7CPlayerFRC11CFinalInputR13CStateManager", version) + (0x8017a998 - 0x8017A668), {
-            //             nop;
-            //     });
-            //     dol_patcher.ppcasm_patch(&default_visor_patch)?;
             // }
 
             // spawn with weapon holstered instead of drawn
@@ -8482,6 +9633,71 @@ fn patch_dol<'r>(
         });
         dol_patcher.ppcasm_patch(&splash_scren_patch)?;
     }
+
+    // Don't holster weapon when grappling
+    // (0x8017a998 - 0x8017A668)
+    // byte pattern : 40820178 7f83e378 7fc4f378 4b
+    if shoot_in_grapple {
+        let shoot_in_grapple_offset = if [Version::NtscJ, Version::Pal].contains(&version) {
+            0x324
+        } else {
+            0x330
+        };
+        let patch = ppcasm!(symbol_addr!("UpdateGrappleState__7CPlayerFRC11CFinalInputR13CStateManager", version) + shoot_in_grapple_offset, {
+            nop;
+        });
+        dol_patcher.ppcasm_patch(&patch)?;
+    }
+
+    /*
+    // need to undo sub801ae980()
+
+    let function_addr = symbol_addr!("AcceptScriptMsg__9CFlaahgraF20EScriptObjectMessage9TUniqueIdR13CStateManager", version);
+
+    // RESET
+    let flaahgra_patch = ppcasm!(function_addr + 0x80c, {
+        // skip grow animation
+        // lis r0, 0xFFFF;
+        // ori r0, r0, 0xFFFF;
+        // stw r0, 0x8e4(r31);
+        nop;
+        nop;
+        nop;
+    
+        // branch to the unused ACTION handling (patched below)
+        b       { function_addr + 0x7c8 };
+    });
+    dol_patcher.ppcasm_patch(&flaahgra_patch)?;
+
+    // ACTION
+    let flaahgra_patch = ppcasm!(function_addr + 0x7c8, {
+        li r0, 0;
+        stw r0, 0x7d4(r31); // x7d4_faintTime
+        
+        lfs  f0, 0x5744(r2); // 3.0, ideally it would be 6.0
+        stfs f0, 0x7d8(r31); // x7d8_
+
+        li r0, 4;
+        stw r0, 0x568(r31); // x568_state
+        nop;
+    });
+    dol_patcher.ppcasm_patch(&flaahgra_patch)?;
+
+    // re-add the RESET handling
+    dol_patcher.patch(function_addr + 0x7c8 + 9*4, vec![
+            0x88, 0x1f, 0x08, 0xe5,
+            0x38, 0x60, 0x00, 0x01,
+            0x50, 0x60, 0x1f, 0x38,
+            0x98, 0x1f, 0x08, 0xe5,
+        ].into()
+    )?;
+
+    // break;
+
+
+    // 801b3440 c0 02 a8 bc     lfs        f0,-0x5744(r2)=>d_float_0 = 0.0
+    // 801b3444 d0 1f 07 d4     stfs       f0,0x7d4(r31)
+*/
 
     /* This is where I keep random dol patch experiments */
 
@@ -9506,6 +10722,47 @@ fn patch_dol<'r>(
         }
     }
 
+    // restore chest vulnerability to missile and charged shot, also wavebuster cheese works too
+    if [Version::Pal, Version::NtscJ].contains(&version) {
+        let cridley_acceptscriptmsg_addr = symbol_addr!("AcceptScriptMsg__7CRidleyF20EScriptObjectMessage9TUniqueIdR13CStateManager", version);
+        let remove_check_1_patch = ppcasm!(cridley_acceptscriptmsg_addr + 0x830, {
+            nop;
+        });
+
+        dol_patcher.ppcasm_patch(&remove_check_1_patch)?;
+
+        let remove_check_2_patch = ppcasm!(cridley_acceptscriptmsg_addr + 0x840, {
+            nop;
+        });
+
+        dol_patcher.ppcasm_patch(&remove_check_2_patch)?;
+
+        let restore_original_check_patch = ppcasm!(cridley_acceptscriptmsg_addr + 0x884, {
+            beq {cridley_acceptscriptmsg_addr + 0x88C};
+            b {new_text_section_end + 0x18};
+            b {new_text_section_end};
+            nop;
+            nop;
+        });
+
+        dol_patcher.ppcasm_patch(&restore_original_check_patch)?;
+
+        let restore_original_check_code_cave_patch = ppcasm!(new_text_section_end, {
+            lbz r0, 0x0140(r3);
+            rlwinm. r0, r0, 26, 31, 31;
+            bne {new_text_section_end + 0x18};
+            lwz r0, 0x13c(r3);
+            cmpwi r0, 6;
+            bne {new_text_section_end + 0x20};
+            fmr f0, f14;
+            stfs f0, 0xad0(r30);
+            b {cridley_acceptscriptmsg_addr + 0x898};
+        });
+
+        new_text_section_end = new_text_section_end + restore_original_check_code_cave_patch.encoded_bytes().len() as u32;
+        new_text_section.extend(restore_original_check_code_cave_patch.encoded_bytes());
+    }
+
     let bytes_needed = ((new_text_section.len() + 31) & !31) - new_text_section.len();
     new_text_section.extend([0; 32][..bytes_needed].iter().copied());
     dol_patcher.add_text_segment(new_text_section_start, Cow::Owned(new_text_section))?;
@@ -10076,7 +11333,7 @@ fn patch_subchamber_five_essence_permadeath<'r>(
                 name: b"enable cutscene trigger\0".as_cstr(),
                 start_time: 0.1,
                 max_random_add: 0.0,
-                reset_to_zero: 0,
+                looping: 0,
                 start_immediately: 1,
                 active: 1,
             }.into(),
@@ -10097,7 +11354,7 @@ fn patch_subchamber_five_essence_permadeath<'r>(
                 name: b"disable cutscene trigger\0".as_cstr(),
                 start_time: 0.01,
                 max_random_add: 0.0,
-                reset_to_zero: 0,
+                looping: 0,
                 start_immediately: 1,
                 active: 1,
             }.into(),
@@ -10106,6 +11363,110 @@ fn patch_subchamber_five_essence_permadeath<'r>(
                     state: structs::ConnectionState::ZERO,
                     message: structs::ConnectionMsg::DEACTIVATE,
                     target_object_id: timer_id,
+                },
+            ].into(),
+        }
+    );
+
+    Ok(())
+}
+
+fn patch_pq_permadeath<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+)
+-> Result<(), String>
+{
+    let mrea_id = area.mlvl_area.mrea.to_u32().clone();
+    
+    let special_fn_id = area.new_object_id_from_layer_id(0);
+    let timer1_id = area.new_object_id_from_layer_id(0);
+    let timer2_id = area.new_object_id_from_layer_id(0);
+
+    area.add_layer(b"Custom Shield Layer\0".as_cstr());
+    let pq_layer = area.layer_flags.layer_count as usize - 1;
+
+    let scly = area.mrea().scly_section_mut();
+    let layers = &mut scly.layers.as_mut_vec();
+
+    // move objects to new layer //
+    for obj_id in vec![0x00190110, 0x00190053] {
+        let obj = layers[0].objects.as_mut_vec()
+            .iter_mut()
+            .find(|obj| (obj.instance_id & 0x00FFFFFF) == obj_id);
+
+        if obj.is_none() {
+            continue;
+        }
+
+        let obj = obj.unwrap().clone();
+        layers[pq_layer].objects.as_mut_vec().push(obj.clone());
+        layers[0].objects.as_mut_vec().retain(|obj| obj.instance_id & 0x00FFFFFF != obj_id);
+    }
+
+    // disable layer on PQ dead //
+    layers[0].objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: special_fn_id,
+            property_data: structs::SpecialFunction::layer_change_fn(
+                b"SpecialFunction - Bosses Stay Dead\0".as_cstr(),
+                0xB22C4E90,
+                pq_layer as u32,
+            ).into(),
+            connections: vec![].into(),
+        }
+    );
+
+    let connection = ConnectionConfig {
+        sender_id: 0x00190004, // parasite queen
+        state: ConnectionState::DEAD,
+        target_id: special_fn_id,
+        message: ConnectionMsg::DECREMENT,
+    };
+    patch_add_connection(layers, &connection, mrea_id);
+
+    // Activate effects on 2nd pass
+    let effect_conns = layers[0].objects
+        .as_mut_vec()
+        .iter_mut()
+        .find(|obj| obj.instance_id == 0x00190041)
+        .expect("Failed to find effects timer in frigate reactor core")
+        .connections
+        .as_mut_vec()
+        .clone();
+
+    layers[0].objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: timer1_id,
+            property_data: structs::Timer {
+                name: b"my t\0".as_cstr(),
+                start_time: 0.1,
+                max_random_add: 0.0,
+                looping: 0,
+                start_immediately: 1,
+                active: 1,
+            }.into(),
+            connections: effect_conns.into(),
+        }
+    );
+
+    // but not on 1st pass
+    layers[pq_layer].objects.as_mut_vec().push(
+        structs::SclyObject {
+            instance_id: timer2_id,
+            property_data: structs::Timer {
+                name: b"my t\0".as_cstr(),
+                start_time: 0.02,
+                max_random_add: 0.0,
+                looping: 0,
+                start_immediately: 1,
+                active: 1,
+            }.into(),
+            connections: vec![
+                structs::Connection {
+                    message: structs::ConnectionMsg::DEACTIVATE,
+                    state: structs::ConnectionState::ZERO,
+                    target_object_id: timer1_id,
                 },
             ].into(),
         }
@@ -10135,12 +11496,12 @@ fn patch_final_boss_permadeath<'r>(
         );
         area.add_dependencies(game_resources, 0, deps_iter);
         area.add_dependencies(
-            &game_resources, 0,
+            game_resources, 0,
             iter::once(custom_asset_ids::WARPING_TO_OTHER_STRG.into())
         );
     }
 
-    let layer_count = area.mrea().scly_section_mut().layers.len();
+    let layer_count = area.mrea().scly_section().layers.len();
     let disable_bosses_layer_num;
 
     if mrea_id == 0x749DF46 { // subchamber two already has a layer #1 that we can use
@@ -10425,7 +11786,7 @@ fn patch_final_boss_permadeath<'r>(
                     name: b"remove warp\0".as_cstr(),
                     start_time: 0.1,
                     max_random_add: 0.0,
-                    reset_to_zero: 0,
+                    looping: 0,
                     start_immediately: 1,
                     active: 1,
                 }.into(),
@@ -10456,7 +11817,12 @@ fn patch_final_boss_permadeath<'r>(
                     obj.property_data.object_type() == 0x84
                 )
                 && !vec![
-                        0x00050014, 0x0005000E,
+                        0x00050014,
+
+                        // infusion chamber door
+                        0x00050013,
+                        0x00050014,
+                        0x0005000E,
                     ].contains(&obj.instance_id)
                 {
                     objs_to_remove.push(obj.instance_id.clone());
@@ -10520,7 +11886,7 @@ fn patch_final_boss_permadeath<'r>(
                     name: b"change layer\0".as_cstr(),
                     start_time: 0.1,
                     max_random_add: 0.0,
-                    reset_to_zero: 0,
+                    looping: 0,
                     start_immediately: 1,
                     active: 1,
                 }.into(),
@@ -10976,207 +12342,6 @@ fn patch_remove_control_disabler<'r>(
     Ok(())
 }
 
-fn patch_add_camera_hint<'r>(
-    _ps: &mut PatcherState,
-    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
-    trigger_pos: [f32;3],
-    trigger_scale: [f32;3],
-    camera_pos: [f32;3],
-    camera_rot: [f32;3],
-    behavior: u32,
-)
--> Result<(), String>
-{
-    let camear_hint_id = area.new_object_id_from_layer_name("Default");
-    let camera_hint_trigger_id = area.new_object_id_from_layer_name("Default");
-
-    let camera_objs = add_camera_hint(
-        camear_hint_id,
-        camera_hint_trigger_id,
-        trigger_pos,
-        trigger_scale,
-        camera_pos,
-        camera_rot,
-        behavior,
-    );
-
-    area.mrea()
-        .scly_section_mut()
-        .layers.as_mut_vec()[0]
-        .objects
-        .as_mut_vec()
-        .extend_from_slice(&camera_objs);
-
-    Ok(())
-}
-
-fn add_camera_hint<'r>(
-    camear_hint_id: u32,
-    camera_hint_trigger_id: u32,
-    trigger_pos: [f32;3],
-    trigger_scale: [f32;3],
-    camera_pos: [f32;3],
-    camera_rot: [f32;3],
-    behavior: u32,
-) -> Vec<structs::SclyObject<'r>>
-{
-    let mut objects = Vec::new();
-
-    objects.push(
-        structs::SclyObject {
-            instance_id: camear_hint_id,
-            connections: vec![].into(),
-            property_data: structs::SclyProperty::CameraHint(
-                Box::new(structs::CameraHint {
-                    name: b"CameraHint\0".as_cstr(),
-                    position: camera_pos.into(),
-                    rotation: camera_rot.into(),
-                    active: 1,
-                    priority: 8,
-                    behavior: behavior,
-                    camera_hint_params: structs::CameraHintParameters {
-                        calculate_cam_pos: 0,
-                        chase_allowed: 0,
-                        boost_allowed: 0,
-                        obscure_avoidance: 0,
-                        volume_collider: 0,
-                        apply_immediately: 1,
-                        look_at_ball: 1,
-                        hint_distance_selection: 0,
-                        hint_distance_self_pos: 1,
-                        control_interpolation: 0,
-                        sinusoidal_interpolation: 0,
-                        sinusoidal_interpolation_hintless: 0,
-                        clamp_velocity: 0,
-                        skip_cinematic: 0,
-                        no_elevation_interp: 0,
-                        direct_elevation: 0,
-                        override_look_dir: 1,
-                        no_elevation_vel_clamp: 0,
-                        calculate_transform_from_prev_cam: 1,
-                        no_spline: 1,
-                        unknown21: 0,
-                        unknown22: 0,
-                    },
-                    min_dist: structs::BoolFloat {
-                        active: 0,
-                        value: 8.0,
-                    },
-                    max_dist: structs::BoolFloat {
-                        active: 0,
-                        value: 50.0,
-                    },
-                    backwards_dist: structs::BoolFloat {
-                        active: 0,
-                        value: 8.0,
-                    },
-                    look_at_offset: structs::BoolVec3 {
-                        active: 0,
-                        value: [0.0, 1.0, 1.0].into(),
-                    },
-                    chase_look_at_offset: structs::BoolVec3 {
-                        active: 0,
-                        value: [0.0, 1.0, 1.0].into(),
-                    },
-                    ball_to_cam: [3.0, 3.0, 3.0].into(),
-                    fov: structs::BoolFloat {
-                        active: 0,
-                        value: 55.0,
-                    },
-                    attitude_range: structs::BoolFloat {
-                        active: 0,
-                        value: 90.0,
-                    },
-                    azimuth_range: structs::BoolFloat {
-                        active: 0,
-                        value: 90.0,
-                    },
-                    angle_per_second: structs::BoolFloat {
-                        active: 0,
-                        value: 120.0,
-                    },
-                    clamp_vel_range: 10.0,
-                    clamp_rot_range: 120.0,
-                    elevation: structs::BoolFloat {
-                        active: 0,
-                        value: 2.7,
-                    },
-                    interpolate_time: 1.0,
-                    clamp_vel_time: 1.0,
-                    control_interp_dur: 1.0,
-                })
-            ),
-        }
-    );
-
-    objects.push(
-        structs::SclyObject {
-            instance_id: camera_hint_trigger_id,
-            connections: vec![
-                structs::Connection {
-                    state: structs::ConnectionState::ENTERED,
-                    message: structs::ConnectionMsg::INCREMENT,
-                    target_object_id: camear_hint_id,
-                },
-                structs::Connection {
-                    state: structs::ConnectionState::EXITED,
-                    message: structs::ConnectionMsg::DECREMENT,
-                    target_object_id: camear_hint_id,
-                }
-            ].into(),
-            property_data: structs::SclyProperty::Trigger(
-                Box::new(structs::Trigger {
-                    name: b"camerahinttrigger\0".as_cstr(),
-                    position: trigger_pos.into(),
-                    scale: trigger_scale.into(),
-                    damage_info: structs::scly_structs::DamageInfo {
-                        weapon_type: 0,
-                        damage: 0.0,
-                        radius: 0.0,
-                        knockback_power: 0.0
-                    },
-                    force: [0.0, 0.0, 0.0].into(),
-                    flags: 1,
-                    active: 1,
-                    deactivate_on_enter: 0,
-                    deactivate_on_exit: 0,
-                })
-            ),
-        }
-    );
-
-    // objects.push(
-    //     structs::SclyObject {
-    //         instance_id: area.new_object_id_from_layer_name("Default"),
-    //         connections: vec![
-    //             structs::Connection {
-    //                 state: structs::ConnectionState::INSIDE,
-    //                 message: structs::ConnectionMsg::INCREMENT,
-    //                 target_object_id: camear_hint_id,
-    //             },
-    //             structs::Connection {
-    //                 state: structs::ConnectionState::EXITED,
-    //                 message: structs::ConnectionMsg::DECREMENT,
-    //                 target_object_id: camear_hint_id,
-    //             }
-    //         ].into(),
-    //         property_data: structs::SclyProperty::CameraHintTrigger(
-    //             Box::new(structs::CameraHintTrigger {
-    //                 name: b"CameraHintTrigger\0".as_cstr(),
-    //                 position: spawn_point_position.into(),
-    //                 rotation: spawn_point_rotation.into(),
-    //                 scale: [10.0, 10.0, 10.0].into(),
-    //                 active: 1,
-    //                 deactivate_on_enter: 0,
-    //                 deactivate_on_exit: 0,
-    //             })
-    //         ),
-    //     }
-    // );
-
-    objects
-}
-
 fn patch_add_dock_teleport<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -11217,8 +12382,31 @@ fn patch_add_dock_teleport<'r>(
             if obj.property_data.is_dock() {
                 let dock = obj.property_data.as_dock_mut().unwrap();
 
-                // Remove all auto-loads in this room
-                dock.load_connected = 0;
+                // Remove all auto-loads in this room except for elevator rooms
+                if !vec![
+                    0x3E6B2BB7,
+                    0x8316EDF5,
+                    0xA5FA69A1,
+                    0x236E1B0F,
+                    0xC00E3781,
+                    0xDD0B0739,
+                    0x11A02448,
+                    0x2398E906,
+                    0x8A31665E,
+                    0x15D6FF8B,
+                    0x0CA514F0,
+                    0x7D106670,
+                    0x430E999C,
+                    0xE2C2CF38,
+                    0x3BEAADC9,
+                    0xDCA9A28B,
+                    0x4C3D244C,
+                    0xEF2F1440,
+                    0xC1AC9233,
+                    0x93668996,
+                ].contains(&mrea_id) {
+                    dock.load_connected = 0;
+                }
 
                 // Find the specified dock
                 if dock.dock_index == destination_dock_num {
@@ -11492,7 +12680,7 @@ fn patch_add_dock_teleport<'r>(
             name: b"open-door-timer\0".as_cstr(),
             start_time: 0.1,
             max_random_add: 0.0,
-            reset_to_zero: 0,
+            looping: 0,
             start_immediately: 0,
             active: 1,
         }.into(),
@@ -11606,9 +12794,30 @@ fn patch_modify_dock<'r>(
             continue;
         }
 
-        // remove all auto-loads in this room
-        let dock = obj.property_data.as_dock_mut().unwrap();
-        if dock.load_connected != 0 {
+        // Remove all auto-loads in this room except for elevator rooms
+        if !vec![
+            0x3E6B2BB7,
+            0x8316EDF5,
+            0xA5FA69A1,
+            0x236E1B0F,
+            0xC00E3781,
+            0xDD0B0739,
+            0x11A02448,
+            0x2398E906,
+            0x8A31665E,
+            0x15D6FF8B,
+            0x0CA514F0,
+            0x7D106670,
+            0x430E999C,
+            0xE2C2CF38,
+            0x3BEAADC9,
+            0xDCA9A28B,
+            0x4C3D244C,
+            0xEF2F1440,
+            0xC1AC9233,
+            0x93668996,
+        ].contains(&mrea_id) {
+            let dock = obj.property_data.as_dock_mut().unwrap();
             dock.load_connected = 0;
         }
     }
@@ -11740,6 +12949,79 @@ fn patch_exo_scale<'r>(
             }
         }
     }
+    Ok(())
+}
+
+fn patch_ridley_damage_props<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    version: Version,
+    contact_damage: DamageInfo,
+    other_damages: Vec<DamageInfo>,
+    unknown: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[1];
+    if [Version::Pal, Version::NtscJ, Version::PalTrilogy, Version::NtscUTrilogy, Version::NtscJTrilogy].contains(&version) {
+        let ridley = layer.objects.iter_mut()
+                                  .find(|obj| obj.property_data.is_ridley_v2())
+                                  .and_then(|obj| obj.property_data.as_ridley_v2_mut())
+                                  .unwrap();
+
+        ridley.patterned_info.contact_damage = contact_damage;
+        ridley.damage_info0 = other_damages[0];
+        ridley.damage_info1 = other_damages[1];
+        ridley.damage_info2 = other_damages[2];
+        ridley.damage_info3 = other_damages[3];
+        ridley.damage_info4 = other_damages[4];
+        ridley.damage_info5 = other_damages[5];
+        ridley.damage_info6 = other_damages[6];
+        ridley.damage_info7 = other_damages[7];
+        ridley.damage_info8 = other_damages[8];
+        ridley.unknown4 = unknown;
+    } else {
+        let ridley = layer.objects.iter_mut()
+                                  .find(|obj| obj.property_data.is_ridley_v1())
+                                  .and_then(|obj| obj.property_data.as_ridley_v1_mut())
+                                  .unwrap();
+
+        ridley.patterned_info.contact_damage = contact_damage;
+        ridley.damage_info1 = other_damages[0];
+        ridley.damage_info2 = other_damages[1];
+        ridley.damage_info3 = other_damages[2];
+        ridley.damage_info4 = other_damages[3];
+        ridley.damage_info5 = other_damages[4];
+        ridley.damage_info6 = other_damages[5];
+        ridley.damage_info7 = other_damages[6];
+        ridley.damage_info8 = other_damages[7];
+        ridley.unknown4 = unknown;
+    }
+
+    Ok(())
+}
+
+fn patch_ridley_health<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    version: Version,
+    health: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[1];
+    if [Version::Pal, Version::NtscJ, Version::PalTrilogy, Version::NtscUTrilogy, Version::NtscJTrilogy].contains(&version) {
+        layer.objects.iter_mut()
+                     .filter_map(|obj| obj.property_data.as_ridley_v2_mut())
+                     .for_each(|ridley| ridley.patterned_info.health_info.health = health);
+    } else {
+        layer.objects.iter_mut()
+                     .filter_map(|obj| obj.property_data.as_ridley_v1_mut())
+                     .for_each(|ridley| ridley.patterned_info.health_info.health = health);
+    }
+
     Ok(())
 }
 
@@ -11959,6 +13241,22 @@ fn patch_idrone_scale<'r>(
     Ok(())
 }
 
+fn patch_pq_health<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    health: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.iter_mut()
+                 .filter_map(|obj| obj.property_data.as_new_intro_boss_mut())
+                 .for_each(|pq| pq.patterned_info.health_info.health = health);
+
+    Ok(())
+}
+
 fn patch_pq_scale<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -12015,6 +13313,22 @@ fn patch_thardus_scale<'r>(
             }
         }
     }
+
+    Ok(())
+}
+
+fn patch_essence_health<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    health: f32,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+    layer.objects.iter_mut()
+                 .filter_map(|obj| obj.property_data.as_metroidprimestage2_mut())
+                 .for_each(|mps2| mps2.patterned_info.health_info.health = health);
 
     Ok(())
 }
@@ -12150,42 +13464,10 @@ fn patch_bnr(
     Ok(())
 }
 
-#[derive(PartialEq, Copy, Clone)]
-pub enum Version
-{
-    NtscU0_00,
-    NtscU0_01,
-    NtscU0_02,
-    NtscK,
-    NtscJ,
-    Pal,
-    NtscUTrilogy,
-    NtscJTrilogy,
-    PalTrilogy,
-}
-
-impl fmt::Display for Version
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error>
-    {
-        match self {
-            Version::NtscU0_00    => write!(f, "1.00"),
-            Version::NtscU0_01    => write!(f, "1.01"),
-            Version::NtscU0_02    => write!(f, "1.02"),
-            Version::NtscK        => write!(f, "kor"),
-            Version::NtscJ        => write!(f, "jap"),
-            Version::Pal          => write!(f, "pal"),
-            Version::NtscUTrilogy => write!(f, "trilogy_ntsc_u"),
-            Version::NtscJTrilogy => write!(f, "trilogy_ntsc_j"),
-            Version::PalTrilogy   => write!(f, "trilogy_pal"),
-        }
-    }
-}
-
 fn patch_qol_game_breaking(
     patcher: &mut PrimePatcher,
     version: Version,
-    force_vanilla_layout: bool,
+    _force_vanilla_layout: bool,
     small_samus: bool,
 )
 {
@@ -12244,8 +13526,6 @@ fn patch_qol_game_breaking(
         resource_info!("12_mines_eliteboss.MREA").into(),
         move |ps, area| patch_op_death_pickup_spawn(ps, area)
     );
-
-    if force_vanilla_layout { return; }
 
     // undo retro "fixes"
     if version == Version::NtscU0_00 {
@@ -12337,6 +13617,18 @@ fn patch_qol_game_breaking(
         resource_info!("19_hive_totem.MREA").into(),
         patch_hive_totem_softlock
     );
+
+    // Elite Research
+    // Platforms
+    patcher.add_scly_patch(
+        resource_info!("03_mines.MREA").into(),
+        patch_elite_research_platforms
+    );
+    // Door Lock
+    patcher.add_scly_patch(
+        resource_info!("03_mines.MREA").into(),
+        patch_elite_research_door_lock
+    );
 }
 
 fn make_elite_research_fight_prereq_patches(patcher: &mut PrimePatcher)
@@ -12411,6 +13703,10 @@ fn patch_qol_logical(patcher: &mut PrimePatcher, config: &PatchConfig, version: 
         patcher.add_scly_patch(
             resource_info!("05_mines_forcefields.MREA").into(),
             patch_backwards_lower_mines_elite_control
+        );
+        patcher.add_scly_patch(
+            resource_info!("07_mines_electric.MREA").into(),
+            move |ps, area| patch_remove_ids(ps, area, vec![0x001B065F])
         );
     }
 }
@@ -12632,7 +13928,7 @@ fn patch_qol_cosmetic(
     // not shown here - hudmemos are nonmodal and item aquisition cutscenes are removed
 }
 
-fn patch_qol_competitive_cutscenes(patcher: &mut PrimePatcher, version: Version) {
+fn patch_qol_competitive_cutscenes(patcher: &mut PrimePatcher, version: Version, _skip_frigate: bool) {
     patcher.add_scly_patch(
         resource_info!("01_mines_mainplaza.MREA").into(), // main quarry (just pirate booty)
         move |ps, area| patch_remove_cutscenes(ps, area,
@@ -12938,7 +14234,18 @@ fn patch_qol_minor_cutscenes(patcher: &mut PrimePatcher, version: Version) {
     );
 }
 
-pub fn patch_qol_major_cutscenes(patcher: &mut PrimePatcher) {
+pub fn patch_qol_major_cutscenes(patcher: &mut PrimePatcher, shuffle_pickup_position: bool) {
+    if !shuffle_pickup_position {
+        patcher.add_scly_patch(
+            resource_info!("07_ice_chapel.MREA").into(), // chapel of the elders
+            move |ps, area| patch_remove_cutscenes(ps, area,
+                vec![0x000E0057], // Faster adult breakout
+                vec![0x000E019D, 0x000E019B], // keep fight start reposition for wavesun
+                true,
+            ),
+        );
+    }
+
     patcher.add_scly_patch(
         resource_info!("08_courtyard.MREA").into(), // Arboretum
         move |ps, area| patch_remove_cutscenes(ps, area, vec![0x0013012E, 0x00130131, 0x00130141], vec![], false),
@@ -13185,7 +14492,7 @@ fn patch_hive_mecha<'a>(patcher: &mut PrimePatcher<'_, 'a>)
                     name: b"Auto start relay\0".as_cstr(),
                     start_time: 0.001,
                     max_random_add: 0f32,
-                    reset_to_zero: 0,
+                    looping: 0,
                     start_immediately: 1,
                     active: 1,
                 }.into(),
@@ -13257,7 +14564,7 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
                 continue;
             }
 
-            let room = level.unwrap().rooms.get(room_info.name.trim());
+            let room = level.unwrap().rooms.get(room_info.name().trim());
             if room.is_none() {
                 continue;
             }
@@ -13297,21 +14604,6 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
     let mut reader = Reader::new(&config.input_iso[..]);
     let mut gc_disc: structs::GcDisc = reader.read(());
 
-    let version = match (&gc_disc.header.game_identifier(), gc_disc.header.disc_id, gc_disc.header.version) {
-        (b"GM8E01", 0, 0)  => Version::NtscU0_00,
-        (b"GM8E01", 0, 1)  => Version::NtscU0_01,
-        (b"GM8E01", 0, 2)  => Version::NtscU0_02,
-        (b"GM8E01", 0, 48) => Version::NtscK,
-        (b"GM8J01", 0, 0)  => Version::NtscJ,
-        (b"GM8P01", 0, 0)  => Version::Pal,
-        (b"R3ME01", 0, 0)  => Version::NtscUTrilogy,
-        (b"R3IJ01", 0, 0)  => Version::NtscJTrilogy,
-        (b"R3MP01", 0, 0)  => Version::PalTrilogy,
-        _ => Err(concat!(
-                "The input ISO doesn't appear to be NTSC-US, NTSC-J, NTSC-K, PAL Metroid Prime, ",
-                "or NTSC-US, NTSC-J, PAL Metroid Prime Trilogy."
-            ))?
-    };
     if gc_disc.find_file("randomprime.txt").is_some() {
         Err(concat!("The input ISO has already been randomized once before. ",
                     "You must start from an unmodified ISO every time."
@@ -13319,14 +14611,14 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
     }
 
     if config.run_mode == RunMode::ExportLogbook {
-        export_logbook(&mut gc_disc, &config, version)?;
+        export_logbook(&mut gc_disc, &config)?;
         return Ok(());
     } else if config.run_mode == RunMode::ExportAssets {
         export_assets(&mut gc_disc, &config)?;
         return Ok(());
     }
 
-    build_and_run_patches(&mut gc_disc, &config, version, audio_override_patches)?;
+    build_and_run_patches(&mut gc_disc, &config, audio_override_patches)?;
 
     {
         let json_string = serde_json::to_string(&config)
@@ -13335,7 +14627,7 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
         gc_disc.add_file("randomprime.json", structs::FstEntryFile::Unknown(Reader::new(&ct)))?;
     }
 
-    let patches_rel_bytes = match version {
+    let patches_rel_bytes = match config.version {
         Version::NtscU0_00    => Some(rel_files::PATCHES_100_REL),
         Version::NtscU0_01    => Some(rel_files::PATCHES_101_REL),
         Version::NtscU0_02    => Some(rel_files::PATCHES_102_REL),
@@ -13380,17 +14672,25 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
     Ok(())
 }
 
-fn export_logbook(gc_disc: &mut structs::GcDisc, config: &PatchConfig, _version: Version)
+fn export_logbook(gc_disc: &mut structs::GcDisc, config: &PatchConfig)
     -> Result<(), String>
 {
     let filenames = [
+        "AudioGrp.pak",
         "Metroid1.pak",
-        "Metroid2.pak",
         "Metroid3.pak",
-        "Metroid4.pak",
-        "metroid5.pak",
         "Metroid6.pak",
+        "Metroid8.pak",
+        "MiscData.pak",
+        "SamGunFx.pak",
+        "metroid5.pak",
+        "GGuiSys.pak",
+        "Metroid2.pak",
+        "Metroid4.pak",
         "Metroid7.pak",
+        "MidiData.pak",
+        "NoARAM.pak",
+        "SamusGun.pak",
     ];
 
     let mut strgs = Vec::<Vec<String>>::new();
@@ -13452,7 +14752,18 @@ fn export_logbook(gc_disc: &mut structs::GcDisc, config: &PatchConfig, _version:
     Ok(())
 }
 
-fn export_assets(_gc_disc: &mut structs::GcDisc, config: &PatchConfig)
+fn export_asset(asset_dir: &str, filename: String, bytes: Vec<u8>) -> Result<(), String>
+{
+    let mut file = File::create(format!("{}/{}", asset_dir, filename))
+        .map_err(|e| format!("Failed to create asset file: {}", e))?;
+
+    file.write_all(&bytes)
+        .map_err(|e| format!("Failed to write asset file: {}", e))?;
+
+    Ok(())
+}
+
+fn export_assets(gc_disc: &mut structs::GcDisc, config: &PatchConfig)
     -> Result<(), String>
 {
     let default_dir = &"assets".to_string();
@@ -13467,53 +14778,23 @@ fn export_assets(_gc_disc: &mut structs::GcDisc, config: &PatchConfig)
         }
     }
 
-    let bytes = include_bytes!("../extra_assets/phazon_suit_texure_1.txtr");
-    let filename = "phazon_suit_texure_1.txtr";
-    let mut file = File::create(format!("{}/{}", asset_dir, filename))
-        .map_err(|e| format!("Failed to create asset file: {}", e))?;
-    file.write_all(bytes)
-        .map_err(|e| format!("Failed to write asset file: {}", e))?;
+    let (_, _, _, _, _, _, _, _, custom_assets) =
+        collect_game_resources(gc_disc, None, &config)?;
 
-    let bytes = include_bytes!("../extra_assets/phazon_suit_texure_2.txtr");
-    let filename = "phazon_suit_texure_2.txtr";
-    let mut file = File::create(format!("{}/{}", asset_dir, filename))
-        .map_err(|e| format!("Failed to create asset file: {}", e))?;
-    file.write_all(bytes)
-        .map_err(|e| format!("Failed to write asset file: {}", e))?;
+    for resource in custom_assets {
+        let mut bytes = vec![];
+        resource.write_to(&mut bytes).unwrap();
 
-    let bytes = include_bytes!("../extra_assets/nothing_texture.txtr"     );
-    let filename = "nothing_texture.txtr";
-    let mut file = File::create(format!("{}/{}", asset_dir, filename))
-        .map_err(|e| format!("Failed to create asset file: {}", e))?;
-    file.write_all(bytes)
-        .map_err(|e| format!("Failed to write asset file: {}", e))?;
+        let filename = custom_asset_filename(resource.resource_info(0));
 
-    let bytes = include_bytes!("../extra_assets/shiny-missile0.txtr"      );
-    let filename = "shiny-missile0.txtr";
-    let mut file = File::create(format!("{}/{}", asset_dir, filename))
-        .map_err(|e| format!("Failed to create asset file: {}", e))?;
-    file.write_all(bytes)
-        .map_err(|e| format!("Failed to write asset file: {}", e))?;
-
-    let bytes = include_bytes!("../extra_assets/shiny-missile1.txtr"      );
-    let filename = "shiny-missile1.txtr";
-    let mut file = File::create(format!("{}/{}", asset_dir, filename))
-        .map_err(|e| format!("Failed to create asset file: {}", e))?;
-    file.write_all(bytes)
-        .map_err(|e| format!("Failed to write asset file: {}", e))?;
-
-    let bytes = include_bytes!("../extra_assets/shiny-missile2.txtr"      );
-    let filename = "shiny-missile2.txtr";
-    let mut file = File::create(format!("{}/{}", asset_dir, filename))
-        .map_err(|e| format!("Failed to create asset file: {}", e))?;
-    file.write_all(bytes)
-        .map_err(|e| format!("Failed to write asset file: {}", e))?;
+        export_asset(asset_dir, filename, bytes)?;
+    }
 
     Ok(())
 }
 
 
-fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchConfig, version: Version, audio_override_patches: &'r Vec<AudioOverridePatch>)
+fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchConfig, audio_override_patches: &'r Vec<AudioOverridePatch>)
     -> Result<(), String>
 {
     let morph_ball_size = config.ctwk_config.morph_ball_size.clone().unwrap_or(1.0);
@@ -13607,7 +14888,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
             items.push(PickupType::EnergyTank);
 
             for room_info in rooms.iter() {
-                let key = room_info.name.trim();
+                let key = room_info.name().trim();
                 if level.rooms.get(key).is_none() {
                     level.rooms.insert(key.to_string(), RoomConfig {
                             pickups: Some(vec![]),
@@ -13629,8 +14910,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             repositions: None,
                             audio_override: None,
                             delete_ids: None,
-                            disabled_layers: None,
-                            enabled_layers: None,
+                            layers: None,
                             fog: None,
                             triggers: None,
                             hudmemos: None,
@@ -13639,6 +14919,17 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             initial_enviornmental_effect: None,
                             initial_thermal_heat_level: None,
                             map_default_state: Some(structs::MapaObjectVisibilityMode::MapStationOrVisit),
+                            add_connections: None,
+                            remove_connections: None,
+                            relays: None,
+                            cutscene_skip_fns: None,
+                            timers: None,
+                            actor_keyframes: None,
+                            spawn_points: None,
+                            special_functions: None,
+                            actor_rotates: None,
+                            streamed_audios: None,
+                            layer_objs: None,
                         }
                     );
                 }
@@ -13651,6 +14942,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                     level.rooms.get_mut(key).unwrap().pickups = Some(
                         vec![
                             PickupConfig {
+                                id: None,
                                 pickup_type: items.choose(&mut rng).unwrap().name().to_string(),
                                 curr_increase: None,
                                 max_increase: None,
@@ -13665,6 +14957,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                 show_icon: None,
                                 invisible_and_silent: None,
                                 thermal_only: None,
+                                scale: None,
                             }
                         ]
                     );
@@ -13710,8 +15003,8 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         }
     };
 
-    let (game_resources, pickup_hudmemos, pickup_scans, extra_scans, savw_scans_to_add, local_savw_scans_to_add, savw_scan_logbook_category, extern_models) =
-        collect_game_resources(gc_disc, starting_memo, &config, version)?;
+    let (game_resources, pickup_hudmemos, pickup_scans, extra_scans, savw_scans_to_add, local_savw_scans_to_add, savw_scan_logbook_category, extern_models, _) =
+        collect_game_resources(gc_disc, starting_memo, &config)?;
 
     let extern_models = &extern_models;
     let game_resources = &game_resources;
@@ -13724,6 +15017,31 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     let savw_scans_to_add = &savw_scans_to_add;
     let local_savw_scans_to_add = &local_savw_scans_to_add;
     let savw_scan_logbook_category = &savw_scan_logbook_category;
+
+    // simplify iteration of additional patches
+    let mut other_patches: Vec<((&[u8], u32), &RoomConfig)> = Vec::new();
+    for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {
+        let world = World::from_pak(pak_name).unwrap();
+
+        let level = level_data.get(world.to_json_key());
+        if level.is_none() {
+            continue;
+        }
+
+        for room_info in rooms.iter() {
+            let room_name = room_info.name().trim();
+            let mrea_id = room_info.room_id.to_u32();
+
+            let room_config = level.unwrap().rooms.get(room_name);
+            if room_config.is_none() {
+                continue;
+            }
+            let room_config = room_config.unwrap();
+
+            other_patches.push(((pak_name.as_bytes(), mrea_id), room_config));
+        }
+    }
+    let other_patches = &other_patches;
 
     // Remove unused artifacts from logbook
     let mut savw_to_remove_from_logbook: Vec<u32> = Vec::new();
@@ -13837,7 +15155,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     }
 
     // Patch Tweaks.pak
-    if version == Version::NtscK {
+    if config.version == Version::NtscK {
         patcher.add_resource_patch(
             (&[ b"Tweaks.Pak" ], 0x37CE7FD6, FourCC::from_bytes(b"CTWK")), // Game.CTWK
             |res| patch_ctwk_game(res, &config.ctwk_config),
@@ -13925,6 +15243,13 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         |ps, area| fix_artifact_of_truth_requirements(ps, area, config)
     );
 
+    if config.skip_ridley {
+        patcher.add_scly_patch(
+            resource_info!("07_stonehenge.MREA").into(),
+            patch_artifact_temple_activate_portal_conditions
+        );
+    }
+
     // Patch end sequence (player size)
     if config.ctwk_config.player_size.is_some() {
         patcher.add_scly_patch(
@@ -13964,28 +15289,6 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         ),
     );
 
-    if config.qol_cutscenes == CutsceneMode::Competitive {
-        patch_qol_competitive_cutscenes(&mut patcher, version);
-    }
-
-    if config.qol_cutscenes == CutsceneMode::Minor || config.qol_cutscenes == CutsceneMode::Major {
-        patch_qol_minor_cutscenes(&mut patcher, version);
-    }
-
-    if config.qol_cutscenes == CutsceneMode::Major {
-        patch_qol_major_cutscenes(&mut patcher);
-        if !config.shuffle_pickup_position {
-            patcher.add_scly_patch(
-                resource_info!("07_ice_chapel.MREA").into(), // chapel of the elders
-                move |ps, area| patch_remove_cutscenes(ps, area,
-                    vec![0x000E0057], // Faster adult breakout
-                    vec![0x000E019D, 0x000E019B], // keep fight start reposition for wavesun
-                    true,
-                ),
-            );
-        }
-    }
-
     {
         patcher.add_scly_patch(
             resource_info!("01_over_mainplaza.MREA").into(),
@@ -13995,6 +15298,84 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
             resource_info!("07_mines_electric.MREA").into(),
             move |ps, area| patch_debug_trigger_2(ps, area),
         );
+    }
+
+    if config.missile_station_pb_refill {
+        patcher.add_scly_patch(
+            resource_info!("17_chozo_bowling.MREA").into(), // HoTE
+            move |ps, area| patch_add_pb_refill(ps, area, 0x0034025E),
+        );
+        patcher.add_scly_patch(
+            resource_info!("00_mines_savestation_b.MREA").into(), // Mines Missile Station
+            move |ps, area| patch_add_pb_refill(ps, area, 0x002600C6),
+        );
+        patcher.add_scly_patch(
+            resource_info!("missilerechargestation_crater.MREA").into(), // Crater Missile Station
+            move |ps, area| patch_add_pb_refill(ps, area, 0x00030014),
+        );
+    }
+
+    let boss_permadeath = {
+        let mut boss_permadeath = false;
+        if level_data.contains_key(World::ImpactCrater.to_json_key())
+        {
+            let transports = &level_data.get(World::ImpactCrater.to_json_key()).unwrap().transports;
+            if transports.contains_key("Essence Dead Cutscene")
+            {
+                let destination = &transports.get("Essence Dead Cutscene").unwrap();
+                if destination.trim().to_lowercase() != "credits"
+                {
+                    boss_permadeath = true;
+                }
+            }
+        }
+
+        boss_permadeath
+    };
+
+    if config.qol_game_breaking {
+        patcher.add_scly_patch(
+            resource_info!("07_intro_reactor.MREA").into(),
+            move |ps, area| patch_pq_permadeath(ps, area)
+        );
+
+        if boss_permadeath {
+            patcher.add_scly_patch(
+                resource_info!("03a_crater.MREA").into(),
+                move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
+            );
+            patcher.add_scly_patch(
+                resource_info!("03b_crater.MREA").into(),
+                move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
+            );
+            patcher.add_scly_patch(
+                resource_info!("03c_crater.MREA").into(),
+                move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
+            );
+            patcher.add_scly_patch(
+                resource_info!("03d_crater.MREA").into(),
+                move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
+            );
+            patcher.add_scly_patch(
+                resource_info!("03e_crater.MREA").into(),
+                move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
+            );
+            patcher.add_scly_patch(
+                resource_info!("03e_f_crater.MREA").into(), // subchamber five
+                move |ps, area| patch_subchamber_five_essence_permadeath(ps, area)
+            );
+            patcher.add_scly_patch(
+                resource_info!("03f_crater.MREA").into(), // lair
+                move |ps, area| patch_add_dock_teleport(ps, area,
+                    [42.955109, -287.172638, -278.084354], // source position
+                    [75.0, 75.0, 50.0], // source scale
+                    0, // destination dock #
+                    Some([41.5365,-287.8581,-284.6025]),
+                    None,
+                    None,
+                )
+            );
+        }
     }
 
     // Patch pickups
@@ -14033,12 +15414,10 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 );
             }
 
-            if config.force_vanilla_layout {continue;}
-
             // Remove objects patch
             {
                 // this is a hack because something is getting messed up with the MREA objects if this patch never gets used
-                let remove_otrs = config.qol_cosmetic && !(config.shuffle_pickup_position && room_info.room_id.to_u32() == 0x40C548E9);
+                let remove_otrs = config.qol_cosmetic && !(config.shuffle_pickup_position && room_info.room_id.to_u32() == 0x40C548E9) && !config.force_vanilla_layout;
 
                 patcher.add_scly_patch(
                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
@@ -14066,7 +15445,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
 
                 let level = level_data.get(world.to_json_key());
                 if level.is_some() {
-                    let room = level.unwrap().rooms.get(room_info.name.trim());
+                    let room = level.unwrap().rooms.get(room_info.name().trim());
                     if room.is_some() {
                         let room = room.clone().unwrap();
                         if room.pickups.is_some() {
@@ -14117,9 +15496,272 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         ps,
                                         area,
                                         game_resources,
-                                        platform.position,
-                                        platform.rotation.unwrap_or([0.0, 0.0, 0.0]),
-                                        platform.alt_platform.unwrap_or(false),
+                                        platform.clone(),
+                                    ),
+                                );
+                            }
+                        }
+
+                        if room.relays.is_some() {
+                            for relay_config in room.relays.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_relay(
+                                        ps,
+                                        area,
+                                        relay_config.clone(),
+                                    ),
+                                );
+                            }
+                        }
+
+                        if room.spawn_points.is_some() {
+                            for spawn_point_config in room.spawn_points.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_spawn_point(
+                                        ps,
+                                        area,
+                                        spawn_point_config.clone(),
+                                    ),
+                                );
+                            }
+                        }
+
+                        if room.triggers.is_some() {
+                            for trigger_config in room.triggers.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_trigger(
+                                        ps,
+                                        area,
+                                        trigger_config.clone(),
+                                    ),
+                                );
+                            }
+                        }
+
+                        if room.special_functions.is_some() {
+                            for special_fn_config in room.special_functions.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_special_fn(
+                                        ps,
+                                        area,
+                                        special_fn_config.clone(),
+                                    ),
+                                );
+                            }
+                        }
+
+                        if room.actor_rotates.is_some() {
+                            for config in room.actor_rotates.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_actor_rotate_fn(
+                                        ps,
+                                        area,
+                                        config.clone(),
+                                    ),
+                                );
+                            }
+                        }
+
+                        if room.streamed_audios.is_some() {
+                            for config in room.streamed_audios.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_streamed_audio(
+                                        ps,
+                                        area,
+                                        config.clone(),
+                                    ),
+                                );
+                            }
+                        }
+
+                        if room.cutscene_skip_fns.is_some() {
+                            for special_fn_id in room.cutscene_skip_fns.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_cutscene_skip_fn(
+                                        ps,
+                                        area,
+                                        *special_fn_id,
+                                    ),
+                                );
+                            }
+                        }
+
+                        let do_cutscene_skip_patches = {
+                            if room.cutscene_skip_fns.is_some() {
+                                true
+                            } else if room.special_functions.is_some() {
+                                room.special_functions
+                                    .as_ref()
+                                    .unwrap()
+                                    .iter()
+                                    .any(|config| config.type_ == SpecialFunctionType::CinematicSkip)
+                            } else {
+                                false
+                            }
+                        };
+
+                        if do_cutscene_skip_patches {
+                            /* Some rooms need to be update to play nicely with skippable cutscenes */
+                            match room_info.room_id.to_u32() {
+                                0xC9D52BBC => { // energy core
+                                    for id in [2883635, 2884015]
+                                    {
+                                        patcher.add_scly_patch(
+                                            (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                            move |ps, area| patch_edit_water(
+                                                ps,
+                                                area,
+                                                id,
+                                                2.0,
+                                                0.7,
+                                            ),
+                                        );
+                                    }
+                                },
+                                0xB2701146 => { // landing site
+                                    patcher.add_scly_patch(
+                                        (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                        move |ps, area| patch_add_camera(
+                                            ps,
+                                            area,
+                                            0x5,
+                                            [-367.851898, 375.47049, -21.39986], // same as 0x1D8
+                                            [11.490609, 0.0, 18.759502].into(),
+                                            4.5,
+                                            [
+                                                0,
+                                                0,
+                                                1,
+                                                0,
+                                                1,
+                                                0,
+                                                0,
+                                            ].into(),
+                                            true
+                                        ),
+                                    );
+                                },
+                                0x6655F51E => { // chozo ice temple
+                                    for id in [0x80171, 0x80210]
+                                    {
+                                        patcher.add_scly_patch(
+                                            (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                            move |ps, area| patch_edit_camera_keyframe(
+                                                ps,
+                                                area,
+                                                id,
+                                            ),
+                                        );
+                                    }
+                                },
+                                0x9A0A03EB => { // sunchamber
+                                    patcher.add_scly_patch(
+                                        (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                        move |ps, area| patch_sunchamber_cutscene_hack(
+                                            ps, area,
+                                        ),
+                                    );
+                                },
+                                0x70181194 => { // quarantine cave
+                                    patcher.add_scly_patch(
+                                        (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                        move |ps, area| patch_add_boss_health_bar(
+                                            ps,
+                                            area,
+                                            0x00100000,
+                                        ),
+                                    );
+                                },
+                                0xA7AC009B => { // subchamber four
+                                    patcher.add_scly_patch(
+                                        (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                        move |ps, area| patch_add_boss_health_bar(
+                                            ps,
+                                            area,
+                                            696969,
+                                        ),
+                                    );
+                                },
+                                0x77714498 => { // subchamber five
+                                    patcher.add_scly_patch(
+                                        (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                        move |ps, area| patch_move_camera(
+                                            ps,
+                                            area,
+                                            0x000A0028,
+                                            [46.805, -245.6632, -194.9795],
+                                        ),
+                                    );
+                                },
+                                _ => {},
+                            }
+
+                            let room_id = room_info.room_id.to_u32();
+                            if is_teleporter(room_id) || vec![
+                                0x90709AAC, // vent shaft
+                                0x9A0A03EB, // sunchamber
+                            ].contains(&room_id) {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_id),
+                                    move |ps: &mut PatcherState, area| patch_add_camera_filter_key_frame(
+                                        ps,
+                                        area,
+                                        0xA455,
+                                    ),
+                                );
+
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_camera(
+                                        ps,
+                                        area,
+                                        0xA2C2A,
+                                        [0.0, 0.0, -1000.0],
+                                        None,
+                                        512.0,
+                                        [
+                                            0,
+                                            0,
+                                            0,
+                                            0,
+                                            1,
+                                            0,
+                                            0,
+                                        ].into(),
+                                        false
+                                    ),
+                                );
+                            }
+                        }
+
+                        if room.actor_keyframes.is_some() {
+                            for actor_key_frame_config in room.actor_keyframes.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_actor_key_frame(
+                                        ps,
+                                        area,
+                                        actor_key_frame_config.clone(),
+                                    ),
+                                );
+                            }
+                        }
+
+                        if room.timers.is_some() {
+                            for timer in room.timers.as_ref().unwrap() {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_timer(
+                                        ps,
+                                        area,
+                                        timer.clone(),
                                     ),
                                 );
                             }
@@ -14161,9 +15803,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         ps,
                                         area,
                                         game_resources,
-                                        block.position,
-                                        block.scale.unwrap_or([1.0, 1.0, 1.0]),
-                                        block.texture.unwrap_or(GenericTexture::Grass),
+                                        block.clone(),
                                     ),
                                 );
                             }
@@ -14176,7 +15816,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                     move |ps, area| patch_add_escape_sequence(
                                         ps,
                                         area,
-                                        // es.time_s,
+                                        es.time.unwrap_or(0.02),
                                         es.start_trigger_pos,
                                         es.start_trigger_scale,
                                         es.stop_trigger_pos,
@@ -14212,9 +15852,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         ps,
                                         area,
                                         game_resources,
-                                        lock_on.position,
-                                        lock_on.is_grapple.unwrap_or(false),
-                                        lock_on.no_lock.unwrap_or(false),
+                                        lock_on.clone(),
                                     ),
                                 );
                             }
@@ -14268,6 +15906,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 let pickup = {
                     if idx >= pickups_config_len {
                         PickupConfig {
+                            id: None,
                             pickup_type: "Nothing".to_string(),
                             curr_increase: Some(0),
                             max_increase: Some(0),
@@ -14282,6 +15921,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             show_icon: None,
                             invisible_and_silent: None,
                             thermal_only: None,
+                            scale: None,
                         }
                     } else {
                         pickups[idx].clone() // TODO: cloning is suboptimal
@@ -14296,11 +15936,18 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 };
 
                 let skip_hudmemos = {
-                    if config.qol_cosmetic {
-                        !(pickup.modal_hudmemo.clone().unwrap_or(false)) // make them modal if the client specified
-                    } else {
-                        false // leave them as they are in vanilla, modal
-                    }
+                    let modal_hudmemo = pickup.modal_hudmemo.as_ref();
+
+                    let modal_hudmemo = match modal_hudmemo {
+                        Some(modal_hudmemo) => {
+                            *modal_hudmemo
+                        },
+                        None => {
+                            !config.qol_cosmetic
+                        }
+                    };
+
+                    !modal_hudmemo
                 };
 
                 let hudmemo_delay = {
@@ -14335,7 +15982,8 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             config.shuffle_pickup_position,
                             config.seed + seed,
                             !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray,
-                            version,
+                            config.version,
+                            config.force_vanilla_layout,
                     )
                 );
 
@@ -14396,7 +16044,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                         config.shuffle_pickup_pos_all_rooms,
                         config.seed,
                         !config.starting_items.combat_visor && !config.starting_items.scan_visor && !config.starting_items.thermal_visor && !config.starting_items.xray,
-                        version,
+                        config.version,
                     ),
                 );
 
@@ -14480,7 +16128,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
 
                     // Some doors have their object IDs changed in non NTSC-U versions
                     // NTSC-K is based on NTSC-U and shouldn't be part of those changes
-                    if version == Version::Pal || version == Version::NtscJ {
+                    if config.version == Version::Pal || config.version == Version::NtscJ {
                         // Tallon Overworld - Temple Security Station
                         if mrea_id == 0xBDB1FCAC {
                             if local_dl.door_location.unwrap().instance_id == 0x00070055 {
@@ -14500,7 +16148,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                     }
 
                     if local_dl.door_location.is_none() {
-                        panic!("Tried to modify shield of door in {} on a dock which does not have a door", room_info.name);
+                        panic!("Tried to modify shield of door in {} on a dock which does not have a door", room_info.name());
                     }
 
                     // Patch door color and blast shield //
@@ -14557,6 +16205,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             door_type,
                             blast_shield_type,
                             game_resources,
+                            config.door_open_mode,
                         )
                     );
 
@@ -14581,7 +16230,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
 
                         patcher.add_resource_patch(
                             (&[pak_name.as_bytes()], room_info.mapa_id.to_u32(), b"MAPA".into()),
-                            move |res| patch_map_door_icon(res, door_location.clone(), map_object_type)
+                            move |res| patch_map_door_icon(res, door_location.clone(), map_object_type, room_info.room_id.to_u32())
                         );
                     }
 
@@ -14589,14 +16238,14 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 }
 
                 if maybe_door_location.is_none() {
-                    panic!("Could not find dock #{} in '{}'", dock_num, room_info.name);
+                    panic!("Could not find dock #{} in '{}'", dock_num, room_info.name());
                 }
                 let door_location = maybe_door_location.unwrap();
 
                 // If specified, patch this door's connection
                 if door_config.destination.is_some() {
                     if door_location.door_location.is_none() {
-                        panic!("Tried to shuffle door destination in {} on a dock which does not have a door", room_info.name);
+                        panic!("Tried to shuffle door destination in {} on a dock which does not have a door", room_info.name());
                     }
 
                     // Get the resource info for premade scan point with destination info
@@ -14611,7 +16260,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                     // Get info about the destination room
                     let destination = door_config.destination.clone().unwrap();
                     let destination_room = SpawnRoomData::from_str(format!("{}:{}", world.to_str(), destination.room_name).as_str());
-                    let source_room = SpawnRoomData::from_str(format!("{}:{}", world.to_str(), room_info.name).as_str());
+                    let source_room = SpawnRoomData::from_str(format!("{}:{}", world.to_str(), room_info.name()).as_str());
 
                     if destination_room.mrea == source_room.mrea {
                         panic!("Dock destination cannot be in same room");
@@ -14717,6 +16366,22 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     );
     let skip_frigate = skip_frigate && starting_room.mlvl != World::FrigateOrpheon.mlvl();
 
+    match config.qol_cutscenes {
+        CutsceneMode::Original => {},
+        CutsceneMode::Skippable => {},
+        CutsceneMode::SkippableCompetitive => {},
+        CutsceneMode::Competitive => {
+            patch_qol_competitive_cutscenes(&mut patcher, config.version, skip_frigate);
+        },
+        CutsceneMode::Minor => {
+            patch_qol_minor_cutscenes(&mut patcher, config.version);
+        },
+        CutsceneMode::Major => {
+            patch_qol_minor_cutscenes(&mut patcher, config.version);
+            patch_qol_major_cutscenes(&mut patcher, config.shuffle_pickup_position);
+        },
+    }
+
     let mut smoother_teleports = false;
     for (_, level) in level_data.iter() {
         if smoother_teleports { break; }
@@ -14738,13 +16403,15 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
             |file| patch_dol(
                 file,
                 starting_room,
-                version,
+                config.version,
                 config,
                 remove_ball_color,
                 true,
                 config.skip_splash_screens,
                 config.escape_sequence_counts_up,
                 config.enable_ice_traps,
+                config.uuid,
+                config.shoot_in_grapple,
             )
         );
 
@@ -14765,13 +16432,15 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
             |file| patch_dol(
                 file,
                 starting_room,
-                version,
+                config.version,
                 config,
                 remove_ball_color,
                 false,
                 config.skip_splash_screens,
                 config.escape_sequence_counts_up,
                 config.enable_ice_traps,
+                config.uuid,
+                config.shoot_in_grapple,
             )
         );
     }
@@ -14792,6 +16461,14 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
             patcher.add_scly_patch(
                 resource_info!("02_intro_elevator.MREA").into(),
                 patch_move_item_loss_scan,
+            );
+        }
+
+        // always set Parasite Queen health to its NTSC health
+        if [Version::Pal, Version::NtscJ, Version::NtscJTrilogy, Version::NtscUTrilogy, Version::PalTrilogy].contains(&config.version) {
+            patcher.add_scly_patch(
+                resource_info!("07_intro_reactor.MREA").into(),
+                move |ps, area| patch_pq_health(ps, area, 480.0),
             );
         }
     }
@@ -14837,7 +16514,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     }
     patcher.add_resource_patch(
         resource_info!("STRG_Main.STRG").into(),// 0x0552a456
-        |res| patch_main_strg(res, version, &config.main_menu_message)
+        |res| patch_main_strg(res, config.version, &config.main_menu_message)
     );
     patcher.add_resource_patch(
         resource_info!("FRME_NewFileSelect.FRME").into(),
@@ -14845,7 +16522,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     );
     patcher.add_resource_patch(
         resource_info!("STRG_Credits.STRG").into(),
-        |res| patch_credits(res, version, config, &level_data)
+        |res| patch_credits(res, config.version, config, &level_data)
     );
 
     if config.results_string.is_some() {
@@ -14871,6 +16548,10 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
 
     if config.patch_power_conduits {
         patch_power_conduits(&mut patcher);
+    }
+
+    if config.qol_general {
+        patch_weaken_conduits(&mut patcher);
     }
 
     if config.remove_mine_security_station_locks {
@@ -15086,6 +16767,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
             &config.starting_items,
             show_starting_memo,
             &game_resources,
+            0x00050140, // item loss spawn in item loss elevator
         )
     );
 
@@ -15098,6 +16780,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 &config.item_loss_items,
                 false,
                 &game_resources,
+                0x00050002, // default spawn in item loss elevator
             )
         );
 
@@ -15119,13 +16802,6 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 &savw_to_remove_from_logbook,
             ),
         );
-
-        if config.disable_item_loss {
-            patcher.add_scly_patch(
-                resource_info!("02_intro_elevator.MREA").into(),
-                patch_disable_item_loss
-            );
-        }
 
         if !config.force_vanilla_layout {
             // Patch frigate so that it can be explored any direction without crashing or soft-locking
@@ -15159,9 +16835,16 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                     ps,
                     res,
                     game_resources,
-                    [43.0, -194.0, -44.0],
-                    [0.0, 0.0, 0.0],
-                    false,
+                    PlatformConfig {
+                        platform_type: Some(PlatformType::Metal),
+                        position: [43.0, -194.0, -44.0],
+                        id: None,
+                        alt_platform: None,
+                        rotation: None,
+                        xray_only: None,
+                        thermal_only: None,
+                        layer: None,
+                    },
                 ),
             );
             patcher.add_scly_patch(
@@ -15170,9 +16853,16 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                     ps,
                     res,
                     game_resources,
-                    [39.0, -186.0, -41.0],
-                    [0.0, 0.0, 0.0],
-                    false,
+                    PlatformConfig {
+                        platform_type: Some(PlatformType::Metal),
+                        position: [39.0, -186.0, -41.0],
+                        id: None,
+                        alt_platform: None,
+                        rotation: None,
+                        xray_only: None,
+                        thermal_only: None,
+                        layer: None,
+                    },
                 ),
             );
             patcher.add_scly_patch(
@@ -15181,9 +16871,16 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                     ps,
                     res,
                     game_resources,
-                    [36.0, -181.0, -39.0],
-                    [0.0, 0.0, 0.0],
-                    false,
+                    PlatformConfig {
+                        platform_type: Some(PlatformType::Metal),
+                        position: [36.0, -181.0, -39.0],
+                        id: None,
+                        alt_platform: None,
+                        rotation: None,
+                        xray_only: None,
+                        thermal_only: None,
+                        layer: None,
+                    },
                 ),
             );
             patcher.add_scly_patch(
@@ -15192,9 +16889,16 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                     ps,
                     res,
                     game_resources,
-                    [36.0, -192.0, -39.0],
-                    [0.0, 0.0, 0.0],
-                    false,
+                    PlatformConfig {
+                        platform_type: Some(PlatformType::Metal),
+                        position: [36.0, -192.0, -39.0],
+                        id: None,
+                        alt_platform: None,
+                        rotation: None,
+                        xray_only: None,
+                        thermal_only: None,
+                        layer: None,
+                    },
                 ),
             );
         }
@@ -15215,74 +16919,111 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     patch_poison_damage_per_sec(&mut patcher, config.poison_damage_per_sec);
 
     // Always patch out the white flash for photosensitive epileptics
-    if version == Version::NtscU0_00 {
+    if config.version == Version::NtscU0_00 {
         patcher.add_scly_patch(
             resource_info!("03f_crater.MREA").into(),
             patch_essence_cinematic_skip_whitescreen
         );
     }
-    if [Version::NtscU0_00, Version::NtscU0_02, Version::Pal].contains(&version) {
+    if [Version::NtscU0_00, Version::NtscU0_02, Version::Pal].contains(&config.version) {
         patcher.add_scly_patch(
             resource_info!("03f_crater.MREA").into(),
             patch_essence_cinematic_skip_nomusic
         );
     }
 
-    let mut boss_permadeath = false;
-    if level_data.contains_key(World::ImpactCrater.to_json_key())
-    {
-        let transports = &level_data.get(World::ImpactCrater.to_json_key()).unwrap().transports;
-        if transports.contains_key("Essence Dead Cutscene")
-        {
-            let destination = &transports.get("Essence Dead Cutscene").unwrap();
-            if destination.trim().to_lowercase() != "credits"
-            {
-                boss_permadeath = true;
-            }
-        }
+    if [Version::Pal, Version::NtscJ, Version::NtscJTrilogy, Version::NtscUTrilogy, Version::PalTrilogy].contains(&config.version) {
+        // always set Meta Ridley health to its NTSC health
+        patcher.add_scly_patch(
+            resource_info!("07_stonehenge.MREA").into(),
+            |ps, area| patch_ridley_health(ps, area, config.version, 2000.0)
+        );
+
+        // always set Meta Ridley damage properties to NTSC values
+        patcher.add_scly_patch(
+            resource_info!("07_stonehenge.MREA").into(),
+            |ps, area| patch_ridley_damage_props(
+                ps, area, config.version,
+                DamageInfo {
+                    weapon_type: 9, // DamageType::AI
+                    damage: 20.0,
+                    radius: 0.0,
+                    knockback_power: 10.0,
+                },
+                vec![
+                    DamageInfo {
+                        weapon_type: 0, // DamageType::Power
+                        damage: 15.0,
+                        radius: 0.0,
+                        knockback_power: 10.0,
+                    },
+                    DamageInfo {
+                        weapon_type: 0, // DamageType::Power
+                        damage: 20.0,
+                        radius: 4.5,
+                        knockback_power: 5.0,
+                    },
+                    DamageInfo {
+                        weapon_type: 9, // DamageType::AI
+                        damage: 20.0,
+                        radius: 7.0,
+                        knockback_power: 5.0,
+                    },
+                    DamageInfo {
+                        weapon_type: 9, // DamageType::AI
+                        damage: 40.0,
+                        radius: 0.0,
+                        knockback_power: 15.0,
+                    },
+                    DamageInfo {
+                        weapon_type: 9, // DamageType::AI
+                        damage: 80.0,
+                        radius: 0.0,
+                        knockback_power: 15.0,
+                    },
+                    DamageInfo {
+                        weapon_type: 9, // DamageType::AI
+                        damage: 40.0,
+                        radius: 0.0,
+                        knockback_power: 10.0,
+                    },
+                    DamageInfo {
+                        weapon_type: 0, // DamageType::Power
+                        damage: 50.0,
+                        radius: 0.0,
+                        knockback_power: 10.0,
+                    },
+                    DamageInfo {
+                        weapon_type: 0, // DamageType::Power
+                        damage: 25.0,
+                        radius: 0.0,
+                        knockback_power: 10.0,
+                    },
+                    DamageInfo {
+                        weapon_type: 9, // DamageType::AI
+                        damage: 40.0,
+                        radius: 0.0,
+                        knockback_power: 15.0,
+                    },
+                ].into(),
+                25.0
+            )
+        );
+
+        // always set Essence health to its NTSC health
+        patcher.add_scly_patch(
+            resource_info!("03f_crater.MREA").into(),
+            |ps, area| patch_essence_health(ps, area, 36667.0)
+        );
     }
 
     if config.qol_game_breaking {
-        patch_qol_game_breaking(&mut patcher, version, config.force_vanilla_layout, player_size < 0.9);
+        patch_qol_game_breaking(&mut patcher, config.version, config.force_vanilla_layout, player_size < 0.9);
+
         if boss_permadeath {
             patcher.add_scly_patch(
-                resource_info!("03a_crater.MREA").into(),
-                move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
-            );
-            patcher.add_scly_patch(
-                resource_info!("03b_crater.MREA").into(),
-                move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
-            );
-            patcher.add_scly_patch(
-                resource_info!("03c_crater.MREA").into(),
-                move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
-            );
-            patcher.add_scly_patch(
-                resource_info!("03d_crater.MREA").into(),
-                move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
-            );
-            patcher.add_scly_patch(
-                resource_info!("03e_crater.MREA").into(),
-                move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
-            );
-            patcher.add_scly_patch(
                 resource_info!("03f_crater.MREA").into(), // lair
                 move |ps, area| patch_final_boss_permadeath(ps, area, game_resources)
-            );
-            patcher.add_scly_patch(
-                resource_info!("03e_f_crater.MREA").into(), // subchamber five
-                move |ps, area| patch_subchamber_five_essence_permadeath(ps, area)
-            );
-            patcher.add_scly_patch(
-                resource_info!("03f_crater.MREA").into(), // lair
-                move |ps, area| patch_add_dock_teleport(ps, area,
-                    [42.955109, -287.172638, -278.084354], // source position
-                    [75.0, 75.0, 50.0], // source scale
-                    0, // destination dock #
-                    Some([41.5365,-287.8581,-284.6025]),
-                    None,
-                    None,
-                )
             );
         }
     }
@@ -15323,7 +17064,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     }
 
     if !config.force_vanilla_layout {
-        patch_qol_logical(&mut patcher, config, version);
+        patch_qol_logical(&mut patcher, config, config.version);
     }
 
     for (_boss_name, scale) in config.boss_sizes.iter() {
@@ -15405,19 +17146,19 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         {
             patcher.add_scly_patch(
                 resource_info!("07_stonehenge.MREA").into(),
-                move |_ps, area| patch_ridley_scale(_ps, area, version, scale)
+                move |_ps, area| patch_ridley_scale(_ps, area, config.version, scale)
             );
             patcher.add_scly_patch(
                 resource_info!("01_ice_plaza.MREA").into(),
-                move |_ps, area| patch_ridley_scale(_ps, area, version, scale)
+                move |_ps, area| patch_ridley_scale(_ps, area, config.version, scale)
             );
             patcher.add_scly_patch(
                 resource_info!("09_intro_ridley_chamber.MREA").into(),
-                move |_ps, area| patch_ridley_scale(_ps, area, version, scale)
+                move |_ps, area| patch_ridley_scale(_ps, area, config.version, scale)
             );
             patcher.add_scly_patch(
                 resource_info!("01_intro_hanger.MREA").into(),
-                move |_ps, area| patch_ridley_scale(_ps, area, version, scale)
+                move |_ps, area| patch_ridley_scale(_ps, area, config.version, scale)
             );
         }
         else if boss_name == "exo" || boss_name == "metroidprime" || boss_name == "metroidprimeexoskeleton"
@@ -15478,15 +17219,33 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     }
 
     // Edit Strings
+    let paks = [
+        "AudioGrp.pak",
+        "Metroid1.pak",
+        "Metroid3.pak",
+        "Metroid6.pak",
+        "Metroid8.pak",
+        "MiscData.pak",
+        "SamGunFx.pak",
+        "metroid5.pak",
+        "GGuiSys.pak",
+        "Metroid2.pak",
+        "Metroid4.pak",
+        "Metroid7.pak",
+        "MidiData.pak",
+        "NoARAM.pak",
+        "SamusGun.pak",
+    ];
+
     for (strg, replacement_strings) in strgs {
         let id = match strg.parse::<u32>() {
             Ok(n) => n,
             Err(_e) => panic!("{} is not a valid STRG identifier", strg),
         };
 
-        for (pak_name, _) in pickup_meta::ROOM_INFO.iter() {
+        for pak in paks.iter() {
             patcher.add_resource_patch(
-                (&[pak_name.as_bytes()], id, FourCC::from_bytes(b"STRG")),
+                (&[pak.as_bytes()], id, FourCC::from_bytes(b"STRG")),
                 move |res| patch_arbitrary_strg(res, replacement_strings.clone())
             );
         }
@@ -15512,30 +17271,48 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         );
     }
 
-    // remove arbitrary objects
-    for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {
-        let world = World::from_pak(pak_name).unwrap();
-        for room_info in rooms.iter() {
-            let level = level_data.get(world.to_json_key());
-            if level.is_none() {
-                continue;
-            }
-
-            let room = level.unwrap().rooms.get(room_info.name.trim());
-            if room.is_none() {
-                continue;
-            }
-
-            let room = room.unwrap();
-            if room.delete_ids.is_none() {
-                continue;
-            }
-
+    for (room, room_config) in other_patches {
+        if let Some(connections) = room_config.add_connections.as_ref() {
             patcher.add_scly_patch(
-                (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                move |ps, area| patch_remove_ids(ps, area, room.delete_ids.as_ref().unwrap().to_vec())
+                *room,
+                move |ps, area| patch_add_connections(ps, area, connections)
             );
         }
+
+        if let Some(connections) = room_config.remove_connections.as_ref() {
+            patcher.add_scly_patch(
+                *room,
+                move |ps, area| patch_remove_connections(ps, area, connections)
+            );
+        }
+
+        if let Some(layers) = room_config.layers.as_ref() {
+            patcher.add_scly_patch(
+                *room,
+                move |ps, area| patch_set_layers(ps, area, layers.clone())
+            );
+        }
+
+        if let Some(layer_objs) = room_config.layer_objs.as_ref() {
+            patcher.add_scly_patch(
+                *room,
+                move |ps, area| patch_move_objects(ps, area, layer_objs.clone())
+            );
+        }
+
+        if let Some(ids) = room_config.delete_ids.as_ref() {
+            patcher.add_scly_patch(
+                *room,
+                move |ps, area| patch_remove_ids(ps, area, ids.clone())
+            );
+        }
+    }
+
+    if config.disable_item_loss && !skip_frigate {
+        patcher.add_scly_patch(
+            resource_info!("02_intro_elevator.MREA").into(),
+            patch_disable_item_loss
+        );
     }
 
     if config.suit_colors.is_some() {
@@ -15701,7 +17478,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                     area,
                     &game_resources,
                     starting_room,
-                    version,
+                    config.version,
                     config.warp_to_start_delay_s,
                 )
             );
@@ -15709,7 +17486,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
 
         patcher.add_resource_patch(
             resource_info!("STRG_MemoryCard.STRG").into(),// 0x19C3F7F7
-            |res| patch_memorycard_strg(res, version)
+            |res| patch_memorycard_strg(res, config.version)
         );
     }
 
@@ -15887,4 +17664,280 @@ fn calculate_hash<T: Hash>(t: &T) -> u64 {
     let mut s = DefaultHasher::new();
     t.hash(&mut s);
     s.finish()
+}
+
+fn patch_conduit_health(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea)
+    -> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+
+    let thermal_conduit_damageable_trigger_obj_ids = [
+        0x000F01C8, // ruined courtyard
+        0x0028043F, // research core
+        0x0015006C, // main ventilation shaft section b
+        0x0019002C, // reactor core
+        0x00190030, // reactor core
+        0x0019002E, // reactor core
+        0x00190029, // reactor core
+        0x001A006C, // reactor core access
+        0x001A006D, // reactor core access
+        0x001B008E, // cargo freight lift to deck gamma
+        0x001B008F, // cargo freight lift to deck gamma
+        0x001B0090, // cargo freight lift to deck gamma
+        0x001E01DC, // biohazard containment
+        0x001E01E1, // biohazard containment
+        0x001E01E0, // biohazard containment
+        0x0020002A, // biotech research area 1
+        0x00200030, // biotech research area 1
+        0x0020002E, // biotech research area 1
+        0x0002024C, // main quarry
+        0x00170141, // magmoor workstation
+        0x00170142, // magmoor workstation
+        0x00170143, // magmoor workstation
+    ];
+
+    for obj in layer.objects.as_mut_vec().iter_mut() {
+        if thermal_conduit_damageable_trigger_obj_ids.contains(&obj.instance_id) {
+            let dt = obj.property_data.as_damageable_trigger_mut().unwrap();
+            dt.damage_vulnerability = DoorType::Purple.vulnerability(); // Also makes Main Quarry conduit vulnerable to charge
+            dt.health_info.health = 1.0; // 1/3 Wave Beam shot
+        }
+    }
+
+    Ok(())
+}
+
+fn patch_weaken_conduits<'a>(patcher: &mut PrimePatcher<'_, 'a>)
+{
+    patcher.add_scly_patch(
+        resource_info!("05_ice_shorelines.MREA").into(), // ruined courtyard
+        patch_conduit_health
+    );
+
+    patcher.add_scly_patch(
+        resource_info!("13_ice_vault.MREA").into(), // research core
+        patch_conduit_health
+    );
+
+    patcher.add_scly_patch(
+        resource_info!("08b_under_intro_ventshaft.MREA").into(), // Main Ventilation Shaft Section B
+        patch_conduit_health
+    );
+
+    patcher.add_scly_patch(
+        resource_info!("07_under_intro_reactor.MREA").into(), // reactor core
+        patch_conduit_health
+    );
+
+    patcher.add_scly_patch(
+        resource_info!("06_under_intro_to_reactor.MREA").into(), // reactor core access
+        patch_conduit_health
+    );
+
+    patcher.add_scly_patch(
+        resource_info!("06_under_intro_freight.MREA").into(), // cargo freight lift to deck gamma
+        patch_conduit_health
+    );
+
+    patcher.add_scly_patch(
+        resource_info!("05_under_intro_zoo.MREA").into(), // biohazard containment
+        patch_conduit_health
+    );
+
+    patcher.add_scly_patch(
+        resource_info!("05_under_intro_specimen_chamber.MREA").into(), // biotech research area 1
+        patch_conduit_health
+    );
+
+    patcher.add_scly_patch(
+        resource_info!("01_mines_mainplaza.MREA").into(), // main quarry
+        patch_conduit_health
+    );
+
+    patcher.add_scly_patch(
+        resource_info!("10_over_1alavaarea.MREA").into(), // magmoor workstation
+        patch_conduit_health
+    );
+}
+
+fn patch_elite_research_platforms<'r>(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea) -> Result<(), String>
+{
+    let timer_platform_delay_id: u32 = 0x000D02F2;
+    let scly = area.mrea().scly_section_mut();
+    let layer = &mut scly.layers.as_mut_vec()[0];
+
+    // Find "Timer Platform Delay"
+    let timer_platform_delay = &mut layer.objects.as_mut_vec().iter_mut()
+        .find(|obj| obj.instance_id == timer_platform_delay_id)
+        .unwrap();
+    
+    // Set start time to be greater than the longest death animation
+    timer_platform_delay.property_data.as_timer_mut().unwrap().start_time = 5.0;
+
+    Ok(())
+}
+
+fn patch_elite_research_door_lock<'r>(_ps: &mut PatcherState, area: &mut mlvl_wrapper::MlvlArea) -> Result<(), String>
+{
+    // Must assign new object id here to keep borrow checker happy
+    let top_door_lock_id: u32 = area.new_object_id_from_layer_id(0);
+    let scly = area.mrea().scly_section_mut();
+
+    let elite_pirate_id: u32 = 0x000D01A4;
+    let relay_disable_lock_id: u32 = 0x000D0407;
+    let artifact_id: u32 = 0x000D0340;
+    let bottom_door_lock_id: u32 = 0x000D0405;
+    let special_function_id: u32 = 0x000D04D1;
+
+    // Create lock for top door
+    let top_door_lock = structs::SclyObject {
+        instance_id: top_door_lock_id,
+        connections: vec![].into(),
+        property_data: structs::SclyProperty::Actor(
+            Box::new(structs::Actor {
+                name: b"Custom Blast Shield\0".as_cstr(),
+                position: [21.35, 166.275131, 51.825].into(),
+                rotation: [0.0, 0.0, 0.0].into(),
+                scale: [1.45, 1.45, 1.45].into(),
+                hitbox: [1.75, 5.0, 5.0].into(),
+                scan_offset: [0.0, 0.0, 0.0].into(),
+                unknown1: 1.0, // mass
+                unknown2: 0.0, // momentum
+                health_info: structs::scly_structs::HealthInfo {
+                    health: 5.0,
+                    knockback_resistance: 1.0,
+                },
+                damage_vulnerability: structs::scly_structs::DamageVulnerability {
+                    power: structs::scly_structs::TypeVulnerability::Reflect as u32,
+                    ice: structs::scly_structs::TypeVulnerability::Reflect as u32,
+                    wave: structs::scly_structs::TypeVulnerability::Reflect as u32,
+                    plasma: structs::scly_structs::TypeVulnerability::Reflect as u32,
+                    bomb: structs::scly_structs::TypeVulnerability::Immune as u32,
+                    power_bomb: structs::scly_structs::TypeVulnerability::Reflect as u32,
+                    missile: structs::scly_structs::TypeVulnerability::Reflect as u32,
+                    boost_ball: structs::scly_structs::TypeVulnerability::Immune as u32,
+                    phazon: structs::scly_structs::TypeVulnerability::Immune as u32,
+        
+                    enemy_weapon0:structs::scly_structs::TypeVulnerability::Immune as u32,
+                    enemy_weapon1:structs::scly_structs::TypeVulnerability::Immune as u32,
+                    enemy_weapon2:structs::scly_structs::TypeVulnerability::Immune as u32,
+                    enemy_weapon3:structs::scly_structs::TypeVulnerability::Immune as u32,
+        
+                    unknown_weapon0:structs::scly_structs::TypeVulnerability::Immune as u32,
+                    unknown_weapon1:structs::scly_structs::TypeVulnerability::Immune as u32,
+                    unknown_weapon2:structs::scly_structs::TypeVulnerability::Immune as u32,
+        
+                    charged_beams:structs::scly_structs::ChargedBeams {
+                        power:structs::scly_structs::TypeVulnerability::Reflect as u32,
+                        ice:structs::scly_structs::TypeVulnerability::Reflect as u32,
+                        wave:structs::scly_structs::TypeVulnerability::Reflect as u32,
+                        plasma:structs::scly_structs::TypeVulnerability::Reflect as u32,
+                        phazon:structs::scly_structs::TypeVulnerability::Reflect as u32,
+                    },
+                    beam_combos:structs::scly_structs::BeamCombos {
+                        power:structs::scly_structs::TypeVulnerability::Reflect as u32,
+                        ice:structs::scly_structs::TypeVulnerability::Reflect as u32,
+                        wave:structs::scly_structs::TypeVulnerability::Reflect as u32,
+                        plasma:structs::scly_structs::TypeVulnerability::Reflect as u32,
+                        phazon:structs::scly_structs::TypeVulnerability::Reflect as u32,
+                    },
+                },
+                cmdl: ResId::new(0x6E5D6796),
+                ancs: structs::scly_structs::AncsProp {
+                    file_id: ResId::invalid(),
+                    node_index: 0,
+                    default_animation: 0xFFFFFFFF,
+                },
+                actor_params: structs::scly_structs::ActorParameters {
+                    light_params: structs::scly_structs::LightParameters {
+                        unknown0: 1,
+                        unknown1: 1.0,
+                        shadow_tessellation: 0,
+                        unknown2: 1.0,
+                        unknown3: 20.0,
+                        color: [1.0, 1.0, 1.0, 1.0].into(), // RGBA
+                        unknown4: 1,
+                        world_lighting: 1,
+                        light_recalculation: 1,
+                        unknown5: [0.0, 0.0, 0.0].into(),
+                        unknown6: 4,
+                        unknown7: 4,
+                        unknown8: 0,
+                        light_layer_id: 0,
+                    },
+                    scan_params: structs::scly_structs::ScannableParameters {
+                        scan: ResId::invalid(),
+                    },
+                    xray_cmdl: ResId::invalid(),
+                    xray_cskr: ResId::invalid(),
+                    thermal_cmdl: ResId::invalid(),
+                    thermal_cskr: ResId::invalid(),
+                    unknown0: 1,
+                    unknown1: 1.0,
+                    unknown2: 1.0,
+                    visor_params: structs::scly_structs::VisorParameters {
+                        unknown0: 0,
+                        target_passthrough: 1,
+                        visor_mask: 15, // Visor Flags : Combat|Scan|Thermal|XRay
+                    },
+                    enable_thermal_heat: 0,
+                    unknown3: 0,
+                    unknown4: 0,
+                    unknown5: 1.0,
+                },
+                looping: 1,
+                snow: 1, // immovable
+                solid: 1,
+                camera_passthrough: 0,
+                active: 0,
+                unknown8: 0,
+                unknown9: 1.0,
+                unknown10: 0,
+                unknown11: 0,
+                unknown12: 0,
+                unknown13: 0,
+        }))};
+    
+    // Add to "3rd Pass Elite Bustout" layer
+    scly.layers.as_mut_vec()[1].objects.as_mut_vec().push(top_door_lock);
+
+    // Adjust connections
+    for layer in scly.layers.as_mut_vec().iter_mut() {
+        for obj in layer.objects.as_mut_vec().iter_mut() {
+
+            // Remove bottom door unlock connection from Elite Pirate
+            if obj.instance_id&0x00FFFFFF == relay_disable_lock_id&0x00FFFFFF {
+                obj.connections.as_mut_vec().retain(|conn| !conn.target_object_id&0x00FFFFFF == elite_pirate_id&0x00FFFFFF);
+            };
+
+            // Add top and bottom door unlock connections to Artifact
+            if obj.instance_id&0x00FFFFFF == artifact_id&0x00FFFFFF { 
+                obj.connections.as_mut_vec().push(
+                    structs::Connection {
+                        state: structs::ConnectionState::ARRIVED,
+                        message: structs::ConnectionMsg::DECREMENT,
+                        target_object_id: bottom_door_lock_id,
+                    });
+                obj.connections.as_mut_vec().push(
+                    structs::Connection {
+                        state: structs::ConnectionState::ARRIVED,
+                         message: structs::ConnectionMsg::DECREMENT,
+                        target_object_id: top_door_lock_id,
+                    });
+            };
+
+            // Add top door lock connection to "SpecialFunction PlayerInAreaRelay"
+            if obj.instance_id&0x00FFFFFF == special_function_id&0x00FFFFFF {
+                obj.connections.as_mut_vec().push(
+                    structs::Connection {
+                        state: structs::ConnectionState::ZERO,
+                        message: structs::ConnectionMsg::INCREMENT,
+                        target_object_id: top_door_lock_id,
+                    });
+            }
+        }
+    }
+
+    Ok (())
 }

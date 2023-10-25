@@ -95,7 +95,7 @@ pub struct VisorParameters
 }
 
 #[auto_struct(Readable, Writable, FixedSize)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct DamageInfo
 {
     #[auto_struct(expect = 4)]
@@ -255,4 +255,62 @@ pub struct BeamInfo {
     pub travel_speed: f32,
     pub inner_color: GenericArray<f32, U4>,
     pub outter_color: GenericArray<f32, U4>,
+}
+
+#[auto_struct(Readable, Writable, FixedSize)]
+#[derive(Debug, Clone)]
+pub struct RidleyStruct1
+{
+    pub unknown0: u32,
+    pub unknown1: u32,
+    pub particles: GenericArray<ResId<PART>, U2>,
+    pub textures: GenericArray<ResId<TXTR>, U2>,
+    pub unknown2: f32,
+    pub unknown3: f32,
+    pub unknown4: f32,
+    pub unknown5: f32,
+    pub unknown6: f32,
+    pub unknown7: f32,
+    pub unknown8: f32,
+    pub unknown9: f32,
+    pub unknown10: f32,
+    pub color0: GenericArray<f32, U4>,
+    pub color1: GenericArray<f32, U4>,
+}
+
+#[auto_struct(Readable, Writable, FixedSize)]
+#[derive(Debug, Clone)]
+pub struct RidleyStruct2
+{
+    pub unknown0: u32,
+    pub unknown1: f32,
+    pub unknown2: f32,
+    pub unknown3: f32,
+    pub unknown4: f32,
+    pub unknown5: f32,
+    pub unknown6: f32,
+    pub unknown7: f32,
+    pub unknown8: u8,
+}
+
+#[auto_struct(Readable, Writable)]
+#[derive(Debug, Clone)]
+pub struct CameraShakerComponent
+{
+    pub unknown1: u32,
+    pub unknown2: u8,
+    pub am: CameraShakePoint,
+    pub fm: CameraShakePoint,
+}
+
+#[auto_struct(Readable, Writable)]
+#[derive(Debug, Clone)]
+pub struct CameraShakePoint
+{
+    pub unknown1: u32,
+    pub unknown2: u8,
+    pub attack_time: f32,
+    pub sustain_time: f32,
+    pub duration: f32,
+    pub magnitude: f32,
 }

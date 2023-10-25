@@ -1,11 +1,7 @@
 use reader_writer::FourCC;
 use structs::{FstEntryFile, GcDisc, Resource, ResourceKind};
-
 use crate::mlvl_wrapper::{MlvlArea, MlvlEditor};
-
-use std::{
-    collections::{HashMap, HashSet},
-};
+use std::collections::{HashMap, HashSet};
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, Debug)]
 struct ResourceKey<'r>

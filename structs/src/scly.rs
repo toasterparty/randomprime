@@ -618,6 +618,8 @@ macro_rules! build_scly_property {
 
 build_scly_property!(
     Actor,                is_actor,                  as_actor,                  as_actor_mut,
+    ActorKeyFrame,        is_actor_key_frame,        as_actor_key_frame,        as_actor_key_frame_mut,
+    ActorRotate,          is_actor_rotate,           as_actor_rotate,           as_actor_rotate_mut,
     BallTrigger,          is_ball_trigger,           as_ball_trigger,           as_ball_trigger_mut,
     Camera,               is_camera,                 as_camera,                 as_camera_mut,
     CameraBlurKeyframe,   is_camera_blur_keyframe,   as_camera_blur_keyframe,   as_camera_blur_keyframe_mut,
@@ -806,11 +808,12 @@ macro_rules! build_scly_conn_field {
         }
     };
 }
-
+  
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub struct ConnectionState(pub u32);
 build_scly_conn_field!(ConnectionState {
+    ANY = 0xFFFFFFFF,
     ACTIVE = 0x0,
     ARRIVED = 0x1,
     CLOSED = 0x2,
@@ -827,11 +830,20 @@ build_scly_conn_field!(ConnectionState {
     DEAD = 0xE,
     CAMERA_PATH = 0xF,
     CAMERA_TARGET = 0x10,
+    DEACTIVATE_STATE = 0x11,
     PLAY = 0x12,
+    MASSIVE_DEATH = 0x13,
     DEATH_RATTLE = 0x14,
+    ABOUT_TO_MASSIVELY_DIE = 0x15,
     DAMAGE = 0x16,
+    INVULN_DAMAGE = 0x17,
+    MASSIVE_FROZEN_DEATH = 0x18,
     MODIFY = 0x19,
+    SCAN_START = 0x1A,
+    SCAN_PROCESSING = 0x1B,
     SCAN_DONE = 0x1C,
+    UNFROZEN = 0x1D,
+    DEFAULT = 0x1E,
     REFLECTED_DAMAGE = 0x1F,
     INHERIT_BOUNDS = 0x20,
 });
@@ -839,7 +851,10 @@ build_scly_conn_field!(ConnectionState {
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub struct ConnectionMsg(pub u32);
 build_scly_conn_field!(ConnectionMsg {
+    NONE = 0xFFFFFFFF,
+    UNKM0 = 0x0,
     ACTIVATE = 0x1,
+    ARRIVED = 0x2,
     CLOSE = 0x3,
     DEACTIVATE = 0x4,
     DECREMENT = 0x5,
@@ -855,7 +870,35 @@ build_scly_conn_field!(ConnectionMsg {
     STOP = 0xF,
     STOP_AND_RESET = 0x10,
     TOGGLE_ACTIVE = 0x11,
+    UNKM18 = 0x12,
     ACTION = 0x13,
     PLAY = 0x14,
     ALERT = 0x15,
+    INTERNAL_MESSAGE00 = 0x16,
+    ON_FLOOR = 0x17,
+    INTERNAL_MESSAGE02 = 0x18,
+    INTERNAL_MESSAGE03 = 0x19,
+    FALLING = 0x1A,
+    ON_ICE_SURFACE = 0x1B,
+    ON_MUD_SLOW_SURFACE = 0x1C,
+    ON_NORMAL_SURFACE = 0x1D,
+    TOUCHED = 0x1E,
+    ADD_PLATFORM_RIDER = 0x1F,
+    LAND_ON_NOT_FLOOR = 0x20,
+    REGISTERED = 0x21,
+    DELETED = 0x22,
+    INITIALIZED_IN_AREA = 0x23,
+    WORLD_INITIALIZED = 0x24,
+    ADD_SPLASH_INHABITANT = 0x25,
+    UPDATE_SPLASH_INHABITANT = 0x26,
+    REMOVE_SPLASH_INHABITANT = 0x27,
+    JUMPED = 0x28,
+    DAMAGE = 0x29,
+    INVULN_DAMAGE = 0x2A,
+    PROJECTILE_COLLIDE = 0x2B,
+    IN_SNAKE_WEED = 0x2C,
+    ADD_PHAZON_POOOL_INHABITANT = 0x2D,
+    UPDATE_PHAZON_POOL_INHABITANT = 0x2E,
+    REMOVE_PHAZON_POOL_INHABITANT = 0x2F,
+    SUSPENDED_MOVE = 0x30,
 });

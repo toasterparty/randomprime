@@ -119,7 +119,7 @@ impl TxtrFormat
             0x8 => TxtrFormat::Rgb5A3,
             0x9 => TxtrFormat::Rgba8,
             0xa => TxtrFormat::Cmpr,
-            fmt => panic!("Uknown or unsupported TXTR format: {:#x}", fmt),
+            fmt => panic!("Unknown or unsupported TXTR format: {:#x}", fmt),
         }
     }
 

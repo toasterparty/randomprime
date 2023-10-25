@@ -2,7 +2,7 @@
 
 use serde::Deserialize;
 use enum_map::{Enum, EnumMap};
-use crate::{pickup_meta};
+use crate::pickup_meta;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum World {
@@ -13,6 +13,7 @@ pub enum World {
     PhendranaDrifts,
     PhazonMines,
     ImpactCrater,
+    EndCinema,
 }
 
 impl World {
@@ -26,6 +27,7 @@ impl World {
             World::PhazonMines,
             World::MagmoorCaverns,
             World::ImpactCrater,
+            World::EndCinema,
         ].iter().map(|i| *i)
     }
 
@@ -39,6 +41,7 @@ impl World {
             World::PhazonMines     => "metroid5.pak",
             World::MagmoorCaverns  => "Metroid6.pak",
             World::ImpactCrater    => "Metroid7.pak",
+            World::EndCinema       => "Metroid8.pak",
         }
     }
 
@@ -61,6 +64,7 @@ impl World {
             World::PhazonMines     => 0xb1ac4d65,
             World::MagmoorCaverns  => 0x3ef8237c,
             World::ImpactCrater    => 0xc13b09d1,
+            World::EndCinema       => 0x13D79165,
         }
     }
 
@@ -73,6 +77,7 @@ impl World {
             World::PhazonMines     => "Mines, Phazon",
             World::MagmoorCaverns  => "Magmoor Caverns",
             World::ImpactCrater    => "Crater, Impact",
+            World::EndCinema       => "End Cinema",
         }
     }
 
@@ -85,6 +90,7 @@ impl World {
             World::PhazonMines     => "Phazon Mines",
             World::MagmoorCaverns  => "Magmoor Caverns",
             World::ImpactCrater    => "Impact Crater",
+            World::EndCinema       => "End Cinema",
         }
     }
 
@@ -182,6 +188,22 @@ impl Elevator
 
         None
     }
+}
+
+pub fn is_teleporter(mrea: u32) -> bool {
+    let mut ids = Vec::new();
+
+    for elv in Elevator::iter() {
+        ids.push(elv.elevator_data().mrea);
+    }
+
+    ids.extend([
+        0x1A666C55, // lair
+        0xD1241219, // exteriror docking hangar
+        0xB4B41C48, // end cinema
+    ]);
+
+    ids.contains(&mrea)
 }
 
 pub fn is_elevator(mrea: u32) -> bool {
@@ -583,7 +605,7 @@ macro_rules! decl_spawn_rooms {
                 for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() { // for each pak
                     for room_info in rooms.iter() { // for each room in the pak
                         if self.spawn_room_data().mrea == room_info.room_id.to_u32() {
-                            return room_info.name;
+                            return room_info.name();
                         }
                     }
                 }
@@ -631,27 +653,14 @@ impl SpawnRoomData
 
             let mut idx: u32 = 0;
             for room_info in rooms.iter() { // for each room in the pak
-                if room_info.name.to_lowercase().trim() == room_name { // trim both because "west tower " has an extra space in it
-
+                if room_info.name().to_lowercase().trim() == room_name { // trim both because "west tower " has an extra space in it
                     return SpawnRoomData {
                         pak_name,
                         mlvl: world.mlvl(),
                         mrea: room_info.room_id.to_u32(),
                         mrea_idx: idx,
                         room_id: 0,
-                        name: room_info.name,
-                    };
-                }
-
-                // special handing for second unique room with identical name STRG
-                if "connection elevator to deck beta (2)" == room_name && room_info.room_id.to_u32() == 0x6ED3231B {
-                    return SpawnRoomData {
-                        pak_name,
-                        mlvl: world.mlvl(),
-                        mrea: room_info.room_id.to_u32(),
-                        mrea_idx: idx,
-                        room_id: 0,
-                        name: room_info.name,
+                        name: room_info.name(),
                     };
                 }
                 idx = idx + 1;

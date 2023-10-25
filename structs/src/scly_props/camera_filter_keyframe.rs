@@ -14,7 +14,14 @@ pub struct CameraFilterKeyframe<'r>
 
     pub name: CStr<'r>,
     pub active: u8,
-    pub unknowns: GenericArray<u8, U10>,
+    pub filter_type: u32,
+    pub filter_shape: u32,
+    pub unknown4: u32,
+    pub unknown5: u32,
+    pub color: GenericArray<f32, U4>, // RGBA
+    pub fade_in_time: f32,
+    pub fade_out_time: f32,
+    pub overlay_txtr: u32,
 }
 
 impl<'r> SclyPropertyData for CameraFilterKeyframe<'r>

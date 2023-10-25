@@ -1,4 +1,4 @@
-#![recursion_limit = "256"]
+#![recursion_limit = "512"]
 
 pub use structs;
 pub use reader_writer;
@@ -16,6 +16,7 @@ use std::{
     ffi::CString,
 };
 
+pub mod add_modify_obj_patches;
 pub mod c_interface;
 pub mod custom_assets;
 pub mod extern_assets;
