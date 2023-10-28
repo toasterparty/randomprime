@@ -3,7 +3,7 @@ use auto_struct_macros::auto_struct;
 use reader_writer::CStr;
 use reader_writer::typenum::*;
 use reader_writer::generic_array::GenericArray;
-use crate::{SclyPropertyData};
+use crate::SclyPropertyData;
 use crate::scly_props::structs::{DamageVulnerability, AnimationParameters,ActorParameters, HealthInfo, DamageInfo};
 
 #[auto_struct(Readable, Writable)]
