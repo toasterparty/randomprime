@@ -14809,6 +14809,9 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     let local_savw_scans_to_add = &local_savw_scans_to_add;
     let savw_scan_logbook_category = &savw_scan_logbook_category;
 
+    let missile_station_refill_strings = vec!["&just=center;Ammunition fully replenished.".to_string()];
+    let missile_station_refill_strings = &missile_station_refill_strings;
+
     // simplify iteration of additional patches
     let mut other_patches: Vec<((&[u8], u32), &RoomConfig)> = Vec::new();
     for (pak_name, rooms) in pickup_meta::ROOM_INFO.iter() {
@@ -17038,6 +17041,18 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
             patcher.add_resource_patch(
                 (&[pak.as_bytes()], id, FourCC::from_bytes(b"STRG")),
                 move |res| patch_arbitrary_strg(res, replacement_strings.clone())
+            );
+        }
+    }
+
+    // Change the missile refill text if it also refills ammo
+    if config.missile_station_pb_refill {
+        let id: u32 = 2871382149;
+
+        for pak in paks.iter() {
+            patcher.add_resource_patch(
+                (&[pak.as_bytes()], id, FourCC::from_bytes(b"STRG")),
+                move |res| patch_arbitrary_strg(res, missile_station_refill_strings.clone())
             );
         }
     }
