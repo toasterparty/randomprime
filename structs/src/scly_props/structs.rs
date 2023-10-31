@@ -8,6 +8,17 @@ use crate::res_id:: *;
 
 #[auto_struct(Readable, Writable, FixedSize)]
 #[derive(Debug, Clone)]
+pub struct GrappleParameters
+{
+    #[auto_struct(expect = 14)]
+    prop_count: u32,
+
+    pub unknowns: GenericArray<f32, U11>,
+    pub disable_turning: u8,
+}
+
+#[auto_struct(Readable, Writable, FixedSize)]
+#[derive(Debug, Clone)]
 pub struct ActorParameters
 {
     #[auto_struct(expect = 14)]

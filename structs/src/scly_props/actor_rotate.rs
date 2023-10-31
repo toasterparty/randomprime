@@ -9,7 +9,7 @@ use crate::impl_rotation;
 #[derive(Debug, Clone)]
 pub struct ActorRotate<'r>
 {
-    #[auto_struct(expect = 24)]
+    #[auto_struct(expect = 6)]
     pub prop_count: u32,
 
     pub name: CStr<'r>,

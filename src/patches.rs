@@ -12177,8 +12177,8 @@ fn get_patterned_infos(obj: &mut structs::SclyObject) -> Vec<structs::scly_struc
 
 fn set_patterned_infos(obj: &mut structs::SclyObject, value: Vec<structs::scly_structs::PatternedInfo>) {
     if value.len() > 0 {
-    obj.property_data.set_patterned_infos(value);
-}
+        obj.property_data.set_patterned_infos(value);
+    }
 }
 
 fn should_skip(current: usize, check: Option<usize>) -> bool {
@@ -12186,7 +12186,7 @@ fn should_skip(current: usize, check: Option<usize>) -> bool {
         Some(x) => x != current,
         None => false,
     }
-    }
+}
 
 fn set_patterned_speed(obj: &mut structs::SclyObject, value: f32, index: Option<usize>) {
     let mut data = get_patterned_infos(obj);
@@ -12251,8 +12251,8 @@ fn get_damage_infos(obj: &mut structs::SclyObject) -> Vec<structs::scly_structs:
 
 fn set_damage_infos(obj: &mut structs::SclyObject, value: Vec<structs::scly_structs::DamageInfo>) {
     if value.len() > 0 {
-    obj.property_data.set_damage_infos(value);
-}
+        obj.property_data.set_damage_infos(value);
+    }
 }
 
 fn get_vulnerabilities(obj: &mut structs::SclyObject) -> Vec<structs::scly_structs::DamageVulnerability> {
@@ -12265,8 +12265,8 @@ fn get_vulnerabilities(obj: &mut structs::SclyObject) -> Vec<structs::scly_struc
 
 fn set_vulnerabilities(obj: &mut structs::SclyObject, value: Vec<structs::scly_structs::DamageVulnerability>) {
     if value.len() > 0 {
-    obj.property_data.set_vulnerabilities(value);
-}
+        obj.property_data.set_vulnerabilities(value);
+    }
 }
 
 fn set_vulnerability(obj: &mut structs::SclyObject, value: DoorType, index: Option<usize>) {
@@ -12288,9 +12288,9 @@ fn get_health_infos(obj: &mut structs::SclyObject) -> Vec<structs::scly_structs:
 
 fn set_health_infos(obj: &mut structs::SclyObject, value: Vec<structs::scly_structs::HealthInfo>) {
     if value.len() > 0 {
-    obj.property_data.set_health_infos(value);
-}
+        obj.property_data.set_health_infos(value);
     }
+}
 
 fn set_health(obj: &mut structs::SclyObject, value: f32, index: Option<usize>) {
     let mut health_infos = get_health_infos(obj);
@@ -12336,6 +12336,14 @@ fn patch_remove_control_disabler<'r>(
                 player_hint.inner_struct.unknowns[7] = 0; // always enable controls
                 player_hint.inner_struct.unknowns[8] = 0; // always enable boost
             }
+
+            // set_position(obj, [0.0, 0.0, 4.0], true);
+            // set_rotation(obj, [0.0, 0.0, 60.0], true);
+            // set_scale(obj, [1.0, 1.0, 2.0], true);
+            // set_patterned_speed(obj, 2.0, None);
+            // set_vulnerability(obj, DoorType::Red, None);
+            // set_health(obj, 1.0, None);
+            // set_damage(obj, 0.1);
         }
     }
 
