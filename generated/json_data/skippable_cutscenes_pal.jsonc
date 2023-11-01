@@ -1,5 +1,5 @@
 {
-    "$schema": "https://toasterparty.github.io/randomprime/randomprime.schema.json",
+    "$schema": "../../schema/randomprime.schema.json",
     "levelData": {
         "Frigate Orpheon": {
             "transports": {},
