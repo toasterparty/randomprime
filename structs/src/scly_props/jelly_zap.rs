@@ -2,17 +2,15 @@ use auto_struct_macros::auto_struct;
 use reader_writer::CStr;
 use reader_writer::typenum::*;
 use reader_writer::generic_array::GenericArray;
-use crate::res_id:: *;
 use crate::scly_props::structs::*;
 use crate::SclyPropertyData;
-use crate::scly_props::structs::*;
 use crate::{impl_position, impl_rotation, impl_scale, impl_patterned_info};
 
 #[auto_struct(Readable, Writable)]
 #[derive(Debug, Clone)]
 pub struct JellyZap<'r>
 {
-    #[auto_struct(expect = 24)]
+    #[auto_struct(expect = 20)]
     pub prop_count: u32,
 
     pub name: CStr<'r>,
@@ -25,7 +23,7 @@ pub struct JellyZap<'r>
     pub actor_parameters: ActorParameters,
     pub damage_info: DamageInfo,
 
-    pub unknowns: GenericArray<f32, U12>,
+    pub dont_care: GenericArray<u8, U49>,
 }
 
 impl<'r> SclyPropertyData for JellyZap<'r>
@@ -56,13 +54,11 @@ impl<'r> SclyPropertyData for JellyZap<'r>
     fn impl_get_vulnerabilities(&self) -> Vec<DamageVulnerability> {
         vec![
             self.patterned_info.damage_vulnerability.clone(),
-            self.damage_vulnerability.clone(),
         ]
     }
 
     fn impl_set_vulnerabilities(&mut self, x: Vec<DamageVulnerability>) {
         self.patterned_info.damage_vulnerability = x[0].clone();
-        self.damage_vulnerability = x[1].clone();
     }
 
     const SUPPORTS_HEALTH_INFOS: bool = true;

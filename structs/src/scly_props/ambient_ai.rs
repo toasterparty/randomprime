@@ -2,17 +2,15 @@ use auto_struct_macros::auto_struct;
 use reader_writer::CStr;
 use reader_writer::typenum::*;
 use reader_writer::generic_array::GenericArray;
-use crate::res_id:: *;
 use crate::scly_props::structs::*;
 use crate::SclyPropertyData;
-use crate::scly_props::structs::*;
-use crate::{impl_position, impl_rotation, impl_scale, impl_patterned_info};
+use crate::{impl_position, impl_rotation, impl_scale};
 
 #[auto_struct(Readable, Writable)]
 #[derive(Debug, Clone)]
 pub struct AmbientAI<'r>
 {
-    #[auto_struct(expect = 24)]
+    #[auto_struct(expect = 16)]
     pub prop_count: u32,
 
     pub name: CStr<'r>,
@@ -31,6 +29,8 @@ pub struct AmbientAI<'r>
     pub alert_anim: u32,
     pub impact_anim: u32,
     pub active: u8,
+
+    pub dont_care: GenericArray<u8, U125>,
 }
 
 impl<'r> SclyPropertyData for AmbientAI<'r>

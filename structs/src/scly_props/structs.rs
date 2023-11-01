@@ -10,7 +10,7 @@ use crate::res_id:: *;
 #[derive(Debug, Clone)]
 pub struct GrappleParameters
 {
-    #[auto_struct(expect = 14)]
+    #[auto_struct(expect = 12)]
     prop_count: u32,
 
     pub unknowns: GenericArray<f32, U11>,

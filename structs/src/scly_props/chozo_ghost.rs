@@ -2,8 +2,6 @@ use auto_struct_macros::auto_struct;
 use reader_writer::CStr;
 use reader_writer::typenum::*;
 use reader_writer::generic_array::GenericArray;
-use crate::res_id:: *;
-use crate::scly_props::structs::*;
 use crate::SclyPropertyData;
 use crate::scly_props::structs::*;
 use crate::{impl_position, impl_rotation, impl_scale, impl_patterned_info};
@@ -12,7 +10,7 @@ use crate::{impl_position, impl_rotation, impl_scale, impl_patterned_info};
 #[derive(Debug, Clone)]
 pub struct ChozoGhost<'r>
 {
-    #[auto_struct(expect = 24)]
+    #[auto_struct(expect = 31)]
     pub prop_count: u32,
 
     pub name: CStr<'r>,
@@ -34,7 +32,18 @@ pub struct ChozoGhost<'r>
     pub wpsc2: u32,
     pub damage_info2: DamageInfo,
 
-    // TODO: Don't care
+    pub behave_chances: GenericArray<BehaveChance, U3>,
+    pub dont_cares: GenericArray<u32, U14>,
+}
+
+#[auto_struct(Readable, Writable, FixedSize)]
+#[derive(Debug, Clone)]
+pub struct BehaveChance
+{
+    #[auto_struct(expect = 7)]
+    prop_count: u32,
+
+    pub dont_cares: GenericArray<f32, U7>,
 }
 
 impl<'r> SclyPropertyData for ChozoGhost<'r>

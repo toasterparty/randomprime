@@ -2,8 +2,6 @@ use auto_struct_macros::auto_struct;
 use reader_writer::CStr;
 use reader_writer::typenum::*;
 use reader_writer::generic_array::GenericArray;
-use crate::res_id:: *;
-use crate::scly_props::structs::*;
 use crate::SclyPropertyData;
 use crate::scly_props::structs::*;
 use crate::{impl_position, impl_rotation, impl_scale};
@@ -12,7 +10,7 @@ use crate::{impl_position, impl_rotation, impl_scale};
 #[derive(Debug, Clone)]
 pub struct Debris<'r>
 {
-    #[auto_struct(expect = 24)]
+    #[auto_struct(expect = 18)]
     pub prop_count: u32,
 
     pub name: CStr<'r>,
@@ -21,7 +19,13 @@ pub struct Debris<'r>
     pub rotation: GenericArray<f32, U3>,
     pub scale: GenericArray<f32, U3>,
 
-    // TODO: Don't care
+    pub dont_cares1: GenericArray<f32, U12>,
+    pub dont_care1: u8,
+    pub cmdl: u32,
+    pub actor_params: ActorParameters,
+    pub dont_cares2: GenericArray<u32, U4>,
+    pub dont_care2: u8,
+    pub dont_care3: u8,
 }
 
 impl<'r> SclyPropertyData for Debris<'r>

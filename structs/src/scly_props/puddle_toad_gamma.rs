@@ -2,8 +2,6 @@ use auto_struct_macros::auto_struct;
 use reader_writer::CStr;
 use reader_writer::typenum::*;
 use reader_writer::generic_array::GenericArray;
-use crate::res_id:: *;
-use crate::scly_props::structs::*;
 use crate::SclyPropertyData;
 use crate::scly_props::structs::*;
 use crate::{impl_position, impl_rotation, impl_scale, impl_patterned_info};
@@ -12,7 +10,7 @@ use crate::{impl_position, impl_rotation, impl_scale, impl_patterned_info};
 #[derive(Debug, Clone)]
 pub struct PuddleToadGamma<'r>
 {
-    #[auto_struct(expect = 24)]
+    #[auto_struct(expect = 17)]
     pub prop_count: u32,
 
     pub name: CStr<'r>,
@@ -26,9 +24,11 @@ pub struct PuddleToadGamma<'r>
     pub patterned_info: PatternedInfo,
     pub actor_parameters: ActorParameters,
 
-    pub dont_care: u8,
-    pub dont_cares: GenericArray<f32, U7>,
-    pub damage_info: DamageInfo,
+    pub dont_cares: GenericArray<f32, U9>,
+    pub damage_info1: DamageInfo,
+    pub damage_info2: DamageInfo,
+
+    pub dlcn: u32,
 }
 
 impl<'r> SclyPropertyData for PuddleToadGamma<'r>
@@ -45,13 +45,15 @@ impl<'r> SclyPropertyData for PuddleToadGamma<'r>
     fn impl_get_damage_infos(&self) -> Vec<DamageInfo> {
         vec![
             self.patterned_info.contact_damage.clone(),
-            self.damage_info.clone(),
+            self.damage_info1.clone(),
+            self.damage_info2.clone(),
         ]
     }
 
     fn impl_set_damage_infos(&mut self, x: Vec<DamageInfo>) {
         self.patterned_info.contact_damage = x[0].clone();
-        self.damage_info = x[1].clone();
+        self.damage_info1 = x[1].clone();
+        self.damage_info2 = x[1].clone();
     }
 
     const SUPPORTS_VULNERABILITIES: bool = true;

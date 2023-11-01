@@ -2,17 +2,15 @@ use auto_struct_macros::auto_struct;
 use reader_writer::CStr;
 use reader_writer::typenum::*;
 use reader_writer::generic_array::GenericArray;
-use crate::res_id:: *;
-use crate::scly_props::structs::*;
 use crate::SclyPropertyData;
 use crate::scly_props::structs::*;
-use crate::{impl_position, impl_rotation, impl_scale, impl_patterned_info};
+use crate::{impl_position, impl_rotation, impl_scale};
 
 #[auto_struct(Readable, Writable)]
 #[derive(Debug, Clone)]
 pub struct GunTurret<'r>
 {
-    #[auto_struct(expect = 24)]
+    #[auto_struct(expect = 48)]
     pub prop_count: u32,
 
     pub name: CStr<'r>,
@@ -36,7 +34,7 @@ pub struct GunTurret<'r>
     pub reload_time: f32, // TODO: speed
     pub reload_time_variance: f32,
 
-    // TODO: Don't care
+    pub dont_care: GenericArray<u8, U146>,
 }
 
 impl<'r> SclyPropertyData for GunTurret<'r>

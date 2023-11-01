@@ -2,8 +2,6 @@ use auto_struct_macros::auto_struct;
 use reader_writer::CStr;
 use reader_writer::typenum::*;
 use reader_writer::generic_array::GenericArray;
-use crate::res_id:: *;
-use crate::scly_props::structs::*;
 use crate::SclyPropertyData;
 use crate::scly_props::structs::*;
 use crate::{impl_position, impl_rotation, impl_scale, impl_patterned_info};
@@ -12,7 +10,7 @@ use crate::{impl_position, impl_rotation, impl_scale, impl_patterned_info};
 #[derive(Debug, Clone)]
 pub struct PuddleSpore<'r>
 {
-    #[auto_struct(expect = 24)]
+    #[auto_struct(expect = 16)]
     pub prop_count: u32,
 
     pub name: CStr<'r>,

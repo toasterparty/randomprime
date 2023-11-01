@@ -2,8 +2,6 @@ use auto_struct_macros::auto_struct;
 use reader_writer::CStr;
 use reader_writer::typenum::*;
 use reader_writer::generic_array::GenericArray;
-use crate::res_id:: *;
-use crate::scly_props::structs::*;
 use crate::SclyPropertyData;
 use crate::scly_props::structs::*;
 use crate::{impl_position, impl_rotation, impl_scale, impl_patterned_info_with_auxillary};
@@ -12,7 +10,7 @@ use crate::{impl_position, impl_rotation, impl_scale, impl_patterned_info_with_a
 #[derive(Debug, Clone)]
 pub struct Geemer<'r>
 {
-    #[auto_struct(expect = 24)]
+    #[auto_struct(expect = 16)]
     pub prop_count: u32,
 
     pub name: CStr<'r>,
@@ -24,7 +22,7 @@ pub struct Geemer<'r>
     pub patterned_info: PatternedInfo,
     pub actor_params: ActorParameters,
 
-    // TODO: don't care
+    pub dont_cares: GenericArray<u8, U40>,
 }
 
 impl<'r> SclyPropertyData for Geemer<'r>
