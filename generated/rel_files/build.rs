@@ -33,7 +33,7 @@ fn invoke_cargo(ppc_manifest: &Path, package: &str)
         .output()
         .expect("Failed to compile ppc crate");
     if !output.status.success() {
-        panic!("{:#?}", output);
+        panic!("{:#?}", output.stderr);
     }
 }
 
