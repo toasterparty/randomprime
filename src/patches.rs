@@ -47,6 +47,7 @@ use std::hash::{Hash, Hasher};
 
 use crate::{
     add_modify_obj_patches::*,
+    generic_edit::patch_edit_objects,
     custom_assets::{custom_asset_ids, PickupHashKey, collect_game_resources, custom_asset_filename},
     dol_patcher::DolPatcher,
     ciso_writer::CisoWriter,
@@ -14729,6 +14730,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             actor_rotates: None,
                             streamed_audios: None,
                             layer_objs: None,
+                            edit_objs: None,
                         }
                     );
                 }
@@ -17096,6 +17098,13 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
             patcher.add_scly_patch(
                 *room,
                 move |ps, area| patch_move_objects(ps, area, layer_objs.clone())
+            );
+        }
+
+        if let Some(edit_objs) = room_config.edit_objs.as_ref() {
+            patcher.add_scly_patch(
+                *room,
+                move |ps, area| patch_edit_objects(ps, area, edit_objs.clone())
             );
         }
 

@@ -521,6 +521,25 @@ pub struct StreamedAudioConfig
     pub is_music: bool,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct EditObjConfig
+{
+    pub layer: Option<u32>,
+    pub position: Option<[f32;3]>,
+    pub rotation: Option<[f32;3]>,
+    pub scale: Option<[f32;3]>,
+    pub size: Option<f32>,
+    pub speed: Option<f32>,
+    pub damage: Option<f32>,
+    pub detection_range: Option<f32>,
+    pub attack_range: Option<f32>,
+    pub vulnerability: Option<String>, // maps to DoorType
+    pub vulnerabilities: Option<HashMap<u32,String>>,
+    pub health: Option<f32>,
+    pub healths: Option<HashMap<u32,f32>>,
+}
+
 // None = 0,
 // PerspLin = 2,
 // PerspExp = 4,
@@ -770,6 +789,7 @@ pub struct RoomConfig
     pub special_functions: Option<Vec<SpecialFunctionConfig>>,
     pub actor_rotates: Option<Vec<ActorRotateConfig>>,
     pub streamed_audios: Option<Vec<StreamedAudioConfig>>,
+    pub edit_objs: Option<HashMap<u32, EditObjConfig>>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
