@@ -11372,6 +11372,28 @@ fn patch_subchamber_five_essence_permadeath<'r>(
     Ok(())
 }
 
+fn patch_fix_aether_lab_entryway_broken_load<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layers = &mut scly.layers.as_mut_vec();
+    let relay = layers[0].objects
+        .as_mut_vec()
+        .iter_mut()
+        .find(|obj| obj.instance_id&0x00FFFFFF == 0x00320083)
+        .expect("Could not find load trigger relay in aether lab entryway")
+        .property_data
+        .as_relay_mut()
+        .expect("Expected obj 0x00320083 to be a relay");
+
+    relay.active = 1;
+
+    Ok(())
+}
+
 fn patch_pq_permadeath<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -15136,6 +15158,13 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
 
         boss_permadeath
     };
+
+    if config.qol_game_breaking || config.no_doors {
+        patcher.add_scly_patch(
+            resource_info!("generic_z2.MREA").into(),
+            move |ps, area| patch_fix_aether_lab_entryway_broken_load(ps, area)
+        );
+    }
 
     if config.qol_game_breaking {
         patcher.add_scly_patch(
