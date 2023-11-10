@@ -1524,6 +1524,26 @@ impl PatchConfigPrivate
                 extend_option_vec!(special_functions , self_room_config, other_room_config);
                 extend_option_vec!(actor_rotates     , self_room_config, other_room_config);
                 extend_option_vec!(streamed_audios   , self_room_config, other_room_config);
+                
+                if let Some(other_layers) = &other_room_config.layers {
+                    if self_room_config.layers.is_none() {
+                        self_room_config.layers = Some(HashMap::new());
+                    }
+
+                    let self_layers = self_room_config.layers.as_mut().unwrap();
+                    for (layer, other_state) in other_layers {
+                        match self_layers.get_mut(layer) {
+                            Some(self_state) => {
+                                if self_state != other_state {
+                                    panic!("Conflicting enable/disable state for Layer {} in {} - {}", layer, world_key, room_name);
+                                }
+                            },
+                            None => {
+                                self_layers.insert(*layer, *other_state);
+                            },
+                        }
+                    }
+                }
             }
         }
     }
