@@ -11436,6 +11436,14 @@ fn patch_pq_permadeath<'r>(
     };
     patch_add_connection(layers, &connection, mrea_id);
 
+    let connection = ConnectionConfig {
+        sender_id: 0x00190004, // parasite queen
+        state: ConnectionState::DEAD,
+        target_id: special_fn_id,
+        message: ConnectionMsg::DECREMENT,
+    };
+    patch_add_connection(layers, &connection, mrea_id);
+
     // Activate effects on 2nd pass
     let effect_conns = layers[0].objects
         .as_mut_vec()
