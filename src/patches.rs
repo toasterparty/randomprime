@@ -7334,9 +7334,6 @@ fn patch_set_layers<'r>
 
     while area.layer_flags.layer_count <= max {
         area.add_layer(b"New Layer\0".as_cstr());
-        if area.layer_flags.layer_count >= 64 {
-            panic!("Ran out of layers in room 0x{:X}", mrea_id);
-        }
     }
 
     for (layer_id, enabled) in layers.iter() {
@@ -7372,11 +7369,7 @@ fn patch_move_objects<'r>
         }
 
         while area.layer_flags.layer_count <= layer_id {
-            let mrea_id = area.mlvl_area.mrea.to_u32().clone();
             area.add_layer(b"New Layer\0".as_cstr());
-            if area.layer_flags.layer_count >= 64 {
-                panic!("Ran out of layers in room 0x{:X}", mrea_id);
-            }
         }
     }
 

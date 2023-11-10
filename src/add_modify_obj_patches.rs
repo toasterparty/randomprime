@@ -51,9 +51,6 @@ macro_rules! add_edit_obj_helper {
         if let Some(requested_layer_id) = requested_layer_id {
             while area.layer_flags.layer_count <= requested_layer_id {
                 area.add_layer(b"New Layer\0".as_cstr());
-                if area.layer_flags.layer_count >= 64 {
-                    panic!("Ran out of layers in room 0x{:X}", mrea_id);
-                }
             }
         }
 
@@ -783,11 +780,7 @@ pub fn add_block<'r>(
     };
 
     while area.layer_flags.layer_count <= layer_id {
-        let mrea_id = area.mlvl_area.mrea.to_u32().clone();
         area.add_layer(b"New Layer\0".as_cstr());
-        if area.layer_flags.layer_count >= 64 {
-            panic!("Ran out of layers in room 0x{:X}", mrea_id);
-        }
     }
 
     let scly = area.mrea().scly_section_mut();
