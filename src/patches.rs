@@ -10814,7 +10814,7 @@ fn patch_ctwk_game(res: &mut structs::Resource, ctwk_config: &CtwkConfig)
     -> Result<(), String>
 {
     let mut ctwk = res.kind.as_ctwk_mut().unwrap();
-    let mut ctwk_game = match &mut ctwk {
+    let ctwk_game = match &mut ctwk {
         structs::Ctwk::CtwkGame(i) => i,
         _ => panic!("Failed to map res=0x{:X} as CtwkGame", res.file_id),
     };
@@ -10848,7 +10848,7 @@ fn patch_ctwk_player(res: &mut structs::Resource, ctwk_config: &CtwkConfig)
 -> Result<(), String>
 {
     let mut ctwk = res.kind.as_ctwk_mut().unwrap();
-    let mut ctwk_player = match &mut ctwk {
+    let ctwk_player = match &mut ctwk {
         structs::Ctwk::CtwkPlayer(i) => i,
         _ => panic!("Failed to map res=0x{:X} as CtwkPlayer", res.file_id),
     };
