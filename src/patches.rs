@@ -11437,7 +11437,7 @@ fn patch_pq_permadeath<'r>(
 
     let connection = ConnectionConfig {
         sender_id: 0x00190004, // parasite queen
-        state: ConnectionState::DEAD,
+        state: ConnectionState::DEATH_RATTLE,
         target_id: special_fn_id,
         message: ConnectionMsg::DECREMENT,
     };
