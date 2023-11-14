@@ -298,6 +298,16 @@
             "description": "Configuration options affecting the player, their starting equipment, the game world, suit properties, and more.",
             "type": "object",
             "properties": {
+                "difficultyBehavior": {
+                    "description": "Control how difficulty options are presented tot he player.\n- `Either`: The player can choose between Normal and Hard difficulty\n- `NormalOnly`: The player is forced to pick Normal difficulty\n- `HardOnly`: The player is forced to pick Hard difficulty",
+                    "type": "string",
+                    "enum": [
+                        "Either",
+                        "NormalOnly",
+                        "HardOnly"
+                    ],
+                    "default": "Either"
+                },
                 "startingRoom": {
                     "description": "The room in which the player will spawn when starting the game from a new save file.",
                     "$ref": "#/$defs/allRooms"

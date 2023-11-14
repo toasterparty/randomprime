@@ -923,6 +923,14 @@ pub enum DoorOpenMode
     // BlueAll, // All Doors downgrade to Blue after opening
 }
 
+#[derive(Deserialize, Serialize, Debug, PartialEq, Copy, Clone)]
+pub enum DifficultyBehavior
+{
+    Either,
+    NormalOnly,
+    HardOnly,
+}
+
 impl fmt::Display for Version
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error>
@@ -1050,6 +1058,7 @@ pub struct PatchConfig
     pub no_doors: bool,
     pub boss_sizes: HashMap<String,f32>,
     pub shoot_in_grapple: bool,
+    pub difficulty_behavior: DifficultyBehavior,
     pub ctwk_config: CtwkConfig,
 }
 
@@ -1146,6 +1155,7 @@ struct GameConfig
     no_doors: Option<bool>, // Remove every door from the game
     boss_sizes: Option<HashMap<String,f32>>,
     shoot_in_grapple: Option<bool>,
+    difficulty_behavior: Option<DifficultyBehavior>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
@@ -1918,6 +1928,7 @@ impl PatchConfigPrivate
             no_doors: self.game_config.no_doors.unwrap_or(false),
             boss_sizes: self.game_config.boss_sizes.clone().unwrap_or(HashMap::new()),
             shoot_in_grapple: self.game_config.shoot_in_grapple.unwrap_or(false),
+            difficulty_behavior: self.game_config.difficulty_behavior.unwrap_or(DifficultyBehavior::Either),
             map_default_state,
 
             starting_items,

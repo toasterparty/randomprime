@@ -39,6 +39,7 @@ use crate::patch_config::{
     PlatformType,
     ConnectionState,
     ConnectionMsg,
+    DifficultyBehavior,
 };
 
 use std::{fs::{self, File}, io::Read, path::Path};
@@ -9144,6 +9145,21 @@ fn patch_completion_screen(
     Ok(())
 }
 
+fn patch_start_button_strg(
+    res: &mut structs::Resource,
+    text: &str,
+) -> Result<(), String>
+{
+    let strg = res.kind.as_strg_mut().unwrap();
+
+    for st in strg.string_tables.as_mut_vec().iter_mut() {
+        let strings = st.strings.as_mut_vec();
+        strings[67] = text.to_owned().into();
+    }
+
+    Ok(())
+}
+
 fn patch_arbitrary_strg(
     res: &mut structs::Resource,
     replacement_strings: Vec<String>,
@@ -9371,10 +9387,34 @@ fn patch_dol<'r>(
             .patch(symbol_addr!("aMetroidprimeB", version), b"randomprime B\0"[..].into())?;
     }
 
-    let normal_is_default_patch = ppcasm!(symbol_addr!("ActivateNewGamePopup__19SNewFileSelectFrameFv", version) + 0x3C, {
-            li      r4, 2;
-    });
-    dol_patcher.ppcasm_patch(&normal_is_default_patch)?;
+    if config.difficulty_behavior != DifficultyBehavior::Either {
+        let only_one_option_patch = ppcasm!(symbol_addr!("ActivateNewGamePopup__19SNewFileSelectFrameFv", version) + 0x110, {
+            b   { symbol_addr!("ActivateNewGamePopup__19SNewFileSelectFrameFv", version) + 0x1f8 };
+        });
+        dol_patcher.ppcasm_patch(&only_one_option_patch)?;
+    }
+
+    match config.difficulty_behavior {
+        DifficultyBehavior::NormalOnly => {
+            let normal_is_only_patch = ppcasm!(symbol_addr!("DoPopupAdvance__19SNewFileSelectFrameFPC14CGuiTableGroup", version) + 0x78, {
+                b   { symbol_addr!("DoPopupAdvance__19SNewFileSelectFrameFPC14CGuiTableGroup", version) + 0xd0 };
+            });
+            dol_patcher.ppcasm_patch(&normal_is_only_patch)?;
+        },
+        DifficultyBehavior::HardOnly => {},
+        DifficultyBehavior::Either => {
+            let normal_is_default_patch = ppcasm!(symbol_addr!("ActivateNewGamePopup__19SNewFileSelectFrameFv", version) + 0x3C, {
+                li      r4, 2;
+            });
+            dol_patcher.ppcasm_patch(&normal_is_default_patch)?;
+        },
+    };
+
+    // hide normal text
+    // let normal_only_patch = ppcasm!(0x8001f52c, {
+    //         nop;
+    // });
+    // dol_patcher.ppcasm_patch(&normal_only_patch)?;
 
     if escape_sequence_counts_up {
         // Escape Sequences count up
@@ -17049,6 +17089,21 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         "NoARAM.pak",
         "SamusGun.pak",
     ];
+
+    if config.difficulty_behavior != DifficultyBehavior::Either {
+        let text = match config.difficulty_behavior {
+            DifficultyBehavior::NormalOnly => {"Normal\0"},
+            DifficultyBehavior::HardOnly => {"Hard\0"},
+            DifficultyBehavior::Either => panic!("what"),
+        };
+
+        for pak in paks.iter() {
+            patcher.add_resource_patch(
+                (&[pak.as_bytes()], 89302102, FourCC::from_bytes(b"STRG")),
+                move |res| patch_start_button_strg(res, text)
+            );
+        }
+    }
 
     for (strg, replacement_strings) in strgs {
         let id = match strg.parse::<u32>() {
