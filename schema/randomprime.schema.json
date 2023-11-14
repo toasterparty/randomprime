@@ -44,7 +44,7 @@
             "default": null
         },
         "seed": {
-            "description": "Used for item position rando. [Deprecated]",
+            "description": "[Deprecated] Used for item position rando.",
             "type": "integer",
             "minimum": 0,
             "maximum": 18446744073709551615,
@@ -3001,7 +3001,7 @@
                                 "default": "Metal"
                             },
                             "altPlatform": {
-                                "description": "Deprecated, use `type` instead.",
+                                "description": "[Deprecated] use `type` instead.",
                                 "type": "boolean",
                                 "default": false,
                                 "deprecated": true
@@ -3113,7 +3113,7 @@
                                 "default": false
                             },
                             "noLock": {
-                                "description": "If true, removes the ability to lock on, making this just a point.",
+                                "description": "[Deprecated] If true, removes the ability to lock on, making this just a point.",
                                 "type": "boolean",
                                 "default": false,
                                 "deprecated": true
@@ -3152,6 +3152,7 @@
                     "type": "object",
                     "properties": {
                         "mode": {
+                            "description": "[Deprecated]",
                             "type": "integer",
                             "minimum": 0,
                             "maximum": 15,
@@ -3356,7 +3357,7 @@
                     "additionalProperties": false
                 },
                 "audioOverride": {
-                    "description": "Replace audio file(s) specified by existing StreamedAudio objects in this room. Use `streamedAudios` instead.",
+                    "description": "[Deprecated] Replace audio file(s) specified by existing StreamedAudio objects in this room. Use `streamedAudios` instead.",
                     "patternProperties": {
                         "^[0-9]+$": {
                             "description": "The filename(s) of the new audio file. Example: `/audio/min_phazonL.dsp|/audio/min_phazonR.dsp`.",
@@ -3405,6 +3406,7 @@
                     }
                 },
                 "cutsceneSkipFns": {
+                    "description": "[Deprecated] Use `specialFunctions` instead",
                     "type": "array",
                     "items": {
                         "type": "integer",
