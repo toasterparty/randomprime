@@ -578,10 +578,12 @@ pub struct RepositionConfig
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HudmemoConfig
 {
-    pub trigger_position: [f32;3],
-    pub trigger_scale: [f32;3],
-    pub text: String,
-    pub disable_on_enter: Option<bool>, // default - true
+    pub id: u32,
+    pub layer: Option<u32>,
+    pub active: Option<bool>,
+    pub text: Option<String>,
+    pub message_time: Option<f32>,
+    pub modal: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]

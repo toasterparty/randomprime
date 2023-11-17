@@ -15330,10 +15330,11 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
             }
 
             // Get list of patches specified for this room
-            let (pickups, scans, doors) = {
+            let (pickups, scans, doors, hudmemos) = {
                 let mut _pickups = Vec::new();
                 let mut _scans = Vec::new();
                 let mut _doors = HashMap::<u32, DoorConfig>::new();
+                let mut _hudmemos = Vec::new();
 
                 let level = level_data.get(world.to_json_key());
                 if level.is_some() {
@@ -15350,6 +15351,10 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
 
                         if room.doors.is_some() {
                             _doors = room.doors.clone().unwrap();
+                        }
+
+                        if room.hudmemos.is_some() {
+                            _hudmemos = room.hudmemos.clone().unwrap();
                         }
 
                         if room.superheated.is_some() {
@@ -15788,7 +15793,8 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                         }
                     }
                 }
-                (_pickups, _scans, _doors)
+
+                (_pickups, _scans, _doors, _hudmemos)
             };
 
             // Patch existing item locations
@@ -16234,6 +16240,36 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                         ),
                     );
                 }
+            }
+
+            // Add hudmemos
+            for hudmemo_config in hudmemos.iter() {
+                let hudmemo_config = hudmemo_config.clone();
+                let key = PickupHashKey {
+                    level_id: world.mlvl(),
+                    room_id: room_info.room_id.to_u32(),
+                    pickup_idx: idx as u32,
+                };
+
+                let strg_id = match extra_scans.get(&key) {
+                    None => None,
+                    Some((_, strg_id)) => {
+                        Some(*strg_id)
+                    }
+                };
+
+                patcher.add_scly_patch(
+                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                    move |ps, area| patch_add_hudmemo(
+                        ps,
+                        area,
+                        hudmemo_config.clone(),
+                        game_resources,
+                        strg_id,
+                    ),
+                );
+
+                idx = idx + 1;
             }
 
             if config.visible_bounding_box {

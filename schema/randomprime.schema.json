@@ -330,7 +330,6 @@
                     "description": "The delay, in seconds, before the player is warped to their starting location when using the feature at a Save Station. Using a value lower than 3 will very likely cause crashing and is not recommended.",
                     "type": "number",
                     "exclusiveMinimum": 0.0,
-                    "maximum": 99,
                     "default": 3.0
                 },
                 "shufflePickupPosition": {
@@ -3292,33 +3291,40 @@
                     }
                 },
                 "hudmemos": {
-                    "description": "Add Trigger + Hudmemo pairs to this room.",
+                    "description": "Add hudmemos to this room. These are used to display text to the player.",
                     "type": "array",
                     "items": {
                         "type": "object",
                         "properties": {
-                            "triggerPosition": {
-                                "description": "Position of the trigger which triggers the display of the hudmemo.",
-                                "$ref": "#/$defs/vector3"
+                            "id": {
+                                "$ref": "#/$defs/addModifyId"
                             },
-                            "triggerScale": {
-                                "description": "The extent of the trigger.",
-                                "$ref": "#/$defs/vector3"
+                            "layer": {
+                                "$ref": "#/$defs/addModifyLayer"
                             },
-                            "text": {
-                                "description": "The text to display.",
-                                "type": "string"
-                            },
-                            "disableOnEnter": {
-                                "description": "If true, only display the text once until the room is reloaded.",
+                            "active": {
+                                "description": "Default active state of the hudmemo.",
                                 "type": "boolean",
                                 "default": true
+                            },
+                            "text": {
+                                "description": "Message to display to the player",
+                                "type": "string"
+                            },
+                            "messageTime": {
+                                "description": "Message show duration",
+                                "type": "number",
+                                "exclusiveMinimum": 0.0,
+                                "default": 4.0
+                            },
+                            "modal": {
+                                "description": "Determines whether or not a popup box is used",
+                                "type": "boolean",
+                                "default": false
                             }
                         },
                         "required": [
-                            "triggerPosition",
-                            "triggerScale",
-                            "text"
+                            "id"
                         ],
                         "additionalProperties": false
                     }

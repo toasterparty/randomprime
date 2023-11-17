@@ -841,6 +841,59 @@ pub fn custom_assets<'r>(
                 }
             }
 
+            if room.hudmemos.is_some() {
+                for hudmemo_config in room.hudmemos.as_ref().unwrap().iter() {
+                    if hudmemo_config.text.is_none() {
+                        extra_scans_idx += 1;
+                        continue;
+                    }
+
+                    let string = format!("{}\0", hudmemo_config.text.as_ref().unwrap());
+
+                    // todo: subroutine
+
+                    // Check if this string already has a scan_id //
+                    if string_to_scan_strg.contains_key(&string.clone()) {
+                        let (scan_id, strg_id) = string_to_scan_strg.get(&string.clone()).unwrap();
+
+                        // Add this scan_id as a dep of this world if it wasn't already //
+                        if !local_savw_scans_to_add[world as usize].contains(scan_id) {
+                            local_savw_scans_to_add[world as usize].push(scan_id.clone());
+                        }
+
+                        let key = PickupHashKey::from_location(level_name, room_name, extra_scans_idx);
+                        extra_scans.insert(key, (scan_id.clone(), strg_id.clone()));
+                        extra_scans_idx = extra_scans_idx + 1;
+
+                        continue;
+                    }
+
+                    // Get next 2 IDs //
+                    let scan_id = ResId::<res_id::SCAN>::new(custom_asset_ids::EXTRA_IDS_START.to_u32() + custom_asset_offset);
+                    custom_asset_offset = custom_asset_offset + 1;
+                    let strg_id = ResId::<res_id::STRG>::new(custom_asset_ids::EXTRA_IDS_START.to_u32() + custom_asset_offset);
+                    custom_asset_offset = custom_asset_offset + 1;
+
+                    // Create scan/strg pair for destination
+                    assets.extend_from_slice(&create_item_scan_strg_pair(
+                        scan_id,
+                        strg_id,
+                        string.clone(),
+                        config.version,
+                    ));
+                    local_savw_scans_to_add[world as usize].push(scan_id);
+
+                    // Map for easy lookup when patching //
+                    let key = PickupHashKey::from_location(level_name, room_name, extra_scans_idx);
+                    extra_scans.insert(key, (scan_id, strg_id));
+
+                    // Cache this scan/strg pair for re-use //
+                    string_to_scan_strg.insert(string.clone(), (scan_id, strg_id));
+
+                    extra_scans_idx += 1;
+                }
+            }
+
             if room.pickups.is_none() { continue };
             for pickup in room.pickups.as_ref().unwrap().iter() {
                 // custom hudmemo string
