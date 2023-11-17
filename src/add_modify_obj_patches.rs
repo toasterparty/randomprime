@@ -1,6 +1,7 @@
 use std::{
     collections::HashMap,
     convert::TryInto,
+    iter,
 };
 
 use crate::{
@@ -26,6 +27,7 @@ use crate::{
         PlatformConfig,
         PlatformType,
         BlockConfig,
+        HudmemoConfig,
     },
     pickup_meta::PickupType,
     door_meta::DoorType,
@@ -531,6 +533,56 @@ pub fn patch_add_special_fn<'r>(
     }
 
     add_edit_obj_helper!(area, config.id, config.layer, SpecialFunction, new, update);
+}
+
+pub fn patch_add_hudmemo<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+    config: HudmemoConfig,
+    game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
+    strg_id: Option<ResId<res_id::STRG>>,
+)
+    -> Result<(), String>
+{
+    let memo_type = match config.modal.unwrap_or(false) {
+        false => 0,
+        true => 1,
+    };
+
+    macro_rules! new {
+        () => {
+            structs::HudMemo {
+                name: b"my hudmemo\0".as_cstr(),
+                first_message_timer: config.message_time.unwrap_or(4.0),
+                unknown: 1,
+                memo_type,
+                strg: strg_id.unwrap_or(ResId::invalid()),
+                active: config.active.unwrap_or(true) as u8,
+            }
+        };
+    }
+
+    macro_rules! update {
+        ($obj:expr) => {
+            let property_data = $obj.property_data.as_hud_memo_mut().unwrap();
+
+            if config.modal.is_some() {
+                property_data.memo_type = memo_type;
+            }
+
+            if let Some(strg_id) = strg_id { property_data.strg = strg_id }
+            if let Some(message_time) = config.message_time { property_data.first_message_timer = message_time}
+            if let Some(active) = config.active { property_data.active = active as u8}
+
+        };
+    }
+
+    if let Some(strg_id) = strg_id {
+        let strg_dep: structs::Dependency = strg_id.into();
+        area.add_dependencies(game_resources, 0, iter::once(strg_dep));
+    }
+
+    add_edit_obj_helper!(area, Some(config.id), config.layer, HudMemo, new, update);
 }
 
 pub fn patch_add_actor_rotate_fn<'r>(
