@@ -5760,6 +5760,7 @@ fn patch_visible_aether_boundaries<'r>(
             0,
             None,
             true,
+            true,
         );
     }
 
@@ -15662,6 +15663,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                         area,
                                         game_resources,
                                         block.clone(),
+                                        config.legacy_block_size,
                                     ),
                                 );
                             }

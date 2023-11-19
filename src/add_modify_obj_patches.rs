@@ -783,6 +783,7 @@ pub fn patch_add_block<'r>(
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
     game_resources: &HashMap<(u32, FourCC), structs::Resource<'r>>,
     config: BlockConfig,
+    old_scale: bool,
 ) -> Result<(), String>
 {
     let texture = config.texture.unwrap_or(GenericTexture::Grass);
@@ -808,6 +809,7 @@ pub fn patch_add_block<'r>(
         1,
         config.layer,
         config.active.unwrap_or(true),
+        old_scale,
     );
 
     Ok(())
@@ -822,9 +824,19 @@ pub fn add_block<'r>(
     is_tangible: u8,
     layer: Option<u32>,
     active: bool,
+    old_scale: bool,
 )
 {
     let layer_id = layer.unwrap_or(0);
+
+    let scale = match old_scale {
+        true => {
+            scale
+        },
+        false => {
+            [scale[0]*0.587, scale[1]*0.587, scale[2]*0.587]
+        }
+    };
 
     let actor_id = match id {
         Some(id) => id,
