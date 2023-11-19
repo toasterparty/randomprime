@@ -3992,6 +3992,104 @@
                         ],
                         "additionalProperties": false
                     }
+                },
+                "waypoints": {
+                    "description": "Add waypoints to this room. Useful for defining paths of enemies, cameras etc.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "$ref": "#/$defs/addModifyId"
+                            },
+                            "layer": {
+                                "$ref": "#/$defs/addModifyLayer"
+                            },
+                            "active": {
+                                "description": "Default active state of the waypoint.",
+                                "type": "boolean",
+                                "default": true
+                            },
+                            "position": {
+                                "description": "The position of the waypoint.",
+                                "$ref": "#/$defs/vector3",
+                                "default": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            },
+                            "rotation": {
+                                "description": "The rotation of the waypoint.",
+                                "$ref": "#/$defs/vector3",
+                                "default": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            },
+                            "speed": {
+                                "description": "",
+                                "type": "number",
+                                "exclusiveMinimum": 0.0
+                            },
+                            "pause": {
+                                "description": "",
+                                "type": "number",
+                                "exclusiveMinimum": 0.0
+                            },
+                            "patternTranslate": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295,
+                                "default": 0
+                            },
+                            "patternOrient": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295,
+                                "default": 0
+                            },
+                            "patternFit": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295,
+                                "default": 0
+                            },
+                            "behaviour": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295,
+                                "default": 0
+                            },
+                            "behaviourOrient": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295,
+                                "default": 0
+                            },
+                            "behaviourModifiers": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295,
+                                "default": 0
+                            },
+                            "animation": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295,
+                                "default": 0
+                            }
+                        },
+                        "required": [
+                            "rotation",
+                            "timeScale",
+                            "updateActors",
+                            "updateOnCreation",
+                            "updateActive"
+                        ],
+                        "additionalProperties": false
+                    }
                 }
             },
             "additionalProperties": false

@@ -28,6 +28,7 @@ use crate::{
         PlatformType,
         BlockConfig,
         HudmemoConfig,
+        WaypointConfig,
     },
     pickup_meta::PickupType,
     door_meta::DoorType,
@@ -618,6 +619,54 @@ pub fn patch_add_actor_rotate_fn<'r>(
     }
 
     add_edit_obj_helper!(area, config.id, config.layer, ActorRotate, new, update);
+}
+
+pub fn patch_add_waypoint<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    config: WaypointConfig,
+)
+    -> Result<(), String>
+{
+    macro_rules! new {
+        () => {
+            structs::Waypoint {
+                name: b"my waypoint\0".as_cstr(),
+                position: config.position.unwrap_or([0.0, 0.0, 0.0]).into(),
+                rotation: config.rotation.unwrap_or([0.0, 0.0, 0.0]).into(),
+                active: config.active.unwrap_or(true) as u8,
+                speed: config.speed.unwrap_or(1.0),
+                pause: config.pause.unwrap_or(0.0),
+                pattern_translate: config.pattern_translate.unwrap_or(0),
+                pattern_orient: config.pattern_orient.unwrap_or(0),
+                pattern_fit: config.pattern_fit.unwrap_or(0),
+                behaviour: config.behaviour.unwrap_or(0),
+                behaviour_orient: config.behaviour_orient.unwrap_or(0),
+                behaviour_modifiers: config.behaviour_modifiers.unwrap_or(0),
+                animation: config.animation.unwrap_or(0),
+            }
+        };
+    }
+
+    macro_rules! update {
+        ($obj:expr) => {
+            let property_data = $obj.property_data.as_waypoint_mut().unwrap();
+            if let Some(position           ) = config.position            {property_data.position            = position.into()    }
+            if let Some(rotation           ) = config.rotation            {property_data.rotation            = rotation.into()    }
+            if let Some(active             ) = config.active              {property_data.active              = active as u8       }
+            if let Some(speed              ) = config.speed               {property_data.speed               = speed              }
+            if let Some(pause              ) = config.pause               {property_data.pause               = pause              }
+            if let Some(pattern_translate  ) = config.pattern_translate   {property_data.pattern_translate   = pattern_translate  }
+            if let Some(pattern_orient     ) = config.pattern_orient      {property_data.pattern_orient      = pattern_orient     }
+            if let Some(pattern_fit        ) = config.pattern_fit         {property_data.pattern_fit         = pattern_fit        }
+            if let Some(behaviour          ) = config.behaviour           {property_data.behaviour           = behaviour          }
+            if let Some(behaviour_orient   ) = config.behaviour_orient    {property_data.behaviour_orient    = behaviour_orient   }
+            if let Some(behaviour_modifiers) = config.behaviour_modifiers {property_data.behaviour_modifiers = behaviour_modifiers}
+            if let Some(animation          ) = config.animation           {property_data.animation           = animation          }
+        };
+    }
+
+    add_edit_obj_helper!(area, Some(config.id), config.layer, Waypoint, new, update);
 }
 
 pub fn patch_add_platform<'r>(

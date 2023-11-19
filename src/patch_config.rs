@@ -586,6 +586,26 @@ pub struct HudmemoConfig
     pub modal: Option<bool>,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct WaypointConfig
+{
+    pub id: u32,
+    pub layer: Option<u32>,
+    pub position: Option<[f32;3]>,
+    pub rotation: Option<[f32;3]>,
+    pub active: Option<bool>,
+    pub speed: Option<f32>,
+    pub pause: Option<f32>,
+    pub pattern_translate: Option<u32>,
+    pub pattern_orient: Option<u32>,
+    pub pattern_fit: Option<u32>,
+    pub behaviour: Option<u32>,
+    pub behaviour_orient: Option<u32>,
+    pub behaviour_modifiers: Option<u32>,
+    pub animation: Option<u32>,
+}
+
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub enum EnviornmentalEffect {
@@ -792,7 +812,8 @@ pub struct RoomConfig
     pub actor_rotates: Option<Vec<ActorRotateConfig>>,
     pub streamed_audios: Option<Vec<StreamedAudioConfig>>,
     pub edit_objs: Option<HashMap<u32, EditObjConfig>>,
-    // Don't forget to update json_merge when adding here
+    pub waypoints: Option<Vec<WaypointConfig>>,
+    // Don't forget to update merge_json when adding here
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
@@ -1556,7 +1577,8 @@ impl PatchConfigPrivate
                 extend_option_vec!(special_functions , self_room_config, other_room_config);
                 extend_option_vec!(actor_rotates     , self_room_config, other_room_config);
                 extend_option_vec!(streamed_audios   , self_room_config, other_room_config);
-                
+                extend_option_vec!(waypoints         , self_room_config, other_room_config);
+
                 if let Some(other_layers) = &other_room_config.layers {
                     if self_room_config.layers.is_none() {
                         self_room_config.layers = Some(HashMap::new());

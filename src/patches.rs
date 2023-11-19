@@ -14813,6 +14813,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             streamed_audios: None,
                             layer_objs: None,
                             edit_objs: None,
+                            waypoints: None,
                         }
                     );
                 }
@@ -15457,6 +15458,19 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
                                     move |ps, area| patch_add_actor_rotate_fn(
+                                        ps,
+                                        area,
+                                        config.clone(),
+                                    ),
+                                );
+                            }
+                        }
+
+                        if let Some(waypoints) = room.waypoints.as_ref() {
+                            for config in waypoints {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_waypoint(
                                         ps,
                                         area,
                                         config.clone(),
