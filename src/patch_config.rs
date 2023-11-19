@@ -1082,6 +1082,7 @@ pub struct PatchConfig
     pub boss_sizes: HashMap<String,f32>,
     pub shoot_in_grapple: bool,
     pub difficulty_behavior: DifficultyBehavior,
+    pub legacy_block_size: bool,
     pub ctwk_config: CtwkConfig,
 }
 
@@ -1179,6 +1180,7 @@ struct GameConfig
     boss_sizes: Option<HashMap<String,f32>>,
     shoot_in_grapple: Option<bool>,
     difficulty_behavior: Option<DifficultyBehavior>,
+    legacy_block_size: Option<bool>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
@@ -2056,6 +2058,7 @@ impl PatchConfigPrivate
             boss_sizes: self.game_config.boss_sizes.clone().unwrap_or(HashMap::new()),
             shoot_in_grapple: self.game_config.shoot_in_grapple.unwrap_or(false),
             difficulty_behavior: self.game_config.difficulty_behavior.unwrap_or(DifficultyBehavior::Either),
+            legacy_block_size: self.game_config.legacy_block_size.unwrap_or(false),
             map_default_state,
 
             starting_items,
