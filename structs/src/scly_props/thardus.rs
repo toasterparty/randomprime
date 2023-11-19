@@ -3,8 +3,8 @@ use auto_struct_macros::auto_struct;
 use reader_writer::CStr;
 use reader_writer::typenum::*;
 use reader_writer::generic_array::GenericArray;
-use crate::{SclyPropertyData};
-use crate::scly_props::structs::{ActorParameters, PatternedInfo};
+use crate::SclyPropertyData;
+use crate::scly_props::structs::{ActorParameters, PatternedInfo, DamageInfo, DamageVulnerability, HealthInfo};
 
 #[auto_struct(Readable, Writable)]
 #[derive(Debug, Clone)]
@@ -27,7 +27,12 @@ pub struct Thardus<'r>
     pub asset_ids2: GenericArray<u32, U6>,
 }
 
+use crate::{impl_position, impl_rotation, impl_scale, impl_patterned_info_with_auxillary};
 impl<'r> SclyPropertyData for Thardus<'r>
 {
     const OBJECT_TYPE: u8 = 0x58;
+    impl_position!();
+    impl_rotation!();
+    impl_scale!();
+    impl_patterned_info_with_auxillary!();
 }

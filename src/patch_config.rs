@@ -17,7 +17,7 @@ use serde::{Serialize, Deserialize};
 use crate::{
     starting_items::StartingItems,
     pickup_meta::PickupType,
-    custom_assets::custom_asset_ids,
+    custom_assets::custom_asset_ids, door_meta::DoorType,
 };
 
 use reader_writer::{FourCC, Reader};
@@ -521,6 +521,25 @@ pub struct StreamedAudioConfig
     pub is_music: bool,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct EditObjConfig
+{
+    pub layer: Option<u32>,
+    pub position: Option<[f32;3]>,
+    pub rotation: Option<[f32;3]>,
+    pub scale: Option<[f32;3]>,
+    pub size: Option<f32>,
+    pub speed: Option<f32>,
+    pub damage: Option<f32>,
+    pub detection_range: Option<f32>,
+    pub attack_range: Option<f32>,
+    pub vulnerability: Option<String>, // maps to DoorType
+    pub vulnerabilities: Option<HashMap<u32,String>>,
+    pub health: Option<f32>,
+    pub healths: Option<HashMap<u32,f32>>,
+}
+
 // None = 0,
 // PerspLin = 2,
 // PerspExp = 4,
@@ -772,6 +791,8 @@ pub struct RoomConfig
     pub special_functions: Option<Vec<SpecialFunctionConfig>>,
     pub actor_rotates: Option<Vec<ActorRotateConfig>>,
     pub streamed_audios: Option<Vec<StreamedAudioConfig>>,
+    pub edit_objs: Option<HashMap<u32, EditObjConfig>>,
+    // Don't forget to update json_merge when adding here
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
@@ -1216,6 +1237,23 @@ macro_rules! extend_option_vec {
     };
 }
 
+macro_rules! merge_optional {
+    ($label:ident, $self:expr, $other:expr, $room_name:expr) => {
+        if let Some(other_value) = $other.$label {
+            match $self.$label {
+                Some(self_value) => {
+                    if self_value != other_value {
+                        panic!("Conflict in {}'s editObjs", $room_name);
+                    }
+                },
+                None => {
+                    $self.$label = Some(other_value);
+                },
+            }
+        }
+    };
+}
+
 impl PatchConfig
 {
     pub fn from_json(json: &str) -> Result<Self, String>
@@ -1534,6 +1572,93 @@ impl PatchConfigPrivate
                             },
                             None => {
                                 self_layers.insert(*layer, *other_state);
+                            },
+                        }
+                    }
+                }
+
+                if let Some(other_edit_objs) = &other_room_config.edit_objs {
+                    if self_room_config.edit_objs.is_none() {
+                        self_room_config.edit_objs = Some(HashMap::new());
+                    }
+
+                    let self_edit_objs = self_room_config.edit_objs.as_mut().unwrap();
+
+                    for (id, other_config) in other_edit_objs {
+                        match self_edit_objs.get_mut(id) {
+                            Some(self_config) => {
+                                // merge
+                                merge_optional!(layer, self_config, other_config, room_name);
+                                merge_optional!(position, self_config, other_config, room_name);
+                                merge_optional!(rotation, self_config, other_config, room_name);
+                                merge_optional!(scale, self_config, other_config, room_name);
+                                merge_optional!(size, self_config, other_config, room_name);
+                                merge_optional!(speed, self_config, other_config, room_name);
+                                merge_optional!(damage, self_config, other_config, room_name);
+                                merge_optional!(detection_range, self_config, other_config, room_name);
+                                merge_optional!(attack_range, self_config, other_config, room_name);
+                                merge_optional!(health, self_config, other_config, room_name);
+
+                                if let Some(other_vuln) = &other_config.vulnerability {
+                                    match &self_config.vulnerability {
+                                        Some(self_vuln) => {
+                                            if DoorType::from_string(other_vuln.to_string()) != DoorType::from_string(self_vuln.to_string()) {
+                                                panic!("Conflict in {}'s editObjs", room_name);
+                                            }
+                                        },
+                                        None => {
+                                            self_config.vulnerability = Some(other_vuln.to_string());
+                                        },
+                                    }
+                                }
+
+                                if let Some(other_vulns) = &other_config.vulnerabilities {
+                                    match self_config.vulnerabilities.as_mut() {
+                                        Some(self_vulns) => {
+                                            for (idx, other_vuln) in other_vulns {
+                                                match self_vulns.get_mut(idx) {
+                                                    Some(self_vuln) => {
+                                                        if DoorType::from_string(other_vuln.to_string()) != DoorType::from_string(self_vuln.to_string()) {
+                                                            panic!("Conflict in {}'s editObjs", room_name);
+                                                        }
+                                                    },
+                                                    None => {
+                                                        self_vulns.insert(*idx, other_vuln.to_string());
+                                                    },
+                                                }
+                                            }
+                                        },
+                                        None => {
+                                            self_config.vulnerabilities = Some(other_vulns.clone());
+                                        },
+                                    }
+                                }
+
+                                if let Some(other_healths) = &other_config.healths {
+                                    match self_config.healths.as_mut() {
+                                        Some(self_healths) => {
+                                            for (idx, other_health) in other_healths {
+                                                match self_healths.get_mut(idx) {
+                                                    Some(self_health) => {
+                                                        if self_health != other_health {
+                                                            panic!("Conflict in {}'s editObjs", room_name);
+                                                        }
+                                                    },
+                                                    None => {
+                                                        self_healths.insert(*idx, *other_health);
+                                                    },
+                                                }
+                                            }
+                                        },
+                                        None => {
+                                            self_config.healths = Some(other_healths.clone());
+                                        },
+                                    }
+                                }
+                            },
+                            None => {
+                                // copy
+                                self_edit_objs.insert(*id, other_config.clone());
                             },
                         }
                     }

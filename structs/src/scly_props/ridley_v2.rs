@@ -1,16 +1,14 @@
 use auto_struct_macros::auto_struct;
-
-use reader_writer::CStr;
-use reader_writer::typenum::*;
+use crate::SclyPropertyData;
 use reader_writer::generic_array::GenericArray;
+use reader_writer::typenum::*;
+use reader_writer::CStr;
 use crate::res_id:: *;
-use crate::{SclyPropertyData};
 use crate::scly_props::structs::{ActorParameters, DamageInfo, PatternedInfo, RidleyStruct1, RidleyStruct2};
 
 #[auto_struct(Readable, Writable)]
 #[derive(Debug, Clone)]
-pub struct RidleyV2<'r>
-{
+pub struct RidleyV2<'r> {
     #[auto_struct(expect = 40)]
     pub prop_count: u32,
 
@@ -60,7 +58,10 @@ pub struct RidleyV2<'r>
     pub damage_info8: DamageInfo,
 }
 
-impl<'r> SclyPropertyData for RidleyV2<'r>
-{
+use crate::{impl_position, impl_rotation, impl_scale};
+impl<'r> SclyPropertyData for RidleyV2<'r> {
     const OBJECT_TYPE: u8 = 0x7B;
+    impl_position!();
+    impl_rotation!();
+    impl_scale!();
 }

@@ -48,6 +48,7 @@ use std::hash::{Hash, Hasher};
 
 use crate::{
     add_modify_obj_patches::*,
+    generic_edit::patch_edit_objects,
     custom_assets::{custom_asset_ids, PickupHashKey, collect_game_resources, custom_asset_filename},
     dol_patcher::DolPatcher,
     ciso_writer::CisoWriter,
@@ -1369,10 +1370,10 @@ fn patch_door<'r>(
                     duration: 0.5,
                     sfx_dist: 10.0,
                     shakers: [
-                        structs::CameraShakerComponent {
+                        structs::NewCameraShakerComponent {
                             unknown1: 1,
                             unknown2: 1,
-                            am: structs::CameraShakePoint {
+                            am: structs::NewCameraShakePoint {
                                 unknown1: 1,
                                 unknown2: 0,
                                 attack_time: 0.1,
@@ -1380,7 +1381,7 @@ fn patch_door<'r>(
                                 duration: 0.4,
                                 magnitude: 0.2,
                             }.into(),
-                            fm: structs::CameraShakePoint {
+                            fm: structs::NewCameraShakePoint {
                                 unknown1: 1,
                                 unknown2: 0,
                                 attack_time: 0.1,
@@ -1389,10 +1390,10 @@ fn patch_door<'r>(
                                 magnitude: 2.0,
                             }.into(),
                         },
-                        structs::CameraShakerComponent {
+                        structs::NewCameraShakerComponent {
                             unknown1: 1,
                             unknown2: 0,
-                            am: structs::CameraShakePoint {
+                            am: structs::NewCameraShakePoint {
                                 unknown1: 1,
                                 unknown2: 1,
                                 attack_time: 0.0,
@@ -1400,7 +1401,7 @@ fn patch_door<'r>(
                                 duration: 0.0,
                                 magnitude: 0.0,
                             }.into(),
-                            fm: structs::CameraShakePoint {
+                            fm: structs::NewCameraShakePoint {
                                 unknown1: 1,
                                 unknown2: 1,
                                 attack_time: 0.0,
@@ -1409,10 +1410,10 @@ fn patch_door<'r>(
                                 magnitude: 0.0,
                             }.into(),
                         },
-                        structs::CameraShakerComponent {
+                        structs::NewCameraShakerComponent {
                             unknown1: 1,
                             unknown2: 1,
-                            am: structs::CameraShakePoint {
+                            am: structs::NewCameraShakePoint {
                                 unknown1: 1,
                                 unknown2: 0,
                                 attack_time: 0.2,
@@ -1420,7 +1421,7 @@ fn patch_door<'r>(
                                 duration: 0.3,
                                 magnitude: 0.2,
                             }.into(),
-                            fm: structs::CameraShakePoint {
+                            fm: structs::NewCameraShakePoint {
                                 unknown1: 1,
                                 unknown2: 0,
                                 attack_time: 0.0,
@@ -11423,6 +11424,28 @@ fn patch_subchamber_five_essence_permadeath<'r>(
     Ok(())
 }
 
+fn patch_fix_aether_lab_entryway_broken_load<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
+)
+-> Result<(), String>
+{
+    let scly = area.mrea().scly_section_mut();
+    let layers = &mut scly.layers.as_mut_vec();
+    let relay = layers[0].objects
+        .as_mut_vec()
+        .iter_mut()
+        .find(|obj| obj.instance_id&0x00FFFFFF == 0x00320083)
+        .expect("Could not find load trigger relay in aether lab entryway")
+        .property_data
+        .as_relay_mut()
+        .expect("Expected obj 0x00320083 to be a relay");
+
+    relay.active = 1;
+
+    Ok(())
+}
+
 fn patch_pq_permadeath<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea<'r, '_, '_, '_>,
@@ -12187,6 +12210,14 @@ fn patch_remove_control_disabler<'r>(
                 player_hint.inner_struct.unknowns[7] = 0; // always enable controls
                 player_hint.inner_struct.unknowns[8] = 0; // always enable boost
             }
+
+            // set_position(obj, [0.0, 0.0, 4.0], true);
+            // set_rotation(obj, [0.0, 0.0, 60.0], true);
+            // set_scale(obj, [1.0, 1.0, 2.0], true);
+            // set_patterned_speed(obj, 2.0, None);
+            // set_vulnerability(obj, DoorType::Red, None);
+            // set_health(obj, 1.0, None);
+            // set_damage(obj, 0.1);
         }
     }
 
@@ -12839,14 +12870,14 @@ fn patch_ridley_damage_props<'r>(
                                   .unwrap();
 
         ridley.patterned_info.contact_damage = contact_damage;
-        ridley.damage_info0 = other_damages[0];
-        ridley.damage_info1 = other_damages[1];
-        ridley.damage_info2 = other_damages[2];
-        ridley.damage_info3 = other_damages[3];
-        ridley.damage_info4 = other_damages[4];
-        ridley.damage_info5 = other_damages[5];
-        ridley.damage_info6 = other_damages[6];
-        ridley.damage_info7 = other_damages[7];
+        ridley.damage_info1 = other_damages[0];
+        ridley.damage_info2 = other_damages[1];
+        ridley.damage_info3 = other_damages[2];
+        ridley.damage_info4 = other_damages[3];
+        ridley.damage_info5 = other_damages[4];
+        ridley.damage_info6 = other_damages[5];
+        ridley.damage_info7 = other_damages[6];
+        ridley.damage_info8 = other_damages[7];
         ridley.unknown4 = unknown;
     }
 
@@ -14781,6 +14812,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             actor_rotates: None,
                             streamed_audios: None,
                             layer_objs: None,
+                            edit_objs: None,
                         }
                     );
                 }
@@ -15186,6 +15218,13 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
 
         boss_permadeath
     };
+
+    if config.qol_game_breaking || config.no_doors {
+        patcher.add_scly_patch(
+            resource_info!("generic_z2.MREA").into(),
+            move |ps, area| patch_fix_aether_lab_entryway_broken_load(ps, area)
+        );
+    }
 
     if config.qol_game_breaking {
         patcher.add_scly_patch(
@@ -17215,6 +17254,13 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
             patcher.add_scly_patch(
                 *room,
                 move |ps, area| patch_move_objects(ps, area, layer_objs.clone())
+            );
+        }
+
+        if let Some(edit_objs) = room_config.edit_objs.as_ref() {
+            patcher.add_scly_patch(
+                *room,
+                move |ps, area| patch_edit_objects(ps, area, edit_objs.clone())
             );
         }
 

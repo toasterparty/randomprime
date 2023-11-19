@@ -3356,14 +3356,103 @@
                     "additionalProperties": false
                 },
                 "layerObjs": {
-                    "description": "Move objects in this room to a different layer by instance ID. If the specified layer does not exist, it will be created.",
+                    "description": "Deprecated, use `objects.layer` instead.\nMove objects in this room to a different layer by instance ID. If the specified layer does not exist, it will be created.",
                     "type": "object",
                     "patternProperties": {
                         "^[0-9]+$": {
                             "type": "integer",
                             "minimum": 0,
                             "maximum": 4294967295
-
+                        }
+                    },
+                    "additionalProperties": false,
+                    "deprecated": true
+                },
+                "editObjs": {
+                    "description": "Modify properties of existing objects by their instance ID. Only generic properties shared across many object types can be edited such as position/scale. Not all objects support all properties. In these cases, an error is thrown when patching the ISO.",
+                    "type": "object",
+                    "patternProperties": {
+                        "^[0-9]+$": {
+                            "type": "object",
+                            "properties": {
+                                "layer": {
+                                    "description": "Layer # to move this object to. If the specified layer does not exist, it will be created.",
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 63
+                                },
+                                "position": {
+                                    "description": "Position of the object.",
+                                    "$ref": "#/$defs/vector3"
+                                },
+                                "rotation": {
+                                    "description": "Rotation of the object in degrees.",
+                                    "$ref": "#/$defs/vector3"
+                                },
+                                "scale": {
+                                    "description": "Scale of the object.",
+                                    "$ref": "#/$defs/vector3Positive"
+                                },
+                                "size": {
+                                    "description": "Relative size of the object as defined in it's `PatternedAITypedef`",
+                                    "type": "number",
+                                    "default": 1.0,
+                                    "exclusiveMinimum": 0.0
+                                },
+                                "damage": {
+                                    "description": "Relative damage of the object as defined across it's `PatternedAITypedef` and/or `DamageInfo` structs.",
+                                    "type": "number",
+                                    "default": 1.0,
+                                    "exclusiveMinimum": 0.0
+                                },
+                                "speed": {
+                                    "description": "Relative speed of the object as defined in it's `PatternedAITypedef`",
+                                    "type": "number",
+                                    "default": 1.0,
+                                    "exclusiveMinimum": 0.0
+                                },
+                                "detectionRange": {
+                                    "description": "Relative detection range of the object as defined in it's `PatternedAITypedef`",
+                                    "type": "number",
+                                    "default": 1.0,
+                                    "exclusiveMinimum": 0.0
+                                },
+                                "attackRange": {
+                                    "description": "Relative attack range of the object as defined in it's `PatternedAITypedef`",
+                                    "type": "number",
+                                    "default": 1.0,
+                                    "exclusiveMinimum": 0.0
+                                },
+                                "vulnerability": {
+                                    "description": "Sets all vulnerabilities of this object with the value specified here.",
+                                    "$ref": "#/$defs/vulnerabilityType"
+                                },
+                                "vulnerabilities": {
+                                    "description": "Replace one or more vulnerabilities of this object. Vulnerabilities are indexed in the order which they appear in PWE starting at 0.",
+                                    "patternProperties": {
+                                        "^[0-9]+$": {
+                                            "$ref": "#/$defs/vulnerabilityType"
+                                        }
+                                    }
+                                },
+                                "health": {
+                                    "description": "Adjust the amount of health of this object.",
+                                    "type": "number",
+                                    "default": 1.0,
+                                    "exclusiveMinimum": 0.0
+                                },
+                                "healths": {
+                                    "description": "Adjust the amount of health of specific components of this object. Healths are indexed in the order which they appear in PWE starting at 0.",
+                                    "patternProperties": {
+                                        "^[0-9]+$": {
+                                            "type": "number",
+                                            "default": 1.0,
+                                            "exclusiveMinimum": 0.0
+                                        }
+                                    }
+                                }
+                            },
+                            "additionalProperties": false
                         }
                     },
                     "additionalProperties": false
@@ -4424,6 +4513,27 @@
                 "PoisonWater",
                 "Lava",
                 "Hot"
+            ]
+        },
+        "vulnerabilityType": {
+            "type": "string",
+            "enum": [
+                "Blue",
+                "Power Beam Only",
+                "Wave Beam",
+                "Ice Beam",
+                "Plasma Beam",
+                "Charge Beam",
+                "Missile",
+                "Super Missile",
+                "Wavebuster",
+                "Ice Spreader",
+                "Flamethrower",
+                "Bomb",
+                "Power Bomb",
+                "Phazon",
+                "Disabled",
+                "Enemy"
             ]
         }
     }

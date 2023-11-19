@@ -26,7 +26,22 @@ pub struct Trigger<'r>
     pub deactivate_on_exit: u8,
 }
 
+use crate::{impl_position, impl_scale};
 impl<'r> SclyPropertyData for Trigger<'r>
 {
     const OBJECT_TYPE: u8 = 0x04;
+    impl_position!();
+    impl_scale!();
+
+    const SUPPORTS_DAMAGE_INFOS: bool = true;
+
+    fn impl_get_damage_infos(&self) -> Vec<DamageInfo> {
+        vec![
+            self.damage_info.clone(),
+        ]
+    }
+
+    fn impl_set_damage_infos(&mut self, x: Vec<DamageInfo>) {
+        self.damage_info = x[0].clone();
+    }
 }

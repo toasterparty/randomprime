@@ -27,7 +27,10 @@ pub struct Waypoint<'r>
     pub unknown9: u32,
 }
 
+use crate::{impl_position, impl_rotation};
 impl<'r> SclyPropertyData for Waypoint<'r>
 {
     const OBJECT_TYPE: u8 = 0x02;
+    impl_position!();
+    impl_rotation!();
 }

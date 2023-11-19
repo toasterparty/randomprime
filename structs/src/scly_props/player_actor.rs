@@ -58,7 +58,35 @@ pub struct PlayerActorParams
     pub unknown5: Option<u8>,
 }
 
+use crate::{impl_position, impl_rotation, impl_scale};
 impl<'r> SclyPropertyData for PlayerActor<'r>
 {
     const OBJECT_TYPE: u8 = 0x4c;
+    impl_position!();
+    impl_rotation!();
+    impl_scale!();
+
+    const SUPPORTS_VULNERABILITIES: bool = true;
+
+    fn impl_get_vulnerabilities(&self) -> Vec<DamageVulnerability> {
+        vec![
+            self.damage_vulnerability.clone(),
+        ]
+    }
+
+    fn impl_set_vulnerabilities(&mut self, x: Vec<DamageVulnerability>) {
+        self.damage_vulnerability = x[0].clone();
+    }
+
+    const SUPPORTS_HEALTH_INFOS: bool = true;
+
+    fn impl_get_health_infos(&self) -> Vec<HealthInfo> {
+        vec![
+            self.health_info.clone()
+        ]
+    }
+
+    fn impl_set_health_infos(&mut self, x: Vec<HealthInfo>) {
+        self.health_info = x[0].clone();
+    }
 }

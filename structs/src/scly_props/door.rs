@@ -33,7 +33,12 @@ pub struct Door<'r>
     pub is_morphball_door: u8,
 }
 
+use crate::{impl_position, impl_rotation, impl_scale};
 impl<'r> SclyPropertyData for Door<'r>
 {
     const OBJECT_TYPE: u8 = 0x03;
+
+    impl_position!();
+    impl_rotation!();
+    impl_scale!();
 }

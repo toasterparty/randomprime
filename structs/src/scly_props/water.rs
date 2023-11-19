@@ -5,6 +5,8 @@ use reader_writer::typenum::*;
 use reader_writer::generic_array::GenericArray;
 use crate::SclyPropertyData;
 use crate::scly_props::structs::DamageInfo;
+
+// https://github.com/AxioDL/metaforce/blob/1655d229cfdfbd5f792a7c3e84adc862653f70a7/DataSpec/DNAMP1/ScriptObjects/Water.hpp
 #[auto_struct(Readable, Writable)]
 #[derive(Debug, Clone)]
 pub struct Water<'r>
@@ -97,7 +99,22 @@ pub struct FluidLayerMotion
     pub unknown4: f32,
 }
 
+use crate::{impl_position, impl_scale};
 impl<'r> SclyPropertyData for Water<'r>
 {
     const OBJECT_TYPE: u8 = 0x20;
+    impl_position!();
+    impl_scale!();
+
+    const SUPPORTS_DAMAGE_INFOS: bool = true;
+
+    fn impl_get_damage_infos(&self) -> Vec<DamageInfo> {
+        vec![
+            self.damage_info.clone(),
+        ]
+    }
+
+    fn impl_set_damage_infos(&mut self, x: Vec<DamageInfo>) {
+        self.damage_info = x[0].clone();
+    }
 }

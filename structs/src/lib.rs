@@ -65,6 +65,48 @@ pub mod scly_props
     pub mod waypoint;
     pub mod world_transporter;
 
+    // "Generic" edit update
+    pub mod ai_jump_point;
+    pub mod ambient_ai;
+    pub mod atomic_alpha;
+    pub mod atomic_beta;
+    pub mod babygoth;
+    pub mod bloodflower;
+    pub mod burrower;
+    pub mod camera_pitch_volume;
+    pub mod camera_waypoint;
+    pub mod chozo_ghost;
+    pub mod cover_point;
+    pub mod debris;
+    pub mod debris_extended;
+    pub mod energy_ball;
+    pub mod eyeball;
+    pub mod fire_flea;
+    pub mod fish_cloud;
+    pub mod flaahgra_tentacle;
+    pub mod flicker_bat;
+    pub mod flying_pirate;
+    pub mod geemer;
+    pub mod gun_turret;
+    pub mod jelly_zap;
+    pub mod magdolite;
+    pub mod metaree;
+    pub mod metroid;
+    pub mod metroid_beta;
+    pub mod parasite;
+    pub mod phazon_healing_nodule;
+    pub mod phazon_pool;
+    pub mod puddle_spore;
+    pub mod puddle_toad_gamma;
+    pub mod puffer;
+    pub mod ripper;
+    pub mod seedling;
+    pub mod space_pirate;
+    pub mod spank_weed;
+    pub mod thardus_rock_projectile;
+    pub mod tryclops;
+    pub mod war_wasp;
+
     // bosses
     pub mod beetle;
     pub mod drone;
@@ -118,6 +160,48 @@ pub mod scly_props
     pub use self::water::*;
     pub use self::waypoint::*;
     pub use self::world_transporter::*;
+
+    // "Generic" edit update
+    pub use self::ai_jump_point::*;
+    pub use self::ambient_ai::*;
+    pub use self::atomic_alpha::*;
+    pub use self::atomic_beta::*;
+    pub use self::babygoth::*;
+    pub use self::bloodflower::*;
+    pub use self::burrower::*;
+    pub use self::camera_pitch_volume::*;
+    pub use self::camera_waypoint::*;
+    pub use self::chozo_ghost::*;
+    pub use self::cover_point::*;
+    pub use self::debris::*;
+    pub use self::debris_extended::*;
+    pub use self::energy_ball::*;
+    pub use self::eyeball::*;
+    pub use self::fire_flea::*;
+    pub use self::fish_cloud::*;
+    pub use self::flaahgra_tentacle::*;
+    pub use self::flicker_bat::*;
+    pub use self::flying_pirate::*;
+    pub use self::geemer::*;
+    pub use self::gun_turret::*;
+    pub use self::jelly_zap::*;
+    pub use self::magdolite::*;
+    pub use self::metaree::*;
+    pub use self::metroid::*;
+    pub use self::metroid_beta::*;
+    pub use self::parasite::*;
+    pub use self::phazon_healing_nodule::*;
+    pub use self::phazon_pool::*;
+    pub use self::puddle_spore::*;
+    pub use self::puddle_toad_gamma::*;
+    pub use self::puffer::*;
+    pub use self::ripper::*;
+    pub use self::seedling::*;
+    pub use self::space_pirate::*;
+    pub use self::spank_weed::*;
+    pub use self::thardus_rock_projectile::*;
+    pub use self::tryclops::*;
+    pub use self::war_wasp::*;
 
     // bosses
     pub use self::beetle::*;
@@ -186,6 +270,48 @@ pub use scly_props::ridley_v1::*;
 pub use scly_props::ridley_v2::*;
 pub use scly_props::metroidprimestage1::*;
 pub use scly_props::metroidprimestage2::*;
+
+// "Generic" edit update
+pub use scly_props::ai_jump_point::*;
+pub use scly_props::ambient_ai::*;
+pub use scly_props::atomic_alpha::*;
+pub use scly_props::atomic_beta::*;
+pub use scly_props::babygoth::*;
+pub use scly_props::bloodflower::*;
+pub use scly_props::burrower::*;
+pub use scly_props::camera_pitch_volume::*;
+pub use scly_props::camera_waypoint::*;
+pub use scly_props::chozo_ghost::*;
+pub use scly_props::cover_point::*;
+pub use scly_props::debris::*;
+pub use scly_props::debris_extended::*;
+pub use scly_props::energy_ball::*;
+pub use scly_props::eyeball::*;
+pub use scly_props::fire_flea::*;
+pub use scly_props::fish_cloud::*;
+pub use scly_props::flaahgra_tentacle::*;
+pub use scly_props::flicker_bat::*;
+pub use scly_props::flying_pirate::*;
+pub use scly_props::geemer::*;
+pub use scly_props::gun_turret::*;
+pub use scly_props::jelly_zap::*;
+pub use scly_props::magdolite::*;
+pub use scly_props::metaree::*;
+pub use scly_props::metroid::*;
+pub use scly_props::metroid_beta::*;
+pub use scly_props::parasite::*;
+pub use scly_props::phazon_healing_nodule::*;
+pub use scly_props::phazon_pool::*;
+pub use scly_props::puddle_spore::*;
+pub use scly_props::puddle_toad_gamma::*;
+pub use scly_props::puffer::*;
+pub use scly_props::ripper::*;
+pub use scly_props::seedling::*;
+pub use scly_props::space_pirate::*;
+pub use scly_props::spank_weed::*;
+pub use scly_props::thardus_rock_projectile::*;
+pub use scly_props::tryclops::*;
+pub use scly_props::war_wasp::*;
 
 pub use res_id::ResId;
 

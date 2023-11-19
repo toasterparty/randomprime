@@ -11,7 +11,7 @@ use crate::SclyPropertyData;
 #[derive(Debug, Clone)]
 pub struct CameraHintTrigger<'r>
 {
-    #[auto_struct(expect = 9)]
+    #[auto_struct(expect = 7)]
     prop_count: u32,
 
     pub name: CStr<'r>,
@@ -23,7 +23,12 @@ pub struct CameraHintTrigger<'r>
     pub deactivate_on_exit: u8,
 }
 
+use crate::{impl_position, impl_rotation, impl_scale};
 impl<'r> SclyPropertyData for CameraHintTrigger<'r>
 {
     const OBJECT_TYPE: u8 = 0x73;
+
+    impl_position!();
+    impl_rotation!();
+    impl_scale!();
 }

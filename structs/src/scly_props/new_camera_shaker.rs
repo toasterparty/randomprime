@@ -9,7 +9,7 @@ use crate::SclyPropertyData;
 #[derive(Debug, Clone)]
 pub struct NewCameraShaker<'r>
 {
-    #[auto_struct(expect = 15)]
+    #[auto_struct(expect = 8)]
     pub prop_count: u32,
 
     pub name: CStr<'r>,
@@ -23,22 +23,22 @@ pub struct NewCameraShaker<'r>
     pub duration: f32,
     pub sfx_dist: f32,
 
-    pub shakers: GenericArray<CameraShakerComponent, U3>,
+    pub shakers: GenericArray<NewCameraShakerComponent, U3>,
 }
 
 #[auto_struct(Readable, Writable)]
 #[derive(Debug, Clone)]
-pub struct CameraShakerComponent
+pub struct NewCameraShakerComponent
 {
     pub unknown1: u32,
     pub unknown2: u8,
-    pub am: CameraShakePoint,
-    pub fm: CameraShakePoint,
+    pub am: NewCameraShakePoint,
+    pub fm: NewCameraShakePoint,
 }
 
 #[auto_struct(Readable, Writable)]
 #[derive(Debug, Clone)]
-pub struct CameraShakePoint
+pub struct NewCameraShakePoint
 {
     pub unknown1: u32,
     pub unknown2: u8,

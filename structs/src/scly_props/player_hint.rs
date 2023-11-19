@@ -35,7 +35,10 @@ pub struct PlayerHint<'r>
     pub unknown1: u32,
 }
 
+use crate::{impl_position, impl_rotation};
 impl<'r> SclyPropertyData for PlayerHint<'r>
 {
     const OBJECT_TYPE: u8 = 0x3E;
+    impl_position!();
+    impl_rotation!();
 }
