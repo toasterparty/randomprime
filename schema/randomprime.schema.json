@@ -4082,11 +4082,6 @@
                             }
                         },
                         "required": [
-                            "rotation",
-                            "timeScale",
-                            "updateActors",
-                            "updateOnCreation",
-                            "updateActive"
                         ],
                         "additionalProperties": false
                     }
