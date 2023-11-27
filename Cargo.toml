@@ -20,6 +20,7 @@ serde_json = "1.0"
 ssmarshal = "1"
 rand = "0.7"
 winapi = "0.3"
+lazy_static = "1.4"
 
 
 auto_struct_macros = { path = "auto_struct_macros" }

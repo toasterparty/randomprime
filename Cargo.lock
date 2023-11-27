@@ -685,6 +685,7 @@ dependencies = [
  "image",
  "json_data",
  "json_strip",
+ "lazy_static",
  "libsquish_wrapper",
  "memmap",
  "nod_wrapper",
