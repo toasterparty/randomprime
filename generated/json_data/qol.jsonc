@@ -2670,7 +2670,6 @@
                     "streamedAudios": [
                         {
                             "id": 3212049, // [StreamedAudio] StreamedAudio - Ruins Samus SW
-                            "layer": 0,
                             "volume": 70,
                             "isMusic": true,
                             "fadeInTime": 0.01,
@@ -3314,8 +3313,7 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                                 34.0,
                                 39.0,
                                 40.0
-                            ],
-                            "flags": 1
+                            ]
                         },
                         {
                             "id": 131079, // [Trigger] Trigger_DoorOpen
@@ -3328,8 +3326,7 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                                 20.0,
                                 10.0,
                                 4.0
-                            ],
-                            "flags": 1
+                            ]
                         }
                     ]
                 },
@@ -4192,7 +4189,6 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                     "streamedAudios": [
                         {
                             "id": 599956, // [StreamedAudio] StreamedAudio - Ruins Samus SW
-                            "layer": 0,
                             "volume": 70,
                             "isMusic": true,
                             "fadeInTime": 0.01,
@@ -4207,7 +4203,6 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                         },
                         {
                             "id": 600226, // [StreamedAudio] StreamedAudio - General Short Battle SW
-                            "layer": 0,
                             "volume": 80,
                             "isMusic": true,
                             "fadeInTime": 0.01,
@@ -4216,7 +4211,6 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                         },
                         {
                             "id": 600507, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
-                            "layer": 0,
                             "volume": 80,
                             "isMusic": true,
                             "fadeInTime": 0.05,
@@ -4872,7 +4866,6 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                         },
                         {
                             "id": 2437270, // [StreamedAudio] StreamedAudio - Ruins Samus SW
-                            "layer": 0,
                             "volume": 70,
                             "isMusic": true,
                             "fadeInTime": 0.01,
@@ -4990,7 +4983,6 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                         {
                             "id": 1638548, // [StreamedAudio] StreamedAudio - Ruins Samus SW
                             "volume": 70,
-                            "layer": 0,
                             "isMusic": true,
                             "fadeInTime": 0.01,
                             "audioFileName": "/audio/rui_samusL.dsp|/audio/rui_samusR.dsp"
@@ -5611,8 +5603,7 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                                 20.0,
                                 10.0,
                                 11.0
-                            ],
-                            "flags": 1
+                            ]
                         }
                     ]
                 },
@@ -7397,7 +7388,6 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                     "streamedAudios": [
                         {
                             "id": 1573575, // [StreamedAudio] StreamedAudio Ice Connect SW
-                            "layer": 0,
                             "volume": 60,
                             "isMusic": true,
                             "fadeInTime": 0.01,
@@ -7984,7 +7974,6 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                     "streamedAudios": [
                         {
                             "id": 3343289, // [StreamedAudio] StreamedAudio Pirate Battle 3 SW
-                            "layer": 0,
                             "volume": 95,
                             "isMusic": true,
                             "fadeInTime": 0.01,
@@ -8002,7 +7991,6 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                         },
                         {
                             "id": 3343285, // [StreamedAudio] StreamedAudio Pirate Yoin SW
-                            "layer": 0,
                             "volume": 90,
                             "isMusic": true,
                             "active": false,
@@ -8235,7 +8223,6 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                     "streamedAudios": [
                         {
                             "id": 983485, // [StreamedAudio] StreamedAudio - Ice Main SW
-                            "layer": 0,
                             "volume": 80,
                             "isMusic": true,
                             "fadeInTime": 0.01,
@@ -8244,7 +8231,6 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                         },
                         {
                             "id": 983486, // [StreamedAudio] StreamedAudio Ice Shorelines SW
-                            "layer": 0,
                             "volume": 50,
                             "active": false,
                             "isMusic": true,
@@ -11053,7 +11039,6 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                     "streamedAudios": [
                         {
                             "id": 1573343, // [StreamedAudio] StreamedAudio Pirate Yoin SW
-                            "layer": 0,
                             "volume": 90,
                             "isMusic": true,
                             "fadeInTime": 0.01,
@@ -11448,7 +11433,6 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                     "streamedAudios": [
                         {
                             "id": 853210, // [StreamedAudio] StreamedAudio Mines Main SW
-                            "layer": 0,
                             "volume": 80,
                             "isMusic": true,
                             "fadeInTime": 0.01,
@@ -11910,7 +11894,6 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                     "streamedAudios": [
                         {
                             "id": 460358, // [StreamedAudio] StreamedAudio Mines Main SW
-                            "layer": 0,
                             "volume": 80,
                             "isMusic": true,
                             "fadeInTime": 0.01,
@@ -13794,22 +13777,6 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                             "fadeOutTime": 1.5,
                             "audioFileName": "/audio/lav_lavamainL.dsp|/audio/lav_lavamainR.dsp"
                         }
-                    ],
-                    "triggers": [
-                        {
-                            "id": 131078, // [Trigger] Trigger - Load 00s Connect
-                            "position": [
-                                135.338852,
-                                76.633369,
-                                15.859619
-                            ],
-                            "scale": [
-                                34.0,
-                                39.0,
-                                40.0
-                            ],
-                            "flags": 1
-                        }
                     ]
                 },
                 "Twin Fires Tunnel": {
@@ -13827,8 +13794,7 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                                 10.0,
                                 20.0,
                                 16.0
-                            ],
-                            "flags": 1
+                            ]
                         },
                         {
                             "id": 1114162, // [Trigger] Trigger_DoorOpen
@@ -13842,8 +13808,7 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                                 10.0,
                                 20.0,
                                 16.0
-                            ],
-                            "flags": 1
+                            ]
                         }
                     ],
                     "addConnections": [
@@ -13929,8 +13894,7 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                                 20.0,
                                 10.0,
                                 10.0
-                            ],
-                            "flags": 1
+                            ]
                         }
                     ]
                 },
