@@ -1718,7 +1718,7 @@
                             "senderId": 3145745, // [SpecialFunction] SpecialFunction Cinematic Skip
                             "targetId": 3155829, // [StreamedAudio] StreamedAudio Ruins Monkeylower SW
                             "state": "ZERO",
-                            "message": "PLAY"
+                            "message": "ACTIVATE"
                         },
                         {
                             "senderId": 3145745, // [SpecialFunction] SpecialFunction Cinematic Skip
@@ -4731,7 +4731,7 @@
                             "position": [
                                 799.513916,
                                 -168.868607,
-                                72.204781
+                                72.2047958
                             ],
                             "rotation": [
                                 0.0,
@@ -11161,6 +11161,18 @@
                             "targetId": 1966935, // [StreamedAudio] StreamedAudio - Ice Observatory Puzzle Ambient
                             "state": "ZERO",
                             "message": "PLAY"
+                        },
+                        {
+                            "senderId": 1966109, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 1966921, // [StreamedAudio] StreamedAudio General Puzzle SW
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1966109, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 1966935, // [StreamedAudio] StreamedAudio - Ice Observatory Puzzle Ambient
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
                         }
                     ],
                     "removeConnections": [
@@ -11641,36 +11653,6 @@
                             "targetId": 1048576, // [SpecialFunction] toster
                             "state": "ZERO",
                             "message": "DECREMENT"
-                        },
-                        {
-                            "senderId": 1572876, // [SpecialFunction] SpecialFunction Cinematic Skip
-                            "targetId": 1572878, // [Timer] Stop Music Again
-                            "state": "ZERO",
-                            "message": "ACTIVATE"
-                        },
-                        {
-                            "senderId": 1572876, // [SpecialFunction] SpecialFunction Cinematic Skip
-                            "targetId": 2572878, // [Timer] Stop Stop Music Timer
-                            "state": "ZERO",
-                            "message": "START"
-                        },
-                        {
-                            "senderId": 1572878, // [Timer] Stop Music Again
-                            "targetId": 1573575, // [StreamedAudio] StreamedAudio Ice Connect SW
-                            "state": "ZERO",
-                            "message": "PLAY"
-                        },
-                        {
-                            "senderId": 1572878, // [Timer] Stop Music Again
-                            "targetId": 1573574, // [StreamedAudio] StreamedAudio - Ice Thardus SW
-                            "state": "ZERO",
-                            "message": "STOP"
-                        },
-                        {
-                            "senderId": 2572878, // [Timer] Stop Stop Music Timer
-                            "targetId": 1572878, // [Timer] Stop Music Again
-                            "state": "ZERO",
-                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 1572876, // [SpecialFunction] SpecialFunction Cinematic Skip
@@ -12163,19 +12145,6 @@
                             "targetId": 1573727, // [SpecialFunction] SpecialFunction - 00k Ice Connect - increment 2nd pass
                             "state": "ZERO",
                             "message": "INCREMENT"
-                        }
-                    ],
-                    "timers": [
-                        {
-                            "id": 1572878, // [Timer] Stop Music Again
-                            "time": 0.001,
-                            "active": false,
-                            "looping": true,
-                            "startImmediately": true
-                        },
-                        {
-                            "id": 2572878, // [Timer] Stop Stop Music Timer
-                            "time": 11.0
                         }
                     ],
                     "relays": [
@@ -18271,7 +18240,7 @@
                         },
                         {
                             "id": 2048737, // [Timer] New Elite Pirate Music Timer
-                            "time": 3.3
+                            "time": 1.7
                         }
                     ],
                     "actorKeyframes": [

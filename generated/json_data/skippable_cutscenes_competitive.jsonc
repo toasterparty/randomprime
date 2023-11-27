@@ -175,6 +175,66 @@
                         3343159, // [Camera] Cinematic Camera 2
                         3343168 // [SpawnPoint] Spawn point
                     ]
+                },
+                "Research Core": {
+                    "deleteIds": [
+                        2621450, // [Relay] Power Loss Cinematic Start
+                        2621451, // [Relay] Power Loss Cinematic End
+                        2621452, // [SpecialFunction] SpecialFunction Cinematic Skip
+                        2622567, // [Timer] Timer Delay to Cinematic,
+                        2622627, // [Timer] Timer HUD
+                        2622534 // [PlayerActor] PlayerActor-scan-cine-forward
+                    ],
+                    "addConnections": [
+                        {
+                            "senderId": 2621724, // [Pickup] P_Thermal_01
+                            "targetId": 2622569, // [Relay] Relay End of Post Cinematic
+                            "state": "ARRIVED",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 2621724, // [Pickup] P_Thermal_01
+                            "targetId": 2622639, // [Effect] Effect - light
+                            "state": "ARRIVED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 2621724, // [Pickup] P_Thermal_01
+                            "targetId": 2622521, // [WorldLightFader] World Light Fader
+                            "state": "ARRIVED",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 2621724, // [Pickup] P_Thermal_01
+                            "targetId": 2622524, // [Relay] Relay - [IN] Deactivate Door
+                            "state": "ARRIVED",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 2621724, // [Pickup] P_Thermal_01
+                            "targetId": 2622524, // [Relay] Relay - [IN] Deactivate Door
+                            "state": "ARRIVED",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 2621724, // [Pickup] P_Thermal_01
+                            "targetId": 2622527, // [DamageableTrigger] DamageableTrigger - Hit Detection
+                            "state": "ARRIVED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 2621724, // [Pickup] P_Thermal_01
+                            "targetId": 2622570, // [Sound] Sound Door Deactivate
+                            "state": "ARRIVED",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 2621724, // [Pickup] P_Thermal_01
+                            "targetId": 2622576, // [Effect] Effect - Dynamic light for thermal door
+                            "state": "ARRIVED",
+                            "message": "ACTIVATE"
+                        }
+                    ]
                 }
             }
         },

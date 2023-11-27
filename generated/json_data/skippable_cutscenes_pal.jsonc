@@ -7,6 +7,52 @@
                 "Exterior Docking Hangar": {
                     "deleteIds": [
                         74
+                    ],
+                    "removeConnections": [
+                        {
+                            "senderId": 1113, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 864, // [WorldTeleporter] WorldTeleporterToo
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        }
+                    ],
+                    "addConnections": [
+                        {
+                            "senderId": 1113, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
+                            "state": "ZERO",
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 1113, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
+                            "state": "ZERO",
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 1113, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 804, // [Camera] camera4-close up of samus eyes
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1113, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 804, // [Camera] camera4-close up of samus eyes
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1113, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 42069, // [CameraFilterKeyframe] Camera Filter Keyframe Hold Black
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 1572949, // [Timer] Cutscene Skip 2 Frame Delay
+                            "targetId": 864, // [WorldTeleporter] WorldTeleporterToo
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        }
                     ]
                 },
                 "Map Facility": {
@@ -52,6 +98,11 @@
                         589930,
                         589935,
                         589932
+                    ]
+                },
+                "Hall of the Elders": {
+                    "deleteIds": [
+                        3408777
                     ]
                 }
             }
