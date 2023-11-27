@@ -1,5 +1,5 @@
 {
-    "$schema": "https://toasterparty.github.io/randomprime/randomprime.schema.json",
+    "$schema": "../../schema/randomprime.schema.json",
     "levelData": {
         "Frigate Orpheon": {
             "transports": {},
@@ -4731,7 +4731,7 @@
                             "position": [
                                 799.513916,
                                 -168.868607,
-                                72.204781
+                                72.2047958
                             ],
                             "rotation": [
                                 0.0,
