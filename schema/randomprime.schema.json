@@ -4082,6 +4082,7 @@
                             }
                         },
                         "required": [
+                            "id"
                         ],
                         "additionalProperties": false
                     }

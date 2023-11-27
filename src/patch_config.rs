@@ -1,6 +1,6 @@
 use std::{
     ffi::CStr,
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     fs::{File, OpenOptions},
     fs,
     fmt,
@@ -18,6 +18,7 @@ use crate::{
     starting_items::StartingItems,
     pickup_meta::PickupType,
     custom_assets::custom_asset_ids, door_meta::DoorType,
+    room_lookup::ROOM_BY_INTERNAL_ID,
 };
 
 use reader_writer::{FourCC, Reader};
@@ -1531,9 +1532,73 @@ fn merge_json(config: &mut PatchConfigPrivate, text: &'static str) -> Result<(),
 
 impl PatchConfigPrivate
 {
+    // returns all non-vanilla game layers which this config modifies
+    fn layers(self: &Self) -> HashMap<u32, HashSet<u32>>
+    {
+        let mut layers = HashMap::new();
+
+        for world in World::iter() {
+            let world_key = world.to_json_key();
+            let level_config = &self.level_data.get(world_key);
+            if level_config.is_none() {
+                continue;
+            }
+            let rooms = &level_config.unwrap().rooms; 
+
+            for (_, room_config) in rooms {
+                if room_config.special_functions.is_none() {
+                    continue;
+                }
+
+                let special_functions = room_config.special_functions.as_ref().unwrap();
+                for special_function in special_functions {
+                    if special_function.type_ != SpecialFunctionType::ScriptLayerController || special_function.layer_change_room_id.is_none() || special_function.layer_change_layer_id.is_none() {
+                        continue; // not a layer change special function
+                    }
+
+                    let layer = special_function.layer_change_layer_id.unwrap();
+                    let internal_id = special_function.layer_change_room_id.unwrap();
+
+                    let room_lookup = ROOM_BY_INTERNAL_ID[&internal_id];
+
+                    if layer < room_lookup.layer_count {
+                        continue; // This is modifying a vanilla layer, so skip
+                    }
+
+                    if !layers.contains_key(&room_lookup.mrea_id) {
+                        layers.insert(room_lookup.mrea_id, HashSet::new());
+                    }
+
+                    let room = layers.get_mut(&room_lookup.mrea_id).unwrap();
+                    room.insert(layer);
+                }
+            }
+        }
+
+        layers
+    } 
+
     /* Extends the "stuff" added/edited in each room */
     pub fn merge(self: &mut Self, other: Self)
     {
+        /* First check if there for any conflicts when adding new layers */
+        let self_layers = self.layers();
+        let other_layers = other.layers();
+
+        for (mrea_id, other_room_layers) in other_layers {
+            if !self_layers.contains_key(&mrea_id) {
+                continue; // this room isn't modified by the current configuration
+            }
+
+            let self_room_layers = self_layers.get(&mrea_id).unwrap();
+
+            if !self_room_layers.is_disjoint(&other_room_layers) {
+                let subset: HashSet<_> = self_room_layers.intersection(&other_room_layers).cloned().collect();
+                panic!("Room 0x{:X} contains conflicting usage of new layers. The following layer IDs must not be used to resolve this conflict: {:?}", mrea_id, subset);
+            }
+        }
+
+        /* Merge one room at a time */
         for world in World::iter() {
             let world_key = world.to_json_key();
 
