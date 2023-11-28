@@ -10504,7 +10504,6 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                         }
                     ],
                     "layers": {
-                        "1": true,
                         "3": false
                     }
                 },
