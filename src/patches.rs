@@ -6832,44 +6832,13 @@ fn make_main_plaza_locked_door_two_ways(_ps: &mut PatcherState, area: &mut mlvl_
                 scale: [0.25, 4.5, 4.0].into(),
                 health_info: structs::scly_structs::HealthInfo {
                     health: 1.0,
-                    knockback_resistance: 1.0
+                    knockback_resistance: 1.0,
                 },
-                damage_vulnerability: structs::scly_structs::DamageVulnerability {
-                    power: 1,           // Normal
-                    ice: 1,             // Normal
-                    wave: 1,            // Normal
-                    plasma: 1,          // Normal
-                    bomb: 1,            // Normal
-                    power_bomb: 1,      // Normal
-                    missile: 2,         // Reflect
-                    boost_ball: 2,      // Reflect
-                    phazon: 1,          // Normal
-                    enemy_weapon0: 3,   // Immune
-                    enemy_weapon1: 2,   // Reflect
-                    enemy_weapon2: 2,   // Reflect
-                    enemy_weapon3: 2,   // Reflect
-                    unknown_weapon0: 2, // Reflect
-                    unknown_weapon1: 2, // Reflect
-                    unknown_weapon2: 1, // Normal
-                    charged_beams: structs::scly_structs::ChargedBeams {
-                        power: 1,       // Normal
-                        ice: 1,         // Normal
-                        wave: 1,        // Normal
-                        plasma: 1,      // Normal
-                        phazon: 1       // Normal
-                    },
-                    beam_combos: structs::scly_structs::BeamCombos {
-                        power: 2,       // Reflect
-                        ice: 2,         // Reflect
-                        wave: 2,        // Reflect
-                        plasma: 2,      // Reflect
-                        phazon: 1       // Normal
-                    }
-                },
-                unknown0: 3, // Render Side : East
-                pattern_txtr0: resource_info!("testb.TXTR").try_into().unwrap(),
-                pattern_txtr1: resource_info!("testb.TXTR").try_into().unwrap(),
-                color_txtr: resource_info!("blue.TXTR").try_into().unwrap(),
+                damage_vulnerability: DoorType::Blue.vulnerability(),
+                unknown0: 4, // render side
+                pattern_txtr0: DoorType::Blue.pattern0_txtr(),
+                pattern_txtr1: DoorType::Blue.pattern1_txtr(),
+                color_txtr: DoorType::Blue.color_txtr(),
                 lock_on: 0,
                 active: 1,
                 visor_params: structs::scly_structs::VisorParameters {
@@ -6931,8 +6900,8 @@ fn make_main_plaza_locked_door_two_ways(_ps: &mut PatcherState, area: &mut mlvl_
             instance_id: trigger_dooropen_id,
             property_data: structs::Trigger {
                 name: b"Trigger_DoorOpen\0".as_cstr(),
-                position: [149.35614, 86.567917, 26.471249].into(),
-                scale: [5.0, 5.0, 8.0].into(),
+                position: [147.638397, 86.567917, 24.701054].into(),
+                scale: [20.0, 10.0, 4.0].into(),
                 damage_info: structs::scly_structs::DamageInfo {
                     weapon_type: 0,
                     damage: 0.0,
@@ -6972,41 +6941,10 @@ fn make_main_plaza_locked_door_two_ways(_ps: &mut PatcherState, area: &mut mlvl_
                 unknown2: 0.0,
                 health_info: structs::scly_structs::HealthInfo {
                     health: 5.0,
-                    knockback_resistance: 1.0
+                    knockback_resistance: 1.0,
                 },
-                damage_vulnerability: structs::scly_structs::DamageVulnerability {
-                    power: 1,           // Normal
-                    ice: 1,             // Normal
-                    wave: 1,            // Normal
-                    plasma: 1,          // Normal
-                    bomb: 1,            // Normal
-                    power_bomb: 1,      // Normal
-                    missile: 1,         // Normal
-                    boost_ball: 1,      // Normal
-                    phazon: 1,          // Normal
-                    enemy_weapon0: 2,   // Reflect
-                    enemy_weapon1: 2,   // Reflect
-                    enemy_weapon2: 2,   // Reflect
-                    enemy_weapon3: 2,   // Reflect
-                    unknown_weapon0: 2, // Reflect
-                    unknown_weapon1: 2, // Reflect
-                    unknown_weapon2: 0, // Double Damage
-                    charged_beams: structs::scly_structs::ChargedBeams {
-                        power: 1,       // Normal
-                        ice: 1,         // Normal
-                        wave: 1,        // Normal
-                        plasma: 1,      // Normal
-                        phazon: 0       // Double Damage
-                    },
-                    beam_combos: structs::scly_structs::BeamCombos {
-                        power: 1,       // Normal
-                        ice: 1,         // Normal
-                        wave: 1,        // Normal
-                        plasma: 1,      // Normal
-                        phazon: 0       // Double Damage
-                    }
-                },
-                cmdl: resource_info!("blueShield_v1.CMDL").try_into().unwrap(),
+                damage_vulnerability: DoorType::Blue.vulnerability(),
+                cmdl: DoorType::Blue.shield_cmdl(),
                 ancs: structs::scly_structs::AncsProp {
                     file_id: ResId::invalid(), // None
                     node_index: 0,

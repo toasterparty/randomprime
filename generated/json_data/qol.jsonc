@@ -3315,19 +3315,6 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                                 39.0,
                                 40.0
                             ]
-                        },
-                        {
-                            "id": 131079, // [Trigger] Trigger_DoorOpen
-                            "position": [
-                                147.638397,
-                                86.567917,
-                                24.701054
-                            ],
-                            "scale": [
-                                20.0,
-                                10.0,
-                                4.0
-                            ]
                         }
                     ]
                 },
