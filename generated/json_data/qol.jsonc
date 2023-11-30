@@ -2904,7 +2904,7 @@
                         2359427
                     ], /*
 
-Temporarely unfixing the door because if door lock rando, if there is a blast shield it will be rotated incorrectly, and if the door turns into a no blast shield door, error.
+                     Temporarely unfixing the door because if door lock rando, if there is a blast shield it will be rotated incorrectly, and if the door turns into a no blast shield door, error.
 
                     "editObjs": {
                         // Missile Lock
@@ -3201,7 +3201,7 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                     "addConnections": [
                         {
                             "senderId": 1310725, // [SpecialFunction] Music Player For Area
-                            "targetId": 1310726, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "targetId": 1310727, // [StreamedAudio] StreamedAudio - Ruins Samus SW
                             "state": "ENTERED",
                             "message": "PLAY"
                         }
@@ -3314,7 +3314,22 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                                 34.0,
                                 39.0,
                                 40.0
-                            ]
+                            ],
+                            "flags": 1
+                        },
+                        {
+                            "id": 131079, // [Trigger] Trigger_DoorOpen
+                            "position": [
+                                147.638397,
+                                86.567917,
+                                24.701054
+                            ],
+                            "scale": [
+                                20.0,
+                                10.0,
+                                4.0
+                            ],
+                            "flags": 1
                         }
                     ]
                 },
@@ -5135,15 +5150,15 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                             "message": "PLAY"
                         },
                         {
-                            "senderId": 786844, // [Timer] Timer Alert
+                            "senderId": 786822, // [Trigger] Trigger - Activate Chozo Ghost
                             "targetId": 786505, // [Relay] Chozo Music
-                            "state": "ZERO",
+                            "state": "ENTERED",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 786844, // [Timer] Timer Alert
+                            "senderId": 786822, // [Trigger] Trigger - Activate Chozo Ghost
                             "targetId": 786506, // [Relay] Ghosts Music
-                            "state": "ZERO",
+                            "state": "ENTERED",
                             "message": "ACTIVATE"
                         },
                         {
@@ -5163,15 +5178,6 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                         {
                             "id": 786503, // [SpecialFunction] Music Player For Area
                             "type": "PlayerInAreaRelay"
-                        }
-                    ],
-                    "timers": [
-                        {
-                            "id": 786504, // [Timer] Music Player For Area
-                            "time": 0.001,
-                            "active": true,
-                            "looping": true,
-                            "startImmediately": true
                         }
                     ],
                     "relays": [
@@ -5203,9 +5209,15 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                 "Training Chamber Access": {
                     "addConnections": [
                         {
+                            "senderId": 1599653, // [Timer] Music Player For Area
+                            "targetId": 1179653, // [SpecialFunction] Music Player For Area
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
                             "senderId": 1179653, // [SpecialFunction] Music Player For Area
                             "targetId": 1179658, // [StreamedAudio] StreamedAudio - Ruins Samus SW
-                            "state": "ENTERED",
+                            "state": "ZERO",
                             "message": "PLAY"
                         }
                     ],
@@ -5213,6 +5225,14 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                         {
                             "id": 1179653, // [SpecialFunction] Music Player For Area
                             "type": "PlayerInAreaRelay"
+                        }
+                    ],
+                    "timers": [
+                        {
+                            "id": 1599653, // [Timer] Music Player For Area
+                            "time": 0.001,
+                            "looping": true,
+                            "startImmediately": true
                         }
                     ],
                     "streamedAudios": [
@@ -5596,7 +5616,8 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                                 20.0,
                                 10.0,
                                 11.0
-                            ]
+                            ],
+                            "flags": 1
                         }
                     ]
                 },
@@ -7697,6 +7718,12 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                         },
                         {
                             "senderId": 1311304, // [Counter] Counter-Unlock
+                            "targetId": 1310732, // [Relay] Pirate Intro Music
+                            "state": "MAX_REACHED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1311304, // [Counter] Counter-Unlock
                             "targetId": 1310733, // [Relay] Pirate Battle (No Intro) Music
                             "state": "MAX_REACHED",
                             "message": "DEACTIVATE"
@@ -7710,13 +7737,13 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                         {
                             "senderId": 1311605, // [Counter] Counter Dead Pirate Music
                             "targetId": 1310734, // [Relay] Pirate Battle Music
-                            "state": "MAX_REACHED",
+                            "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 1311605, // [Counter] Counter Dead Pirate Music
                             "targetId": 1310735, // [Relay] Pirate Ambiance Music
-                            "state": "MAX_REACHED",
+                            "state": "ZERO",
                             "message": "ACTIVATE"
                         },
                         {
@@ -7837,11 +7864,14 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                         3343299, // [StreamedAudio] StreamedAudio Pirate Yoin SW
                         3343292, // [Trigger] Trigger - Play Music 1
                         3343295, // [Trigger] Trigger - Play Music 1
+                        3343298, // [Trigger] Trigger - Play Music 1
                         3343296, // [Trigger] Trigger - Play Music 2
                         3343297, // [Trigger] Trigger - Play Music 2
                         3343293, // [Trigger] Trigger - Play Music 2
                         3343284, // [Trigger] Trigger - Play Music 1 - Before Metroid
-                        3343283 // [Trigger] Trigger - Play Music 2 - Before Metroid
+                        3343283, // [Trigger] Trigger - Play Music 2 - Before Metroid
+                        3343349, // [Trigger] Trigger - Play Music 1 - After Metroid
+                        3343348 // [Trigger] Trigger - Play Music 2 - After Metroid
                     ],
                     "addConnections": [
                         {
@@ -8455,23 +8485,29 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                     "removeConnections": [
                         {
                             "senderId": 2162838, // [Relay] Relay-cinema loading
-                            "targetId": 2949240, // [StreamedAudio] StreamedAudio - Savestation Music
+                            "targetId": 2162790, // [StreamedAudio] StreamedAudio - Savestation Music
                             "state": "ZERO",
                             "message": "PLAY"
                         }
                     ],
                     "addConnections": [
                         {
-                            "senderId": 2162691, // [Timer] Music Player For Area
-                            "targetId": 2162690, // [SpecialFunction] Music Player For Area
-                            "state": "ZERO",
-                            "message": "ACTION"
+                            "senderId": 2162690, // [SpecialFunction] Music Player For Area
+                            "targetId": 2162790, // [StreamedAudio] StreamedAudio - Savestation Music
+                            "state": "ENTERED",
+                            "message": "PLAY"
                         },
                         {
-                            "senderId": 2162690, // [SpecialFunction] Music Player For Area
-                            "targetId": 2949240, // [StreamedAudio] StreamedAudio - Savestation Music
-                            "state": "ZERO",
-                            "message": "PLAY"
+                            "senderId": 2462690, // [SpecialFunction] Player Exits Room
+                            "targetId": 2162690, // [SpecialFunction] Music Player For Area
+                            "state": "EXITED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 2462690, // [SpecialFunction] Player Exits Room
+                            "targetId": 2162692, // [Timer] Timer Start Music
+                            "state": "EXITED",
+                            "message": "STOP"
                         },
                         {
                             "senderId": 2162838, // [Relay] Relay-cinema loading
@@ -8501,16 +8537,18 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                                 -962.809692,
                                 129.472748
                             ]
+                        },
+                        {
+                            "id": 2462690, // [SpecialFunction] Player Exits Room
+                            "type": "PlayerInAreaRelay",
+                            "position": [
+                                -76.550934,
+                                -962.809692,
+                                130.472748
+                            ]
                         }
                     ],
                     "timers": [
-                        {
-                            "id": 2162691, // [Timer] Music Player For Area
-                            "time": 0.001,
-                            "active": true,
-                            "looping": true,
-                            "startImmediately": true
-                        },
                         {
                             "id": 2162692, // [Timer] Timer - Start Music
                             "time": 6.0,
@@ -9842,18 +9880,30 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                 },
                 "Landing Site": {
                     "addConnections": [
-                        // Activate Ship Noises MemoryRelay upon Vanilla Intro Cutscene Skip
+                        // Make ship do noises again
                         {
-                            "senderId": 611, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "senderId": 610, // [Relay] Relay-end of cinema
                             "targetId": 635, // [MemoryRelay] Memory Relay - Activate Ship Idle Sound
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
                         {
                             "senderId": 467, // [Trigger] Trigger Save Station In
-                            "targetId": 91, // [Sound] Sound - Samus Ship
+                            "targetId": 635, // [MemoryRelay] Memory Relay - Activate Ship Idle Sound
                             "state": "ENTERED",
-                            "message": "PLAY"
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 221, // [Trigger] Trigger Start Overworld Cinematic
+                            "targetId": 111111, // [Timer] Ship Sounds Activator
+                            "state": "ENTERED",
+                            "message": "STOP"
+                        },
+                        {
+                            "senderId": 111111, // [Timer] Ship Sounds Activator
+                            "targetId": 635, // [MemoryRelay] Memory Relay - Activate Ship Idle Sound
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
                         },
                         // Music
                         {
@@ -9875,13 +9925,19 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                             "message": "DEACTIVATE"
                         },
                         {
+                            "senderId": 498, // [Trigger] Trigger -- Back from Load
+                            "targetId": 10, // [SpecialFunction] Music Player For Area
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
                             "senderId": 264, // [Camera] camera6
                             "targetId": 10, // [SpecialFunction] Music Player For Area
                             "state": "ACTIVE",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 611, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "senderId": 610, // [Relay] Relay-end of cinema
                             "targetId": 10, // [SpecialFunction] Music Player For Area
                             "state": "ZERO",
                             "message": "ACTIVATE"
@@ -9891,18 +9947,19 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                             "targetId": 10, // [SpecialFunction] Music Player For Area
                             "state": "ZERO",
                             "message": "ACTIVATE"
-                        },
-                        {
-                            "senderId": 498, // [Trigger] Trigger -- Back from Load
-                            "targetId": 10, // [SpecialFunction] Music Player For Area
-                            "state": "ENTERED",
-                            "message": "DEACTIVATE"
                         }
                     ],
                     "specialFunctions": [
                         {
                             "id": 10, // [SpecialFunction] Music Player For Area
                             "type": "PlayerInAreaRelay"
+                        }
+                    ],
+                    "timers": [
+                        {
+                            "id": 111111, // [Timer] Ship Sounds Activator
+                            "time": 0.02,
+                            "startImmediately": true
                         }
                     ]
                 },
@@ -10504,6 +10561,7 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                         }
                     ],
                     "layers": {
+                        "1": true,
                         "3": false
                     }
                 },
@@ -13777,6 +13835,22 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                             "fadeOutTime": 1.5,
                             "audioFileName": "/audio/lav_lavamainL.dsp|/audio/lav_lavamainR.dsp"
                         }
+                    ],
+                    "triggers": [
+                        {
+                            "id": 131078, // [Trigger] Trigger - Load 00s Connect
+                            "position": [
+                                135.338852,
+                                76.633369,
+                                15.859619
+                            ],
+                            "scale": [
+                                34.0,
+                                39.0,
+                                40.0
+                            ],
+                            "flags": 1
+                        }
                     ]
                 },
                 "Twin Fires Tunnel": {
@@ -13794,7 +13868,8 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                                 10.0,
                                 20.0,
                                 16.0
-                            ]
+                            ],
+                            "flags": 1
                         },
                         {
                             "id": 1114162, // [Trigger] Trigger_DoorOpen
@@ -13808,7 +13883,8 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                                 10.0,
                                 20.0,
                                 16.0
-                            ]
+                            ],
+                            "flags": 1
                         }
                     ],
                     "addConnections": [
@@ -13894,7 +13970,8 @@ Temporarely unfixing the door because if door lock rando, if there is a blast sh
                                 20.0,
                                 10.0,
                                 10.0
-                            ]
+                            ],
+                            "flags": 1
                         }
                     ]
                 },
