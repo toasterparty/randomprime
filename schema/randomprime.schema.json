@@ -238,16 +238,16 @@
                     "default": false
                 },
                 "mapDefaultState": {
-                    "description": "Changes the in-game map state.\n- `Default`: No changes to the in-game map behavior.\n`Visible`: Show all rooms on the in-game map as blue until they've been visted.\n- `Visited`: Show all rooms on the in-game map and marks them as visited.",
+                    "description": "Define the default behavior regarding when/how rooms are displayed on the map.",
                     "type": "string",
                     "enum": [
-                        "Default",
-                        "Visible",
-                        "Visited"
+                        "Always",
+                        "MapStationOrVisit",
+                        "Visit",
+                        "Never",
+                        "MapStationOrVisit2"
                     ],
-                    "default": "Default",
-                    "required": [],
-                    "additionalProperties": false
+                    "default": "MapStationOrVisit"
                 },
                 "artifactHintBehavior": {
                     "description": "Set the state of Artifact Temple's hint totems and how they displays hints.\n`All`: Allow all hint scans to be collected immediately.\n- `None`: Do not allow hint scans to be collected at all.\n`Default`: Allow only certain hints to be scanned until more artifacts are collected.",

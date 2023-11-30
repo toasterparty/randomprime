@@ -87,7 +87,7 @@ use reader_writer::{
     Writable,
     CStr,
 };
-use structs::{MapState, res_id, ResId, scly_structs::DamageInfo, scly_structs::TypeVulnerability, SclyLayer};
+use structs::{MapaObjectVisibilityMode, res_id, ResId, scly_structs::DamageInfo, scly_structs::TypeVulnerability, SclyLayer};
 
 use std::{
     borrow::Cow,
@@ -3616,7 +3616,7 @@ where R: Rng
 
 fn set_room_map_default_state(
     res: &mut structs::Resource,
-    map_default_state: structs::MapaObjectVisibilityMode,
+    map_default_state: MapaObjectVisibilityMode,
 ) -> Result<(), String>
 {
     let mapa = res.kind.as_mapa_mut().unwrap();
@@ -9995,13 +9995,14 @@ fn patch_dol<'r>(
         dol_patcher.ppcasm_patch(&players_choice_scan_dash_patch)?;
     }
 
-    if config.map_default_state == MapState::Visited {
-        let is_area_visited_patch = ppcasm!(symbol_addr!("IsAreaVisited__13CMapWorldInfoCF7TAreaId", version), {
-            li      r3, 0x1;
-            blr;
-        });
-        dol_patcher.ppcasm_patch(&is_area_visited_patch)?;
-    }
+    // Deprecated
+    // if config.map_default_state == MapaObjectVisibilityMode::Always {
+    //     let is_area_visited_patch = ppcasm!(symbol_addr!("IsAreaVisited__13CMapWorldInfoCF7TAreaId", version), {
+    //         li      r3, 0x1;
+    //         blr;
+    //     });
+    //     dol_patcher.ppcasm_patch(&is_area_visited_patch)?;
+    // }
 
     // Update default game options to match user's prefrence
     {
@@ -14710,50 +14711,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
             for room_info in rooms.iter() {
                 let key = room_info.name().trim();
                 if level.rooms.get(key).is_none() {
-                    level.rooms.insert(key.to_string(), RoomConfig {
-                            pickups: Some(vec![]),
-                            extra_scans: None,
-                            doors: None,
-                            superheated: None,
-                            remove_water: None,
-                            submerge: None,
-                            liquids: None,
-                            spawn_position_override: None,
-                            bounding_box_offset: None,
-                            bounding_box_scale: None,
-                            platforms: None,
-                            camera_hints: None,
-                            blocks: None,
-                            ambient_lighting_scale: None,
-                            lock_on_points: None,
-                            escape_sequences: None,
-                            repositions: None,
-                            audio_override: None,
-                            delete_ids: None,
-                            layers: None,
-                            fog: None,
-                            triggers: None,
-                            hudmemos: None,
-                            xray_fog_distance: None,
-                            enviornmental_effect: None,
-                            initial_enviornmental_effect: None,
-                            initial_thermal_heat_level: None,
-                            map_default_state: Some(structs::MapaObjectVisibilityMode::MapStationOrVisit),
-                            add_connections: None,
-                            remove_connections: None,
-                            relays: None,
-                            cutscene_skip_fns: None,
-                            timers: None,
-                            actor_keyframes: None,
-                            spawn_points: None,
-                            special_functions: None,
-                            actor_rotates: None,
-                            streamed_audios: None,
-                            layer_objs: None,
-                            edit_objs: None,
-                            waypoints: None,
-                        }
-                    );
+                    level.rooms.insert(key.to_string(), RoomConfig::default());
                 }
 
                 if level.rooms.get(key).unwrap().pickups.is_none() {
@@ -15269,6 +15227,22 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 );
             }
 
+            let map_default_state = {
+                let mut map_default_state = config.map_default_state;
+                if let Some(level) = level_data.get(world.to_json_key()) {
+                    if let Some(room) = level.rooms.get(room_info.name().trim()) {
+                        if let Some(state) = room.map_default_state {
+                            map_default_state = state;
+                        }
+                    }
+                }
+                map_default_state
+            };
+            patcher.add_resource_patch(
+                (&[pak_name.as_bytes()], room_info.mapa_id.to_u32(), reader_writer::FourCC::from_bytes(b"MAPA")),
+                move |res| set_room_map_default_state(res, map_default_state)
+            );
+
             // Get list of patches specified for this room
             let (pickups, scans, doors, hudmemos) = {
                 let mut _pickups = Vec::new();
@@ -15715,12 +15689,6 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                 move |_ps, area| patch_ambient_lighting(_ps, area, room.ambient_lighting_scale.unwrap()),
                             );
                         }
-
-                        let map_default_state = room.map_default_state.clone().unwrap_or(config.map_default_state.into());
-                        patcher.add_resource_patch(
-                            (&[pak_name.as_bytes()], room_info.mapa_id.to_u32(), reader_writer::FourCC::from_bytes(b"MAPA")),
-                            move |res| set_room_map_default_state(res, map_default_state)
-                        );
 
                         let submerge = room.submerge.clone().unwrap_or(false);
                         if room.remove_water.clone().unwrap_or(false) || submerge {

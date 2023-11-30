@@ -4,6 +4,7 @@ use std::{
     fs::{File, OpenOptions},
     fs,
     fmt,
+    str::FromStr,
 };
 
 use clap::{
@@ -23,7 +24,7 @@ use crate::{
 
 use reader_writer::{FourCC, Reader};
 
-use structs::{res_id, ResId};
+use structs::{res_id, ResId, MapaObjectVisibilityMode};
 
 use json_data::*;
 use json_strip::strip_jsonc_comments;
@@ -776,7 +777,7 @@ pub struct RoomConfig
     pub superheated: Option<bool>,
     pub remove_water: Option<bool>,
     pub submerge: Option<bool>,
-	pub map_default_state: Option<structs::MapaObjectVisibilityMode>,
+	pub map_default_state: Option<MapaObjectVisibilityMode>,
     pub liquids: Option<Vec<WaterConfig>>,
     pub pickups: Option<Vec<PickupConfig>>,
     pub extra_scans: Option<Vec<ScanConfig>>,
@@ -1059,8 +1060,7 @@ pub struct PatchConfig
     pub phazon_damage_modifier: PhazonDamageModifier,
     pub staggered_suit_damage: bool,
     pub item_max_capacity: HashMap<PickupType, u32>,
-    // Use RoomConfig::map_default_state instead of global map_default_state
-    pub map_default_state: structs::MapState,
+    pub map_default_state: MapaObjectVisibilityMode,
     pub auto_enabled_elevators: bool,
     pub skip_ridley: bool,
     pub multiworld_dol_patches: bool,
@@ -1874,19 +1874,19 @@ impl PatchConfigPrivate
 
         let map_default_state = {
             let map_default_state_string = self.preferences.map_default_state
-                                            .as_deref()
-                                            .unwrap_or("default")
-                                            .trim()
-                                            .to_lowercase();
-            match &map_default_state_string[..] {
-                "default" => structs::MapState::Default,
-                "visited" => structs::MapState::Visited,
-                "visible" => structs::MapState::Visible,
-                _ => Err(format!(
-                    "Unhandled map default state - '{}'",
-                    map_default_state_string
-                ))?,
-            }
+                .as_deref()
+                .unwrap_or("default")
+                .trim()
+                .to_lowercase();
+
+            MapaObjectVisibilityMode::from_str(
+                    map_default_state_string.as_str()
+                )
+                .ok()
+                .expect(
+                    format!("Invalid mapDefaultState '{}'", map_default_state_string)
+                    .as_str()
+                )
         };
 
         let flaahgra_music_files = self.preferences.trilogy_disc_path.as_ref()
