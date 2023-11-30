@@ -3314,22 +3314,7 @@
                                 34.0,
                                 39.0,
                                 40.0
-                            ],
-                            "flags": 1
-                        },
-                        {
-                            "id": 131079, // [Trigger] Trigger_DoorOpen
-                            "position": [
-                                147.638397,
-                                86.567917,
-                                24.701054
-                            ],
-                            "scale": [
-                                20.0,
-                                10.0,
-                                4.0
-                            ],
-                            "flags": 1
+                            ]
                         }
                     ]
                 },
@@ -5616,8 +5601,7 @@
                                 20.0,
                                 10.0,
                                 11.0
-                            ],
-                            "flags": 1
+                            ]
                         }
                     ]
                 },
@@ -10561,7 +10545,6 @@
                         }
                     ],
                     "layers": {
-                        "1": true,
                         "3": false
                     }
                 },
@@ -13835,22 +13818,6 @@
                             "fadeOutTime": 1.5,
                             "audioFileName": "/audio/lav_lavamainL.dsp|/audio/lav_lavamainR.dsp"
                         }
-                    ],
-                    "triggers": [
-                        {
-                            "id": 131078, // [Trigger] Trigger - Load 00s Connect
-                            "position": [
-                                135.338852,
-                                76.633369,
-                                15.859619
-                            ],
-                            "scale": [
-                                34.0,
-                                39.0,
-                                40.0
-                            ],
-                            "flags": 1
-                        }
                     ]
                 },
                 "Twin Fires Tunnel": {
@@ -13868,8 +13835,7 @@
                                 10.0,
                                 20.0,
                                 16.0
-                            ],
-                            "flags": 1
+                            ]
                         },
                         {
                             "id": 1114162, // [Trigger] Trigger_DoorOpen
@@ -13883,8 +13849,7 @@
                                 10.0,
                                 20.0,
                                 16.0
-                            ],
-                            "flags": 1
+                            ]
                         }
                     ],
                     "addConnections": [
@@ -13970,8 +13935,7 @@
                                 20.0,
                                 10.0,
                                 10.0
-                            ],
-                            "flags": 1
+                            ]
                         }
                     ]
                 },
