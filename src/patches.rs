@@ -9328,8 +9328,13 @@ fn patch_dol<'r>(
     }
 
     if config.difficulty_behavior != DifficultyBehavior::Either {
+        let only_one_option_jump_offset = if version == Version::Pal || version == Version::NtscJ {
+            0x210
+        } else {
+            0x1f8
+        };
         let only_one_option_patch = ppcasm!(symbol_addr!("ActivateNewGamePopup__19SNewFileSelectFrameFv", version) + 0x110, {
-            b   { symbol_addr!("ActivateNewGamePopup__19SNewFileSelectFrameFv", version) + 0x1f8 };
+            b   { symbol_addr!("ActivateNewGamePopup__19SNewFileSelectFrameFv", version) + only_one_option_jump_offset };
         });
         dol_patcher.ppcasm_patch(&only_one_option_patch)?;
     }
