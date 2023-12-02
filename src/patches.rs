@@ -8437,11 +8437,16 @@ fn patch_remove_cutscenes(
         }
         else
         {
+            for obj in layer.objects.as_mut_vec() {
+                if let Some(camera_filter_keyframe) = obj.property_data.as_camera_filter_keyframe_mut() {
+                    camera_filter_keyframe.active = 0;
+                }
+            }
+
             layer.objects.as_mut_vec().retain(|obj|
                 skip_ids.contains(&(&obj.instance_id & 0x00FFFFFF)) || // except for exluded objects
                 !(
                     obj.property_data.is_camera() ||
-                    obj.property_data.is_camera_filter_keyframe() ||
                     obj.property_data.is_camera_blur_keyframe() ||
                     obj.property_data.is_player_actor() ||
                     vec![0x0018028E, 0x001802A1, 0x0018025C, 0x001800CC, 0x00180212, 0x00020473, 0x00070521, 0x001A034A, 0x001A04C2, 0x001A034B].contains(&(obj.instance_id&0x00FFFFFF)) || // thardus death sounds + thardus corpse + main quarry, security station playerhint, post OP death timer for hudmemo, Elite Quarters Control Disablers
