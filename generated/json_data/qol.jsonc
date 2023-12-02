@@ -2036,21 +2036,40 @@
                     ],
                     "addConnections": [
                         {
+                            "senderId": 3145758, // [Trigger] MasterTrigger
+                            "targetId": 3155830, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "state": "INACTIVE",
+                            "message": "ACTIVATE"
+                        },
+                        {
                             "senderId": 3145756, // [SpecialFunction] Music Player For Area
                             "targetId": 3155830, // [StreamedAudio] StreamedAudio - Ruins Samus SW
                             "state": "ENTERED",
                             "message": "PLAY"
                         },
                         {
-                            "senderId": 3145758, // [Trigger] MasterTrigger
-                            "targetId": 3155830, // [StreamedAudio] StreamedAudio - Ruins Samus SW
-                            "state": "ENTERED",
-                            "message": "STOP"
+                            "senderId": 3155745, // [Relay] Relay Enable Lock (To Trigger_Unlock&Key With Increment)
+                            "targetId": 3145940, // [Dock] Dock
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 3155745, // [Relay] Relay Enable Lock (To Trigger_Unlock&Key With Increment)
+                            "targetId": 3555741, // [SpecialFunction] [DEC] Burn Dome Access
+                            "state": "ZERO",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 3155923, // [Relay] !Relay End Contraption Introduction Cinematic
+                            "targetId": 3145940, // [Dock] Dock
+                            "state": "ZERO",
+                            "message": "SET_TO_MAX"
                         }
                     ],
                     "streamedAudios": [
                         {
                             "id": 3155830, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "active": false,
                             "volume": 70,
                             "isMusic": true,
                             "fadeInTime": 0.01,
@@ -2068,6 +2087,12 @@
                         {
                             "id": 3145756, // [SpecialFunction] Music Player For Area
                             "type": "PlayerInAreaRelay"
+                        },
+                        {
+                            "id": 3555741, // [SpecialFunction] [DEC] Burn Dome Access
+                            "type": "ScriptLayerController",
+                            "layerChangeLayerId": 1,
+                            "layerChangeRoomId": 202020391
                         }
                     ],
                     "timers": [
@@ -2087,12 +2112,43 @@
                             "targetId": 3014686, // [StreamedAudio] StreamedAudio - Ruins Samus SW
                             "state": "ENTERED",
                             "message": "PLAY"
+                        },
+                        {
+                            "senderId": 3014681, // [SpecialFunction] Music Player For Area
+                            "targetId": 3014685, // [Relay] Stop Music
+                            "state": "EXITED",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 3014664, // [Door] Door_Area
+                            "targetId": 3014685, // [Relay] Stop Music
+                            "state": "OPEN",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 3014708, // [Door] Door_Area Morphball
+                            "targetId": 3014685, // [Relay] Stop Music
+                            "state": "OPEN",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 3014685, // [Relay] Stop Music
+                            "targetId": 3014686, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "state": "ZERO",
+                            "message": "STOP"
                         }
                     ],
                     "specialFunctions": [
                         {
                             "id": 3014681, // [SpecialFunction] Music Player For Area
                             "type": "PlayerInAreaRelay"
+                        }
+                    ],
+                    "relays": [
+                        {
+                            "id": 3014685, // [Relay] Stop Music
+                            "layer": 1, // Before Zoid
+                            "active": false
                         }
                     ],
                     "streamedAudios": [

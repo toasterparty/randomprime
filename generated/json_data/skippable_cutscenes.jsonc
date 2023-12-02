@@ -1674,7 +1674,7 @@
                         },
                         {
                             "senderId": 3145754, // [Timer] Timer Skipped Intro Encounter
-                            "targetId": 3145792, // Relay Start Encounter
+                            "targetId": 3145792, // [Relay] Relay Start Encounter
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
                         },
@@ -1711,12 +1711,6 @@
                         {
                             "senderId": 3145745, // [SpecialFunction] SpecialFunction Cinematic Skip
                             "targetId": 3145742, // [ActorContraption] Actor Contraption
-                            "state": "ZERO",
-                            "message": "ACTIVATE"
-                        },
-                        {
-                            "senderId": 3145745, // [SpecialFunction] SpecialFunction Cinematic Skip
-                            "targetId": 3155829, // [StreamedAudio] StreamedAudio Ruins Monkeylower SW
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
