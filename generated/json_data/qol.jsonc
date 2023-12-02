@@ -410,7 +410,7 @@
                     "streamedAudios": [
                         {
                             "id": 131121, // [StreamedAudio] StreamedAudio - Intro Space SW
-                            "audioFileName": "audio/int_spaceL.dsp|audio/int_spaceR.dsp",
+                            "audioFileName": "/audio/int_spaceL.dsp|audio/int_spaceR.dsp",
                             "volume": 70,
                             "isMusic": true,
                             "layer": 1 // Pre Escape
@@ -681,7 +681,7 @@
                         },
                         {
                             "id": 1496271, // [StreamedAudio] StreamedAudio - Intro Escape SW
-                            "audioFileName": "audio/int_escapeL.dsp|audio/int_escapeR.dsp",
+                            "audioFileName": "/audio/int_escapeL.dsp|audio/int_escapeR.dsp",
                             "fadeInTime": 0.1,
                             "fadeOutTime": 0.5,
                             "volume": 105,
@@ -807,7 +807,7 @@
                     "streamedAudios": [
                         {
                             "id": 100177, // [StreamedAudio] StreamedAudio - Intro Space SW
-                            "audioFileName": "audio/int_spaceL.dsp|audio/int_spaceR.dsp",
+                            "audioFileName": "/audio/int_spaceL.dsp|audio/int_spaceR.dsp",
                             "volume": 70,
                             "isMusic": true,
                             "layer": 1 // Intro Opening
@@ -1782,7 +1782,7 @@
                     "streamedAudios": [
                         {
                             "id": 1979750, // [StreamedAudio] StreamedAudio - Intro Space SW
-                            "audioFileName": "audio/int_spaceL.dsp|audio/int_spaceR.dsp",
+                            "audioFileName": "/audio/int_spaceL.dsp|audio/int_spaceR.dsp",
                             "volume": 70,
                             "noStopOnDeactivate": false,
                             "isMusic": true,
@@ -1826,7 +1826,7 @@
                     "streamedAudios": [
                         {
                             "id": 2441812, // [StreamedAudio] StreamedAudio - Intro Space SW
-                            "audioFileName": "audio/int_spaceL.dsp|audio/int_spaceR.dsp",
+                            "audioFileName": "/audio/int_spaceL.dsp|audio/int_spaceR.dsp",
                             "volume": 70,
                             "noStopOnDeactivate": false,
                             "isMusic": true,
@@ -2037,39 +2037,15 @@
                     "addConnections": [
                         {
                             "senderId": 3145756, // [SpecialFunction] Music Player For Area
-                            "targetId": 3155829, // [StreamedAudio] StreamedAudio Ruins Monkeylower SW
-                            "state": "ENTERED",
-                            "message": "PLAY"
-                        },
-                        {
-                            "senderId": 3145756, // [SpecialFunction] Music Player For Area
                             "targetId": 3155830, // [StreamedAudio] StreamedAudio - Ruins Samus SW
                             "state": "ENTERED",
                             "message": "PLAY"
-                        },
-                        {
-                            "senderId": 3155926, // [Timer] Timer Battle Music Delay
-                            "targetId": 3155829, // [StreamedAudio] StreamedAudio Ruins Monkeylower SW
-                            "state": "ZERO",
-                            "message": "ACTIVATE"
-                        },
-                        {
-                            "senderId": 3145752, // [Timer] Timer Hive Explosion
-                            "targetId": 3155829, // [StreamedAudio] StreamedAudio Ruins Monkeylower SW
-                            "state": "ZERO",
-                            "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 3145758, // [Trigger] MasterTrigger
                             "targetId": 3155830, // [StreamedAudio] StreamedAudio - Ruins Samus SW
                             "state": "ENTERED",
-                            "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 3155833, // [Timer] Timer Music After Morphball Bomb Pickup
-                            "targetId": 3155830, // [StreamedAudio] StreamedAudio - Ruins Samus SW
-                            "state": "ZERO",
-                            "message": "ACTIVATE"
+                            "message": "STOP"
                         }
                     ],
                     "streamedAudios": [
@@ -2078,18 +2054,14 @@
                             "volume": 70,
                             "isMusic": true,
                             "fadeInTime": 0.01,
-                            "audioFileName": "/audio/rui_samusL.dsp|/audio/rui_samusR.dsp",
-                            "noStopOnDeactivate": false
+                            "audioFileName": "/audio/rui_samusL.dsp|/audio/rui_samusR.dsp"
                         },
                         {
                             "id": 3155829, // [StreamedAudio] StreamedAudio Ruins Monkeylower SW
                             "volume": 90,
-                            "fadeInTime": 0.5,
-                            "fadeOutTime": 6.0,
-                            "active": false,
                             "isMusic": true,
-                            "audioFileName": "/audio/rui_monkeylowerL.dsp|/audio/rui_monkeylowerR.dsp",
-                            "noStopOnDeactivate": false
+                            "fadeOutTime": 2.0,
+                            "audioFileName": "/audio/rui_monkeylowerL.dsp|/audio/rui_monkeylowerR.dsp"
                         }
                     ],
                     "specialFunctions": [
@@ -12897,6 +12869,11 @@
                         "5": false,
                         "6": false
                     },
+                    "deleteIds": [
+                        272945, // [StreamedAudio] StreamedAudio Lava Mae SW
+                        272942, // [Trigger] Trigger - Play Music 1
+                        272943 // [Trigger] Trigger - Play Music 2
+                    ],
                     "addConnections": [
                         {
                             "senderId": 272887, // [SpecialFunction] SpecialFunction Cinematic Skip
@@ -13047,7 +13024,7 @@
                     ],
                     "streamedAudios": [
                         {
-                            "id": 262155, // [StreamedAudio] StreamedAudio Lava Main SW
+                            "id": 272944, // [StreamedAudio] StreamedAudio Lava Main SW
                             "volume": 85,
                             "isMusic": true,
                             "fadeInTime": 0.01,
