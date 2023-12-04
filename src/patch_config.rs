@@ -608,6 +608,18 @@ pub struct WaypointConfig
     pub animation: Option<u32>,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CounterConfig
+{
+    pub id: u32,
+    pub layer: Option<u32>,
+    pub active: Option<bool>,
+    pub start_value: Option<u32>,
+    pub max_value: Option<u32>,
+    pub auto_reset: Option<bool>,
+}
+
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub enum EnviornmentalEffect {
@@ -815,6 +827,7 @@ pub struct RoomConfig
     pub streamed_audios: Option<Vec<StreamedAudioConfig>>,
     pub edit_objs: Option<HashMap<u32, EditObjConfig>>,
     pub waypoints: Option<Vec<WaypointConfig>>,
+    pub counters: Option<Vec<CounterConfig>>,
     // Don't forget to update merge_json when adding here
 }
 
@@ -1643,6 +1656,7 @@ impl PatchConfigPrivate
                 extend_option_vec!(actor_rotates     , self_room_config, other_room_config);
                 extend_option_vec!(streamed_audios   , self_room_config, other_room_config);
                 extend_option_vec!(waypoints         , self_room_config, other_room_config);
+                extend_option_vec!(counters          , self_room_config, other_room_config);
 
                 if let Some(other_layers) = &other_room_config.layers {
                     if self_room_config.layers.is_none() {

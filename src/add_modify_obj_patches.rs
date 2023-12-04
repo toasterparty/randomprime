@@ -29,6 +29,7 @@ use crate::{
         BlockConfig,
         HudmemoConfig,
         WaypointConfig,
+        CounterConfig,
     },
     pickup_meta::PickupType,
     door_meta::DoorType,
@@ -667,6 +668,38 @@ pub fn patch_add_waypoint<'r>(
     }
 
     add_edit_obj_helper!(area, Some(config.id), config.layer, Waypoint, new, update);
+}
+
+pub fn patch_add_counter<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    config: CounterConfig,
+)
+    -> Result<(), String>
+{
+    macro_rules! new {
+        () => {
+            structs::Counter {
+                name: b"my counter\0".as_cstr(),
+                start_value: config.start_value.unwrap_or(0),
+                max_value: config.max_value.unwrap_or(1),
+                auto_reset: config.auto_reset.unwrap_or(false) as u8,
+                active: config.active.unwrap_or(true) as u8,
+            }
+        };
+    }
+
+    macro_rules! update {
+        ($obj:expr) => {
+            let property_data = $obj.property_data.as_counter_mut().unwrap();
+            if let Some(start_value ) = config.start_value {property_data.start_value = start_value       }
+            if let Some(max_value   ) = config.max_value   {property_data.max_value   = max_value         }
+            if let Some(auto_reset  ) = config.auto_reset  {property_data.auto_reset  = auto_reset  as u8 }
+            if let Some(active      ) = config.active      {property_data.active      = active      as u8 }
+        };
+    }
+
+    add_edit_obj_helper!(area, Some(config.id), config.layer, Counter, new, update);
 }
 
 pub fn patch_add_platform<'r>(

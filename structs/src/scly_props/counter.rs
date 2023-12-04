@@ -14,7 +14,7 @@ pub struct Counter<'r>
 
     pub start_value: u32,
     pub max_value: u32,
-    pub reset_when_zero_max_reached: u8,
+    pub auto_reset: u8,
     pub active: u8,
 }
 

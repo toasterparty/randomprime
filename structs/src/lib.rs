@@ -229,6 +229,7 @@ pub use scly_props::camera_blur_keyframe::*;
 pub use scly_props::camera_filter_keyframe::*;
 pub use scly_props::camera_hint_trigger::*;
 pub use scly_props::camera_hint::*;
+pub use scly_props::counter::*;
 pub use scly_props::damageable_trigger::*;
 pub use scly_props::distance_fog::*;
 pub use scly_props::dock::*;

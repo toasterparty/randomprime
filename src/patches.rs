@@ -15401,6 +15401,19 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                             }
                         }
 
+                        if let Some(counters) = room.counters.as_ref() {
+                            for config in counters {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_counter(
+                                        ps,
+                                        area,
+                                        config.clone(),
+                                    ),
+                                );
+                            }
+                        }
+
                         if room.streamed_audios.is_some() {
                             for config in room.streamed_audios.as_ref().unwrap() {
                                 patcher.add_scly_patch(

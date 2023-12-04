@@ -3994,7 +3994,7 @@
                     }
                 },
                 "waypoints": {
-                    "description": "Add waypoints to this room. Useful for defining paths of enemies, cameras etc.",
+                    "description": "Add/modifgy waypoints in this room. Useful for defining paths of enemies, cameras etc.",
                     "type": "array",
                     "items": {
                         "type": "object",
@@ -4079,6 +4079,49 @@
                                 "minimum": 0,
                                 "maximum": 4294967295,
                                 "default": 0
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                },
+                "counters": {
+                    "description": "Add/modify counters to this room.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "$ref": "#/$defs/addModifyId"
+                            },
+                            "layer": {
+                                "$ref": "#/$defs/addModifyLayer"
+                            },
+                            "active": {
+                                "description": "Default active state of the counter.",
+                                "type": "boolean",
+                                "default": true
+                            },
+                            "startValue": {
+                                "description": "Initial value of the counter.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295,
+                                "default": 0
+                            },
+                            "maxValue": {
+                                "description": "Max value of the counter at which the `MAX_REACHED` state is reached.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295,
+                                "default": 1
+                            },
+                            "autoReset": {
+                                "description": "If true, the counter will automatically revert to `startValue` when `MAX_REACHED`.",
+                                "type": "boolean",
+                                "default": false
                             }
                         },
                         "required": [
