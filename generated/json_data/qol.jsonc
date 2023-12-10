@@ -1888,61 +1888,73 @@
                     "addConnections": [
                         {
                             "senderId": 2545203, // [SpecialFunction] Music Player For Area
-                            "targetId": 1245805, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "targetId": 1245196, // [Relay] Chozo Music
                             "state": "ENTERED",
-                            "message": "PLAY"
+                            "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 2545203, // [SpecialFunction] Music Player For Area
-                            "targetId": 1245806, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "targetId": 1245197, // [Relay] Ghosts Music
                             "state": "ENTERED",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1245196, // [Relay] Chozo Music
+                            "targetId": 1245805, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "state": "ZERO",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 1245197, // [Relay] Ghosts Music
+                            "targetId": 1245806, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "state": "ZERO",
                             "message": "PLAY"
                         },
                         {
                             "senderId": 1245529, // [Trigger] Trigger_Ghosttest
-                            "targetId": 1245805, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "targetId": 1245196, // [Relay] Chozo Music
                             "state": "ENTERED",
                             "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 1245529, // [Trigger] Trigger_Ghosttest
-                            "targetId": 1245806, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "targetId": 1245197, // [Relay] Ghosts Music
                             "state": "ENTERED",
                             "message": "ACTIVATE"
                         },
                         {
                             "senderId": 1245603, // [Trigger] Trigger_Ghosttest
-                            "targetId": 1245805, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "targetId": 1245196, // [Relay] Chozo Music
                             "state": "ENTERED",
                             "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 1245603, // [Trigger] Trigger_Ghosttest
-                            "targetId": 1245806, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "targetId": 1245197, // [Relay] Ghosts Music
                             "state": "ENTERED",
                             "message": "ACTIVATE"
                         },
                         {
                             "senderId": 1245604, // [Trigger] Trigger_Ghosttest
-                            "targetId": 1245805, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "targetId": 1245196, // [Relay] Chozo Music
                             "state": "ENTERED",
                             "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 1245604, // [Trigger] Trigger_Ghosttest
-                            "targetId": 1245806, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "targetId": 1245197, // [Relay] Ghosts Music
                             "state": "ENTERED",
                             "message": "ACTIVATE"
                         },
                         {
                             "senderId": 1245578, // [Counter] Counter - Ghost death counter to bring lights on
-                            "targetId": 1245805, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "targetId": 1245196, // [Relay] Chozo Music
                             "state": "MAX_REACHED",
                             "message": "ACTIVATE"
                         },
                         {
                             "senderId": 1245578, // [Counter] Counter - Ghost death counter to bring lights on
-                            "targetId": 1245806, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "targetId": 1245197, // [Relay] Ghosts Music
                             "state": "MAX_REACHED",
                             "message": "DEACTIVATE"
                         }
@@ -1964,17 +1976,8 @@
                             "volume": 70,
                             "isMusic": true,
                             "fadeInTime": 0.01,
-                            "noStopOnDeactivate": false,
-                            "audioFileName": "/audio/rui_samusL.dsp|/audio/rui_samusR.dsp"
-                        },
-                        {
-                            "id": 1245806, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
-                            "active": false,
-                            "volume": 80,
-                            "isMusic": true,
-                            "fadeInTime": 0.05,
-                            "audioFileName": "/audio/gen_ShortBattle2L.dsp|/audio/gen_ShortBattle2R.dsp",
-                            "noStopOnDeactivate": false
+                            "audioFileName": "/audio/rui_samusL.dsp|/audio/rui_samusR.dsp",
+                            "noStopOnDeactivate": true
                         }
                     ],
                     "triggers": [
@@ -1990,8 +1993,42 @@
                                 10.919998,
                                 5.812
                             ],
-                            "flags": 2044,
-                            "deactivateOnEnter": true
+                            "flags": 2044
+                        },
+                        {
+                            "id": 1245372, // [Trigger] Trigger_DoorOpen
+                            "position": [
+                                278.391266,
+                                -103.053986,
+                                18.556475
+                            ],
+                            "scale": [
+                                20.0,
+                                10.0,
+                                6.0
+                            ]
+                        },
+                        {
+                            "id": 1245734, // [Trigger] Trigger_DoorOpen
+                            "position": [
+                                342.820282,
+                                -103.05558,
+                                15.557194
+                            ],
+                            "scale": [
+                                20.0,
+                                10.0,
+                                8.0
+                            ]
+                        }
+                    ],
+                    "relays": [
+                        {
+                            "id": 1245196 // [Relay] Chozo Music
+                        },
+                        {
+                            "id": 1245197, // [Relay] Ghosts Music
+                            "active": false
                         }
                     ]
                 },
@@ -2760,9 +2797,15 @@
                 "Gathering Hall Access": {
                     "addConnections": [
                         {
+                            "senderId": 1704007, // [Timer] Music Player For Area
+                            "targetId": 1704005, // [SpecialFunction] Music Player For Area
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
                             "senderId": 1704005, // [SpecialFunction] Music Player For Area
                             "targetId": 1704006, // [StreamedAudio] StreamedAudio - Ruins Samus SW
-                            "state": "ENTERED",
+                            "state": "ZERO",
                             "message": "PLAY"
                         }
                     ],
@@ -2779,6 +2822,14 @@
                             "isMusic": true,
                             "fadeInTime": 0.01,
                             "audioFileName": "/audio/rui_samusL.dsp|/audio/rui_samusR.dsp"
+                        }
+                    ],
+                    "timers": [
+                        {
+                            "id": 1704007, // [Timer] Music Player For Area
+                            "time": 0.001,
+                            "looping": true,
+                            "startImmediately": true
                         }
                     ]
                 },
@@ -2930,10 +2981,7 @@
                         3211976,
                         2359420,
                         2359427
-                    ], /*
-
-                     Temporarely unfixing the door because if door lock rando, if there is a blast shield it will be rotated incorrectly, and if the door turns into a no blast shield door, error.
-
+                    ], /* This, but it needs to be done in code.
                     "editObjs": {
                         // Missile Lock
                         "2359799": {
@@ -4976,19 +5024,37 @@
                     "addConnections": [
                         {
                             "senderId": 1638406, // [SpecialFunction] Music Player For Area
-                            "targetId": 1638547, // [StreamedAudio] StreamedAudio - Ruins Naka SW
+                            "targetId": 1638410, // [Relay] Before Flaahgra Music
                             "state": "ENTERED",
-                            "message": "PLAY"
+                            "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 1638406, // [SpecialFunction] Music Player For Area
-                            "targetId": 1638548, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "targetId": 1638421, // [Relay] After Flaahgra Music
                             "state": "ENTERED",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1638410, // [Relay] Before Flaahgra Music
+                            "targetId": 1638547, // [StreamedAudio] StreamedAudio - Ruins Naka SW
+                            "state": "ZERO",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 1638421, // [Relay] After Flaahgra Music
+                            "targetId": 1638548, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "state": "ZERO",
                             "message": "PLAY"
                         },
                         {
                             "senderId": 2638410, // [Timer] Before Flaahgra Check
-                            "targetId": 1638548, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "targetId": 1638410, // [Relay] Before Flaahgra Music
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 2638410, // [Timer] Before Flaahgra Check
+                            "targetId": 1638421, // [Relay] After Flaahgra Music
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         }
@@ -5006,7 +5072,8 @@
                             "layer": 0,
                             "isMusic": true,
                             "fadeInTime": 0.01,
-                            "audioFileName": "/audio/rui_samusL.dsp|/audio/rui_samusR.dsp"
+                            "audioFileName": "/audio/rui_samusL.dsp|/audio/rui_samusR.dsp",
+                            "noStopOnDeactivate": true
                         }
                     ],
                     "timers": [
@@ -5016,6 +5083,15 @@
                             "layer": 1,
                             "active": true,
                             "startImmediately": true
+                        }
+                    ],
+                    "relays": [
+                        {
+                            "id": 1638410, // [Relay] Before Flaahgra Music
+                            "active": false
+                        },
+                        {
+                            "id": 1638421 // [Relay] After Flaahgra Music
                         }
                     ]
                 },
@@ -6805,8 +6881,39 @@
                         }
                     ]
                 },
-                "Phendrana Shorelines": {
-                    "addConnections": [
+                "Phendrana Shorelines": {/* Unused ice breaking particles, present in Remastered.
+                    "layers": {
+                        "3": true
+                    },
+                    "deleteIds": [
+                        131802,
+                        131796,
+                        131798,
+                        131803,
+                        131799,
+                        131801
+                    ],
+                    "removeConnections": [
+                        {
+                            "senderId": 131895, // [Relay] Relay_starteffects
+                            "targetId": 131894, // [Platform] Platform_IceBlock
+                            "state": "ZERO",
+                            "message": "DECREMENT"
+                        }
+                    ],*/
+                    "addConnections": [/*
+                        {
+                            "senderId": 131895, // [Relay] Relay_starteffects
+                            "targetId": 131349, // [Generator] Generator
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 131895, // [Relay] Relay_starteffects
+                            "targetId": 131894, // [Platform] Platform_IceBlock
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },*/
                         // Make Reposition happen immediately
                         {
                             "senderId": 131406, // [Relay] Relay-start of cinema
@@ -9028,9 +9135,662 @@
                         }
                     ]
                 },
-                "Artifact Temple": {
-                    // Make Teleporter play sounds again when ridley dead
+                "Artifact Temple": {/* This, but it needs to be done in code.
+                    "layers": {
+                        "1": false, // Monoliths and Ridley
+                        "13": false, // Totem
+                        "14": false, // Cinematics
+                        "19": true, // Don't Load (Empty)
+                        "21": false // Teleport
+                    },
+                    "editObjs": {
+                        // [Platform] Platform_totemoff
+                        "1049029": {
+                            "layer": 19 // Don't Load
+                        },
+                        // [Actor] Actor_tot_bot
+                        "1049031": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor_tot_leg
+                        "1049032": {
+                            "layer": 19
+                        },
+                        // [Sound] powerup sound
+                        "1049048": {
+                            "layer": 18
+                        },
+                        // [MemoryRelay] Memory Relay
+                        "1049045": {
+                            "layer": 18
+                        },
+                        // [Pickup] Artifact
+                        "1049044": {
+                            "layer": 18
+                        },
+                        // [Relay] Relay - Fade Out Music
+                        "1049192": {
+                            "layer": 18
+                        },
+                        // [Relay] Relay Post Pickup
+                        "1049399": {
+                            "layer": 18
+                        },
+                        // [Timer] Timer - Fade In Music
+                        "1049193": {
+                            "layer": 18
+                        },
+                        // [Timer] Timer HUD
+                        "1049402": {
+                            "layer": 18
+                        },
+                        // [Timer] Timer Jingle
+                        "1049401": {
+                            "layer": 18
+                        },
+                        // [StreamedAudio] StreamedAudio FadeIn/Out Long
+                        "1049191": {
+                            "layer": 18
+                        },
+                        // [StreamedAudio] StreamedAudio - Artifact Attainment SW
+                        "1049404": {
+                            "layer": 18
+                        },
+                        // [HUDMemo] HUDMemo Pickup
+                        "1049400": {
+                            "layer": 18
+                        },
+                        // [Platform] Platform Inactive Immune
+                        "1048780": {
+                            "layer": 19
+                        },
+                        // [Platform] Platform Inactive Immune
+                        "1048799": {
+                            "layer": 19
+                        },
+                        // [Platform] Platform Inactive Immune
+                        "1048704": {
+                            "layer": 19
+                        },
+                        // [Platform] Platform Inactive Immune
+                        "1048723": {
+                            "layer": 19
+                        },
+                        // [Platform] Platform Inactive Immune
+                        "1048742": {
+                            "layer": 19
+                        },
+                        // [Platform] Platform Inactive Immune
+                        "1048761": {
+                            "layer": 19
+                        },
+                        // [Platform] Platform Inactive Immune
+                        "1048685": {
+                            "layer": 19
+                        },
+                        // [Platform] Platform Inactive Immune
+                        "1048590": {
+                            "layer": 19
+                        },
+                        // [Platform] Platform Inactive Immune
+                        "1048609": {
+                            "layer": 19
+                        },
+                        // [Platform] Platform Inactive Immune
+                        "1048628": {
+                            "layer": 19
+                        },
+                        // [Platform] Platform Inactive Immune
+                        "1048647": {
+                            "layer": 19
+                        },
+                        // [Platform] Platform Inactive Immune
+                        "1048666": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Blue Lines
+                        "1048775": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Blue Lines
+                        "1048794": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Blue Lines
+                        "1048813": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Blue Lines
+                        "1048718": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Blue Lines
+                        "1048737": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Blue Lines
+                        "1048756": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Blue Lines
+                        "1048680": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Blue Lines
+                        "1048699": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Blue Lines
+                        "1048604": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Blue Lines
+                        "1048623": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Blue Lines
+                        "1048642": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Blue Lines
+                        "1048661": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Chozo Hologram
+                        "1048952": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Chozo Hologram
+                        "1048953": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Chozo Hologram
+                        "1048954": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Chozo Hologram
+                        "1048955": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Chozo Hologram
+                        "1048950": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Chozo Hologram
+                        "1048951": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Chozo Hologram
+                        "1048947": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Chozo Hologram
+                        "1048948": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Chozo Hologram
+                        "1048949": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Chozo Hologram
+                        "1048944": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Chozo Hologram
+                        "1048945": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Chozo Hologram
+                        "1048946": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Base Blue Lines
+                        "1048851": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Base Blue Lines
+                        "1048856": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Base Blue Lines
+                        "1048852": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Base Blue Lines
+                        "1048855": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Base Blue Lines
+                        "1048853": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Base Blue Lines
+                        "1048854": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Base Blue Lines
+                        "1048861": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Base Blue Lines
+                        "1048860": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Base Blue Lines
+                        "1048862": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Base Blue Lines
+                        "1048859": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Base Blue Lines
+                        "1048857": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor Base Blue Lines
+                        "1048858": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor - Blue Line Inner 1
+                        "1048826": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor - Blue Line Inner 2
+                        "1048827": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor - Blue Line Inner 3
+                        "1048828": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor - Blue Line Inner 4
+                        "1048829": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor - Blue Line Inner 5
+                        "1048866": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor - Blue Line Inner 6
+                        "1048865": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor - Blue Line Outer 1
+                        "1048820": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor - Blue Line Outer 2
+                        "1048821": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor - Blue Line Outer 3
+                        "1048822": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor - Blue Line Outer 4
+                        "1048823": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor - Blue Line Outer 5
+                        "1048824": {
+                            "layer": 19
+                        },
+                        // [Actor] Actor - Blue Line Outer 6
+                        "1048825": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Inactive Totem 1.scan
+                        "1048608": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Totem 1.scan
+                        "1048605": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Inactive Totem 2.scan
+                        "1048703": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Totem 2.scan
+                        "1048700": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Inactive Totem 3.scan
+                        "1048627": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Totem 3.scan
+                        "1048624": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Inactive Totem 4.scan
+                        "1048684": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Totem 4.scan
+                        "1048681": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Inactive Totem 5.scan
+                        "1048646": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Totem 5.scan
+                        "1048643": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Inactive Totem 6.scan
+                        "1048665": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Totem 6.scan
+                        "1048662": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Inactive Totem 7.scan
+                        "1048795": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Totem 7.scan
+                        "1048798": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Inactive Totem 8.scan
+                        "1048779": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Totem 8.scan
+                        "1048776": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Inactive Totem 9.scan
+                        "1048817": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Totem 9.scan
+                        "1048814": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Inactive Totem 10.scan
+                        "1048760": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Totem 10.scan
+                        "1048757": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Inactive Totem 11.scan
+                        "1048722": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Totem 11.scan
+                        "1048719": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Inactive Totem 12.scan
+                        "1048741": {
+                            "layer": 19
+                        },
+                        // [PointOfInterest] POI_07_Over_Stonehenge Totem 12.scan
+                        "1048738": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay One Shot In
+                        "1049971": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay One Shot Out
+                        "1049972": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Activate 1
+                        "1048607": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Activate 2
+                        "1048702": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Activate 3
+                        "1048626": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Activate 4
+                        "1048683": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Activate 5
+                        "1048645": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Activate 6
+                        "1048664": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Activate 7
+                        "1048797": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Activate 8
+                        "1048778": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Activate 9
+                        "1048816": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Activate 10
+                        "1048759": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Activate 11
+                        "1048721": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Activate 12
+                        "1048740": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Hint From Neighbours 1
+                        "1048868": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Hint From Neighbours 2
+                        "1048883": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Hint From Neighbours 3
+                        "1048871": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Hint From Neighbours 4
+                        "1048880": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Hint From Neighbours 5
+                        "1048874": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Hint From Neighbours 6
+                        "1048877": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Hint From Neighbours 7
+                        "1048898": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Hint From Neighbours 8
+                        "1048895": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Hint From Neighbours 9
+                        "1048901": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Hint From Neighbours 10
+                        "1048892": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Hint From Neighbours 11
+                        "1048886": {
+                            "layer": 19
+                        },
+                        // [Relay] Relay Hint From Neighbours 12
+                        "1048889": {
+                            "layer": 19
+                        },
+                        // [Timer] Timer Monolith Activation Delay
+                        "1049973": {
+                            "layer": 19
+                        },
+                        // [Timer] Timer Activate Neighbour Hint
+                        "1048894": {
+                            "layer": 19
+                        },
+                        // [Timer] Timer Activate Neighbour Hint
+                        "1048891": {
+                            "layer": 19
+                        },
+                        // [Timer] Timer Activate Neighbour Hint
+                        "1048897": {
+                            "layer": 19
+                        },
+                        // [Timer] Timer Activate Neighbour Hint
+                        "1048879": {
+                            "layer": 19
+                        },
+                        // [Timer] Timer Activate Neighbour Hint
+                        "1048903": {
+                            "layer": 19
+                        },
+                        // [Timer] Timer Activate Neighbour Hint
+                        "1048876": {
+                            "layer": 19
+                        },
+                        // [Timer] Timer Activate Neighbour Hint
+                        "1048882": {
+                            "layer": 19
+                        },
+                        // [Timer] Timer Activate Neighbour Hint
+                        "1048888": {
+                            "layer": 19
+                        },
+                        // [Timer] Timer Activate Neighbour Hint
+                        "1048873": {
+                            "layer": 19
+                        },
+                        // [Timer] Timer Activate Neighbour Hint
+                        "1048885": {
+                            "layer": 19
+                        },
+                        // [Timer] Timer Activate Neighbour Hint
+                        "1048870": {
+                            "layer": 19
+                        },
+                        // [Timer] Timer Activate Neighbour Hint
+                        "1048900": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Active
+                        "1049836": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Hint
+                        "1049835": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Active
+                        "1049838": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Hint
+                        "1049837": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Active
+                        "1049840": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Hint
+                        "1049839": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Active
+                        "1049830": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Hint
+                        "1049829": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Active
+                        "1049828": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Hint
+                        "1049827": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Active
+                        "1049826": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Hint
+                        "1049825": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Active
+                        "1049832": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Hint
+                        "1049831": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Active
+                        "1049842": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Hint
+                        "1049841": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Active
+                        "1049844": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Hint
+                        "1049843": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Active
+                        "1049822": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Hint
+                        "1049821": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Active
+                        "1049824": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Hint
+                        "1049823": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Active
+                        "1049834": {
+                            "layer": 19
+                        },
+                        // [ColorModulate] ColorModulate BirdHead Hint
+                        "1049833": {
+                            "layer": 19
+                        }
+                    },*/
                     "addConnections": [
+                        // Make Teleporter play sounds again when ridley dead
                         {
                             "senderId": 1048578, // [SpawnPoint] Spawn point - NON-Teleporter Spawn
                             "targetId": 2048598, // [Relay] Play Teleporter Sounds
@@ -9103,6 +9863,13 @@
                             "state": "ENTERED",
                             "message": "PLAY"
                         },
+                        /* Totems
+                        {
+                            "senderId": 1048833, // [Ridley] Ridley
+                            "targetId": 1048614, // [SpecialFunction] Decrement Monoliths
+                            "state": "DEATH_RATTLE",
+                            "message": "DECREMENT"
+                        },*/
                         // Music Stuff
                         {
                             "senderId": 1048600, // [Timer] Music Player For Area + Artifact Checks
@@ -9317,7 +10084,13 @@
                         {
                             "id": 1048598, // [SpecialFunction] Music Player For Area
                             "type": "PlayerInAreaRelay"
-                        }
+                        }/*,
+                        {
+                            "id": 1048614, // [SpecialFunction] Decrement Monoliths
+                            "type": "ScriptLayerController",
+                            "layerChangeRoomId": 3442151074,
+                            "layerChangeLayerId": 19
+                        }*/
                     ],
                     "relays": [
                         {
@@ -9331,7 +10104,7 @@
                     ],
                     "timers": [
                         {
-                            "id": 1048600, // [Timer] Music Player For Area + Artifact Checks
+                            "id": 1048600, // [Timer] Music Player For Area
                             "time": 0.001,
                             "active": true,
                             "looping": true,
@@ -10534,23 +11307,459 @@
                 "Temple Lobby": {
                     "addConnections": [
                         {
-                            "senderId": 720939, // [SpecialFunction] Music Player For Area
+                            "senderId": 742939, // [SpecialFunction] Music Player For Area
                             "targetId": 720940, // [StreamedAudio] StreamedAudio - Overworld Daichi SW
                             "state": "ENTERED",
                             "message": "PLAY"
                         },
                         {
-                            "senderId": 720939, // [SpecialFunction] Music Player For Area
+                            "senderId": 742939, // [SpecialFunction] Music Player For Area
                             "targetId": 720941, // [StreamedAudio] StreamedAudio - Overworld SW
                             "state": "ENTERED",
                             "message": "PLAY"
-                        }
+                        }/*, This, but it needs to be done in code.
+                        {
+                            "senderId": 720952, // [Timer] Fire Checks
+                            "targetId": 720950, // [SpecialFunction] Truth Check
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 720952, // [Timer] Fire Checks
+                            "targetId": 720949, // [SpecialFunction] Strength Check
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 720952, // [Timer] Fire Checks
+                            "targetId": 720948, // [SpecialFunction] Elder Check
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 720952, // [Timer] Fire Checks
+                            "targetId": 720947, // [SpecialFunction] Wild Check
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 720952, // [Timer] Fire Checks
+                            "targetId": 720946, // [SpecialFunction] Lifegiver Check
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 720952, // [Timer] Fire Checks
+                            "targetId": 720945, // [SpecialFunction] Warrior Check
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 720952, // [Timer] Fire Checks
+                            "targetId": 720944, // [SpecialFunction] Chozo Check
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 720952, // [Timer] Fire Checks
+                            "targetId": 720943, // [SpecialFunction] Nature Check
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 720952, // [Timer] Fire Checks
+                            "targetId": 720942, // [SpecialFunction] Sun Check
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 720952, // [Timer] Fire Checks
+                            "targetId": 721941, // [SpecialFunction] World Check
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 720952, // [Timer] Fire Checks
+                            "targetId": 721940, // [SpecialFunction] Spirit Check
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 720952, // [Timer] Fire Checks
+                            "targetId": 720939, // [SpecialFunction] Newborn Check
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
+                            "senderId": 720950, // [SpecialFunction] Truth Check
+                            "targetId": 720951, // [Counter] Artifact Count
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 720950, // [SpecialFunction] Truth Check
+                            "targetId": 720950, // [SpecialFunction] Truth Check
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 720949, // [SpecialFunction] Strength Check
+                            "targetId": 720951, // [Counter] Artifact Count
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 720949, // [SpecialFunction] Strength Check
+                            "targetId": 720949, // [SpecialFunction] Strength Check
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 720948, // [SpecialFunction] Elder Check
+                            "targetId": 720951, // [Counter] Artifact Count
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 720948, // [SpecialFunction] Elder Check
+                            "targetId": 720948, // [SpecialFunction] Elder Check
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 720947, // [SpecialFunction] Wild Check
+                            "targetId": 720951, // [Counter] Artifact Count
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 720947, // [SpecialFunction] Wild Check
+                            "targetId": 720947, // [SpecialFunction] Wild Check
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 720946, // [SpecialFunction] Lifegiver Check
+                            "targetId": 720951, // [Counter] Artifact Count
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 720946, // [SpecialFunction] Lifegiver Check
+                            "targetId": 720946, // [SpecialFunction] Lifegiver Check
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 720945, // [SpecialFunction] Warrior Check
+                            "targetId": 720951, // [Counter] Artifact Count
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 720945, // [SpecialFunction] Warrior Check
+                            "targetId": 720945, // [SpecialFunction] Warrior Check
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 720944, // [SpecialFunction] Chozo Check
+                            "targetId": 720951, // [Counter] Artifact Count
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 720944, // [SpecialFunction] Chozo Check
+                            "targetId": 720944, // [SpecialFunction] Chozo Check
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 720943, // [SpecialFunction] Nature Check
+                            "targetId": 720951, // [Counter] Artifact Count
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 720943, // [SpecialFunction] Nature Check
+                            "targetId": 720943, // [SpecialFunction] Nature Check
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 720942, // [SpecialFunction] Sun Check
+                            "targetId": 720951, // [Counter] Artifact Count
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 720942, // [SpecialFunction] Sun Check
+                            "targetId": 720942, // [SpecialFunction] Sun Check
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 721941, // [SpecialFunction] World Check
+                            "targetId": 720951, // [Counter] Artifact Count
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 721941, // [SpecialFunction] World Check
+                            "targetId": 721941, // [SpecialFunction] World Check
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 721940, // [SpecialFunction] Spirit Check
+                            "targetId": 720951, // [Counter] Artifact Count
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 721940, // [SpecialFunction] Spirit Check
+                            "targetId": 721940, // [SpecialFunction] Spirit Check
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 720939, // [SpecialFunction] Newborn Check
+                            "targetId": 720951, // [Counter] Artifact Count
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 720939, // [SpecialFunction] Newborn Check
+                            "targetId": 720939, // [SpecialFunction] Newborn Check
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 720951, // [Counter] Artifact Count
+                            "targetId": 725953, // [SpecialFunction] Increment Totem
+                            "state": "MAX_REACHED",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 720951, // [Counter] Artifact Count
+                            "targetId": 720952, // [Timer] Fire Checks
+                            "state": "MAX_REACHED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 720951, // [Counter] Artifact Count
+                            "targetId": 736953, // [SpecialFunction] Increment Monoliths and Ridley
+                            "state": "MAX_REACHED",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 720951, // [Counter] Artifact Count
+                            "targetId": 725954, // [SpecialFunction] Increment Cinematics
+                            "state": "MAX_REACHED",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 720951, // [Counter] Artifact Count
+                            "targetId": 725955, // [SpecialFunction] Increment Teleport
+                            "state": "MAX_REACHED",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 720951, // [Counter] Artifact Count
+                            "targetId": 759955, // [SpecialFunction] Decrement Artifact Checks
+                            "state": "MAX_REACHED",
+                            "message": "DECREMENT"
+                        }*/
                     ],
                     "specialFunctions": [
                         {
-                            "id": 720939, // [SpecialFunction] Music Player For Area
+                            "id": 742939, // [SpecialFunction] Music Player For Area
                             "type": "PlayerInAreaRelay"
+                        }/*,
+                        {
+                            "id": 736953, // [SpecialFunction] Increment Monoliths and Ridley
+                            "type": "ScriptLayerController",
+                            "layer": 4,
+                            "layerChangeRoomId": 3442151074,
+                            "layerChangeLayerId": 1
+                        },
+                        {
+                            "id": 725953, // [SpecialFunction] Increment Totem
+                            "type": "ScriptLayerController",
+                            "layer": 4,
+                            "layerChangeRoomId": 3442151074,
+                            "layerChangeLayerId": 13
+                        },
+                        {
+                            "id": 725954, // [SpecialFunction] Increment Cinematics
+                            "type": "ScriptLayerController",
+                            "layer": 4,
+                            "layerChangeRoomId": 3442151074,
+                            "layerChangeLayerId": 14
+                        },
+                        {
+                            "id": 725955, // [SpecialFunction] Increment Teleport
+                            "type": "ScriptLayerController",
+                            "layer": 4,
+                            "layerChangeRoomId": 3442151074,
+                            "layerChangeLayerId": 21
+                        },
+                        {
+                            "id": 759955, // [SpecialFunction] Decrement Artifact Checks
+                            "type": "ScriptLayerController",
+                            "layer": 4,
+                            "layerChangeRoomId": 3193756063,
+                            "layerChangeLayerId": 4
+                        },
+                        {
+                            "id": 720950, // [SpecialFunction] Truth Check
+                            "type": "InventoryActivator",
+                            "layer": 4,
+                            "itemId": "ArtifactOfTruth",
+                            "position": [
+                                -373.259399,
+                                121.508316,
+                                -14.590384
+                            ]
+                        },
+                        {
+                            "id": 720949, // [SpecialFunction] Strength Check
+                            "type": "InventoryActivator",
+                            "layer": 4,
+                            "itemId": "ArtifactOfStrength",
+                            "position": [
+                                -373.259399,
+                                123.508316,
+                                -14.590384
+                            ]
+                        },
+                        {
+                            "id": 720948, // [SpecialFunction] Elder Check
+                            "type": "InventoryActivator",
+                            "layer": 4,
+                            "itemId": "ArtifactOfElder",
+                            "position": [
+                                -373.259399,
+                                125.508316,
+                                -14.590384
+                            ]
+                        },
+                        {
+                            "id": 720947, // [SpecialFunction] Wild Check
+                            "type": "InventoryActivator",
+                            "layer": 4,
+                            "itemId": "ArtifactOfWild",
+                            "position": [
+                                -373.259399,
+                                127.508316,
+                                -14.590384
+                            ]
+                        },
+                        {
+                            "id": 720946, // [SpecialFunction] Lifegiver Check
+                            "type": "InventoryActivator",
+                            "layer": 4,
+                            "itemId": "ArtifactOfLifegiver",
+                            "position": [
+                                -373.259399,
+                                129.508316,
+                                -14.590384
+                            ]
+                        },
+                        {
+                            "id": 720945, // [SpecialFunction] Warrior Check
+                            "type": "InventoryActivator",
+                            "layer": 4,
+                            "itemId": "ArtifactOfWarrior",
+                            "position": [
+                                -373.259399,
+                                131.508316,
+                                -14.590384
+                            ]
+                        },
+                        {
+                            "id": 720944, // [SpecialFunction] Chozo Check
+                            "type": "InventoryActivator",
+                            "layer": 4,
+                            "itemId": "ArtifactOfChozo",
+                            "position": [
+                                -373.259399,
+                                133.508316,
+                                -14.590384
+                            ]
+                        },
+                        {
+                            "id": 720943, // [SpecialFunction] Nature Check
+                            "type": "InventoryActivator",
+                            "layer": 4,
+                            "itemId": "ArtifactOfNature",
+                            "position": [
+                                -373.259399,
+                                135.508316,
+                                -14.590384
+                            ]
+                        },
+                        {
+                            "id": 720942, // [SpecialFunction] Sun Check
+                            "type": "InventoryActivator",
+                            "layer": 4,
+                            "itemId": "ArtifactOfSun",
+                            "position": [
+                                -373.259399,
+                                137.508316,
+                                -14.590384
+                            ]
+                        },
+                        {
+                            "id": 721941, // [SpecialFunction] World Check
+                            "type": "InventoryActivator",
+                            "layer": 4,
+                            "itemId": "ArtifactOfWorld",
+                            "position": [
+                                -373.259399,
+                                139.508316,
+                                -14.590384
+                            ]
+                        },
+                        {
+                            "id": 721940, // [SpecialFunction] Spirit Check
+                            "type": "InventoryActivator",
+                            "layer": 4,
+                            "itemId": "ArtifactOfSpirit",
+                            "position": [
+                                -373.259399,
+                                141.508316,
+                                -14.590384
+                            ]
+                        },
+                        {
+                            "id": 720939, // [SpecialFunction] Newborn Check
+                            "type": "InventoryActivator",
+                            "layer": 4,
+                            "itemId": "ArtifactOfNewborn",
+                            "position": [
+                                -373.259399,
+                                143.508316,
+                                -14.590384
+                            ]
                         }
+                    ],
+                    "counters": [
+                        {
+                            "id": 720951, // [Counter] Artifact Count
+                            "layer": 4,
+                            "maxValue": 12,
+                            "startValue": 0
+                        }
+                    ],
+                    "timers": [
+                        {
+                            "id": 720952, // [Timer] Fire Checks
+                            "time": 0.1,
+                            "layer": 4,
+                            "looping": true,
+                            "startImmediately": true
+                        }*/
                     ],
                     "streamedAudios": [
                         {
@@ -12951,7 +14160,7 @@
                         },
                         {
                             "senderId": 262154, // [SpecialFunction] Music Player For Area
-                            "targetId": 262155, // [StreamedAudio] StreamedAudio Lava Main SW
+                            "targetId": 272944, // [StreamedAudio] StreamedAudio Lava Main SW
                             "state": "ENTERED",
                             "message": "PLAY"
                         },
@@ -13922,14 +15131,6 @@
                         720943,
                         720944,
                         720945
-                    ],
-                    "removeConnections": [
-                        {
-                            "senderId": 720934, // [Trigger] New Firey Shores Load Trigger
-                            "targetId": 720897, // [Dock] Dock To 09_over_monitortower
-                            "state": "ENTERED",
-                            "message": "SET_TO_ZERO"
-                        }
                     ],
                     "addConnections": [
                         {
