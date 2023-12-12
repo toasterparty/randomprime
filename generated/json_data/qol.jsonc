@@ -6842,12 +6842,8 @@
                 },
                 "Phendrana Shorelines": {
                     "deleteIds": [
-                        131802,
-                        131796,
-                        131798,
-                        131803,
-                        131799,
-                        131801
+                        131559, // [Trigger] Trigger - Play Music 1
+                        131558 // [Trigger] Trigger - Play Music 2
                     ],
                     "addConnections": [
                         // Make Reposition happen immediately
