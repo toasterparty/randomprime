@@ -1888,61 +1888,73 @@
                     "addConnections": [
                         {
                             "senderId": 2545203, // [SpecialFunction] Music Player For Area
-                            "targetId": 1245805, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "targetId": 1245196, // [Relay] Chozo Music
                             "state": "ENTERED",
-                            "message": "PLAY"
+                            "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 2545203, // [SpecialFunction] Music Player For Area
-                            "targetId": 1245806, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "targetId": 1245197, // [Relay] Ghosts Music
                             "state": "ENTERED",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1245196, // [Relay] Chozo Music
+                            "targetId": 1245805, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "state": "ZERO",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 1245197, // [Relay] Ghosts Music
+                            "targetId": 1245806, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "state": "ZERO",
                             "message": "PLAY"
                         },
                         {
                             "senderId": 1245529, // [Trigger] Trigger_Ghosttest
-                            "targetId": 1245805, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "targetId": 1245196, // [Relay] Chozo Music
                             "state": "ENTERED",
                             "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 1245529, // [Trigger] Trigger_Ghosttest
-                            "targetId": 1245806, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "targetId": 1245197, // [Relay] Ghosts Music
                             "state": "ENTERED",
                             "message": "ACTIVATE"
                         },
                         {
                             "senderId": 1245603, // [Trigger] Trigger_Ghosttest
-                            "targetId": 1245805, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "targetId": 1245196, // [Relay] Chozo Music
                             "state": "ENTERED",
                             "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 1245603, // [Trigger] Trigger_Ghosttest
-                            "targetId": 1245806, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "targetId": 1245197, // [Relay] Ghosts Music
                             "state": "ENTERED",
                             "message": "ACTIVATE"
                         },
                         {
                             "senderId": 1245604, // [Trigger] Trigger_Ghosttest
-                            "targetId": 1245805, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "targetId": 1245196, // [Relay] Chozo Music
                             "state": "ENTERED",
                             "message": "DEACTIVATE"
                         },
                         {
                             "senderId": 1245604, // [Trigger] Trigger_Ghosttest
-                            "targetId": 1245806, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "targetId": 1245197, // [Relay] Ghosts Music
                             "state": "ENTERED",
                             "message": "ACTIVATE"
                         },
                         {
                             "senderId": 1245578, // [Counter] Counter - Ghost death counter to bring lights on
-                            "targetId": 1245805, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "targetId": 1245196, // [Relay] Chozo Music
                             "state": "MAX_REACHED",
                             "message": "ACTIVATE"
                         },
                         {
                             "senderId": 1245578, // [Counter] Counter - Ghost death counter to bring lights on
-                            "targetId": 1245806, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
+                            "targetId": 1245197, // [Relay] Ghosts Music
                             "state": "MAX_REACHED",
                             "message": "DEACTIVATE"
                         }
@@ -1964,17 +1976,8 @@
                             "volume": 70,
                             "isMusic": true,
                             "fadeInTime": 0.01,
-                            "noStopOnDeactivate": false,
-                            "audioFileName": "/audio/rui_samusL.dsp|/audio/rui_samusR.dsp"
-                        },
-                        {
-                            "id": 1245806, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
-                            "active": false,
-                            "volume": 80,
-                            "isMusic": true,
-                            "fadeInTime": 0.05,
-                            "audioFileName": "/audio/gen_ShortBattle2L.dsp|/audio/gen_ShortBattle2R.dsp",
-                            "noStopOnDeactivate": false
+                            "audioFileName": "/audio/rui_samusL.dsp|/audio/rui_samusR.dsp",
+                            "noStopOnDeactivate": true
                         }
                     ],
                     "triggers": [
@@ -1990,8 +1993,42 @@
                                 10.919998,
                                 5.812
                             ],
-                            "flags": 2044,
-                            "deactivateOnEnter": true
+                            "flags": 2044
+                        },
+                        {
+                            "id": 1245372, // [Trigger] Trigger_DoorOpen
+                            "position": [
+                                278.391266,
+                                -103.053986,
+                                18.556475
+                            ],
+                            "scale": [
+                                20.0,
+                                10.0,
+                                6.0
+                            ]
+                        },
+                        {
+                            "id": 1245734, // [Trigger] Trigger_DoorOpen
+                            "position": [
+                                342.820282,
+                                -103.05558,
+                                15.557194
+                            ],
+                            "scale": [
+                                20.0,
+                                10.0,
+                                8.0
+                            ]
+                        }
+                    ],
+                    "relays": [
+                        {
+                            "id": 1245196 // [Relay] Chozo Music
+                        },
+                        {
+                            "id": 1245197, // [Relay] Ghosts Music
+                            "active": false
                         }
                     ]
                 },
@@ -2760,9 +2797,15 @@
                 "Gathering Hall Access": {
                     "addConnections": [
                         {
+                            "senderId": 1704007, // [Timer] Music Player For Area
+                            "targetId": 1704005, // [SpecialFunction] Music Player For Area
+                            "state": "ZERO",
+                            "message": "ACTION"
+                        },
+                        {
                             "senderId": 1704005, // [SpecialFunction] Music Player For Area
                             "targetId": 1704006, // [StreamedAudio] StreamedAudio - Ruins Samus SW
-                            "state": "ENTERED",
+                            "state": "ZERO",
                             "message": "PLAY"
                         }
                     ],
@@ -2779,6 +2822,14 @@
                             "isMusic": true,
                             "fadeInTime": 0.01,
                             "audioFileName": "/audio/rui_samusL.dsp|/audio/rui_samusR.dsp"
+                        }
+                    ],
+                    "timers": [
+                        {
+                            "id": 1704007, // [Timer] Music Player For Area
+                            "time": 0.001,
+                            "looping": true,
+                            "startImmediately": true
                         }
                     ]
                 },
@@ -2930,75 +2981,7 @@
                         3211976,
                         2359420,
                         2359427
-                    ], /*
-
-                     Temporarely unfixing the door because if door lock rando, if there is a blast shield it will be rotated incorrectly, and if the door turns into a no blast shield door, error.
-
-                    "editObjs": {
-                        // Missile Lock
-                        "2359799": {
-                            "position": [
-                                94.620384,
-                                335.728577,
-                                -6.138761
-                            ]
-                        },
-                        // Door
-                        "2359859": {
-                            "position": [
-                                94.620384,
-                                335.97287,
-                                -6.138761
-                            ],
-                            "rotation": [
-                                0.019047,
-                                0.480051,
-                                90.001442
-                            ]
-                        },
-                        // Actor_DoorShield
-                        "2359862": {
-                            "position": [
-                                94.626328,
-                                335.605164,
-                                -4.333776
-                            ],
-                            "rotation": [
-                                0.019047,
-                                0.480051,
-                                90.001442
-                            ]
-                        },
-                        // Actor_DoorShield_Key
-                        "2359855": {
-                            "position": [
-                                94.626328,
-                                335.605164,
-                                -4.333776
-                            ],
-                            "rotation": [
-                                0.019047,
-                                0.480051,
-                                90.001442
-                            ]
-                        },
-                        // Trigger_DoorUnlock
-                        "2359860": {
-                            "position": [
-                                94.410385,
-                                335.469147,
-                                -4.128055
-                            ]
-                        },
-                        // Trigger_DoorKey
-                        "2359854": {
-                            "position": [
-                                94.410385,
-                                335.469147,
-                                -4.128055
-                            ]
-                        }
-                    },*/
+                    ],
                     "addConnections": [
                         {
                             "senderId": 789983, // [Timer] Music Player For Area
@@ -4331,12 +4314,12 @@
                         65617, // [StreamedAudio] StreamedAudio Ruins_First
                         65616, // [Trigger] Trigger - Play Music 1
                         65621, // [Trigger] Trigger - Play Music 1
+                        65629, // [Trigger] Trigger - Play Music 1
                         65615, // [Trigger] Trigger - Play Music 2
                         65620, // [Trigger] Trigger - Play Music 2
+                        65628, // [Trigger] Trigger - Play Music 2
                         65633, // [StreamedAudio] StreamedAudio - Ruins Soto A SW
-                        65637, // [StreamedAudio] StreamedAudio General InterWorld Elevator SW
-                        65629, // [Trigger] Trigger - Play Music 1
-                        65628 // [Trigger] Trigger - Play Music 2
+                        65637 // [StreamedAudio] StreamedAudio General InterWorld Elevator SW
                     ],
                     "addConnections": [
                         {
@@ -4976,19 +4959,37 @@
                     "addConnections": [
                         {
                             "senderId": 1638406, // [SpecialFunction] Music Player For Area
-                            "targetId": 1638547, // [StreamedAudio] StreamedAudio - Ruins Naka SW
+                            "targetId": 1638410, // [Relay] Before Flaahgra Music
                             "state": "ENTERED",
-                            "message": "PLAY"
+                            "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 1638406, // [SpecialFunction] Music Player For Area
-                            "targetId": 1638548, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "targetId": 1638421, // [Relay] After Flaahgra Music
                             "state": "ENTERED",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1638410, // [Relay] Before Flaahgra Music
+                            "targetId": 1638547, // [StreamedAudio] StreamedAudio - Ruins Naka SW
+                            "state": "ZERO",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 1638421, // [Relay] After Flaahgra Music
+                            "targetId": 1638548, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "state": "ZERO",
                             "message": "PLAY"
                         },
                         {
                             "senderId": 2638410, // [Timer] Before Flaahgra Check
-                            "targetId": 1638548, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "targetId": 1638410, // [Relay] Before Flaahgra Music
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 2638410, // [Timer] Before Flaahgra Check
+                            "targetId": 1638421, // [Relay] After Flaahgra Music
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         }
@@ -5006,7 +5007,8 @@
                             "layer": 0,
                             "isMusic": true,
                             "fadeInTime": 0.01,
-                            "audioFileName": "/audio/rui_samusL.dsp|/audio/rui_samusR.dsp"
+                            "audioFileName": "/audio/rui_samusL.dsp|/audio/rui_samusR.dsp",
+                            "noStopOnDeactivate": true
                         }
                     ],
                     "timers": [
@@ -5016,6 +5018,15 @@
                             "layer": 1,
                             "active": true,
                             "startImmediately": true
+                        }
+                    ],
+                    "relays": [
+                        {
+                            "id": 1638410, // [Relay] Before Flaahgra Music
+                            "active": false
+                        },
+                        {
+                            "id": 1638421 // [Relay] After Flaahgra Music
                         }
                     ]
                 },
@@ -5832,6 +5843,18 @@
                             "message": "DEACTIVATE"
                         },
                         {
+                            "senderId": 720906, // [Timer] Delete Right Blocks
+                            "targetId": 720990, // [DamageableTrigger] DamageableTrigger
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 720906, // [Timer] Delete Right Blocks
+                            "targetId": 720988, // [DamageableTrigger] DamageableTrigger
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
                             "senderId": 720905, // [Timer] Delete Left Blocks
                             "targetId": 720985, // [Actor] Actor - Movable Block section
                             "state": "ZERO",
@@ -5840,6 +5863,18 @@
                         {
                             "senderId": 720905, // [Timer] Delete Left Blocks
                             "targetId": 720957, // [Actor] Actor - Immobile Block section
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 720905, // [Timer] Delete Left Blocks
+                            "targetId": 720991, // [DamageableTrigger] DamageableTrigger
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 720905, // [Timer] Delete Left Blocks
+                            "targetId": 720989, // [DamageableTrigger] DamageableTrigger
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         }
@@ -6806,6 +6841,10 @@
                     ]
                 },
                 "Phendrana Shorelines": {
+                    "deleteIds": [
+                        131559, // [Trigger] Trigger - Play Music 1
+                        131558 // [Trigger] Trigger - Play Music 2
+                    ],
                     "addConnections": [
                         // Make Reposition happen immediately
                         {
@@ -6844,18 +6883,18 @@
                             "state": "ENTERED",
                             "message": "DEACTIVATE"
                         },
+                        {
+                            "senderId": 131092, // [SpecialFunction] Music Player For Area
+                            "targetId": 131099, // [StreamedAudio] StreamedAudio - Ice Main SW
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        },
                         // Deactivate Fly-Over Ridley that is making noises before the actual cutscene starts
                         {
                             "senderId": 131095, // [Timer] Deactivate Ridley
                             "targetId": 131747, // [Platform] Platform
                             "state": "ZERO",
                             "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 131092, // [SpecialFunction] Music Player For Area
-                            "targetId": 131099, // [StreamedAudio] StreamedAudio - Ice Main SW
-                            "state": "ENTERED",
-                            "message": "PLAY"
                         }
                     ],
                     "specialFunctions": [
@@ -9029,8 +9068,8 @@
                     ]
                 },
                 "Artifact Temple": {
-                    // Make Teleporter play sounds again when ridley dead
                     "addConnections": [
+                        // Make Teleporter play sounds again when ridley dead
                         {
                             "senderId": 1048578, // [SpawnPoint] Spawn point - NON-Teleporter Spawn
                             "targetId": 2048598, // [Relay] Play Teleporter Sounds
@@ -9103,7 +9142,6 @@
                             "state": "ENTERED",
                             "message": "PLAY"
                         },
-                        // Music Stuff
                         {
                             "senderId": 1048600, // [Timer] Music Player For Area + Artifact Checks
                             "targetId": 1048598, // [SpecialFunction] Music Player For Area
@@ -9331,7 +9369,7 @@
                     ],
                     "timers": [
                         {
-                            "id": 1048600, // [Timer] Music Player For Area + Artifact Checks
+                            "id": 1048600, // [Timer] Music Player For Area
                             "time": 0.001,
                             "active": true,
                             "looping": true,
@@ -10534,13 +10572,13 @@
                 "Temple Lobby": {
                     "addConnections": [
                         {
-                            "senderId": 720939, // [SpecialFunction] Music Player For Area
+                            "senderId": 742939, // [SpecialFunction] Music Player For Area
                             "targetId": 720940, // [StreamedAudio] StreamedAudio - Overworld Daichi SW
                             "state": "ENTERED",
                             "message": "PLAY"
                         },
                         {
-                            "senderId": 720939, // [SpecialFunction] Music Player For Area
+                            "senderId": 742939, // [SpecialFunction] Music Player For Area
                             "targetId": 720941, // [StreamedAudio] StreamedAudio - Overworld SW
                             "state": "ENTERED",
                             "message": "PLAY"
@@ -10548,7 +10586,7 @@
                     ],
                     "specialFunctions": [
                         {
-                            "id": 720939, // [SpecialFunction] Music Player For Area
+                            "id": 742939, // [SpecialFunction] Music Player For Area
                             "type": "PlayerInAreaRelay"
                         }
                     ],
@@ -12951,7 +12989,7 @@
                         },
                         {
                             "senderId": 262154, // [SpecialFunction] Music Player For Area
-                            "targetId": 262155, // [StreamedAudio] StreamedAudio Lava Main SW
+                            "targetId": 272944, // [StreamedAudio] StreamedAudio Lava Main SW
                             "state": "ENTERED",
                             "message": "PLAY"
                         },
@@ -13922,14 +13960,6 @@
                         720943,
                         720944,
                         720945
-                    ],
-                    "removeConnections": [
-                        {
-                            "senderId": 720934, // [Trigger] New Firey Shores Load Trigger
-                            "targetId": 720897, // [Dock] Dock To 09_over_monitortower
-                            "state": "ENTERED",
-                            "message": "SET_TO_ZERO"
-                        }
                     ],
                     "addConnections": [
                         {
