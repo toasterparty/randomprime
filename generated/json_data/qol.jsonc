@@ -9171,7 +9171,7 @@
                         },
                         // Better cutscene skip
                         {
-                            "senderId": 1049975, // [Relay] Relay - end of cinema
+                            "senderId": 1049980, // [Timer] Timer Frame Delay
                             "targetId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
