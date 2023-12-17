@@ -1894,7 +1894,7 @@
                         },
                         {
                             "senderId": 2545203, // [SpecialFunction] Music Player For Area
-                            "targetId": 1245197, // [Relay] Ghosts Music
+                            "targetId": 3245197, // [Relay] Ghosts Music
                             "state": "ENTERED",
                             "message": "SET_TO_ZERO"
                         },
@@ -1905,7 +1905,7 @@
                             "message": "PLAY"
                         },
                         {
-                            "senderId": 1245197, // [Relay] Ghosts Music
+                            "senderId": 3245197, // [Relay] Ghosts Music
                             "targetId": 1245806, // [StreamedAudio] StreamedAudio - General ShortBattle 2 SW
                             "state": "ZERO",
                             "message": "PLAY"
@@ -1918,7 +1918,7 @@
                         },
                         {
                             "senderId": 1245529, // [Trigger] Trigger_Ghosttest
-                            "targetId": 1245197, // [Relay] Ghosts Music
+                            "targetId": 3245197, // [Relay] Ghosts Music
                             "state": "ENTERED",
                             "message": "ACTIVATE"
                         },
@@ -1930,7 +1930,7 @@
                         },
                         {
                             "senderId": 1245603, // [Trigger] Trigger_Ghosttest
-                            "targetId": 1245197, // [Relay] Ghosts Music
+                            "targetId": 3245197, // [Relay] Ghosts Music
                             "state": "ENTERED",
                             "message": "ACTIVATE"
                         },
@@ -1942,7 +1942,7 @@
                         },
                         {
                             "senderId": 1245604, // [Trigger] Trigger_Ghosttest
-                            "targetId": 1245197, // [Relay] Ghosts Music
+                            "targetId": 3245197, // [Relay] Ghosts Music
                             "state": "ENTERED",
                             "message": "ACTIVATE"
                         },
@@ -1954,7 +1954,7 @@
                         },
                         {
                             "senderId": 1245578, // [Counter] Counter - Ghost death counter to bring lights on
-                            "targetId": 1245197, // [Relay] Ghosts Music
+                            "targetId": 3245197, // [Relay] Ghosts Music
                             "state": "MAX_REACHED",
                             "message": "DEACTIVATE"
                         }
@@ -2027,7 +2027,7 @@
                             "id": 1245196 // [Relay] Chozo Music
                         },
                         {
-                            "id": 1245197, // [Relay] Ghosts Music
+                            "id": 3245197, // [Relay] Ghosts Music
                             "active": false
                         }
                     ]
@@ -2074,39 +2074,44 @@
                     "addConnections": [
                         {
                             "senderId": 3145758, // [Trigger] MasterTrigger
-                            "targetId": 3155830, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "targetId": 3175736, // [Relay] No Music
+                            "state": "INACTIVE",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 3145758, // [Trigger] MasterTrigger
+                            "targetId": 3149741, // [Relay] Yes Music
                             "state": "INACTIVE",
                             "message": "ACTIVATE"
                         },
                         {
                             "senderId": 3145756, // [SpecialFunction] Music Player For Area
-                            "targetId": 3155830, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "targetId": 3149741, // [Relay] Yes Music
                             "state": "ENTERED",
-                            "message": "PLAY"
-                        },
-                        {
-                            "senderId": 3155745, // [Relay] Relay Enable Lock (To Trigger_Unlock&Key With Increment)
-                            "targetId": 3145940, // [Dock] Dock
-                            "state": "ZERO",
                             "message": "SET_TO_ZERO"
                         },
                         {
-                            "senderId": 3155745, // [Relay] Relay Enable Lock (To Trigger_Unlock&Key With Increment)
-                            "targetId": 3555741, // [SpecialFunction] [DEC] Burn Dome Access
-                            "state": "ZERO",
-                            "message": "DECREMENT"
+                            "senderId": 3145756, // [SpecialFunction] Music Player For Area
+                            "targetId": 3175736, // [Relay] No Music
+                            "state": "ENTERED",
+                            "message": "SET_TO_ZERO"
                         },
                         {
-                            "senderId": 3155923, // [Relay] !Relay End Contraption Introduction Cinematic
-                            "targetId": 3145940, // [Dock] Dock
+                            "senderId": 3149741, // [Relay] Yes Music
+                            "targetId": 3155830, // [StreamedAudio] StreamedAudio - Ruins Samus SW
                             "state": "ZERO",
-                            "message": "SET_TO_MAX"
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 3175736, // [Relay] No Music
+                            "targetId": 3155830, // [StreamedAudio] StreamedAudio - Ruins Samus SW
+                            "state": "ZERO",
+                            "message": "STOP"
                         }
                     ],
                     "streamedAudios": [
                         {
                             "id": 3155830, // [StreamedAudio] StreamedAudio - Ruins Samus SW
-                            "active": false,
                             "volume": 70,
                             "isMusic": true,
                             "fadeInTime": 0.01,
@@ -2124,21 +2129,15 @@
                         {
                             "id": 3145756, // [SpecialFunction] Music Player For Area
                             "type": "PlayerInAreaRelay"
-                        },
-                        {
-                            "id": 3555741, // [SpecialFunction] [DEC] Burn Dome Access
-                            "type": "ScriptLayerController",
-                            "layerChangeLayerId": 1,
-                            "layerChangeRoomId": 202020391
                         }
                     ],
-                    "timers": [
+                    "relays": [
                         {
-                            "id": 3145796, // [Timer] Music Player For Area
-                            "time": 0.001,
-                            "active": true,
-                            "looping": true,
-                            "startImmediately": true
+                            "id": 3175736 // [Relay] No Music
+                        },
+                        {
+                            "id": 3149741, // [Relay] Yes Music
+                            "active": false
                         }
                     ]
                 },
@@ -2149,43 +2148,12 @@
                             "targetId": 3014686, // [StreamedAudio] StreamedAudio - Ruins Samus SW
                             "state": "ENTERED",
                             "message": "PLAY"
-                        },
-                        {
-                            "senderId": 3014681, // [SpecialFunction] Music Player For Area
-                            "targetId": 3014685, // [Relay] Stop Music
-                            "state": "EXITED",
-                            "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 3014664, // [Door] Door_Area
-                            "targetId": 3014685, // [Relay] Stop Music
-                            "state": "OPEN",
-                            "message": "ACTIVATE"
-                        },
-                        {
-                            "senderId": 3014708, // [Door] Door_Area Morphball
-                            "targetId": 3014685, // [Relay] Stop Music
-                            "state": "OPEN",
-                            "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 3014685, // [Relay] Stop Music
-                            "targetId": 3014686, // [StreamedAudio] StreamedAudio - Ruins Samus SW
-                            "state": "ZERO",
-                            "message": "STOP"
                         }
                     ],
                     "specialFunctions": [
                         {
                             "id": 3014681, // [SpecialFunction] Music Player For Area
                             "type": "PlayerInAreaRelay"
-                        }
-                    ],
-                    "relays": [
-                        {
-                            "id": 3014685, // [Relay] Stop Music
-                            "layer": 1, // Before Zoid
-                            "active": false
                         }
                     ],
                     "streamedAudios": [
@@ -6841,11 +6809,41 @@
                     ]
                 },
                 "Phendrana Shorelines": {
+                    // gooder ice
+                    "layers": {
+                        "3": true
+                    },
                     "deleteIds": [
                         131559, // [Trigger] Trigger - Play Music 1
-                        131558 // [Trigger] Trigger - Play Music 2
+                        131558, // [Trigger] Trigger - Play Music 2
+                        131796, // [Effect] Effect_steam
+                        131799, // [Effect] Effect_drops
+                        131798, // [Effect] Effect_drops
+                        131802, // [Effect] Effect_drops
+                        131803, // [Timer] Timer_dropmis
+                        131801 // [Timer] Timer_effectshutoof
+                    ],
+                    "removeConnections": [
+                        {
+                            "senderId": 131895, // [Relay] Relay_starteffects
+                            "targetId": 131894, // [Platform] Platform_IceBlock
+                            "state": "ZERO",
+                            "message": "DECREMENT"
+                        }
                     ],
                     "addConnections": [
+                        {
+                            "senderId": 131895, // [Relay] Relay_starteffects
+                            "targetId": 131894, // [Platform] Platform_IceBlock
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 131895, // [Relay] Relay_starteffects
+                            "targetId": 131349, // [Generator] Generator
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
                         // Make Reposition happen immediately
                         {
                             "senderId": 131406, // [Relay] Relay-start of cinema
@@ -6919,6 +6917,22 @@
                             "time": 0.001,
                             "active": true,
                             "startImmediately": true
+                        }
+                    ],
+                    // Better save station load trigger
+                    "triggers": [
+                        {
+                            "id": 131556, // [Trigger] Trigger - To savestation_ice_b
+                            "position": [
+                                -39.643776,
+                                -194.210098,
+                                1.414379
+                            ],
+                            "scale": [
+                                60.0,
+                                20.0,
+                                18.0
+                            ]
                         }
                     ]
                 },
@@ -9142,197 +9156,255 @@
                             "state": "ENTERED",
                             "message": "PLAY"
                         },
-                        {
-                            "senderId": 1048600, // [Timer] Music Player For Area + Artifact Checks
-                            "targetId": 1048598, // [SpecialFunction] Music Player For Area
-                            "state": "ZERO",
-                            "message": "ACTION"
-                        },
+                        // Music
                         {
                             "senderId": 1048598, // [SpecialFunction] Music Player For Area
                             "targetId": 1049645, // [StreamedAudio] StreamedAudio - Overworld Daichi SW
-                            "state": "ZERO",
+                            "state": "ENTERED",
                             "message": "PLAY"
                         },
                         {
                             "senderId": 1048598, // [SpecialFunction] Music Player For Area
                             "targetId": 1049643, // [StreamedAudio] StreamedAudio - Overworld SW
-                            "state": "ZERO",
+                            "state": "ENTERED",
                             "message": "PLAY"
                         },
+                        // Better cutscene skip
                         {
-                            "senderId": 1048598, // [SpecialFunction] Music Player For Area
-                            "targetId": 1049644, // [StreamedAudio] StreamedAudio Overworld Stonehenge SW
+                            "senderId": 1049975, // [Relay] Relay - end of cinema
+                            "targetId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
                             "state": "ZERO",
-                            "message": "PLAY"
+                            "message": "SET_TO_ZERO"
                         },
                         {
-                            "senderId": 1048598, // [SpecialFunction] Music Player For Area
-                            "targetId": 1049307, // [StreamedAudio] StreamedAudio Over Ridley SW
-                            "state": "ZERO",
-                            "message": "PLAY"
-                        },
-                        {
-                            "senderId": 1048598, // [SpecialFunction] Music Player For Area
-                            "targetId": 1049965, // [StreamedAudio] StreamedAudio Over Ridley Death SW
-                            "state": "ZERO",
-                            "message": "PLAY"
-                        },
-                        {
-                            "senderId": 1049641, // [Trigger] Trigger - Play Music 1
-                            "targetId": 1049645, // [StreamedAudio] StreamedAudio - Overworld Daichi SW
-                            "state": "ENTERED",
-                            "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 1049641, // [Trigger] Trigger - Play Music 1
-                            "targetId": 1049643, // [StreamedAudio] StreamedAudio - Overworld SW
-                            "state": "ENTERED",
-                            "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 1049641, // [Trigger] Trigger - Play Music 1
-                            "targetId": 1049644, // [StreamedAudio] StreamedAudio Overworld Stonehenge SW
-                            "state": "ENTERED",
-                            "message": "ACTIVATE"
-                        },
-                        {
-                            "senderId": 1049642, // [Trigger] Trigger - Play Music 2
-                            "targetId": 1049645, // [StreamedAudio] StreamedAudio - Overworld Daichi SW
-                            "state": "ENTERED",
-                            "message": "ACTIVATE"
-                        },
-                        {
-                            "senderId": 1049642, // [Trigger] Trigger - Play Music 2
-                            "targetId": 1049643, // [StreamedAudio] StreamedAudio - Overworld SW
-                            "state": "ENTERED",
-                            "message": "ACTIVATE"
-                        },
-                        {
-                            "senderId": 1049642, // [Trigger] Trigger - Play Music 2
-                            "targetId": 1049644, // [StreamedAudio] StreamedAudio Overworld Stonehenge SW
-                            "state": "ENTERED",
-                            "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 1049731, // [Relay] Relay - Start Ridley Music
-                            "targetId": 1049644, // [StreamedAudio] StreamedAudio Overworld Stonehenge SW
-                            "state": "ZERO",
-                            "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 1049731, // [Relay] Relay - Start Ridley Music
-                            "targetId": 1049307, // [StreamedAudio] StreamedAudio Over Ridley SW
+                            "senderId": 1048863, // [Counter] Counter - Monoliths left to Activate
+                            "targetId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
                             "state": "ZERO",
                             "message": "ACTIVATE"
                         },
                         {
-                            "senderId": 1049107, // [Relay] !Relay End of Ridley Intro Cinematic
-                            "targetId": 1049644, // [StreamedAudio] StreamedAudio Overworld Stonehenge SW
+                            "targetId": 1049034, // [Relay] !Relay Start of Ridley Intro Cinematic
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 1049107, // [Relay] !Relay End of Ridley Intro Cinematic
-                            "targetId": 1049307, // [StreamedAudio] StreamedAudio Over Ridley SW
-                            "state": "ZERO",
-                            "message": "ACTIVATE"
-                        },
-                        {
-                            "senderId": 1049230, // [Relay] Relay- start of cinema Ridley Death
-                            "targetId": 1049307, // [StreamedAudio] StreamedAudio Over Ridley SW
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1049034, // [Relay] !Relay Start of Ridley Intro Cinematic
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 1049230, // [Relay] Relay- start of cinema Ridley Death
-                            "targetId": 1049965, // [StreamedAudio] StreamedAudio Over Ridley Death SW
-                            "state": "ZERO",
-                            "message": "ACTIVATE"
-                        },
-                        {
-                            "senderId": 1049921, // [Relay] Relay- End  of Cinema
-                            "targetId": 1049965, // [StreamedAudio] StreamedAudio Over Ridley Death SW
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1049400, // [HUDMemo] HUDMemo Pickup
                             "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 1049921, // [Relay] Relay- End  of Cinema
-                            "targetId": 1049644, // [StreamedAudio] StreamedAudio Overworld Stonehenge SW
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1049107, // [Relay] !Relay End of Ridley Intro Cinematic
                             "state": "ZERO",
-                            "message": "ACTIVATE"
+                            "message": "SET_TO_ZERO"
                         },
                         {
-                            "senderId": 1049304, // [Trigger] Trigger - Start Leaving Sequence
-                            "targetId": 1049644, // [StreamedAudio] StreamedAudio Overworld Stonehenge SW
-                            "state": "ENTERED",
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1049784, // [Relay] Relay - TurnOffTotemSFX
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1049032, // [Actor] Actor_tot_leg
+                            "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 1049299, // [Trigger] Trigger - Start Arriving Sequence
-                            "targetId": 1049644, // [StreamedAudio] StreamedAudio Overworld Stonehenge SW
-                            "state": "ENTERED",
-                            "message": "ACTIVATE"
-                        },
-                        {
-                            "senderId": 1049299, // [Trigger] Trigger - Start Arriving Sequence
-                            "targetId": 1049645, // [StreamedAudio] StreamedAudio - Overworld Daichi SW
-                            "state": "ENTERED",
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1049031, // [Actor] Actor_tot_bot
+                            "state": "ZERO",
                             "message": "DEACTIVATE"
                         },
                         {
-                            "senderId": 1049299, // [Trigger] Trigger - Start Arriving Sequence
-                            "targetId": 1049643, // [StreamedAudio] StreamedAudio - Overworld SW
-                            "state": "ENTERED",
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1049040, // [Platform] Platform_tot_mid
+                            "state": "ZERO",
                             "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1049041, // [Platform] Platform_tot_top
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1049029, // [Platform] Platform_totemoff
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048944, // [Actor] Actor Chozo Hologram
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048945, // [Actor] Actor Chozo Hologram
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048946, // [Actor] Actor Chozo Hologram
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048947, // [Actor] Actor Chozo Hologram
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048948, // [Actor] Actor Chozo Hologram
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048949, // [Actor] Actor Chozo Hologram
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048950, // [Actor] Actor Chozo Hologram
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048951, // [Actor] Actor Chozo Hologram
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048952, // [Actor] Actor Chozo Hologram
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048953, // [Actor] Actor Chozo Hologram
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048954, // [Actor] Actor Chozo Hologram
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048955, // [Actor] Actor Chozo Hologram
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048604, // [Actor] Actor Blue Lines
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048699, // [Actor] Actor Blue Lines
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048680, // [Actor] Actor Blue Lines
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048661, // [Actor] Actor Blue Lines
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048642, // [Actor] Actor Blue Lines
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048623, // [Actor] Actor Blue Lines
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048794, // [Actor] Actor Blue Lines
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048775, // [Actor] Actor Blue Lines
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048756, // [Actor] Actor Blue Lines
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048737, // [Actor] Actor Blue Lines
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048718, // [Actor] Actor Blue Lines
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048813, // [Actor] Actor Blue Lines
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048833, // [Ridley] Ridley
+                            "state": "ZERO",
+                            "message": "RESET"
+                        },
+                        {
+                            "senderId": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "targetId": 1048834, // [Relay] Relay - Ridley activate
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
                         }
                     ],
                     "streamedAudios": [
                         {
                             "id": 1049645, // [StreamedAudio] StreamedAudio - Overworld Daichi SW
-                            "layer": 15,
-                            "volume": 110,
                             "isMusic": true,
                             "fadeInTime": 0.01,
-                            "fadeOutTime": 1.5,
                             "audioFileName": "/audio/over-world-daichiL.dsp|/audio/over-world-daichiR.dsp"
-                        },
-                        {
-                            "id": 1049643, // [StreamedAudio] StreamedAudio - Overworld SW
-                            "layer": 16,
-                            "volume": 100,
-                            "isMusic": true,
-                            "fadeInTime": 0.5,
-                            "fadeOutTime": 1.5,
-                            "audioFileName": "/audio/over-worldL.dsp|/audio/over-worldR.dsp"
-                        },
-                        {
-                            "id": 1049644, // [StreamedAudio] StreamedAudio Overworld Stonehenge SW
-                            "volume": 80,
-                            "active": false,
-                            "isMusic": true,
-                            "fadeInTime": 0.01,
-                            "fadeOutTime": 1.5,
-                            "audioFileName": "/audio/over-stonehengeL.dsp|/audio/over-stonehengeR.dsp",
-                            "noStopOnDeactivate": false
-                        },
-                        {
-                            "id": 1049307, // [StreamedAudio] StreamedAudio Over Ridley SW
-                            "volume": 85,
-                            "active": false,
-                            "isMusic": true,
-                            "fadeInTime": 0.0,
-                            "fadeOutTime": 0.0,
-                            "audioFileName": "/audio/over-ridleyL.dsp|/audio/over-ridleyR.dsp"
-                        },
-                        {
-                            "id": 1049965, // [StreamedAudio] StreamedAudio Over Ridley Death SW
-                            "volume": 100,
-                            "active": false,
-                            "isMusic": true,
-                            "fadeInTime": 0.0,
-                            "fadeOutTime": 0.0,
-                            "audioFileName": "/audio/over-ridleydeathL.dsp|/audio/over-ridleydeathR.dsp"
                         }
                     ],
                     "spawnPoints": [
@@ -9365,15 +9437,10 @@
                         {
                             "id": 1048599, // [Relay] Stop Teleporter Sounds
                             "active": false
-                        }
-                    ],
-                    "timers": [
+                        },
                         {
-                            "id": 1048600, // [Timer] Music Player For Area
-                            "time": 0.001,
-                            "active": true,
-                            "looping": true,
-                            "startImmediately": true
+                            "id": 1048614, // [Relay] Progress + Ridley Cutscene Skip
+                            "active": false
                         }
                     ]
                 },

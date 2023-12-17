@@ -14028,9 +14028,15 @@
                         },
                         {
                             "senderId": 1048588, // [SpecialFunction] Ridley Death Cutscene Skip
-                            "targetId": 1049875, // [Relay] Relay- connects to original totem lasers
+                            "targetId": 1049498, // [Timer] Timer- center teleport
                             "state": "ZERO",
-                            "message": "SET_TO_ZERO"
+                            "message": "RESET_AND_START"
+                        },
+                        {
+                            "senderId": 1048588, // [SpecialFunction] Ridley Death Cutscene Skip
+                            "targetId": 1049874, // [Timer] Timer- teleport top
+                            "state": "ZERO",
+                            "message": "RESET_AND_START"
                         },
                         {
                             "senderId": 1048588, // [SpecialFunction] Ridley Death Cutscene Skip
