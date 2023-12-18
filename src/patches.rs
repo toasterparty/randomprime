@@ -4814,6 +4814,7 @@ fn make_elevators_patch<'a>(
     auto_enabled_elevators: bool,
     player_size: f32,
     force_vanilla_layout: bool,
+    version: Version,
 )
 -> (bool, bool)
 {
@@ -4960,25 +4961,34 @@ fn make_elevators_patch<'a>(
             let control_name = hologram_name.clone();
 
             patcher.add_resource_patch((&[elv.pak_name.as_bytes()], elv.room_strg, b"STRG".into()), move |res| {
-                let string = format!("Transport to {}\u{0}", room_dest_name);
+                let mut string = format!("Transport to {}\u{0}", room_dest_name);
+                if version == Version::NtscJ {
+                    string = format!("&line-extra-space=4;&font=C29C51F1;{}", string);
+                }
                 let strg = structs::Strg::from_strings(vec![string]);
                 res.kind = structs::ResourceKind::Strg(strg);
                 Ok(())
             });
             patcher.add_resource_patch((&[elv.pak_name.as_bytes()], elv.hologram_strg, b"STRG".into()), move |res| {
-                let string = format!(
+                let mut string = format!(
                     "Access to &main-color=#FF3333;{} &main-color=#89D6FF;granted. Please step into the hologram.\u{0}",
                     hologram_name,
                 );
+                if version == Version::NtscJ {
+                    string = format!("&line-extra-space=4;&font=C29C51F1;{}", string);
+                }
                 let strg = structs::Strg::from_strings(vec![string]);
                 res.kind = structs::ResourceKind::Strg(strg);
                 Ok(())
             });
             patcher.add_resource_patch((&[elv.pak_name.as_bytes()], elv.control_strg, b"STRG".into()), move |res| {
-                let string = format!(
+                let mut string = format!(
                     "Transport to &main-color=#FF3333;{}&main-color=#89D6FF; active.\u{0}",
                     control_name,
                 );
+                if version == Version::NtscJ {
+                    string = format!("&line-extra-space=4;&font=C29C51F1;{}", string);
+                }
                 let strg = structs::Strg::from_strings(vec![string]);
                 res.kind = structs::ResourceKind::Strg(strg);
                 Ok(())
@@ -16267,6 +16277,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         config.auto_enabled_elevators,
         player_size,
         config.force_vanilla_layout,
+        config.version,
     );
     let skip_frigate = skip_frigate && starting_room.mlvl != World::FrigateOrpheon.mlvl();
 
