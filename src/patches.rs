@@ -294,13 +294,17 @@ fn build_artifact_temple_totem_scan_strings<R>(
     scan_text
 }
 
-fn patch_artifact_totem_scan_strg(res: &mut structs::Resource, text: &str)
+fn patch_artifact_totem_scan_strg(res: &mut structs::Resource, text: &str, version: Version)
     -> Result<(), String>
 {
+    let mut string = format!("{}", text);
+    if version == Version::NtscJ {
+        string = format!("&line-extra-space=4;&font=C29C51F1;{}", string);
+    }
     let strg = res.kind.as_strg_mut().unwrap();
     for st in strg.string_tables.as_mut_vec().iter_mut() {
         let strings = st.strings.as_mut_vec();
-        *strings.last_mut().unwrap() = text.to_owned().into();
+        *strings.last_mut().unwrap() = format!("{}", string).into();
     }
     Ok(())
 }
@@ -16419,7 +16423,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         for (res_info, strg_text) in ARTIFACT_TOTEM_SCAN_STRGS.iter().zip(artifact_totem_strings.iter()) {
             patcher.add_resource_patch(
                 (*res_info).into(),
-                move |res| patch_artifact_totem_scan_strg(res, &strg_text),
+                move |res| patch_artifact_totem_scan_strg(res, &strg_text, config.version),
             );
         }
         patcher.add_scly_patch(
