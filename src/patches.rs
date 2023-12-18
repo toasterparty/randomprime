@@ -9104,9 +9104,13 @@ fn patch_credits(
 fn patch_completion_screen(
     res: &mut structs::Resource,
     mut results_string: String,
+    version: Version,
 )
     -> Result<(), String>
 {
+    if version == Version::NtscJ {
+        results_string = format!("&line-extra-space=4;&font=C29C51F1;{}", results_string);
+    }
     results_string += "\nPercentage Complete\0";
 
     let strg = res.kind.as_strg_mut().unwrap();
@@ -16428,7 +16432,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     if config.results_string.is_some() {
         patcher.add_resource_patch(
             resource_info!("STRG_CompletionScreen.STRG").into(),
-            |res| patch_completion_screen(res, config.results_string.clone().unwrap())
+            |res| patch_completion_screen(res, config.results_string.clone().unwrap(), config.version)
         );
     }
 
