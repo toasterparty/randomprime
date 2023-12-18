@@ -3842,21 +3842,9 @@
                         },
                         {
                             "senderId": 600482, // [Relay] Relay
-                            "targetId": 589832, // [Dock] Dock
+                            "targetId": 779889, // [Relay] SENDER - Change Music
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
-                        },
-                        {
-                            "senderId": 600482, // [Relay] Relay
-                            "targetId": 589863, // [Timer] Reload
-                            "state": "ZERO",
-                            "message": "RESET_AND_START"
-                        },
-                        {
-                            "senderId": 589863, // [Timer] Reload
-                            "targetId": 589832, // [Dock] Dock
-                            "state": "ZERO",
-                            "message": "SET_TO_MAX"
                         },
                         {
                             "senderId": 600482, // [Relay] Relay
@@ -4202,10 +4190,6 @@
                             "layer": 1,
                             "active": true,
                             "startImmediately": true
-                        },
-                        {
-                            "id": 589863, // [Timer] Reload
-                            "time": 0.02
                         }
                     ],
                     "relays": [
@@ -4225,7 +4209,7 @@
                             "active": false
                         },
                         {
-                            "id": 779889 // [Relay] Swap Music
+                            "id": 779889 // [Relay] SENDER - Change Music
                         }
                     ]
                 },
@@ -4245,12 +4229,24 @@
                             "targetId": 262185, // [StreamedAudio] StreamedAudio - Ruins Soto B SW
                             "state": "ENTERED",
                             "message": "PLAY"
+                        },
+                        {
+                            "senderId": 779889, // [Relay] RECEIVER - Change Music
+                            "targetId": 262174, // [SpecialFunction] Music Player For Area
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
                         }
                     ],
                     "specialFunctions": [
                         {
                             "id": 262174, // [SpecialFunction] Music Player For Area
                             "type": "PlayerInAreaRelay"
+                        }
+                    ],
+                    "relays": [
+                        {
+                            "id": 779889, // [Relay] RECEIVER - Change
+                            "layer": 1
                         }
                     ],
                     "streamedAudios": [
@@ -9082,6 +9078,14 @@
                     ]
                 },
                 "Artifact Temple": {
+                    "removeConnections": [
+                        {
+                            "senderId": 1049299, // [Trigger] Trigger - Start Arriving Sequence
+                            "targetId": 1049644, // [StreamedAudio] StreamedAudio Overworld Stonehenge SW
+                            "state": "ENTERED",
+                            "message": "PLAY"
+                        }
+                    ],
                     "addConnections": [
                         // Make Teleporter play sounds again when ridley dead
                         {
@@ -9159,15 +9163,57 @@
                         // Music
                         {
                             "senderId": 1048598, // [SpecialFunction] Music Player For Area
-                            "targetId": 1049645, // [StreamedAudio] StreamedAudio - Overworld Daichi SW
+                            "targetId": 1048617, // [Relay] Temple Music
                             "state": "ENTERED",
-                            "message": "PLAY"
+                            "message": "SET_TO_ZERO"
                         },
                         {
                             "senderId": 1048598, // [SpecialFunction] Music Player For Area
-                            "targetId": 1049643, // [StreamedAudio] StreamedAudio - Overworld SW
+                            "targetId": 1048616, // [Relay] Tallon Music
                             "state": "ENTERED",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1048616, // [Relay] Tallon Music
+                            "targetId": 1049645, // [StreamedAudio] StreamedAudio - Overworld Daichi SW
+                            "state": "ZERO",
                             "message": "PLAY"
+                        },
+                        {
+                            "senderId": 1048616, // [Relay] Tallon Music
+                            "targetId": 1049643, // [StreamedAudio] StreamedAudio - Overworld SW
+                            "state": "ZERO",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 1048617, // [Relay] Temple Music
+                            "targetId": 1049644, // [StreamedAudio] StreamedAudio Overworld Stonehenge SW
+                            "state": "ZERO",
+                            "message": "PLAY"
+                        },
+                        {
+                            "senderId": 1049299, // [Trigger] Trigger - Start Arriving Sequence
+                            "targetId": 1048617, // [Relay] Temple Music
+                            "state": "ENTERED",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1049299, // [Trigger] Trigger - Start Arriving Sequence
+                            "targetId": 1048616, // [Relay] Tallon Music
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1049789, // [Trigger] Trigger - Load stonehenge hall
+                            "targetId": 1048617, // [Relay] Temple Music
+                            "state": "ENTERED",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1049789, // [Trigger] Trigger - Load stonehenge hall
+                            "targetId": 1048616, // [Relay] Tallon Music
+                            "state": "ENTERED",
+                            "message": "ACTIVATE"
                         },
                         // Better cutscene skip
                         {
@@ -9441,6 +9487,13 @@
                         {
                             "id": 1048614, // [Relay] Progress + Ridley Cutscene Skip
                             "active": false
+                        },
+                        {
+                            "id": 1048617, // [Relay] Temple Music
+                            "active": false
+                        },
+                        {
+                            "id": 1048616 // [Relay] Tallon Music
                         }
                     ]
                 },
