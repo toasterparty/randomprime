@@ -8982,7 +8982,7 @@ fn patch_credits(
     let mut output = "\n\n\n\n\n\n\n".to_string();
 
     if version == Version::NtscJ {
-        output = format!("&line-extra-space=16;&font=5D696116;{}", output);
+        output = format!("&line-extra-space=8;&font=5D696116;{}", &output[..output.len()-2]);
     }
 
     if config.credits_string.is_some() {
@@ -9050,7 +9050,6 @@ fn patch_credits(
     }
     output = format!("{}{}", output, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\0");
     if version == Version::NtscJ {
-        let output_jpn = format!("{}", output);
         res.kind.as_strg_mut().unwrap().string_tables
             .as_mut_vec()
             .iter_mut()
@@ -9058,7 +9057,21 @@ fn patch_credits(
             .unwrap()
             .strings
             .as_mut_vec()
-            .push(output_jpn.into());
+            .push(format!("{}", output).into());
+    }
+
+    if version == Version::Pal {
+        for lang in [b"FREN", b"GERM", b"SPAN", b"ITAL"] {
+            res.kind.as_strg_mut().unwrap()
+                .string_tables
+                .as_mut_vec()
+                .iter_mut()
+                .find(|table| table.lang == lang.into())
+                .unwrap()
+                .strings
+                .as_mut_vec()
+                .push(format!("{}\0", output).into());
+        }
     }
 
     let string_tables = res.kind
