@@ -5,6 +5,21 @@ use reader_writer::{
     RoArrayIter,
 };
 
+static SUPPORTED_LANGUAGES: &'static [&[u8; 4]] = &[
+    b"ENGL",
+    b"DUTC",
+    b"FREN",
+    b"GERM",
+    b"ITAL",
+    b"JAPN",
+    b"SPAN",
+];
+
+pub enum Languages {
+    All,
+    Some(&'static [&'static [u8; 4]])
+}
+
 #[auto_struct(Readable, Writable)]
 #[derive(Debug, Clone)]
 pub struct Strg<'r>
@@ -37,6 +52,48 @@ pub struct Strg<'r>
 
 impl<'r> Strg<'r>
 {
+    fn is_jpn_version(languages: &[&[u8; 4]]) -> bool
+    {
+        languages.len() == 2 && languages.iter().any(|lang| *lang == b"ENGL") && languages.iter().any(|lang| *lang == b"JAPN")
+    }
+
+    pub fn add_strings(self: &mut Self, strings: &[String], languages: Languages)
+    {
+        let languages = match languages {
+            Languages::All => SUPPORTED_LANGUAGES,
+            Languages::Some(value) => value
+        };
+        let is_jap = Self::is_jpn_version(languages.clone());
+        for table in self.string_tables.as_mut_vec().iter_mut() {
+            if languages.contains(&table.lang.as_bytes()) {
+                for string in strings.iter() {
+                    if is_jap {
+                        table.strings.as_mut_vec().push(format!("&line-extra-space=4;&font=C29C51F1;{}", string).into());
+                    } else {
+                        table.strings.as_mut_vec().push(format!("{}", string).into());
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn edit_strings(self: &mut Self, (from, to): (String, String), languages: Languages)
+    {
+        let languages = match languages {
+            Languages::All => SUPPORTED_LANGUAGES,
+            Languages::Some(value) => value
+        };
+        for table in self.string_tables.as_mut_vec().iter_mut() {
+            if languages.contains(&table.lang.as_bytes()) {
+                for string in table.strings.iter_mut() {
+                    if string.contains(&from) {
+                        string.replace(&from, &to);
+                    }
+                }
+            }
+        }
+    }
+
     pub fn from_strings(strings: Vec<String>) -> Strg<'r>
     {
         Strg {

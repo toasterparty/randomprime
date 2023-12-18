@@ -87,7 +87,7 @@ use reader_writer::{
     Writable,
     CStr,
 };
-use structs::{MapaObjectVisibilityMode, res_id, ResId, scly_structs::DamageInfo, scly_structs::TypeVulnerability, SclyLayer};
+use structs::{Languages, MapaObjectVisibilityMode, res_id, ResId, scly_structs::DamageInfo, scly_structs::TypeVulnerability, SclyLayer};
 
 use std::{
     borrow::Cow,
@@ -9064,53 +9064,18 @@ fn patch_credits(
     }
     output = format!("{}{}", output, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\0");
     if version == Version::NtscJ {
-        res.kind.as_strg_mut().unwrap().string_tables
-            .as_mut_vec()
-            .iter_mut()
-            .find(|table| table.lang == b"JAPN".into())
-            .unwrap()
-            .strings
-            .as_mut_vec()
-            .push(format!("{}", output).into());
+        res.kind.as_strg_mut().unwrap()
+                              .add_strings(&[ format!("{}", output) ],
+                                             Languages::Some(&[ b"ENGL", b"JAPN" ]));
+    } else {
+        res.kind.as_strg_mut().unwrap()
+                              .add_strings(&[ format!("{}", output) ], Languages::All);
     }
-
-    if version == Version::Pal {
-        for lang in [b"FREN", b"GERM", b"SPAN", b"ITAL"] {
-            res.kind.as_strg_mut().unwrap()
-                .string_tables
-                .as_mut_vec()
-                .iter_mut()
-                .find(|table| table.lang == lang.into())
-                .unwrap()
-                .strings
-                .as_mut_vec()
-                .push(format!("{}\0", output).into());
-        }
-    }
-
-    let string_tables = res.kind
-        .as_strg_mut()
-        .unwrap()
-        .string_tables
-        .as_mut_vec();
-
-    let strings = string_tables
-        .iter_mut()
-        .find(|table| table.lang == b"ENGL".into())
-        .unwrap()
-        .strings
-        .as_mut_vec();
-
-    strings.push(output.into());
 
     /* We are who we choose to be */
     /* https://mobile.twitter.com/ZoidCTF/status/1542699504041750528 */
-    strings[0] = strings[0]
-        .clone()
-        .into_string()
-        .replace("David 'Zoid' Kirsch", "Zoid Kirsch")
-        .to_owned()
-        .into();
+    res.kind.as_strg_mut().unwrap()
+                          .edit_strings((format!("David 'Zoid' Kirsch"), format!("Zoid Kirsch")), Languages::All);
 
     Ok(())
 }

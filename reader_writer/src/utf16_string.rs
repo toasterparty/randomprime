@@ -104,6 +104,33 @@ pub enum LazyUtf16beStr<'r>
 
 impl<'r> LazyUtf16beStr<'r>
 {
+    pub fn contains<'s>(&self, text: &String) -> bool
+    {
+        match *self {
+            LazyUtf16beStr::Owned(ref s) => {
+                (*s).contains(text)
+            }
+            LazyUtf16beStr::Borrowed(ref s) => {
+                let string = s.chars().map(|i| i.unwrap()).collect::<String>();
+                LazyUtf16beStr::Owned(string).contains(text)
+            }
+        }
+    }
+
+    pub fn replace<'s>(&mut self, from: &String, to: &String) -> &mut Self
+    {
+        *self = match *self {
+            LazyUtf16beStr::Owned(ref mut s) => {
+                LazyUtf16beStr::from((*s).replace(from, to.as_str()))
+            }
+            LazyUtf16beStr::Borrowed(ref s) => {
+                let string = s.chars().map(|i| i.unwrap()).collect::<String>();
+                LazyUtf16beStr::Owned(string.replace(from, to.as_str()))
+            }
+        };
+        self
+    }
+
     pub fn as_mut_string<'s>(&mut self) -> &mut String
     {
         *self = match *self {
