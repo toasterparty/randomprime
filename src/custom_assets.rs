@@ -1797,6 +1797,8 @@ fn create_item_scan_strg_pair_2<'r>(
 
     let kind = if version == Version::Pal {
         structs::ResourceKind::Strg(structs::Strg::from_strings_pal(contents))
+    } else if version == Version::NtscJ {
+        structs::ResourceKind::Strg(structs::Strg::from_strings_jpn(contents))
     } else {
         structs::ResourceKind::Strg(structs::Strg::from_strings(contents))
     };
