@@ -7485,7 +7485,7 @@
                     "addConnections": [
                         {
                             "senderId": 1769492, // [SpecialFunction] Music Player For Area
-                            "targetId": 1769497, // [StreamedAudio] StreamedAudio Ice Connect SW
+                            "targetId": 1779497, // [StreamedAudio] StreamedAudio Ice Connect SW
                             "state": "ENTERED",
                             "message": "PLAY"
                         }
@@ -7498,7 +7498,7 @@
                     ],
                     "streamedAudios": [
                         {
-                            "id": 1769497, // [StreamedAudio] StreamedAudio Ice Connect SW
+                            "id": 1779497, // [StreamedAudio] StreamedAudio Ice Connect SW
                             "volume": 60,
                             "isMusic": true,
                             "fadeInTime": 0.01,
