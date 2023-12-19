@@ -137,6 +137,24 @@
         "Tallon Overworld": {
             "transports": {},
             "rooms": {
+                "Artifact Temple": {
+                    "removeConnections": [
+                        {
+                            "senderId": 1049271, // [Relay] Relay-start of cinema
+                            "targetId": 1048597, // [SpecialFunction] Arriving Cutscene Skip
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        }
+                    ],
+                    "addConnections": [
+                        {
+                            "senderId": 1050011, // [Switch] PlayerActor Loaded
+                            "targetId": 1048597, // [SpecialFunction] Arriving Cutscene Skip
+                            "state": "OPEN",
+                            "message": "INCREMENT"
+                        }
+                    ]
+                },
                 "Temple Security Station": {
                     "deleteIds": [
                         458754
