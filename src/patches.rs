@@ -9288,7 +9288,7 @@ fn patch_dol<'r>(
                     Version::NtscU0_01    => s.addr_0_01,
                     Version::NtscU0_02    => s.addr_0_02,
                     Version::NtscK        => s.addr_kor,
-                    Version::NtscJ        => s.addr_jap,
+                    Version::NtscJ        => s.addr_jpn,
                     Version::Pal          => s.addr_pal,
                     Version::NtscUTrilogy => unreachable!(),
                     Version::NtscJTrilogy => unreachable!(),
@@ -10188,8 +10188,8 @@ fn patch_dol<'r>(
             (loader_bytes, map_str)
         },
         Version::NtscJ => {
-            let loader_bytes = rel_files::REL_LOADER_JAP;
-            let map_str = rel_files::REL_LOADER_JAP_MAP;
+            let loader_bytes = rel_files::REL_LOADER_JPN;
+            let map_str = rel_files::REL_LOADER_JPN_MAP;
             (loader_bytes, map_str)
         },
         Version::Pal => {
@@ -14474,7 +14474,7 @@ pub fn patch_iso<T>(config: PatchConfig, mut pn: T) -> Result<(), String>
         Version::NtscU0_02    => Some(rel_files::PATCHES_102_REL),
         Version::Pal          => Some(rel_files::PATCHES_PAL_REL),
         Version::NtscK        => Some(rel_files::PATCHES_KOR_REL),
-        Version::NtscJ        => Some(rel_files::PATCHES_JAP_REL),
+        Version::NtscJ        => Some(rel_files::PATCHES_JPN_REL),
         Version::NtscUTrilogy => None,
         Version::NtscJTrilogy => None,
         Version::PalTrilogy => None,
