@@ -87,7 +87,7 @@ use reader_writer::{
     Writable,
     CStr,
 };
-use structs::{MapaObjectVisibilityMode, res_id, ResId, scly_structs::DamageInfo, scly_structs::TypeVulnerability, SclyLayer};
+use structs::{Languages, MapaObjectVisibilityMode, res_id, ResId, scly_structs::DamageInfo, scly_structs::TypeVulnerability, SclyLayer};
 
 use std::{
     borrow::Cow,
@@ -294,13 +294,17 @@ fn build_artifact_temple_totem_scan_strings<R>(
     scan_text
 }
 
-fn patch_artifact_totem_scan_strg(res: &mut structs::Resource, text: &str)
+fn patch_artifact_totem_scan_strg(res: &mut structs::Resource, text: &str, version: Version)
     -> Result<(), String>
 {
+    let mut string = format!("{}", text);
+    if version == Version::NtscJ {
+        string = format!("&line-extra-space=4;&font=C29C51F1;{}", string);
+    }
     let strg = res.kind.as_strg_mut().unwrap();
     for st in strg.string_tables.as_mut_vec().iter_mut() {
         let strings = st.strings.as_mut_vec();
-        *strings.last_mut().unwrap() = text.to_owned().into();
+        *strings.last_mut().unwrap() = format!("{}", string).into();
     }
     Ok(())
 }
@@ -545,7 +549,7 @@ fn patch_remove_blast_shield<'r>(
             {
                 continue;
             }
-    
+
             if actor.cmdl.to_u32() == BlastShieldType::Missile.cmdl().to_u32() {
                 actor.active = 0;
                 actor.position[2] -= 100.0;
@@ -610,7 +614,7 @@ fn patch_door<'r>(
         DoorOpenMode::PrimaryBlastShield => {
             let door_type = door_type.as_ref().expect("When PrimaryBlastShield is used, you must specify the door type");
             let door_type_after_open = door_type.to_primary_color();
-            if blast_shield_can_change_door 
+            if blast_shield_can_change_door
                 // TODO: optimize
                 // && door_type != &door_type_after_open
             {
@@ -778,14 +782,14 @@ fn patch_door<'r>(
 
             if mrea_id == 0xFB54A0CB { // hall of the elders
                 scale = [1.6, 1.6, 1.6].into();
-    
+
                 // Floor door
                 is_floor = true;
                 position    = [door_shield.position[0] - 2.0, door_shield.position[1], door_shield.position[2] - 0.3].into();
                 rotation    = [0.0, 90.0, 0.0].into();
             } else {
                 scale = [1.6, 1.6, 1.6].into();
-    
+
                 if door_rotation[0] > -90.0 && door_rotation[0] < 90.0 {
                     // Ceiling door
                     is_ceiling = true;
@@ -1257,7 +1261,7 @@ fn patch_door<'r>(
                         active: 1,
                     }.into(),
                 };
-        
+
                 // Doors can't be shot open with splash damage until the blast shield is gone
                 for door_force in door_loc.door_force_locations.iter()
                 {
@@ -1270,7 +1274,7 @@ fn patch_door<'r>(
                     );
                 }
 
-                Some(timer2)        
+                Some(timer2)
             }
         };
 
@@ -1312,11 +1316,11 @@ fn patch_door<'r>(
                     connections: vec![].into(),
                     property_data: structs::scly_props::Effect {
                         name: b"gibbs effect\0".as_cstr(),
-        
+
                         position,
                         rotation,
                         scale,
-        
+
                         part: ResId::<res_id::PART>::new(0xCDCBDF04),
                         elsc: ResId::invalid(),
                         hot_in_thermal: 0,
@@ -1536,11 +1540,11 @@ fn patch_door<'r>(
                     .find(|obj| obj.instance_id == _door_location.instance_id)
                     .and_then(|obj| obj.property_data.as_door_mut())
                     .unwrap();
-    
+
             let is_ceiling_door = door.ancs.file_id == 0xf57dd484 && door.rotation[0] > -90.0 && door.rotation[0] < 90.0;
             let is_floor_door = door.ancs.file_id == 0xf57dd484 && door.rotation[0] < -90.0 && door.rotation[0] > -270.0;
             let is_morphball_door = door.is_morphball_door != 0;
-    
+
             if is_ceiling_door {
                 door.scan_offset[0] = 0.0;
                 door.scan_offset[1] = 0.0;
@@ -1555,7 +1559,7 @@ fn patch_door<'r>(
                 door.scan_offset[1] = 0.0;
                 door.scan_offset[2] = 1.0;
             }
-    
+
             door.actor_params.scan_params.scan = _door_type.scan();
         }
     }
@@ -1925,7 +1929,7 @@ fn patch_door<'r>(
             let obj = layers[blast_shield_layer_idx].objects.iter_mut()
                 .find(|obj| obj.instance_id == relay_id)
                 .unwrap();
-            
+
             obj.connections.as_mut_vec().extend_from_slice(
                 &vec![
                     structs::Connection {
@@ -2026,7 +2030,7 @@ fn patch_door<'r>(
                 for door_force_location in door_loc.door_force_locations.iter() {
                     let obj = layers[door_force_location.layer as usize].objects.iter()
                         .find(|obj| obj.instance_id == door_force_location.instance_id);
-        
+
                     if obj.is_none() {
                         continue;
                     }
@@ -3723,7 +3727,7 @@ fn modify_pickups_in_mrea<'r>(
         let pickup = layer.objects.iter()
             .find(|obj| obj.instance_id == pickup_location.location.instance_id)
             .unwrap();
-        
+
         let pickup = pickup.property_data.as_pickup().unwrap();
 
         let pickup_model = pickup_model_for_pickup(&pickup).expect(format!("could not derrive pickup model in room 0x{:X}", mrea_id).as_str());
@@ -3919,7 +3923,7 @@ fn modify_pickups_in_mrea<'r>(
     if mrea_id == 0x40C548E9 {
         trigger_id = area.new_object_id_from_layer_name("Default");
     }
-    
+
     if pickup_type == PickupType::FloatyJump {
         floaty_contraption_id = [
             area.new_object_id_from_layer_id(0),
@@ -4814,6 +4818,7 @@ fn make_elevators_patch<'a>(
     auto_enabled_elevators: bool,
     player_size: f32,
     force_vanilla_layout: bool,
+    version: Version,
 )
 -> (bool, bool)
 {
@@ -4960,25 +4965,34 @@ fn make_elevators_patch<'a>(
             let control_name = hologram_name.clone();
 
             patcher.add_resource_patch((&[elv.pak_name.as_bytes()], elv.room_strg, b"STRG".into()), move |res| {
-                let string = format!("Transport to {}\u{0}", room_dest_name);
+                let mut string = format!("Transport to {}\u{0}", room_dest_name);
+                if version == Version::NtscJ {
+                    string = format!("&line-extra-space=4;&font=C29C51F1;{}", string);
+                }
                 let strg = structs::Strg::from_strings(vec![string]);
                 res.kind = structs::ResourceKind::Strg(strg);
                 Ok(())
             });
             patcher.add_resource_patch((&[elv.pak_name.as_bytes()], elv.hologram_strg, b"STRG".into()), move |res| {
-                let string = format!(
+                let mut string = format!(
                     "Access to &main-color=#FF3333;{} &main-color=#89D6FF;granted. Please step into the hologram.\u{0}",
                     hologram_name,
                 );
+                if version == Version::NtscJ {
+                    string = format!("&line-extra-space=4;&font=C29C51F1;{}", string);
+                }
                 let strg = structs::Strg::from_strings(vec![string]);
                 res.kind = structs::ResourceKind::Strg(strg);
                 Ok(())
             });
             patcher.add_resource_patch((&[elv.pak_name.as_bytes()], elv.control_strg, b"STRG".into()), move |res| {
-                let string = format!(
+                let mut string = format!(
                     "Transport to &main-color=#FF3333;{}&main-color=#89D6FF; active.\u{0}",
                     control_name,
                 );
+                if version == Version::NtscJ {
+                    string = format!("&line-extra-space=4;&font=C29C51F1;{}", string);
+                }
                 let strg = structs::Strg::from_strings(vec![string]);
                 res.kind = structs::ResourceKind::Strg(strg);
                 Ok(())
@@ -7131,7 +7145,7 @@ fn patch_op_death_pickup_spawn<'r>
             if obj_id == 0x001A04B8 || obj_id == 0x001A04C5 { // Elite Quarters Pickup(s)
                 let pickup = obj.property_data.as_pickup_mut().unwrap();
                 pickup.position[2] = pickup.position[2] + 2.0; // Move up so it's more obvious
-        
+
                 // The pickup should display hudmemo instead of OP
                 obj.connections.as_mut_vec().push(structs::Connection {
                     state: structs::ConnectionState::ARRIVED,
@@ -7220,7 +7234,7 @@ fn patch_audio_override<'r>
             if obj.instance_id != id {
                 continue;
             }
-            
+
             if !obj.property_data.is_streamed_audio() {
                 panic!("id={} is not streamed audio object", obj.instance_id);
             }
@@ -7527,7 +7541,7 @@ fn patch_spawn_point_position<'r>(
     for i in 0..layer_count {
         let layer = &mut scly.layers.as_mut_vec()[i];
         for obj in layer.objects.as_mut_vec().iter_mut() {
-            if !obj.property_data.is_spawn_point() { continue; } // not a spawn point 
+            if !obj.property_data.is_spawn_point() { continue; } // not a spawn point
             if obj.instance_id&0x0000FFFF >= 0x00008000 { continue; } // don't move spawn points placed by this program
 
             let spawn_point = obj.property_data.as_spawn_point_mut().unwrap();
@@ -8014,7 +8028,7 @@ fn patch_add_pb_refill(
     let layer = &mut scly.layers.as_mut_vec()[0];
     let obj = layer.objects.as_mut_vec().iter_mut()
         .find(|obj| obj.instance_id & 0x00FFFFFF == id & 0x00FFFFFF);
-    
+
     if obj.is_none()
     {
         panic!("0x{:X} isn't a valid instance id in room 0x{:X}", id, mrea_id)
@@ -8870,6 +8884,20 @@ fn patch_main_strg(res: &mut structs::Resource, version: Version, msg: &str) -> 
         strings_jpn.push(format!("{}\0", msg).into());
     }
 
+    if version == Version::Pal {
+        for lang in [b"FREN", b"GERM", b"SPAN", b"ITAL"] {
+            let strings_pal = res.kind.as_strg_mut().unwrap()
+                .string_tables
+                .as_mut_vec()
+                .iter_mut()
+                .find(|table| table.lang == lang.into())
+                .unwrap()
+                .strings
+                .as_mut_vec();
+            strings_pal.push(format!("{}\0", msg).into());
+        }
+    }
+
     let strings = res.kind.as_strg_mut().unwrap()
         .string_tables
         .as_mut_vec()
@@ -8968,7 +8996,7 @@ fn patch_credits(
     let mut output = "\n\n\n\n\n\n\n".to_string();
 
     if version == Version::NtscJ {
-        output = format!("&line-extra-space=16;&font=5D696116;{}", output);
+        output = format!("&line-extra-space=8;&font=5D696116;{}", &output[..output.len()-2]);
     }
 
     if config.credits_string.is_some() {
@@ -9036,40 +9064,18 @@ fn patch_credits(
     }
     output = format!("{}{}", output, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\0");
     if version == Version::NtscJ {
-        let output_jpn = format!("{}", output);
-        res.kind.as_strg_mut().unwrap().string_tables
-            .as_mut_vec()
-            .iter_mut()
-            .find(|table| table.lang == b"JAPN".into())
-            .unwrap()
-            .strings
-            .as_mut_vec()
-            .push(output_jpn.into());
+        res.kind.as_strg_mut().unwrap()
+                              .add_strings(&[ format!("{}", output) ],
+                                             Languages::Some(&[ b"ENGL", b"JAPN" ]));
+    } else {
+        res.kind.as_strg_mut().unwrap()
+                              .add_strings(&[ format!("{}", output) ], Languages::All);
     }
-
-    let string_tables = res.kind
-        .as_strg_mut()
-        .unwrap()
-        .string_tables
-        .as_mut_vec();
-
-    let strings = string_tables
-        .iter_mut()
-        .find(|table| table.lang == b"ENGL".into())
-        .unwrap()
-        .strings
-        .as_mut_vec();
-
-    strings.push(output.into());
 
     /* We are who we choose to be */
     /* https://mobile.twitter.com/ZoidCTF/status/1542699504041750528 */
-    strings[0] = strings[0]
-        .clone()
-        .into_string()
-        .replace("David 'Zoid' Kirsch", "Zoid Kirsch")
-        .to_owned()
-        .into();
+    res.kind.as_strg_mut().unwrap()
+                          .edit_strings((format!("David 'Zoid' Kirsch"), format!("Zoid Kirsch")), Languages::All);
 
     Ok(())
 }
@@ -9077,9 +9083,13 @@ fn patch_credits(
 fn patch_completion_screen(
     res: &mut structs::Resource,
     mut results_string: String,
+    version: Version,
 )
     -> Result<(), String>
 {
+    if version == Version::NtscJ {
+        results_string = format!("&line-extra-space=4;&font=C29C51F1;{}", results_string);
+    }
     results_string += "\nPercentage Complete\0";
 
     let strg = res.kind.as_strg_mut().unwrap();
@@ -9123,7 +9133,7 @@ fn patch_arbitrary_strg(
             strings.push(replacement_string.to_owned().into());
         }
     }
-    
+
     Ok(())
 }
 
@@ -9664,7 +9674,7 @@ fn patch_dol<'r>(
         nop;
         nop;
         nop;
-    
+
         // branch to the unused ACTION handling (patched below)
         b       { function_addr + 0x7c8 };
     });
@@ -9674,7 +9684,7 @@ fn patch_dol<'r>(
     let flaahgra_patch = ppcasm!(function_addr + 0x7c8, {
         li r0, 0;
         stw r0, 0x7d4(r31); // x7d4_faintTime
-        
+
         lfs  f0, 0x5744(r2); // 3.0, ideally it would be 6.0
         stfs f0, 0x7d8(r31); // x7d8_
 
@@ -11402,7 +11412,7 @@ fn patch_pq_permadeath<'r>(
 -> Result<(), String>
 {
     let mrea_id = area.mlvl_area.mrea.to_u32().clone();
-    
+
     let special_fn_id = area.new_object_id_from_layer_id(0);
     let timer1_id = area.new_object_id_from_layer_id(0);
     let timer2_id = area.new_object_id_from_layer_id(0);
@@ -11867,11 +11877,11 @@ fn patch_final_boss_permadeath<'r>(
             let obj = layers[0].objects.as_mut_vec()
                 .iter_mut()
                 .find(|obj| (obj.instance_id & 0x00FFFFFF) == obj_id);
-    
+
             if obj.is_none() {
                 continue;
             }
-    
+
             let obj = obj.unwrap().clone();
             layers[disable_bosses_layer_num].objects.as_mut_vec().push(obj.clone());
             layers[0].objects.as_mut_vec().retain(|obj| obj.instance_id & 0x00FFFFFF != obj_id);
@@ -12894,7 +12904,7 @@ fn patch_ridley_scale<'r>(
                 0x00000379,
                 0x00000382,
                 0x0000039F,
-                0x0000036B,                
+                0x0000036B,
             ].contains(&(obj.instance_id & 0x00FFFFFF)) {
                 let boss = obj.property_data.as_actor_mut().unwrap();
                 boss.scale[0] *= scale;
@@ -16029,7 +16039,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                     local_dl.dock_number,
                                 )
                             );
-                            
+
                             if *blast_shield_type.as_ref().unwrap() == BlastShieldType::None {
                                 blast_shield_type = None;
                             }
@@ -16236,6 +16246,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         config.auto_enabled_elevators,
         player_size,
         config.force_vanilla_layout,
+        config.version,
     );
     let skip_frigate = skip_frigate && starting_room.mlvl != World::FrigateOrpheon.mlvl();
 
@@ -16377,7 +16388,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
         for (res_info, strg_text) in ARTIFACT_TOTEM_SCAN_STRGS.iter().zip(artifact_totem_strings.iter()) {
             patcher.add_resource_patch(
                 (*res_info).into(),
-                move |res| patch_artifact_totem_scan_strg(res, &strg_text),
+                move |res| patch_artifact_totem_scan_strg(res, &strg_text, config.version),
             );
         }
         patcher.add_scly_patch(
@@ -16401,7 +16412,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
     if config.results_string.is_some() {
         patcher.add_resource_patch(
             resource_info!("STRG_CompletionScreen.STRG").into(),
-            |res| patch_completion_screen(res, config.results_string.clone().unwrap())
+            |res| patch_completion_screen(res, config.results_string.clone().unwrap(), config.version)
         );
     }
 
@@ -17678,7 +17689,7 @@ fn patch_elite_research_platforms<'r>(_ps: &mut PatcherState, area: &mut mlvl_wr
     let timer_platform_delay = &mut layer.objects.as_mut_vec().iter_mut()
         .find(|obj| obj.instance_id == timer_platform_delay_id)
         .unwrap();
-    
+
     // Set start time to be greater than the longest death animation
     timer_platform_delay.property_data.as_timer_mut().unwrap().start_time = 5.0;
 
@@ -17725,16 +17736,16 @@ fn patch_elite_research_door_lock<'r>(_ps: &mut PatcherState, area: &mut mlvl_wr
                     missile: structs::scly_structs::TypeVulnerability::Reflect as u32,
                     boost_ball: structs::scly_structs::TypeVulnerability::Immune as u32,
                     phazon: structs::scly_structs::TypeVulnerability::Immune as u32,
-        
+
                     enemy_weapon0:structs::scly_structs::TypeVulnerability::Immune as u32,
                     enemy_weapon1:structs::scly_structs::TypeVulnerability::Immune as u32,
                     enemy_weapon2:structs::scly_structs::TypeVulnerability::Immune as u32,
                     enemy_weapon3:structs::scly_structs::TypeVulnerability::Immune as u32,
-        
+
                     unknown_weapon0:structs::scly_structs::TypeVulnerability::Immune as u32,
                     unknown_weapon1:structs::scly_structs::TypeVulnerability::Immune as u32,
                     unknown_weapon2:structs::scly_structs::TypeVulnerability::Immune as u32,
-        
+
                     charged_beams:structs::scly_structs::ChargedBeams {
                         power:structs::scly_structs::TypeVulnerability::Reflect as u32,
                         ice:structs::scly_structs::TypeVulnerability::Reflect as u32,
@@ -17805,7 +17816,7 @@ fn patch_elite_research_door_lock<'r>(_ps: &mut PatcherState, area: &mut mlvl_wr
                 unknown12: 0,
                 unknown13: 0,
         }))};
-    
+
     // Add to "3rd Pass Elite Bustout" layer
     scly.layers.as_mut_vec()[1].objects.as_mut_vec().push(top_door_lock);
 
@@ -17819,7 +17830,7 @@ fn patch_elite_research_door_lock<'r>(_ps: &mut PatcherState, area: &mut mlvl_wr
             };
 
             // Add top and bottom door unlock connections to Artifact
-            if obj.instance_id&0x00FFFFFF == artifact_id&0x00FFFFFF { 
+            if obj.instance_id&0x00FFFFFF == artifact_id&0x00FFFFFF {
                 obj.connections.as_mut_vec().push(
                     structs::Connection {
                         state: structs::ConnectionState::ARRIVED,
