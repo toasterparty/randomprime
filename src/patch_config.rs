@@ -999,7 +999,7 @@ impl fmt::Display for Version
             Version::NtscU0_01    => write!(f, "1.01"),
             Version::NtscU0_02    => write!(f, "1.02"),
             Version::NtscK        => write!(f, "kor"),
-            Version::NtscJ        => write!(f, "jap"),
+            Version::NtscJ        => write!(f, "jpn"),
             Version::Pal          => write!(f, "pal"),
             Version::NtscUTrilogy => write!(f, "trilogy_ntsc_u"),
             Version::NtscJTrilogy => write!(f, "trilogy_ntsc_j"),

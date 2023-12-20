@@ -63,11 +63,11 @@ impl<'r> Strg<'r>
             Languages::All => SUPPORTED_LANGUAGES,
             Languages::Some(value) => value
         };
-        let is_jap = Self::is_jpn_version(languages.clone());
+        let is_jpn = Self::is_jpn_version(languages.clone());
         for table in self.string_tables.as_mut_vec().iter_mut() {
             if languages.contains(&table.lang.as_bytes()) {
                 for string in strings.iter() {
-                    if is_jap {
+                    if is_jpn {
                         table.strings.as_mut_vec().push(format!("&line-extra-space=4;&font=C29C51F1;{}", string).into());
                     } else {
                         table.strings.as_mut_vec().push(format!("{}", string).into());
