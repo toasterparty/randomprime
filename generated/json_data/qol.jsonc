@@ -4506,14 +4506,14 @@
                     ]
                 },
                 "Sun Tower": {
-                    // Disable tutorial hudmemos
-                    "deleteIds": [
-                        1900904,
-                        1900905
-                    ],
                     "layers": {
                         "3": false
                     },
+                    "deleteIds": [
+                        // Disable tutorial hudmemos
+                        1900904,
+                        1900905
+                    ],
                     "addConnections": [
                         {
                             "senderId": 1900891, // [Trigger] Trigger - Change Scripting
@@ -4590,6 +4590,26 @@
                     ]
                 },
                 "Sun Tower Access": {
+                    "deleteIds": [
+                        // Delete Debris Extended to save memory
+                        2293909,
+                        2293910,
+                        2293914,
+                        2293918,
+                        2293919,
+                        2293920,
+                        2293921,
+                        2293922,
+                        2293923,
+                        2293924,
+                        2293925,
+                        2293926,
+                        2293913,
+                        2293912,
+                        2293911,
+                        2293915,
+                        2293916
+                    ],
                     "layers": {
                         "4": false
                     },
@@ -4873,6 +4893,26 @@
                     ]
                 },
                 "Sunchamber Access": {
+                    "deleteIds": [
+                        // Delete Debris Extended to save memory
+                        2031696,
+                        2031695,
+                        2031694,
+                        2031693,
+                        2031692,
+                        2031691,
+                        2031690,
+                        2031689,
+                        2031688,
+                        2031678,
+                        2031679,
+                        2031680,
+                        2031681,
+                        2031682,
+                        2031683,
+                        2031684,
+                        2031685
+                    ],
                     "layers": {
                         "2": false
                     },
@@ -11175,8 +11215,35 @@
                         1771138, // [StreamedAudio] StreamedAudio - Savestation Music
                         1771135 // [StreamedAudio] StreamedAudio - Savestation Music
                     ],
-                    // Activate the Entry Gate upon grabbing item to prevent Maze Skip softlock
+                    // CameraHint fix? question mark?
+                    "removeConnections": [
+                        {
+                            "senderId": 1770320, // [Relay] Relay Start Cinematic
+                            "targetId": 1769493, // [CameraHint] Camera Hint_electric1
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        {
+                            "senderId": 1770320, // [Relay] Relay Start Cinematic
+                            "targetId": 1770869, // [PlayerHint] Player Hint_no_FP_under_grate
+                            "state": "ZERO",
+                            "message": "DECREMENT"
+                        }
+                    ],
                     "addConnections": [
+                        {
+                            "senderId": 1770320, // [Relay] Relay Start Cinematic
+                            "targetId": 1769493, // [CameraHint] Camera Hint_electric1
+                            "state": "ZERO",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 1770320, // [Relay] Relay Start Cinematic
+                            "targetId": 1770869, // [PlayerHint] Player Hint_no_FP_under_grate
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        // Activate the Entry Gate upon grabbing item to prevent Maze Skip softlock
                         {
                             "senderId": 1770320, // [Relay] Relay Start Cinematic
                             "targetId": 1770226, // [Actor] Actor Entry Door
@@ -11641,6 +11708,9 @@
                     ]
                 },
                 "Elite Research": {
+                    "layers": {
+                        "6": false
+                    },
                     "addConnections": [
                         {
                             "senderId": 851980, // [SpecialFunction] Music Player For Area
@@ -11747,16 +11817,16 @@
                 },
                 "Main Quarry": {
                     "deleteIds": [
-                        // Remove White Flashes from Explosions
-                        131788,
-                        131789,
-                        131793,
                         132315, // [StreamedAudio] StreamedAudio Mines Phazon Material
                         132469, // [StreamedAudio] StreamedAudio - Savestation Music
                         132322, // [Trigger] Trigger - Play Music Savestation Mines Main
                         132321, // [Trigger] Trigger - Play Music Savestation
                         132328, // [Trigger] Trigger - Play Music 00a Phazon
-                        132327 // [Trigger] Trigger - Play Music 00a Mines Main
+                        132327, // [Trigger] Trigger - Play Music 00a Mines Main
+                        // Remove White Flashes from Explosions
+                        131788,
+                        131789,
+                        131793
                     ],
                     "addConnections": [
                         {
@@ -11764,6 +11834,15 @@
                             "targetId": 132470, // [StreamedAudio] StreamedAudio Mines Phazon Material
                             "state": "ENTERED",
                             "message": "PLAY"
+                        }
+                    ],
+                    "streamedAudios": [
+                        {
+                            "id": 132470, // [StreamedAudio] StreamedAudio Mines Main SW
+                            "volume": 80,
+                            "isMusic": true,
+                            "fadeInTime": 0.01,
+                            "audioFileName": "/audio/min_mainL.dsp|/audio/min_mainR.dsp"
                         }
                     ],
                     "specialFunctions": [

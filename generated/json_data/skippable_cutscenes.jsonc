@@ -5821,35 +5821,7 @@
                         }
                     ]
                 },
-                "Sun Tower Access": {
-                    // Delete Debris Extended to save memory
-                    "deleteIds": [
-                        2293909,
-                        2293910,
-                        2293914,
-                        2293918,
-                        2293919,
-                        2293920,
-                        2293921,
-                        2293922,
-                        2293923,
-                        2293924,
-                        2293925,
-                        2293926,
-                        2293913,
-                        2293912,
-                        2293911,
-                        2293915,
-                        2293916
-                    ]
-                },
                 "Sunchamber": {
-                    "deleteIds": [
-                        2436939, // [Trigger] Reset Faint Time Trigger
-                        2436940, // [Trigger] Reset Faint Time Trigger
-                        2436941, // [Trigger] Reset Faint Time Trigger
-                        2436942 // [Trigger] Reset Faint Time Trigger
-                    ],
                     "addConnections": [
                         // Unload Rooms
                         {
@@ -5949,103 +5921,6 @@
                             "targetId": 2424855, // [Relay] End Slot Reveal Cinematic
                             "state": "ZERO",
                             "message": "SET_TO_ZERO"
-                        },
-                        //BOMB SLOT FIXES/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        {
-                            "senderId": 5436939, // [Trigger] New Reset Faint Time Trigger 1
-                            "targetId": 2424862, // [Flaahgra] Main Flaahgra
-                            "state": "ENTERED",
-                            "message": "SET_TO_MAX"
-                        },
-                        {
-                            "senderId": 5436939, // [Trigger] New Reset Faint Time Trigger 1
-                            "targetId": 5242880, // [Flaahgra] Flaahgra #2
-                            "state": "ENTERED",
-                            "message": "SET_TO_MAX"
-                        },
-                        {
-                            "senderId": 5436939, // [Trigger] New Reset Faint Time Trigger 1
-                            "targetId": 5242881, // [Flaahgra] Flaahgra #3
-                            "state": "ENTERED",
-                            "message": "SET_TO_MAX"
-                        },
-                        {
-                            "senderId": 5436939, // [Trigger] New Reset Faint Time Trigger 1
-                            "targetId": 5242882, // [Flaahgra] Flaahgra #4
-                            "state": "ENTERED",
-                            "message": "SET_TO_MAX"
-                        },
-                        {
-                            "senderId": 5436940, // [Trigger] New Reset Faint Time Trigger 2
-                            "targetId": 2424862, // [Flaahgra] Main Flaahgra
-                            "state": "ENTERED",
-                            "message": "SET_TO_MAX"
-                        },
-                        {
-                            "senderId": 5436940, // [Trigger] New Reset Faint Time Trigger 2
-                            "targetId": 5242880, // [Flaahgra] Flaahgra #2
-                            "state": "ENTERED",
-                            "message": "SET_TO_MAX"
-                        },
-                        {
-                            "senderId": 5436940, // [Trigger] New Reset Faint Time Trigger 2
-                            "targetId": 5242881, // [Flaahgra] Flaahgra #3
-                            "state": "ENTERED",
-                            "message": "SET_TO_MAX"
-                        },
-                        {
-                            "senderId": 5436940, // [Trigger] New Reset Faint Time Trigger 2
-                            "targetId": 5242882, // [Flaahgra] Flaahgra #4
-                            "state": "ENTERED",
-                            "message": "SET_TO_MAX"
-                        },
-                        {
-                            "senderId": 5436941, // [Trigger] New Reset Faint Time Trigger 3
-                            "targetId": 2424862, // [Flaahgra] Main Flaahgra
-                            "state": "ENTERED",
-                            "message": "SET_TO_MAX"
-                        },
-                        {
-                            "senderId": 5436941, // [Trigger] New Reset Faint Time Trigger 3
-                            "targetId": 5242880, // [Flaahgra] Flaahgra #2
-                            "state": "ENTERED",
-                            "message": "SET_TO_MAX"
-                        },
-                        {
-                            "senderId": 5436941, // [Trigger] New Reset Faint Time Trigger 3
-                            "targetId": 5242881, // [Flaahgra] Flaahgra #3
-                            "state": "ENTERED",
-                            "message": "SET_TO_MAX"
-                        },
-                        {
-                            "senderId": 5436941, // [Trigger] New Reset Faint Time Trigger 3
-                            "targetId": 5242882, // [Flaahgra] Flaahgra #4
-                            "state": "ENTERED",
-                            "message": "SET_TO_MAX"
-                        },
-                        {
-                            "senderId": 5436942, // [Trigger] New Reset Faint Time Trigger 4
-                            "targetId": 2424862, // [Flaahgra] Main Flaahgra
-                            "state": "ENTERED",
-                            "message": "SET_TO_MAX"
-                        },
-                        {
-                            "senderId": 5436942, // [Trigger] New Reset Faint Time Trigger 4
-                            "targetId": 5242880, // [Flaahgra] Flaahgra #2
-                            "state": "ENTERED",
-                            "message": "SET_TO_MAX"
-                        },
-                        {
-                            "senderId": 5436942, // [Trigger] New Reset Faint Time Trigger 4
-                            "targetId": 5242881, // [Flaahgra] Flaahgra #3
-                            "state": "ENTERED",
-                            "message": "SET_TO_MAX"
-                        },
-                        {
-                            "senderId": 5436942, // [Trigger] New Reset Faint Time Trigger 4
-                            "targetId": 5242882, // [Flaahgra] Flaahgra #4
-                            "state": "ENTERED",
-                            "message": "SET_TO_MAX"
                         },
                         //DROP POSITION FIXES/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                         {
@@ -7508,7 +7383,7 @@
                     ],
                     "triggers": [
                         {
-                            "id": 5436939, // [Trigger] New Reset Faint Time Trigger 1
+                            "id": 2436939, // [Trigger] Reset Faint Time Trigger
                             "position": [
                                 269.368408,
                                 137.372131,
@@ -7518,11 +7393,10 @@
                                 5.0,
                                 7.0,
                                 2.5
-                            ],
-                            "flags": 64
+                            ]
                         },
                         {
-                            "id": 5436940, // [Trigger] New Reset Faint Time Trigger 2
+                            "id": 2436940, // [Trigger] Reset Faint Time Trigger
                             "position": [
                                 284.118408,
                                 152.122131,
@@ -7532,11 +7406,10 @@
                                 7.0,
                                 5.0,
                                 2.5
-                            ],
-                            "flags": 64
+                            ]
                         },
                         {
-                            "id": 5436941, // [Trigger] New Reset Faint Time Trigger 3
+                            "id": 2436941, // [Trigger] Reset Faint Time Trigger
                             "position": [
                                 298.868408,
                                 137.372131,
@@ -7546,11 +7419,10 @@
                                 5.0,
                                 7.0,
                                 2.5
-                            ],
-                            "flags": 64
+                            ]
                         },
                         {
-                            "id": 5436942, // [Trigger] New Reset Faint Time Trigger 4
+                            "id": 2436942, // [Trigger] Reset Faint Time Trigger
                             "position": [
                                 284.118408,
                                 122.622131,
@@ -7560,8 +7432,7 @@
                                 7.0,
                                 5.0,
                                 2.5
-                            ],
-                            "flags": 64
+                            ]
                         }
                     ],
                     "relays": [
@@ -7685,28 +7556,6 @@
                             "time": 0.001,
                             "startImmediately": true
                         }
-                    ]
-                },
-                "Sunchamber Access": {
-                    // Delete Debris Extended to save memory
-                    "deleteIds": [
-                        2031696,
-                        2031695,
-                        2031694,
-                        2031693,
-                        2031692,
-                        2031691,
-                        2031690,
-                        2031689,
-                        2031688,
-                        2031678,
-                        2031679,
-                        2031680,
-                        2031681,
-                        2031682,
-                        2031683,
-                        2031684,
-                        2031685
                     ]
                 },
                 "Tower of Light": {
@@ -16608,6 +16457,26 @@
             "transports": {},
             "rooms": {
                 "Central Dynamo": {
+                    "removeConnections": [
+                        {
+                            "senderId": 1770818, // [Drone] Drone
+                            "targetId": 1770907, // [Camera] Cinematic Camera
+                            "state": "DEATH_RATTLE",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1770313, // [Camera] Cinematic Camera
+                            "targetId": 1770302, // [CameraFilterKeyframe] Camera Filter Keyframe Widescreen
+                            "state": "ACTIVE",
+                            "message": "INCREMENT"
+                        },
+                        {
+                            "senderId": 1770313, // [Camera] Cinematic Camera
+                            "targetId": 1770302, // [CameraFilterKeyframe] Camera Filter Keyframe Widescreen
+                            "state": "INACTIVE",
+                            "message": "DECREMENT"
+                        }
+                    ],
                     "addConnections": [
                         {
                             "senderId": 1770818, // [Drone] Drone
@@ -17612,8 +17481,26 @@
                             "message": "INCREMENT"
                         },
                         {
+                            "senderId": 1770320, // [Relay] Relay Start Cinematic
+                            "targetId": 1770302, // [CameraFilterKeyframe] Camera Filter Keyframe Widescreen
+                            "state": "ZERO",
+                            "message": "INCREMENT"
+                        },
+                        {
                             "senderId": 1770856, // [Relay] Relay End Cinematic
                             "targetId": 1769485, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "state": "ZERO",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 1770856, // [Relay] Relay End Cinematic
+                            "targetId": 1770302, // [CameraFilterKeyframe] Camera Filter Keyframe Widescreen
+                            "state": "ZERO",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 1770856, // [Relay] Relay End Cinematic
+                            "targetId": 1771145, // [ColorModulate] ColorModulate Grate In
                             "state": "ZERO",
                             "message": "DECREMENT"
                         },
@@ -17625,6 +17512,18 @@
                         },
                         {
                             "senderId": 1769485, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 1770313, // [Camera] Cinematic Camera
+                            "state": "ZERO",
+                            "message": "ACTIVATE"
+                        },
+                        {
+                            "senderId": 1769485, // [SpecialFunction] SpecialFunction Cinematic Skip
+                            "targetId": 1769495, // [Relay] Re-Cutscene
+                            "state": "ZERO",
+                            "message": "SET_TO_ZERO"
+                        },
+                        {
+                            "senderId": 1769495, // [Relay] Re-Cutscene
                             "targetId": 1770313, // [Camera] Cinematic Camera
                             "state": "ZERO",
                             "message": "DEACTIVATE"
@@ -17727,29 +17626,9 @@
                         },
                         {
                             "senderId": 1770284, // [Relay] Relay Turbine Explode
-                            "targetId": 1769489, // [Timer] Prevent Turbine from Exploding Again
-                            "state": "ZERO",
-                            "message": "RESET_AND_START"
-                        },
-                        {
-                            "senderId": 1769489, // [Timer] Prevent Turbine from Exploding Again
                             "targetId": 1770284, // [Relay] Relay Turbine Explode
                             "state": "ZERO",
                             "message": "DEACTIVATE"
-                        }
-                    ],
-                    "timers": [
-                        {
-                            "id": 1769489, // [Timer] Prevent Turbine from Exploding Again
-                            "time": 0.001
-                        }
-                    ],
-                    "removeConnections": [
-                        {
-                            "senderId": 1770818, // [Drone] Drone
-                            "targetId": 1770907, // [Camera] Cinematic Camera
-                            "state": "DEATH_RATTLE",
-                            "message": "ACTIVATE"
                         }
                     ],
                     "relays": [
@@ -17761,6 +17640,9 @@
                         },
                         {
                             "id": 1769488 // [Relay] Activate Maze Cutscene Skip
+                        },
+                        {
+                            "id": 1769495 // [Relay] Re-Cutscene
                         }
                     ],
                     "spawnPoints": [
