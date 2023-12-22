@@ -620,6 +620,16 @@ pub struct CounterConfig
     pub auto_reset: Option<bool>,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SwitchConfig
+{
+    pub id: u32,
+    pub layer: Option<u32>,
+    pub active: Option<bool>,
+    pub open: Option<bool>,
+    pub auto_close: Option<bool>,
+}
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub enum EnviornmentalEffect {
@@ -828,6 +838,7 @@ pub struct RoomConfig
     pub edit_objs: Option<HashMap<u32, EditObjConfig>>,
     pub waypoints: Option<Vec<WaypointConfig>>,
     pub counters: Option<Vec<CounterConfig>>,
+    pub switches: Option<Vec<SwitchConfig>>,
     // Don't forget to update merge_json when adding here
 }
 
@@ -1657,6 +1668,7 @@ impl PatchConfigPrivate
                 extend_option_vec!(streamed_audios   , self_room_config, other_room_config);
                 extend_option_vec!(waypoints         , self_room_config, other_room_config);
                 extend_option_vec!(counters          , self_room_config, other_room_config);
+                extend_option_vec!(switches          , self_room_config, other_room_config);
 
                 if let Some(other_layers) = &other_room_config.layers {
                     if self_room_config.layers.is_none() {

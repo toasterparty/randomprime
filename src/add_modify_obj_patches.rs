@@ -30,6 +30,7 @@ use crate::{
         HudmemoConfig,
         WaypointConfig,
         CounterConfig,
+        SwitchConfig,
     },
     pickup_meta::PickupType,
     door_meta::DoorType,
@@ -700,6 +701,37 @@ pub fn patch_add_counter<'r>(
     }
 
     add_edit_obj_helper!(area, Some(config.id), config.layer, Counter, new, update);
+}
+
+
+pub fn patch_add_switch<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    config: SwitchConfig,
+)
+    -> Result<(), String>
+{
+    macro_rules! new {
+        () => {
+            structs::Switch {
+                name: b"my switch\0".as_cstr(),
+                active: config.active.unwrap_or(true) as u8,
+                open: config.open.unwrap_or(false) as u8,
+                auto_close: config.auto_close.unwrap_or(false) as u8,
+            }
+        };
+    }
+
+    macro_rules! update {
+        ($obj:expr) => {
+            let property_data = $obj.property_data.as_switch_mut().unwrap();
+            if let Some(active           ) = config.active           {property_data.active           = active      as u8 }
+            if let Some(open             ) = config.open             {property_data.open             = open        as u8 }
+            if let Some(auto_close       ) = config.auto_close       {property_data.auto_close       = auto_close  as u8 }
+        };
+    }
+
+    add_edit_obj_helper!(area, Some(config.id), config.layer, Switch, new, update);
 }
 
 pub fn patch_add_platform<'r>(
