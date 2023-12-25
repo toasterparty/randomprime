@@ -11708,9 +11708,6 @@
                     ]
                 },
                 "Elite Research": {
-                    "layers": {
-                        "6": false
-                    },
                     "addConnections": [
                         {
                             "senderId": 851980, // [SpecialFunction] Music Player For Area
