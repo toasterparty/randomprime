@@ -5821,6 +5821,28 @@
                         }
                     ]
                 },
+                "Sunchamber Access": {
+                    "deleteIds": [
+                        // Delete Debris Extended to save memory
+                        2031696,
+                        2031695,
+                        2031694,
+                        2031693,
+                        2031692,
+                        2031691,
+                        2031690,
+                        2031689,
+                        2031688,
+                        2031678,
+                        2031679,
+                        2031680,
+                        2031681,
+                        2031682,
+                        2031683,
+                        2031684,
+                        2031685
+                    ]
+                },
                 "Sunchamber": {
                     "addConnections": [
                         // Unload Rooms
@@ -7556,6 +7578,28 @@
                             "time": 0.001,
                             "startImmediately": true
                         }
+                    ]
+                },
+                "Sun Tower Access": {
+                    "deleteIds": [
+                        // Delete Debris Extended to save memory
+                        2293909,
+                        2293910,
+                        2293914,
+                        2293918,
+                        2293919,
+                        2293920,
+                        2293921,
+                        2293922,
+                        2293923,
+                        2293924,
+                        2293925,
+                        2293926,
+                        2293913,
+                        2293912,
+                        2293911,
+                        2293915,
+                        2293916
                     ]
                 },
                 "Tower of Light": {
