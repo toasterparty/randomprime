@@ -4129,6 +4129,40 @@
                         ],
                         "additionalProperties": false
                     }
+                },
+                "switches": {
+                    "description": "Add/modify switches to this room.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "$ref": "#/$defs/addModifyId"
+                            },
+                            "layer": {
+                                "$ref": "#/$defs/addModifyLayer"
+                            },
+                            "active": {
+                                "description": "Default active state of the switch.",
+                                "type": "boolean",
+                                "default": true
+                            },
+                            "open": {
+                                "description": "If true, the initial state of the switch will be `OPEN`",
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "autoClose": {
+                                "description": "If true, the switch will automatically revert to `CLOSED` when used.",
+                                "type": "boolean",
+                                "default": false
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
                 }
             },
             "additionalProperties": false

@@ -648,6 +648,7 @@ build_scly_property!(
     SpawnPoint,           is_spawn_point,            as_spawn_point,            as_spawn_point_mut,
     SpecialFunction,      is_special_function,       as_special_function,       as_special_function_mut,
     StreamedAudio,        is_streamed_audio,         as_streamed_audio,         as_streamed_audio_mut,
+    Switch,               is_switch,                 as_switch,                 as_switch_mut,
     Timer,                is_timer,                  as_timer,                  as_timer_mut,
     Trigger,              is_trigger,                as_trigger,                as_trigger_mut,
     Waypoint,             is_waypoint,               as_waypoint,               as_waypoint_mut,

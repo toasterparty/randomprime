@@ -59,6 +59,7 @@ pub mod scly_props
     pub mod spawn_point;
     pub mod special_function;
     pub mod streamed_audio;
+    pub mod switch;
     pub mod timer;
     pub mod trigger;
     pub mod water;
@@ -155,6 +156,7 @@ pub mod scly_props
     pub use self::spawn_point::*;
     pub use self::special_function::*;
     pub use self::streamed_audio::*;
+    pub use self::switch::*;
     pub use self::timer::*;
     pub use self::trigger::*;
     pub use self::water::*;
@@ -251,6 +253,7 @@ pub use scly_props::sound::*;
 pub use scly_props::spawn_point::*;
 pub use scly_props::special_function::*;
 pub use scly_props::streamed_audio::*;
+pub use scly_props::switch::*;
 pub use scly_props::timer::*;
 pub use scly_props::trigger::*;
 pub use scly_props::water::*;
