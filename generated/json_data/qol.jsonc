@@ -11175,30 +11175,16 @@
                         1771138, // [StreamedAudio] StreamedAudio - Savestation Music
                         1771135 // [StreamedAudio] StreamedAudio - Savestation Music
                     ],
-                    // CameraHint fix? question mark?
-                    "removeConnections": [
-                        {
-                            "senderId": 1770320, // [Relay] Relay Start Cinematic
-                            "targetId": 1769493, // [CameraHint] Camera Hint_electric1
-                            "state": "ZERO",
-                            "message": "DEACTIVATE"
-                        },
-                        {
-                            "senderId": 1770320, // [Relay] Relay Start Cinematic
-                            "targetId": 1770869, // [PlayerHint] Player Hint_no_FP_under_grate
-                            "state": "ZERO",
-                            "message": "DECREMENT"
-                        }
-                    ],
+                    // Maze Softlock fix (Additional connections so that the fixed camera is always deactivated for good at the end.)
                     "addConnections": [
                         {
-                            "senderId": 1770320, // [Relay] Relay Start Cinematic
+                            "senderId": 1770856, // [Relay] Relay End Cinematic
                             "targetId": 1769493, // [CameraHint] Camera Hint_electric1
                             "state": "ZERO",
                             "message": "DECREMENT"
                         },
                         {
-                            "senderId": 1770320, // [Relay] Relay Start Cinematic
+                            "senderId": 1770856, // [Relay] Relay End Cinematic
                             "targetId": 1770869, // [PlayerHint] Player Hint_no_FP_under_grate
                             "state": "ZERO",
                             "message": "DEACTIVATE"
