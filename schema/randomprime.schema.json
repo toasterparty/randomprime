@@ -2899,6 +2899,12 @@
                     "items": {
                         "type": "object",
                         "properties": {
+                            "id": {
+                                "description": "The instance ID to use for this scan point. Useful for activating objects on SCAN_DONE.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 16777215
+                            },
                             "position": {
                                 "description": "Position of the scan point.",
                                 "$ref": "#/$defs/vector3"
