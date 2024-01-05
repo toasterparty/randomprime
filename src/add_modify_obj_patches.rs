@@ -471,6 +471,7 @@ pub fn patch_add_trigger<'r>(
             if let Some(damage_type        ) = config.damage_type         { property_data.damage_info        .weapon_type = damage_type         as u32 }
             if let Some(damage_amount      ) = config.damage_amount       { property_data.damage_info        .damage      = damage_amount              }
             if let Some(force              ) = config.force               { property_data.force                           = force              .into() }
+            if let Some(flags              ) = config.flags               { property_data.flags                           = flags                      }
             if let Some(deactivate_on_enter) = config.deactivate_on_enter { property_data.deactivate_on_enter             = deactivate_on_enter as u8  }
             if let Some(deactivate_on_exit ) = config.deactivate_on_exit  { property_data.deactivate_on_exit              = deactivate_on_exit  as u8  }
         };
