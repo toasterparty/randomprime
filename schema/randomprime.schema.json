@@ -3026,39 +3026,42 @@
                 },
                 "cameraHints": {
                     "description": "Add camera hint + camera hint trigger pairs to this room. They are somewhat broken.",
-                    "type": "object",
-                    "properties": {
-                        "triggerPos": {
-                            "description": "Position of the trigger.",
-                            "$ref": "#/$defs/vector3"
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "triggerPos": {
+                                "description": "Position of the trigger.",
+                                "$ref": "#/$defs/vector3"
+                            },
+                            "triggerScale": {
+                                "description": "Extent of the trigger.",
+                                "$ref": "#/$defs/vector3Positive"
+                            },
+                            "cameraPos": {
+                                "description": "Position of the Camera Hint.",
+                                "$ref": "#/$defs/vector3"
+                            },
+                            "cameraRot": {
+                                "description": "Facing angle of the Camera Hint.",
+                                "$ref": "#/$defs/vector3"
+                            },
+                            "behavior": {
+                                "description": "- `0`: `Default`\n- `1`: `FreezeLookPosition`\n- `2`: `HintBallToCam`\n- `3`: `HintInitializePosition`\n- `4`: `HintFixedPosition`\n- `5`: `HintFixedTransform`\n- `6`: `PathCameraDesiredPos`\n- `7`: `PathCamera`\n- `8`: `SpindleCamer`\n",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 8
+                            }
                         },
-                        "triggerScale": {
-                            "description": "Extent of the trigger.",
-                            "$ref": "#/$defs/vector3Positive"
-                        },
-                        "cameraPos": {
-                            "description": "Position of the Camera Hint.",
-                            "$ref": "#/$defs/vector3"
-                        },
-                        "cameraRot": {
-                            "description": "Facing angle of the Camera Hint.",
-                            "$ref": "#/$defs/vector3"
-                        },
-                        "behavior": {
-                            "description": "- `0`: `Default`\n- `1`: `FreezeLookPosition`\n- `2`: `HintBallToCam`\n- `3`: `HintInitializePosition`\n- `4`: `HintFixedPosition`\n- `5`: `HintFixedTransform`\n- `6`: `PathCameraDesiredPos`\n- `7`: `PathCamera`\n- `8`: `SpindleCamer`\n",
-                            "type": "integer",
-                            "minimum": 0,
-                            "maximum": 8
-                        }
-                    },
-                    "required": [
-                        "triggerPos",
-                        "triggerScale",
-                        "cameraPos",
-                        "cameraRot",
-                        "behavior"
-                    ],
-                    "additionalProperties": false
+                        "required": [
+                            "triggerPos",
+                            "triggerScale",
+                            "cameraPos",
+                            "cameraRot",
+                            "behavior"
+                        ],
+                        "additionalProperties": false
+                    }
                 },
                 "blocks": {
                     "description": "Add blocks to this room. They are specifically the sandstone blocks found in Ruined nursery as they are the closest thing to a 1x1x1 perfect square as I could find.",
