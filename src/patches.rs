@@ -2758,28 +2758,27 @@ fn add_world_teleporter<'r>(
             position: [0.0, 0.0, 0.0].into(),
             rotation: [0.0, 0.0, 0.0].into(),
 
-            unknown0: 1, // active
+            active: 1, // active
 
-            inner_struct: structs::PlayerHintStruct {
-                unknowns: [
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    1, // disable
-                    1, // disable
-                    1, // disable
-                    1, // disable
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                ].into(),
+            data: structs::PlayerHintStruct {
+                unknown1: 0,
+                unknown2: 0,
+                extend_target_distance: 0,
+                unknown4: 0,
+                unknown5: 0,
+                disable_unmorph: 1,
+                disable_morph: 1,
+                disable_controls: 1,
+                disable_boost: 1,
+                activate_visor_combat: 0,
+                activate_visor_scan: 0,
+                activate_visor_thermal: 0,
+                activate_visor_xray: 0,
+                unknown6: 0,
+                face_object_on_unmorph: 0,
             }.into(),
-            unknown1: 10, // priority
+
+            priority: 10,
            }.into(),
            connections: vec![].into(),
         }
@@ -3365,9 +3364,14 @@ fn patch_add_poi<'r>(
     scan_id: ResId<res_id::SCAN>,
     strg_id: ResId<res_id::STRG>,
     position: [f32;3],
+    id: Option<u32>,
 ) -> Result<(), String>
 {
-    let instance_id = area.new_object_id_from_layer_name("Default");
+    let instance_id = match id {
+        Some(id) => id,
+        None => area.new_object_id_from_layer_id(0),
+    };
+
     let scly = area.mrea().scly_section_mut();
     let layers = scly.layers.as_mut_vec();
     layers[0].objects.as_mut_vec().push(
@@ -8764,29 +8768,27 @@ fn patch_save_station_for_warp_to_start<'r>(
             position: [0.0, 0.0, 0.0].into(),
             rotation: [0.0, 0.0, 0.0].into(),
 
-            unknown0: 1, // active
+            active: 1,
 
-            inner_struct: structs::PlayerHintStruct {
-                unknowns: [
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    1, // disable
-                    1, // disable
-                    1, // disable
-                    1, // disable
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                ].into(),
+            data: structs::PlayerHintStruct {
+                unknown1: 0,
+                unknown2: 0,
+                extend_target_distance: 0,
+                unknown4: 0,
+                unknown5: 0,
+                disable_unmorph: 1,
+                disable_morph: 1,
+                disable_controls: 1,
+                disable_boost: 1,
+                activate_visor_combat: 0,
+                activate_visor_scan: 0,
+                activate_visor_thermal: 0,
+                activate_visor_xray: 0,
+                unknown6: 0,
+                face_object_on_unmorph: 0,
             }.into(),
 
-            unknown1: 10, // priority
+            priority: 10,
            }.into(),
            connections: vec![].into(),
     });
@@ -11309,30 +11311,25 @@ fn patch_subchamber_five_essence_permadeath<'r>(
 
                 position: [0.0, 0.0, 0.0].into(),
                 rotation: [0.0, 0.0, 0.0].into(),
-
-                unknown0: 1, // active
-
-                inner_struct: structs::PlayerHintStruct {
-                    unknowns: [
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        1, // disable
-                        1, // disable
-                        1, // disable
-                        1, // disable
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                    ].into(),
+                active: 1,
+                data: structs::PlayerHintStruct {
+                    unknown1: 0,
+                    unknown2: 0,
+                    extend_target_distance: 0,
+                    unknown4: 0,
+                    unknown5: 0,
+                    disable_unmorph: 1,
+                    disable_morph: 1,
+                    disable_controls: 1,
+                    disable_boost: 1,
+                    activate_visor_combat: 0,
+                    activate_visor_scan: 0,
+                    activate_visor_thermal: 0,
+                    activate_visor_xray: 0,
+                    unknown6: 0,
+                    face_object_on_unmorph: 0,
                 }.into(),
-
-                unknown1: 10, // priority
+                priority: 10,
             }.into(),
             connections: vec![].into(),
         }
@@ -11714,30 +11711,25 @@ fn patch_final_boss_permadeath<'r>(
 
                 position: [0.0, 0.0, 0.0].into(),
                 rotation: [0.0, 0.0, 0.0].into(),
-
-                unknown0: 1, // active
-
-                inner_struct: structs::PlayerHintStruct {
-                    unknowns: [
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        1, // disable
-                        1, // disable
-                        1, // disable
-                        1, // disable
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                    ].into(),
+                active: 1,
+                data: structs::PlayerHintStruct {
+                    unknown1: 0,
+                    unknown2: 0,
+                    extend_target_distance: 0,
+                    unknown4: 0,
+                    unknown5: 0,
+                    disable_unmorph: 1,
+                    disable_morph: 1,
+                    disable_controls: 1,
+                    disable_boost: 1,
+                    activate_visor_combat: 0,
+                    activate_visor_scan: 0,
+                    activate_visor_thermal: 0,
+                    activate_visor_xray: 0,
+                    unknown6: 0,
+                    face_object_on_unmorph: 0,
                 }.into(),
-
-                unknown1: 10, // priority
+                priority: 10,
                }.into(),
                connections: vec![].into(),
         });
@@ -12164,19 +12156,11 @@ fn patch_remove_control_disabler<'r>(
             let mut _player_hint = obj.property_data.as_player_hint_mut();
             if _player_hint.is_some() {
                 let player_hint = _player_hint.unwrap();
-                player_hint.inner_struct.unknowns[5] = 0; // always enable unmorphing
-                player_hint.inner_struct.unknowns[6] = 0; // always enable morphing
-                player_hint.inner_struct.unknowns[7] = 0; // always enable controls
-                player_hint.inner_struct.unknowns[8] = 0; // always enable boost
+                player_hint.data.disable_unmorph = 0;
+                player_hint.data.disable_morph = 0;
+                player_hint.data.disable_controls = 0;
+                player_hint.data.disable_boost = 0;
             }
-
-            // set_position(obj, [0.0, 0.0, 4.0], true);
-            // set_rotation(obj, [0.0, 0.0, 60.0], true);
-            // set_scale(obj, [1.0, 1.0, 2.0], true);
-            // set_patterned_speed(obj, 2.0, None);
-            // set_vulnerability(obj, DoorType::Red, None);
-            // set_health(obj, 1.0, None);
-            // set_damage(obj, 0.1);
         }
     }
 
@@ -15078,6 +15062,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                 custom_asset_ids::SHORELINES_POI_SCAN,
                 custom_asset_ids::SHORELINES_POI_STRG,
                 [-98.0624, -162.3933, 28.5371],
+                None,
             ),
         );
     }
@@ -15089,6 +15074,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
             custom_asset_ids::CFLDG_POI_SCAN,
             custom_asset_ids::CFLDG_POI_STRG,
             [-44.0, 361.0, -120.0],
+            None,
         ),
     );
 
@@ -15429,6 +15415,19 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
                                 patcher.add_scly_patch(
                                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
                                     move |ps, area| patch_add_switch(
+                                        ps,
+                                        area,
+                                        config.clone(),
+                                    ),
+                                );
+                            }
+                        }
+
+                        if let Some(player_hints) = room.player_hints.as_ref() {
+                            for config in player_hints {
+                                patcher.add_scly_patch(
+                                    (pak_name.as_bytes(), room_info.room_id.to_u32()),
+                                    move |ps, area| patch_add_player_hint(
                                         ps,
                                         area,
                                         config.clone(),
@@ -15947,7 +15946,7 @@ fn build_and_run_patches<'r>(gc_disc: &mut structs::GcDisc<'r>, config: &PatchCo
 
                 patcher.add_scly_patch(
                     (pak_name.as_bytes(), room_info.room_id.to_u32()),
-                    move |ps, area| patch_add_poi(ps, area, game_resources, scan_id.clone(), strg_id.clone(), scan.position),
+                    move |ps, area| patch_add_poi(ps, area, game_resources, scan_id.clone(), strg_id.clone(), scan.position, scan.id),
                 );
 
                 if scan.combat_visible.unwrap_or(false) {

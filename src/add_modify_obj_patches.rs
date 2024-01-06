@@ -31,6 +31,7 @@ use crate::{
         WaypointConfig,
         CounterConfig,
         SwitchConfig,
+        PlayerHintConfig,
     },
     pickup_meta::PickupType,
     door_meta::DoorType,
@@ -471,6 +472,7 @@ pub fn patch_add_trigger<'r>(
             if let Some(damage_type        ) = config.damage_type         { property_data.damage_info        .weapon_type = damage_type         as u32 }
             if let Some(damage_amount      ) = config.damage_amount       { property_data.damage_info        .damage      = damage_amount              }
             if let Some(force              ) = config.force               { property_data.force                           = force              .into() }
+            if let Some(flags              ) = config.flags               { property_data.flags                           = flags                      }
             if let Some(deactivate_on_enter) = config.deactivate_on_enter { property_data.deactivate_on_enter             = deactivate_on_enter as u8  }
             if let Some(deactivate_on_exit ) = config.deactivate_on_exit  { property_data.deactivate_on_exit              = deactivate_on_exit  as u8  }
         };
@@ -703,7 +705,6 @@ pub fn patch_add_counter<'r>(
     add_edit_obj_helper!(area, Some(config.id), config.layer, Counter, new, update);
 }
 
-
 pub fn patch_add_switch<'r>(
     _ps: &mut PatcherState,
     area: &mut mlvl_wrapper::MlvlArea,
@@ -732,6 +733,72 @@ pub fn patch_add_switch<'r>(
     }
 
     add_edit_obj_helper!(area, Some(config.id), config.layer, Switch, new, update);
+}
+
+pub fn patch_add_player_hint<'r>(
+    _ps: &mut PatcherState,
+    area: &mut mlvl_wrapper::MlvlArea,
+    config: PlayerHintConfig,
+)
+    -> Result<(), String>
+{
+    macro_rules! new {
+        () => {
+            structs::PlayerHint {
+                name: b"my playerhint\0".as_cstr(),
+                
+                position: [0.0, 0.0, 0.0].into(),
+                rotation: [0.0, 0.0, 0.0].into(),
+                
+                active: config.active.unwrap_or(true) as u8,
+
+                data: structs::PlayerHintStruct {
+                    unknown1              : config.unknown1              .unwrap_or(false) as u8,
+                    unknown2              : config.unknown2              .unwrap_or(false) as u8,
+                    extend_target_distance: config.extend_target_distance.unwrap_or(false) as u8,
+                    unknown4              : config.unknown4              .unwrap_or(false) as u8,
+                    unknown5              : config.unknown5              .unwrap_or(false) as u8,
+                    disable_unmorph       : config.disable_unmorph       .unwrap_or(false) as u8,
+                    disable_morph         : config.disable_morph         .unwrap_or(false) as u8,
+                    disable_controls      : config.disable_controls      .unwrap_or(false) as u8,
+                    disable_boost         : config.disable_boost         .unwrap_or(false) as u8,
+                    activate_visor_combat : config.activate_visor_combat .unwrap_or(false) as u8,
+                    activate_visor_scan   : config.activate_visor_scan   .unwrap_or(false) as u8,
+                    activate_visor_thermal: config.activate_visor_thermal.unwrap_or(false) as u8,
+                    activate_visor_xray   : config.activate_visor_xray   .unwrap_or(false) as u8,
+                    unknown6              : config.unknown6              .unwrap_or(false) as u8,
+                    face_object_on_unmorph: config.face_object_on_unmorph.unwrap_or(false) as u8,
+                }.into(),
+
+                priority: config.priority.unwrap_or(10),
+            }
+        };
+    }
+
+    macro_rules! update {
+        ($obj:expr) => {
+            let property_data = $obj.property_data.as_player_hint_mut().unwrap();
+            if let Some(active                 ) = config.active                 { property_data.active                      = active                 as u8 }
+            if let Some(priority               ) = config.priority               { property_data.priority                    = priority                     }
+            if let Some(unknown1               ) = config.unknown1               { property_data.data.unknown1               = unknown1               as u8 }
+            if let Some(unknown2               ) = config.unknown2               { property_data.data.unknown2               = unknown2               as u8 }
+            if let Some(extend_target_distance ) = config.extend_target_distance { property_data.data.extend_target_distance = extend_target_distance as u8 }
+            if let Some(unknown4               ) = config.unknown4               { property_data.data.unknown4               = unknown4               as u8 }
+            if let Some(unknown5               ) = config.unknown5               { property_data.data.unknown5               = unknown5               as u8 }
+            if let Some(disable_unmorph        ) = config.disable_unmorph        { property_data.data.disable_unmorph        = disable_unmorph        as u8 }
+            if let Some(disable_morph          ) = config.disable_morph          { property_data.data.disable_morph          = disable_morph          as u8 }
+            if let Some(disable_controls       ) = config.disable_controls       { property_data.data.disable_controls       = disable_controls       as u8 }
+            if let Some(disable_boost          ) = config.disable_boost          { property_data.data.disable_boost          = disable_boost          as u8 }
+            if let Some(activate_visor_combat  ) = config.activate_visor_combat  { property_data.data.activate_visor_combat  = activate_visor_combat  as u8 }
+            if let Some(activate_visor_scan    ) = config.activate_visor_scan    { property_data.data.activate_visor_scan    = activate_visor_scan    as u8 }
+            if let Some(activate_visor_thermal ) = config.activate_visor_thermal { property_data.data.activate_visor_thermal = activate_visor_thermal as u8 }
+            if let Some(activate_visor_xray    ) = config.activate_visor_xray    { property_data.data.activate_visor_xray    = activate_visor_xray    as u8 }
+            if let Some(unknown6               ) = config.unknown6               { property_data.data.unknown6               = unknown6               as u8 }
+            if let Some(face_object_on_unmorph ) = config.face_object_on_unmorph { property_data.data.face_object_on_unmorph = face_object_on_unmorph as u8 }
+        };
+    }
+
+    add_edit_obj_helper!(area, Some(config.id), config.layer, PlayerHint, new, update);
 }
 
 pub fn patch_add_platform<'r>(

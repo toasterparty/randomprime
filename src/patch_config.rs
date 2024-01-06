@@ -130,6 +130,7 @@ pub struct PickupConfig
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ScanConfig
 {
+    pub id: Option<u32>,
     pub position: [f32;3],
     pub combat_visible: Option<bool>,
     pub rotation: Option<f32>,
@@ -630,6 +631,32 @@ pub struct SwitchConfig
     pub open: Option<bool>,
     pub auto_close: Option<bool>,
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PlayerHintConfig
+{
+    pub id: u32,
+    pub layer: Option<u32>,
+    pub active: Option<bool>,
+    pub priority: Option<u32>,
+    pub unknown1: Option<bool>,
+    pub unknown2: Option<bool>,
+    pub extend_target_distance: Option<bool>,
+    pub unknown4: Option<bool>,
+    pub unknown5: Option<bool>,
+    pub disable_unmorph: Option<bool>,
+    pub disable_morph: Option<bool>,
+    pub disable_controls: Option<bool>,
+    pub disable_boost: Option<bool>,
+    pub activate_visor_combat: Option<bool>,
+    pub activate_visor_scan: Option<bool>,
+    pub activate_visor_thermal: Option<bool>,
+    pub activate_visor_xray: Option<bool>,
+    pub unknown6: Option<bool>,
+    pub face_object_on_unmorph: Option<bool>,
+}
+
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub enum EnviornmentalEffect {
@@ -839,6 +866,7 @@ pub struct RoomConfig
     pub waypoints: Option<Vec<WaypointConfig>>,
     pub counters: Option<Vec<CounterConfig>>,
     pub switches: Option<Vec<SwitchConfig>>,
+    pub player_hints: Option<Vec<PlayerHintConfig>>,
     // Don't forget to update merge_json when adding here
 }
 
@@ -1669,6 +1697,7 @@ impl PatchConfigPrivate
                 extend_option_vec!(waypoints         , self_room_config, other_room_config);
                 extend_option_vec!(counters          , self_room_config, other_room_config);
                 extend_option_vec!(switches          , self_room_config, other_room_config);
+                extend_option_vec!(player_hints      , self_room_config, other_room_config);
 
                 if let Some(other_layers) = &other_room_config.layers {
                     if self_room_config.layers.is_none() {
