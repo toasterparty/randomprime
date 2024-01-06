@@ -4506,14 +4506,14 @@
                     ]
                 },
                 "Sun Tower": {
-                    // Disable tutorial hudmemos
-                    "deleteIds": [
-                        1900904,
-                        1900905
-                    ],
                     "layers": {
                         "3": false
                     },
+                    "deleteIds": [
+                        // Disable tutorial hudmemos
+                        1900904,
+                        1900905
+                    ],
                     "addConnections": [
                         {
                             "senderId": 1900891, // [Trigger] Trigger - Change Scripting
@@ -11175,8 +11175,21 @@
                         1771138, // [StreamedAudio] StreamedAudio - Savestation Music
                         1771135 // [StreamedAudio] StreamedAudio - Savestation Music
                     ],
-                    // Activate the Entry Gate upon grabbing item to prevent Maze Skip softlock
+                    // Maze Softlock fix (Additional connections so that the fixed camera is always deactivated for good at the end.)
                     "addConnections": [
+                        {
+                            "senderId": 1770856, // [Relay] Relay End Cinematic
+                            "targetId": 1769493, // [CameraHint] Camera Hint_electric1
+                            "state": "ZERO",
+                            "message": "DECREMENT"
+                        },
+                        {
+                            "senderId": 1770856, // [Relay] Relay End Cinematic
+                            "targetId": 1770869, // [PlayerHint] Player Hint_no_FP_under_grate
+                            "state": "ZERO",
+                            "message": "DEACTIVATE"
+                        },
+                        // Activate the Entry Gate upon grabbing item to prevent Maze Skip softlock
                         {
                             "senderId": 1770320, // [Relay] Relay Start Cinematic
                             "targetId": 1770226, // [Actor] Actor Entry Door
@@ -11747,16 +11760,16 @@
                 },
                 "Main Quarry": {
                     "deleteIds": [
-                        // Remove White Flashes from Explosions
-                        131788,
-                        131789,
-                        131793,
                         132315, // [StreamedAudio] StreamedAudio Mines Phazon Material
                         132469, // [StreamedAudio] StreamedAudio - Savestation Music
                         132322, // [Trigger] Trigger - Play Music Savestation Mines Main
                         132321, // [Trigger] Trigger - Play Music Savestation
                         132328, // [Trigger] Trigger - Play Music 00a Phazon
-                        132327 // [Trigger] Trigger - Play Music 00a Mines Main
+                        132327, // [Trigger] Trigger - Play Music 00a Mines Main
+                        // Remove White Flashes from Explosions
+                        131788,
+                        131789,
+                        131793
                     ],
                     "addConnections": [
                         {
@@ -11764,6 +11777,15 @@
                             "targetId": 132470, // [StreamedAudio] StreamedAudio Mines Phazon Material
                             "state": "ENTERED",
                             "message": "PLAY"
+                        }
+                    ],
+                    "streamedAudios": [
+                        {
+                            "id": 132470, // [StreamedAudio] StreamedAudio Mines Main SW
+                            "volume": 80,
+                            "isMusic": true,
+                            "fadeInTime": 0.01,
+                            "audioFileName": "/audio/min_mainL.dsp|/audio/min_mainR.dsp"
                         }
                     ],
                     "specialFunctions": [
