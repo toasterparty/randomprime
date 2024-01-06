@@ -4169,6 +4169,96 @@
                         ],
                         "additionalProperties": false
                     }
+                },
+                "playerHints": {
+                    "description": "Add/modify PlayerHints to this room. These are most often used to disable or partially disable the player's control.",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "$ref": "#/$defs/addModifyId"
+                            },
+                            "layer": {
+                                "$ref": "#/$defs/addModifyLayer"
+                            },
+                            "active": {
+                                "description": "Default active state of the playerhint.",
+                                "type": "boolean",
+                                "default": true
+                            },
+                            "priority": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4294967295,
+                                "default": 10
+                            },
+                            "unknown1": {
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "unknown2": {
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "extendTargetDistance": {
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "unknown4": {
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "unknown5": {
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "disableUnmorph": {
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "disableMorph": {
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "disableControls": {
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "disableBoost": {
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "activateVisorCombat": {
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "activateVisorScan": {
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "activateVisorThermal": {
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "activateVisorXray": {
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "unknown6": {
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "faceObjectOnUnmorph": {
+                                "type": "boolean",
+                                "default": false
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
                 }
             },
             "additionalProperties": false
