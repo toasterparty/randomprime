@@ -1,3 +1,11 @@
+# ⚠️⚠️⚠️
+
+# This project is being continued at [randovania/randomprime](https://github.com/randovania/randomprime)
+
+*It's not dead and hasn't changed hands, dev just happens there now*
+
+# ⚠️⚠️⚠️
+
 # randomprime
 
 the patcher for metroid prime 1 in randovania
@@ -14,4 +22,3 @@ the patcher for metroid prime 1 in randovania
 4. Run `cargo build`
 
 That should create a standalone executable in `./randomprime/target/debug/randomprime_patcher.exe`.
-
